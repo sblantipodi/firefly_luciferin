@@ -268,7 +268,8 @@ public class StorageManager {
                 restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
                 restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
-            if (profileConfig.getOutputDevice() != null && !defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice()))
+            if (profileConfig.getOutputDevice() != null && (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice())
+                    || !defaultConfig.getStaticGlowWormIp().equals(profileConfig.getStaticGlowWormIp())))
                 restartReasons.add(Constants.TOOLTIP_SERIALPORT);
             if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads())
                 restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);

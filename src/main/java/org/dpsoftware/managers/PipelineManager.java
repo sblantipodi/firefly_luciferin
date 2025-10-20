@@ -326,6 +326,12 @@ public class PipelineManager {
                 boolean found = ledMatrix.values().stream().anyMatch(led -> sat.getValue().getZone().equals(led.getZone()));
                 if (!found) {
                     orphanSatellite = true;
+                    for (Enums.PossibleZones zone : Enums.PossibleZones.values()) {
+                        if (zone.getBaseI18n().equals(sat.getValue().getZone())) {
+                            orphanSatellite = false;
+                        }
+                    }
+                    break;
                 }
             }
             return orphanSatellite;
