@@ -7,7 +7,7 @@
     <groupId>org.dpsoftware</groupId>
     <artifactId>fireflyluciferin</artifactId>
     <!-- Project Version is computed via CI, don't update it manually -->
-    <version>2.24.4</version>
+    <version>2.24.5</version>
 
     <distributionManagement>
         <repository>
@@ -19,13 +19,13 @@
 
     <properties>
         <!-- Project Version is computed via CI, don't update it manually -->
-        <project.version>2.24.4</project.version>
+        <project.version>2.24.5</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.fx.version>25</java.fx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.source>24</maven.compiler.source>
+        <maven.compiler.target>24</maven.compiler.target>
         <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
         <maven.assembly.version>3.7.1</maven.assembly.version>
         <maven.shade.version>3.6.0</maven.shade.version>
@@ -36,7 +36,7 @@
         <jna.version>5.18.1</jna.version>
         <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.19</logback.version>
+        <logback.version>1.5.20</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.1.1</dbus.java.version>

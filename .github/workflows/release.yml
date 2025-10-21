@@ -53,7 +53,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '25'
+          java-version: '24'
           architecture: x64
       - name: Install submodules
         run: |
@@ -109,7 +109,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '25'
+          java-version: '24'
           architecture: x64
       - id: get-id
         run: |
@@ -174,7 +174,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '25'
+          java-version: '24'
           architecture: x64
       - name: Set up Maven Settings for deploy
         uses: s4u/maven-settings-action@v4.0.0

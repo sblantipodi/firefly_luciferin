@@ -74,18 +74,14 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.23.10" date="2025-08-18">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.23.9</url>
+        <release version="2.24.5" date="2025-10-21">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.24.5</url>
             <description>
-                <p>Hotfix release: This issue only affects Firefly Luciferin; there is no need to update the firmware.</p>
-                <p>Luciferin restarted after seemingly random periods of time. Fixed.</p>
-                <p>Reduced latency in screen capture on Linux Wayland.</p>
-                <p>Prevented invalid values from being entered during the single-device multi-monitor setup
-                    configuration.
+                <p>Hotfix release: This issue affects only Firefly Luciferin; no firmware update is required.</p>
+                <p>The application has been reverted to Java 24 due to compatibility issues: Project cannot build on
+                    Linux with Java 25. Some users experienced startup crashes on Windows caused by permission issues
+                    with temporary native files.
                 </p>
-                <p>Fixed an issue that caused incorrect colors when using the smoothing effect on Linux Wayland.</p>
-                <p>Fixed an issue where settings could not be opened on Flatpak when an update was available.</p>
-                <p>Full changelog on GitHub.</p>
             </description>
         </release>
 
