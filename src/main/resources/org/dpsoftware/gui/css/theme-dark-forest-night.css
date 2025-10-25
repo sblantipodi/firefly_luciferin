@@ -5,39 +5,37 @@
  */
 
 .root {
-    -fx-accent: #cb7eff;
+    -fx-accent: #8cff9f;
     -fx-focus-color: -fx-accent;
-    -fx-base: #4e4e66;
-    -fx-control-inner-background: derive(-fx-base, 35%);
-    -fx-control-inner-background-alt: -fx-control-inner-background;
-}
-
-.text-input {
-    -fx-text-fill: white;
-}
-
-.check-box:selected .mark {
-    -fx-background-color: white;
-}
-
-.roundedBordersDialog {
-    -fx-border-color: #47475d !important;
+    -fx-base: #2e3b31;
+    -fx-control-inner-background: #3a4a3e;
+    -fx-control-inner-background-alt: #2e3b31;
+    -fx-text-fill: #e7f5e8;
 }
 
 #rootPane {
-    -fx-background-color: #5d5d79;
+    -fx-background-color: linear-gradient(to bottom, #4d6050, #1c241d);
 }
 
-.windowCloseBtn {
-    -fx-background-color: #5d5d79;
+.windowCloseBtn, .windowMinimizeBtn {
+    -fx-background-color: linear-gradient(to bottom, #4d6050, #1c241d);
+    -fx-text-fill: #e7f5e8;
 }
 
-.windowMinimizeBtn {
-    -fx-background-color: #5d5d79;
+.button:hover {
+    -fx-background-color: linear-gradient(to bottom, #5e7a64, #2c3b30);
+    -fx-text-fill: #ffffff;
 }
 
-.windowMinimizeBtn:hover {
-    -fx-background-color: #385180;
+.roundedBordersDialog {
+    -fx-border-color: #1c241d !important;
+}
+
+.hyperlink {
+    -fx-text-fill: #9dffad !important;
+}
+.hyperlink:hover {
+    -fx-text-fill: #b8ffbf !important;
 }
 
 .tray_menu_item_selectionbackground { color: #CE9DFFFF; }

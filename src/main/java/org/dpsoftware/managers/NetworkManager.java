@@ -37,6 +37,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.NetworkTabController;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
@@ -146,10 +147,11 @@ public class NetworkManager implements MqttCallback {
                 JsonNode jsonMsg = mapper.readTree(msg.getBytes());
                 if (jsonMsg.get(Constants.MAC) != null) {
                     ObjectNode object = (ObjectNode) jsonMsg;
-                    String satMac = Objects.requireNonNull(GuiSingleton.getInstance().deviceTableData.stream()
+                    String satMac = GuiSingleton.getInstance().deviceTableData.stream()
                             .filter(device -> sat.getDeviceIp().equals(device.getDeviceIP()))
                             .findFirst()
-                            .orElse(null)).getMac();
+                            .map(GlowWormDevice::getMac)
+                            .orElse(null);
                     object.put(Constants.MAC, satMac);
                     return mapper.writeValueAsString(object);
                 } else {

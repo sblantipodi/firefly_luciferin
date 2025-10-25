@@ -295,7 +295,7 @@ public class CommonUtility {
     }
 
     /**
-     * Scale a number based on the OS scaling setting
+     * Scale down a number based on the OS scaling setting
      *
      * @param numberToScale number that should be scaled based on the OS scaling setting
      * @param scaleRatio    OS scaling
@@ -303,6 +303,17 @@ public class CommonUtility {
      */
     public static int scaleDownResolution(int numberToScale, int scaleRatio) {
         return (numberToScale * 100) / scaleRatio;
+    }
+
+    /**
+     * Scale up a number based on the OS scaling setting
+     *
+     * @param numberToScale number that should be scaled based on the OS scaling setting
+     * @param scaleRatio    OS scaling
+     * @return scaled number
+     */
+    public static int scaleUpResolution(int numberToScale, int scaleRatio) {
+        return (numberToScale * scaleRatio) / 100;
     }
 
     /**
@@ -891,6 +902,42 @@ public class CommonUtility {
      */
     public static void run() {
         log.info("Restarting capture");
+    }
+
+    /**
+     * Check is the zone zame is a known one or a custom one
+     *
+     * @param zoneName zone name
+     * @return true if it's a common zone name
+     */
+    public static boolean isCommonZone(String zoneName) {
+        boolean isKnownZone = false;
+        for (Enums.PossibleZones zone : Enums.PossibleZones.values()) {
+            if (zone.getBaseI18n().equals(zoneName)) {
+                isKnownZone = true;
+            }
+            if (zone.getI18n().equals(zoneName)) {
+                isKnownZone = true;
+            }
+        }
+        return isKnownZone;
+    }
+
+    /**
+     * Deep copy using Jackson
+     *
+     * @param object object to clone
+     * @param <T>    object type
+     * @return deep clone
+     * @throws RuntimeException if the serialization fails
+     */
+    public static <T> T deepClone(T object, Class<T> clazz) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return new ObjectMapper().readValue(mapper.writeValueAsString(object), clazz);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to deep clone object", e);
+        }
     }
 
 }

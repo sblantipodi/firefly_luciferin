@@ -213,7 +213,7 @@ public class SmoothingDialogController {
         config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());
         config.setSmoothingTargetFramerate(Enums.SmoothingTarget.findByExtendedVal(targetFramerate.getValue()).getSmoothingTargetValue());
         captureFramerate.setText(captureFramerateLabel(config));
-        targetFramerate.setDisable(Enums.Smoothing.findByFramerateAndAlpha(target, alpha) == Enums.Smoothing.DISABLED);
+        targetFramerate.setDisable((Enums.Smoothing.findByFramerateAndAlpha(target, alpha) == Enums.Smoothing.DISABLED) || target == 0);
         settingsController.miscTabController.evaluateSmoothing();
     }
 

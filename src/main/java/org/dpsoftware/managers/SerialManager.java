@@ -27,11 +27,15 @@ import com.fazecast.jSerialComm.SerialPortEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.dto.FirmwareConfigDto;
+import org.dpsoftware.managers.dto.TcpResponse;
+import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -41,7 +45,10 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Serial port utility
@@ -56,23 +63,32 @@ public class SerialManager {
      * Initialize Serial communication
      */
     public void initSerial() {
-        if (!MainSingleton.getInstance().config.isWirelessStream()) {
+        initSerial("", "");
+    }
+
+    /**
+     * Initialize Serial communication
+     */
+    public void initSerial(String portName, String baudrate) {
+        if (!MainSingleton.getInstance().config.isWirelessStream() || !portName.isEmpty()) {
             try {
                 SerialPort[] ports = SerialPort.getCommPorts();
                 int numberOfSerialDevices = 0;
                 if (ports != null && ports.length > 0) {
                     numberOfSerialDevices = ports.length;
                     for (SerialPort port : ports) {
-                        if (MainSingleton.getInstance().config.getOutputDevice().equals(port.getSystemPortName())) {
+                        if (MainSingleton.getInstance().config.getOutputDevice().equals(port.getSystemPortName())
+                                || (!portName.isEmpty() && portName.equals(port.getSystemPortName()))) {
                             MainSingleton.getInstance().serial = port;
                         }
                     }
-                    if (MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
+                    if (MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO) && portName.isEmpty()) {
                         MainSingleton.getInstance().serial = ports[0];
                     }
                 }
                 if (MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.openPort()) {
-                    MainSingleton.getInstance().serial.setComPortParameters(Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()), 8, 1, SerialPort.NO_PARITY);
+                    int baudrateToUse = baudrate.isEmpty() ? Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()) : Integer.parseInt(baudrate);
+                    MainSingleton.getInstance().serial.setComPortParameters(baudrateToUse, 8, 1, SerialPort.NO_PARITY);
                     MainSingleton.getInstance().serial.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, MainSingleton.getInstance().config.getTimeout(), MainSingleton.getInstance().config.getTimeout());
                     log.info("{}{}", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
                     GlowWormDevice gwDevice = new GlowWormDevice(); // Presuppone che tu abbia anche un costruttore vuoto
@@ -99,7 +115,7 @@ public class SerialManager {
                     gwDevice.setGpioClock(Constants.DASH);
                     GuiSingleton.getInstance().deviceTableData.add(gwDevice);
                     GuiManager guiManager = new GuiManager();
-                    if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
+                    if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO) && portName.isEmpty()) {
                         MainSingleton.getInstance().communicationError = true;
                         guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
                                 Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Constants.SERIAL_ERROR_TITLE, TrayIcon.MessageType.ERROR);
@@ -380,6 +396,8 @@ public class SerialManager {
                             glowWormDevice.setSbPin(inputLine.replace(Constants.SERIAL_LDR_SBPIN, ""));
                         } else if (inputLine.contains(Constants.SERIAL_GPIO_CLOCK)) {
                             glowWormDevice.setGpioClock(inputLine.replace(Constants.SERIAL_GPIO_CLOCK, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_IMPROV) && inputLine.contains(Constants.HTTP)) {
+                            programFirmwareAfterImprov(inputLine);
                         }
                     }
                 }
@@ -389,6 +407,55 @@ public class SerialManager {
         }
     }
 
+    /**
+     * This method programs firmware after the improv protocol has been triggered
+     *
+     * @param inputLine input received via Serial port
+     */
+    private void programFirmwareAfterImprov(String inputLine) {
+        Pattern p = Pattern.compile(Constants.REGEXP_URL);
+        Matcher m = p.matcher(inputLine);
+        if (m.find()) {
+            String ip = m.group(1);
+            log.info("IMPROV protocol, device connected: {}", ip);
+            closeSerial();
+            if (MainSingleton.getInstance().config != null) {
+                CommonUtility.sleepSeconds(10);
+                FirmwareConfigDto firmwareConfigDto = getFirmwareConfigDto();
+                TcpResponse tcpResponse = TcpClient.httpGet(CommonUtility.toJsonString(firmwareConfigDto), Constants.HTTP_SETTING, ip);
+                if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
+                    MainSingleton.getInstance().guiManager.pipelineManager.startCapturePipeline();
+                    log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
+                    MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
+                            CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                }
+            }
+        }
+    }
+
+    /**
+     * Firmware configuration
+     *
+     * @return Firmware configuration
+     */
+    private FirmwareConfigDto getFirmwareConfigDto() {
+        Configuration config = MainSingleton.getInstance().config;
+        FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+        String deviceNameForAuto = "GW_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        firmwareConfigDto.setDeviceName(Constants.SERIAL_PORT_AUTO.equals(config.getOutputDevice()) ? deviceNameForAuto : config.getOutputDevice());
+        firmwareConfigDto.setMicrocontrollerIP("");
+        firmwareConfigDto.setMqttCheckbox(config.isMqttEnable());
+        firmwareConfigDto.setSsid("");
+        firmwareConfigDto.setWifipwd("");
+        if (config.isMqttEnable()) {
+            firmwareConfigDto.setMqttIP(config.getMqttServer().substring(0, config.getMqttServer().lastIndexOf(":")).replace(Constants.DEFAULT_MQTT_PROTOCOL, ""));
+            firmwareConfigDto.setMqttPort(config.getMqttServer().substring(config.getMqttServer().lastIndexOf(":") + 1));
+            firmwareConfigDto.setMqttTopic(config.getMqttTopic().equals(Constants.TOPIC_DEFAULT_MQTT) ? Constants.MQTT_BASE_TOPIC : config.getMqttTopic());
+            firmwareConfigDto.setMqttuser(config.getMqttUsername());
+            firmwareConfigDto.setMqttpass(config.getMqttPwd());
+        }
+        return firmwareConfigDto;
+    }
 
     /**
      * Return the list of connected serial devices, available or not
@@ -421,6 +488,27 @@ public class SerialManager {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Close serial communication and remove all attached listeners
+     */
+    public void closeSerial() {
+        log.debug("Closing serial connection");
+        if (MainSingleton.getInstance().output != null) {
+            try {
+                MainSingleton.getInstance().output.flush();
+                MainSingleton.getInstance().output.close();
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        }
+        if (MainSingleton.getInstance().serial != null) {
+            MainSingleton.getInstance().serial.removeDataListener();
+            MainSingleton.getInstance().serial.closePort();
+        }
+        MainSingleton.getInstance().output = null;
+        MainSingleton.getInstance().serial = null;
     }
 
 }

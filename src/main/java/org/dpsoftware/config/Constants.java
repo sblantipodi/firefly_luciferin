@@ -86,6 +86,7 @@ public class Constants {
     public static final String LINUX_ARROW_LEFT = "←";
     public static final String CHECK = "✔";
     public static final String DIALOG = "☰";
+    public static final String SHARP = "#";
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
     public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE = "4.0.3";
@@ -113,6 +114,7 @@ public class Constants {
     public static final String LINUX_DESKTOP_FILE_LOCAL = "/.local/share/applications/fireflyluciferin-FireflyLuciferin.desktop";
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
     public static final String HOME_PATH = "user.home";
+    public static final String LUCIFERIN_LOG_LEVEL = "LUCIFERIN_LOG_LEVEL";
     public static final String XDG_HOME = "XDG_CONFIG_HOME";
     public static final String DOCUMENTS_FOLDER = "Documents";
     public static final String OPENJFX_PATH = ".openjfx";
@@ -143,6 +145,7 @@ public class Constants {
     public static final String MSG_BUNDLE = "messagebundle";
     // Resources
     public static final String IMG_PATH = "/org/dpsoftware/gui/img/";
+    public static final String GUI_RES_PATH = "/org/dpsoftware/gui/";
     public static final String IMG_PATH_UPDATE = "/org/dpsoftware/gui/img/update/";
     public static final String IMAGE_TRAY_STOP = "/org/dpsoftware/gui/img/luciferin_logo.png";
     public static final String IMAGE_CONTROL_GREY = "/org/dpsoftware/gui/img/luciferin_logo_grey.png";
@@ -179,6 +182,7 @@ public class Constants {
     public static final String FXML_INFO_CUSTOM_BAR = "infoCustomBar";
     public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
     public static final String FXML_SATELLITES_DIALOG = "satellitesDialog";
+    public static final String FXML_IMPROV_DIALOG = "improvProtocolDialog";
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
     public static final String FXML_PROFILE_DIALOG = "profileDialog";
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
@@ -199,6 +203,7 @@ public class Constants {
     public static final int MQTT_CONN_TIMEOUT = 2;
     public static final int MAX_INFLIGHT = 1000;
     public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
+    public static final String DEFAULT_MQTT_PROTOCOL = "tcp://";
     public static final String DEFAULT_MQTT_PORT = "1883";
     public static final String TOPIC_DEFAULT_MQTT = "lights/glowwormluciferin/set";
     public static final String TOPIC_DEFAULT_MQTT_STATE = "lights/glowwormluciferin";
@@ -353,6 +358,8 @@ public class Constants {
     public static final String DEVICEUPGRADE_SUCCESS_CDC = "device.upgrade.success.cdc";
     public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
     public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
+    public static final String FIRMWARE_PROVISION_NOTIFY = "device.provision.error";
+    public static final String FIRMWARE_PROVISION_NOTIFY_HEADER = "device.provision.error.header";
     public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
     public static final String CANT_UPGRADE_TOO_OLD = "cant.upgrade.too.old";
     public static final String MANUAL_UPGRADE = "manual.upgrade";
@@ -367,6 +374,8 @@ public class Constants {
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
     public static final String LINUX_WIKI_URL = "https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#nvidia-cuda";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
+    public static final String SAT_ZONE_ERROR_TITLE = "satellite.zone.error.title";
+    public static final String SAT_ZONE_ERROR = "satellite.zone.error";
 
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
@@ -378,6 +387,7 @@ public class Constants {
     public static final String GAMMA_DEFAULT = "2.2";
     public static final String USB_DEVICE = "USB device";
     public static final String DASH = "-";
+    public static final String ELLIPSIS = "…";
     public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
     public static final String UPDATE_FILENAME_LIGHT = "GlowWormLuciferinLIGHT_board_firmware.bin";
     public static final String SERIAL_VERSION = "ver:";
@@ -397,6 +407,8 @@ public class Constants {
     public static final String SERIAL_LDR_SBPIN = "sbPin:";
     public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
     public static final String SERIAL_GPIO_CLOCK = "gpioClock:";
+    public static final String SERIAL_IMPROV = "IMPROV";
+    public static final byte[] IMPROV_HEADER = {'I', 'M', 'P', 'R', 'O', 'V'};
     public static final String NO_DEVICE_FOUND = "no.device.found";
     public static final int FAKE_GUI_TRAY_ICON = -100;
     public static final int PRIMARY_DISPLAY_TOLERANCE = 100;
@@ -533,6 +545,11 @@ public class Constants {
     public static final String TOOLTIP_PROCESS2 = "tooltip.profile.process2";
     public static final String TOOLTIP_PROCESS3 = "tooltip.profile.process3";
     public static final String TOOLTIP_ENABLEFULLSCREENDETECTION = "tooltip.profile.enablefullscreen";
+    public static final String TOOLTIP_IMPROV_SSID = "fxml.mqtttab.improv.ssid";
+    public static final String TOOLTIP_IMPROV_PWD = "fxml.mqtttab.improv.pwd";
+    public static final String TOOLTIP_IMPROV_COM = "fxml.mqtttab.improv.comport";
+    public static final String TOOLTIP_IMPROV_BAUD = "fxml.mqtttab.improv.baudrate";
+    public static final String TOOLTIP_IMPROV_CONTEXT = "fxml.mqtttab.improv.context";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
@@ -567,6 +584,7 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
     public static final String BYTE_ORDER_RGB = "format=xRGB";
+    public static final String RGB = "RGB Matrix";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
     public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
     public static final String GSTREAMER_SCREENSHOT = "gstreamer_screenshot.bmp";
@@ -588,13 +606,18 @@ public class Constants {
     public static final int TRAY_MENU_FONT_SIZE = 10;
     public static final String TRAY_MENU_FONT_TYPE = "verdana";
     public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
-    public static final int BEFORE_AFTER_TEXT_SIZE = 100;
     public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
     public static final String WHITE_LABEL_CORRECTION = "fxml.misctab.whitetemp";
     public static final String TC_BEFORE_TEXT = "tc.before.text";
     public static final String TC_AFTER_TEXT = "tc.after.text";
     public static final String TC_AFTER_TEXT_RGBW = "tc.after.text.rgwb";
     public static final String TC_FULL_SATURATION = "tc.full.saturation";
+    public static final String CANVAS_ZONE_TITLE = "canvas.dialog.zone.title";
+    public static final String CANVAS_ZONE_DESCRIPTION = "canvas.dialog.zone.description";
+    public static final String CANVAS_ZONE_TEXT = "canvas.dialog.zone.text.input";
+    public static final String CANVAS_HELPER = "canvas.helper";
+    public static final String CANVAS_ZONE_EMPTY = "canvas.zone.empty";
+    public static final String CANVAS_ZONE_EMPTY_TITLE = "canvas.zone.empty.title";
     // Message server
     public static final String MSG_SERVER_HOST = "127.0.0.1";
     public static final int MSG_SERVER_PORT = 5555;
@@ -670,11 +693,9 @@ public class Constants {
     //Style sheets
     public static final String CSS_LINUX = "css/linux.css";
     public static final String CSS_WEB_VIEW = "css/webview.css";
-    public static final String CSS_THEME_DARK = "css/theme-dark.css";
-    public static final String CSS_THEME_DARK_BLUE = "css/theme-dark-blue.css";
-    public static final String CSS_THEME_DARK_CYAN = "css/theme-dark-cyan.css";
-    public static final String CSS_THEME_DARK_ORANGE = "css/theme-dark-orange.css";
-    public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
+    public static final String CSS_DARK = "DARK";
+    public static final String CSS_LIGHT = "LIGHT";
+    public static final String BASE_CSS = "css/base-theme.css";
     public static final String CSS_STYLE_RED_BUTTON = "redButton";
     public static final String CSS_STYLE_MASTER_HUE = "masterHueTestImage";
     public static final String CSS_STYLE_GREY_HUE_VERTICAL = "greyHueBar";
@@ -700,6 +721,24 @@ public class Constants {
     public static final String TC_NO_BOLD_TEXT = "-fx-font-weight: normal;";
     public static final String CSS_UNDERLINE = "-fx-underline: true;";
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
+    public static final String CSS_TRAY_MENU_BORDER = "tray_menu_border";
+    public static final String CSS_TRAY_ITEM_BORDER = "tray_menu_item_border";
+    public static final String CSS_TRAY_ITEM_TEXT = "tray_menu_item_text";
+    public static final String CSS_TRAY_ITEM_SELECTIONBACKGROUND = "tray_menu_item_selectionbackground";
+    public static final String CSS_TRAY_ITEM_SELECTIONBACKGROUND_KEY = "MenuItem.selectionBackground";
+    public static final String CSS_TRAY_ITEM_SELECTIONFOREGROUND = "tray_menu_item_selectionforeground";
+    public static final String CSS_TRAY_ITEM_SELECTIONFOREGROUND_KEY = "MenuItem.selectionForeground";
+    public static final String CSS_TRAY_ITEM_FOREGROUND = "tray_menu_item_foreground";
+    public static final String CSS_TRAY_ITEM_FOREGROUND_KEY = "MenuItem.foreground";
+    public static final String CSS_TRAY_FOREGROUND = "tray_menu_foreground";
+    public static final String CSS_TRAY_FOREGROUND_KEY = "Menu.foreground";
+    public static final String CSS_TRAY_SELECTIONBACKGROUND = "tray_menu_selectionbackground";
+    public static final String CSS_TRAY_SELECTIONBACKGROUND_KEY = "Menu.selectionBackground";
+    public static final String CSS_TRAY_SELECTIONFOREGROUND = "tray_menu_selectionforeground";
+    public static final String CSS_TRAY_SELECTIONFOREGROUND_KEY = "Menu.selectionForeground";
+
+
+    public static final String CSS_COLOR_REGEX = "\\.([a-zA-Z0-9_-]+)\\s*\\{[^#]*#?([0-9a-fA-F]{6,8})[^}]*}";
     // Windows Registry and native commands
     public static final String NIGHT_LIGHT_KEY_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
     public static final String NIGHT_LIGHT_VALUE_NAME = "Data";
@@ -726,6 +765,7 @@ public class Constants {
     public static final int CMD_WAIT_DELAY = 10000;
     public static final int PROFILE_THREAD_DELAY = 30000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
+    public static String REGEXP_URL = "https?://(\\d{1,3}(?:\\.\\d{1,3}){3})";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};
