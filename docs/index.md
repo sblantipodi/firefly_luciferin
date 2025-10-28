@@ -64,6 +64,7 @@ a {
 - Fixed an issue where Firefly Luciferin could not connect to a new output device after changing
   its [IP address](https://github.com/sblantipodi/firefly_luciferin/wiki/Static-IP-and-auto-discovery) without manually
   restarting the application.
+- Introduced an AI-powered moderator for Issues and Pull Requests.
 
 As always, users running a previous version of Luciferin can use the automatic update feature for both the PC software
 and the firmware.
