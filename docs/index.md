@@ -31,7 +31,7 @@ a {
     - Resize LED zones.
     - Disable individual LEDs.
     - Create new custom LED zones and link them
-      to [satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites).
+      to [satellites for surround lighting](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites).
     - Custom LED layouts are now supported
       within [profiles](https://github.com/sblantipodi/firefly_luciferin/wiki/Profiles), allowing Firefly Luciferin to
       automatically switch layouts based on the active app or game.
