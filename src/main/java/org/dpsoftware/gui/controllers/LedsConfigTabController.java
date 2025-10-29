@@ -466,7 +466,7 @@ public class LedsConfigTabController {
             } else if (MainSingleton.getInstance().config.getGroupBy() != groupBy.getValue()) {
                 restartCapture = true;
             }
-            if (restartCapture) {
+            if (restartCapture && MainSingleton.getInstance().RUNNING) {
                 PipelineManager.restartCapture(() -> log.info("Restarting capture due to a change in the LEDs configuration"));
             }
         }

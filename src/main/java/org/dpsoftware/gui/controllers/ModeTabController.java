@@ -289,7 +289,7 @@ public class ModeTabController {
             }
         });
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        if (currentConfig.isWirelessStream() && currentConfig.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)
+        if (currentConfig.isWirelessStream() && Constants.SERIAL_PORT_AUTO.equals(currentConfig.getOutputDevice())
                 && ((currentConfig.getMultiMonitor() == 1) || (currentConfig.isMultiScreenSingleDevice()))) {
             if (NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
                 serialPort.setValue(MainSingleton.getInstance().config.getStaticGlowWormIp());
@@ -459,13 +459,14 @@ public class ModeTabController {
      */
     @FXML
     public void save(Configuration config) {
+        serialPort.commitValue();
         config.setFullFirmware(firmTypeFull.isSelected());
         if (MainSingleton.getInstance() != null && MainSingleton.getInstance().config != null) {
             config.setScreenCastRestoreToken(MainSingleton.getInstance().config.getScreenCastRestoreToken());
         }
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         if (NetworkManager.isValidIp(serialPort.getValue())) {
-            config.setOutputDevice(Constants.SERIAL_PORT_AUTO);
+            config.setOutputDevice(Constants.DASH);
             config.setStaticGlowWormIp(serialPort.getValue());
         } else {
             config.setOutputDevice(serialPort.getValue());

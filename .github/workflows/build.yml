@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '24'
+          java-version: '25'
           architecture: x64
       - name: Install submodules
         run: |
@@ -43,7 +43,7 @@ jobs:
           mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash    
+        shell: bash
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
       - name: Install WiX
@@ -85,7 +85,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '24'
+          java-version: '25'
           architecture: x64
       - id: get-id
         run: |

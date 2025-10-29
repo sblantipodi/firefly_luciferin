@@ -39,6 +39,14 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 
@@ -56,17 +64,69 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     JMenu aspectRatioSubMenu;
     ActionListener menuListener;
     int popupMenuHeight;
+    Map<String, Color> css;
 
     /**
      * Constructor
      */
     public TrayIconAwt() {
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
+        css = loadColors(theme.getCssPath());
         setMenuItemStyle(null, null, null);
         GuiSingleton.getInstance().popupMenu = new JPopupMenu();
-        GuiSingleton.getInstance().popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+        GuiSingleton.getInstance().popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, css.get(Constants.CSS_TRAY_MENU_BORDER)));
         aspectRatioSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.ASPECT_RATIO) + " ");
         profilesSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.PROFILES) + " ");
         initMenuListener();
+    }
+
+    /**
+     * Load css values into a map
+     *
+     * @param cssPath css path
+     * @return map of css properties
+     */
+    public static Map<String, Color> loadColors(String cssPath) {
+        Map<String, Color> colors = new HashMap<>();
+        try (InputStream is = TrayIconAwt.class.getResourceAsStream(Constants.GUI_RES_PATH + cssPath)) {
+            if (is == null) {
+                throw new RuntimeException("CSS non found: " + cssPath);
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+            // Regex that captures classname and hex color
+            Pattern pattern = Pattern.compile(Constants.CSS_COLOR_REGEX);
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher m = pattern.matcher(line);
+                if (m.find()) {
+                    String key = m.group(1).trim();
+                    String hex = m.group(2).trim();
+                    if (!hex.startsWith(Constants.SHARP)) {
+                        hex = Constants.SHARP + hex;
+                    }
+                    Color color = parseColor(hex);
+                    colors.put(key, color);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return colors;
+    }
+
+    /**
+     * Parse hex colors
+     *
+     * @param hex color
+     * @return hex color from css
+     */
+    private static Color parseColor(String hex) {
+        hex = hex.replace(Constants.SHARP, "");
+        int r = Integer.parseInt(hex.substring(0, 2), 16);
+        int g = Integer.parseInt(hex.substring(2, 4), 16);
+        int b = Integer.parseInt(hex.substring(4, 6), 16);
+        int a = (hex.length() == 8) ? Integer.parseInt(hex.substring(6, 8), 16) : 255;
+        return new Color(r, g, b, a);
     }
 
     /**
@@ -205,9 +265,9 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         }
         addSeparator();
         populateAspectRatio();
-        aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+        aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, css.get(Constants.CSS_TRAY_MENU_BORDER)));
         populateProfiles();
-        profilesSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+        profilesSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, css.get(Constants.CSS_TRAY_MENU_BORDER)));
         GuiSingleton.getInstance().popupMenu.add(aspectRatioSubMenu);
         GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
@@ -339,10 +399,10 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         Font f = new Font(Constants.TRAY_MENU_FONT_TYPE, Font.BOLD, Constants.TRAY_MENU_FONT_SIZE);
         jMenuItem.setFont(f);
         setMenuItemStyle(menuLabel, jMenuItem, menuItemText);
-        jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 7, Color.GRAY));
+        jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 7, css.get(Constants.CSS_TRAY_ITEM_BORDER)));
         jMenuItem.setBorderPainted(false);
         jMenuItem.addActionListener(menuListener);
-        jMenuItem.setBackground(getBackgroundColor());
+        jMenuItem.setBackground(css.get("tray_background"));
         return jMenuItem;
     }
 
@@ -360,28 +420,10 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         Font f = new Font(Constants.TRAY_MENU_FONT_TYPE, Font.BOLD, Constants.TRAY_MENU_FONT_SIZE);
         menu.setFont(f);
         setMenuItemStyle(menuLabel, menu, menuItemText);
-        menu.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 7, Color.GRAY));
+        menu.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 7, css.get(Constants.CSS_TRAY_ITEM_BORDER)));
         menu.setBorderPainted(false);
-        menu.setBackground(getBackgroundColor());
+        menu.setBackground(css.get("tray_background"));
         return menu;
-    }
-
-    /**
-     * Get color to use for the menu background
-     *
-     * @return color based on the theme in use
-     */
-    private Color getBackgroundColor() {
-        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
-        Color color = Color.WHITE;
-        switch (theme) {
-            case DARK_THEME_CYAN -> color = new Color(80, 89, 96);
-            case DARK_BLUE_THEME -> color = new Color(46, 61, 88);
-            case DARK_THEME_ORANGE -> color = new Color(72, 72, 72);
-            case DARK_THEME_PURPLE -> color = new Color(105, 105, 130);
-            case CLASSIC -> color = new Color(244, 244, 244);
-        }
-        return color;
     }
 
     /**
@@ -390,8 +432,8 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     private void addSeparator() {
         JSeparator s = new JSeparator();
         s.setOrientation(JSeparator.HORIZONTAL);
-        s.setBackground(new Color(215, 215, 215));
-        s.setForeground(new Color(215, 215, 215));
+        s.setBackground(css.get("tray_separator"));
+        s.setForeground(css.get("tray_separator"));
         s.setBorder(new EmptyBorder(0, 0, 0, 0));
         GuiSingleton.getInstance().popupMenu.add(s);
     }
@@ -404,58 +446,21 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      * @param menuItemText used to color text when aspect ratio is set to Auto
      */
     private void setMenuItemStyle(String menuLabel, JMenuItem jMenuItem, String menuItemText) {
-        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
-        switch (theme) {
-            case DARK_THEME_CYAN -> {
-                UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
-                UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
-                UIManager.put("MenuItem.foreground", new Color(211, 211, 211));
-                UIManager.put("Menu.foreground", new Color(211, 211, 211));
-                UIManager.put("Menu.selectionBackground", new Color(0, 153, 255));
-                UIManager.put("Menu.selectionForeground", new Color(211, 211, 211));
-            }
-            case DARK_BLUE_THEME -> {
-                UIManager.put("MenuItem.selectionBackground", new Color(29, 168, 255));
-                UIManager.put("MenuItem.selectionForeground", Color.WHITE);
-                UIManager.put("MenuItem.foreground", Color.WHITE);
-                UIManager.put("Menu.foreground", Color.WHITE);
-                UIManager.put("Menu.selectionBackground", new Color(29, 168, 255));
-                UIManager.put("Menu.selectionForeground", Color.WHITE);
-            }
-            case DARK_THEME_ORANGE -> {
-                UIManager.put("MenuItem.selectionBackground", Color.ORANGE);
-                UIManager.put("MenuItem.selectionForeground", new Color(101, 101, 101));
-                UIManager.put("MenuItem.foreground", new Color(211, 211, 211));
-                UIManager.put("Menu.foreground", new Color(211, 211, 211));
-                UIManager.put("Menu.selectionBackground", Color.ORANGE);
-                UIManager.put("Menu.selectionForeground", new Color(101, 101, 101));
-            }
-            case DARK_THEME_PURPLE -> {
-                UIManager.put("MenuItem.selectionBackground", new Color(206, 157, 255));
-                UIManager.put("MenuItem.selectionForeground", Color.WHITE);
-                UIManager.put("MenuItem.foreground", Color.WHITE);
-                UIManager.put("Menu.foreground", Color.WHITE);
-                UIManager.put("Menu.selectionBackground", new Color(206, 157, 255));
-                UIManager.put("Menu.selectionForeground", Color.WHITE);
-            }
-            case CLASSIC -> {
-                UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
-                UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
-                UIManager.put("MenuItem.foreground", new Color(50, 50, 50));
-                UIManager.put("Menu.foreground", new Color(50, 50, 50));
-                UIManager.put("Menu.selectionBackground", new Color(0, 153, 255));
-                UIManager.put("Menu.selectionForeground", new Color(211, 211, 211));
-            }
-        }
+        UIManager.put(Constants.CSS_TRAY_ITEM_SELECTIONBACKGROUND_KEY, css.get(Constants.CSS_TRAY_ITEM_SELECTIONBACKGROUND));
+        UIManager.put(Constants.CSS_TRAY_ITEM_SELECTIONFOREGROUND_KEY, css.get(Constants.CSS_TRAY_ITEM_SELECTIONFOREGROUND));
+        UIManager.put(Constants.CSS_TRAY_ITEM_FOREGROUND_KEY, css.get(Constants.CSS_TRAY_ITEM_FOREGROUND));
+        UIManager.put(Constants.CSS_TRAY_FOREGROUND_KEY, css.get(Constants.CSS_TRAY_FOREGROUND));
+        UIManager.put(Constants.CSS_TRAY_SELECTIONBACKGROUND_KEY, css.get(Constants.CSS_TRAY_SELECTIONBACKGROUND));
+        UIManager.put(Constants.CSS_TRAY_SELECTIONFOREGROUND_KEY, css.get(Constants.CSS_TRAY_SELECTIONFOREGROUND));
         if (menuLabel != null && menuItemText != null && jMenuItem != null) {
             if ((menuItemText.equals(MainSingleton.getInstance().config.getDefaultLedMatrix()) && !MainSingleton.getInstance().config.isAutoDetectBlackBars())
                     || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && MainSingleton.getInstance().config.isAutoDetectBlackBars())) {
-                jMenuItem.setForeground(new Color(0, 153, 255));
+                jMenuItem.setForeground(css.get(Constants.CSS_TRAY_ITEM_TEXT));
             }
             if (menuLabel.equals(MainSingleton.getInstance().profileArg)
                     || (menuLabel.equals(CommonUtility.getWord(Constants.DEFAULT))
                     && MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT))) {
-                jMenuItem.setForeground(new Color(0, 153, 255));
+                jMenuItem.setForeground(css.get(Constants.CSS_TRAY_ITEM_TEXT));
             }
         }
     }

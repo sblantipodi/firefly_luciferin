@@ -30,19 +30,25 @@ import javafx.scene.control.Label;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.TestCanvas;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -95,6 +101,8 @@ public class ColorCorrectionDialogController {
     public ComboBox<String> latencyTestSpeed;
     @FXML
     public Button settingsBtn;
+    @FXML
+    public Button tooltipBtn;
     TestCanvas testCanvas;
     boolean useHalfSaturation = false;
     int latencyTestMilliseconds = 1000;
@@ -170,9 +178,11 @@ public class ColorCorrectionDialogController {
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (75%)");
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (50%)");
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (25%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (5%)");
+            halfFullSaturation.getItems().add(Constants.RGB);
             halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (100%)");
             halfFullSaturation.valueProperty().addListener((_, _, _) ->
-                    testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex()));
+                    testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex()));
             for (int i = 1; i <= 10; i++) {
                 latencyTestSpeed.getItems().add(i + "x");
             }
@@ -206,7 +216,7 @@ public class ColorCorrectionDialogController {
         } else if (Color.MAGENTA.equals(GuiSingleton.getInstance().selectedChannel)) {
             GuiSingleton.getInstance().hueTestImageValue += Enums.ColorEnum.MAGENTA.getVal();
         }
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
     }
 
     /**
@@ -324,7 +334,7 @@ public class ColorCorrectionDialogController {
         settingsController.miscTabController.whiteTemp.setValue((int) whiteTemp.getValue());
         MainSingleton.getInstance().config.setWhiteTemperature((int) whiteTemp.getValue());
         settingsController.miscTabController.turnOnLEDs(MainSingleton.getInstance().config, false);
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
         hueMonitorSlider.setValue(0);
     }
@@ -339,7 +349,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.GRAY;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_GREY_HUE_VERTICAL);
     }
 
@@ -355,7 +365,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.RED;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_RED_HUE_VERTICAL);
     }
 
@@ -371,7 +381,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.YELLOW;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_YELLOW_HUE_VERTICAL);
     }
 
@@ -387,7 +397,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.GREEN;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_GREEN_HUE_VERTICAL);
     }
 
@@ -403,7 +413,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.CYAN;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_CYAN_HUE_VERTICAL);
     }
 
@@ -419,7 +429,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.BLUE;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_BLUE_HUE_VERTICAL);
     }
 
@@ -435,7 +445,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.MAGENTA;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_MAGENTA_HUE_VERTICAL);
     }
 
@@ -450,7 +460,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.BLACK;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
     }
 
@@ -570,6 +580,18 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Update led config param
+     */
+    public void updateLedConfigParam() {
+        settingsController.ledsConfigTabController.topLed.setText(String.valueOf(MainSingleton.getInstance().config.getTopLed()));
+        settingsController.ledsConfigTabController.rightLed.setText(String.valueOf(MainSingleton.getInstance().config.getRightLed()));
+        settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(MainSingleton.getInstance().config.getBottomRightLed()));
+        settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(MainSingleton.getInstance().config.getBottomRowLed()));
+        settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(MainSingleton.getInstance().config.getBottomLeftLed()));
+        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(MainSingleton.getInstance().config.getLeftLed()));
+    }
+
+    /**
      * Save and close color correction dialog
      *
      * @param e event
@@ -578,9 +600,39 @@ public class ColorCorrectionDialogController {
     public void saveAndClose(InputEvent e) {
         stopLatencyTest();
         settingsController.injectColorCorrectionController(this);
+        copyCustomZonesToOtherRatios();
         settingsController.save(e);
+        Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
+        settingsStage.setAlwaysOnTop(false);
         testCanvas.hideCanvas();
         CommonUtility.closeCurrentStage(e);
+    }
+
+    /**
+     * Copy custom zones to other ratios
+     */
+    private void copyCustomZonesToOtherRatios() {
+        Configuration config = MainSingleton.getInstance().config;
+        Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix = config.getLedMatrix();
+        Enums.AspectRatio currentAspectRatio = LocalizedEnum.fromBaseStr(Enums.AspectRatio.class, config.getDefaultLedMatrix());
+        Map<Integer, LEDCoordinate> sourceMap = ledMatrix.get(currentAspectRatio.getBaseI18n());
+        if (sourceMap == null) return;
+        for (Enums.AspectRatio targetAspect : Enums.AspectRatio.values()) {
+            // Skip if it's the same aspect ratio as the source
+            if (targetAspect == currentAspectRatio) continue;
+            Map<Integer, LEDCoordinate> targetMap = ledMatrix.get(targetAspect.getBaseI18n());
+            if (targetMap == null) continue;
+            // Copy all custom zones from the current aspect ratio to the others
+            for (Map.Entry<Integer, LEDCoordinate> entry : sourceMap.entrySet()) {
+                LEDCoordinate led = entry.getValue();
+                // Skip if it's a common zone (shared across all aspect ratios)
+                if (!CommonUtility.isCommonZone(led.getZone())) {
+                    // Deep clone to avoid shared object references
+                    LEDCoordinate copy = CommonUtility.deepClone(led, LEDCoordinate.class);
+                    targetMap.put(entry.getKey(), copy);
+                }
+            }
+        }
     }
 
     /**
@@ -642,8 +694,24 @@ public class ColorCorrectionDialogController {
      * Show settings dialog
      */
     @FXML
+    public void showTooltip() {
+        if (!testCanvas.isTooltipVisible()) {
+            testCanvas.setTooltipVisible(true);
+            testCanvas.drawTooltip(testCanvas.getGc());
+        } else {
+            testCanvas.setTooltipVisible(false);
+            testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
+        }
+    }
+
+    /**
+     * Show settings dialog
+     */
+    @FXML
     public void showSettings() {
         settingsController.injectColorCorrectionController(this);
+        Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
+        settingsStage.setAlwaysOnTop(true);
         MainSingleton.getInstance().guiManager.showSettingsDialog(false);
     }
 
@@ -706,6 +774,16 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void reset() {
+        Configuration c = CommonUtility.deepClone(testCanvas.getConfigHistory().getFirst(), Configuration.class);
+        setConfig(c);
+        int oldLedNumber = MainSingleton.getInstance().ledNumber;
+        resetLedMatrix();
+        if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
+            if (MainSingleton.getInstance().RUNNING) {
+                PipelineManager.restartCapture(CommonUtility::run);
+            }
+        }
+        testCanvas.getInteractionHandler().getSelectedLeds().clear();
         useHalfSaturation = false;
         halfFullSaturation.setValue(halfFullSaturation.getItems().getFirst());
         resetSaturationValues();
@@ -718,6 +796,44 @@ public class ColorCorrectionDialogController {
         GuiSingleton.getInstance().selectedChannel = Color.BLACK;
         applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
         manageHueSliderValue();
+    }
+
+    /**
+     * Back button for test canvas, using history
+     */
+    public void back() throws CloneNotSupportedException {
+        int position = testCanvas.getConfigHistory().size() - testCanvas.getConfigHistoryIdx();
+        Configuration c = CommonUtility.deepClone(testCanvas.getConfigHistory().get(position), Configuration.class);
+        setConfig(c);
+        FireflyLuciferin.setLedNumber(c.getDefaultLedMatrix());
+    }
+
+    /**
+     * Set new config
+     *
+     * @param c cloned config
+     */
+    private void setConfig(Configuration c) {
+        MainSingleton.getInstance().setConfig(c);
+        settingsController.ledsConfigTabController.topLed.setText(String.valueOf(c.getTopLed()));
+        settingsController.ledsConfigTabController.rightLed.setText(String.valueOf(c.getRightLed()));
+        settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(c.getBottomRightLed()));
+        settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(c.getBottomRowLed()));
+        settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(c.getBottomLeftLed()));
+        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getLeftLed()));
+        settingsController.ledsConfigTabController.splitBottomMargin.setValue(String.valueOf(c.getSplitBottomMargin()));
+        settingsController.ledsConfigTabController.gapTypeTopBottom.setValue(String.valueOf(c.getGapTypeTopBottom()));
+        settingsController.ledsConfigTabController.gapTypeSide.setValue(String.valueOf(c.getGapTypeSide()));
+        settingsController.ledsConfigTabController.grabberSide.setValue(String.valueOf(c.getGrabberSide()));
+        settingsController.ledsConfigTabController.grabberAreaTopBottom.setValue(String.valueOf(c.getGrabberAreaTopBottom()));
+        settingsController.ledsConfigTabController.ledStartOffset.setValue(String.valueOf(c.getLedStartOffset()));
+    }
+
+    /**
+     * led matrix all sliders
+     */
+    public void resetLedMatrix() {
+        settingsController.resetLedMatrix();
     }
 
     /**
@@ -787,8 +903,13 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void close(InputEvent e) {
+        Configuration c = CommonUtility.deepClone(testCanvas.getConfigHistory().getFirst(), Configuration.class);
+        setConfig(c);
+        FireflyLuciferin.setLedNumber(c.getDefaultLedMatrix());
         stopLatencyTest();
         testCanvas.hideCanvas();
+        Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
+        settingsStage.setAlwaysOnTop(false);
         CommonUtility.closeCurrentStage(e);
     }
 
