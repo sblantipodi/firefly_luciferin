@@ -74,13 +74,31 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.24.5" date="2025-10-21">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.24.5</url>
+        <release version="2.25.6" date="2025-12-05">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.25.6</url>
             <description>
-                <p>Hotfix release: This issue affects only Firefly Luciferin; no firmware update is required.</p>
-                <p>The application has been reverted to Java 24 due to compatibility issues: Project cannot build on
-                    Linux with Java 25. Some users experienced startup crashes on Windows caused by permission issues
-                    with temporary native files.
+                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.23.1).</p>
+                <p>Manual LED Layout Configuration: In addition to the automatic LED layout setup, you can now manually
+                    configure your LED layout directly from the test image.
+                </p>
+                <p>Firefly Luciferin can provision the firmware directly, letting you configure WiFi and MQTT without
+                    touching the browser.
+                </p>
+                <p>New Themes: Added new visual themes:</p>
+                <p>Enhanced Log Level Configurability: You can now easily customize the application’s default log level
+                    by setting the LUCIFERIN_LOG_LEVEL environment variable.
+                </p>
+                <p>Fixed an issue preventing satellites from being added by IP if they were not reachable on the
+                    network.
+                </p>
+                <p>Fixed errors occurring when satellites were configured but turned off.</p>
+                <p>Fixed an issue where Firefly Luciferin could not connect to a new output device after changing its IP
+                    address without manually restarting the application.
+                </p>
+                <p>Introduced an AI-powered moderator for Issues and Pull Requests.</p>
+                <p>Switched back to JDK25.</p>
+                <p>As always, users running a previous version of Luciferin can use the automatic update feature for
+                    both the PC software and the firmware.
                 </p>
             </description>
         </release>

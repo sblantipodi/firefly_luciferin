@@ -22,6 +22,7 @@ a {
 
 ### In this release
 
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.23.1).
 - **Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can
   now [manually configure your LED layout](https://github.com/sblantipodi/firefly_luciferin/wiki/Test-image-and-latency-test)
   directly from the test image. Closes [#349](https://github.com/sblantipodi/firefly_luciferin/issues/349)
@@ -30,11 +31,11 @@ a {
     - Drag & drop LED zones to reposition them.
     - Resize LED zones.
     - Disable individual LEDs.
-    - Create new custom LED zones and link them
-      to [satellites for surround lighting](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites).
-    - Custom LED layouts are now supported
-      within [profiles](https://github.com/sblantipodi/firefly_luciferin/wiki/Profiles), allowing Firefly Luciferin to
-      automatically switch layouts based on the active app or game.
+  - Create new custom LED zones and link them
+    to [satellites for surround lighting](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites).
+  - Custom LED layouts are now supported
+    within [profiles](https://github.com/sblantipodi/firefly_luciferin/wiki/Profiles), allowing Firefly Luciferin to
+    automatically switch layouts based on the active app or game.
 - **Improved Device Provisioning:** You don’t always need
   the [web installer](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#configure-wifi-ethernet-mqtt-on-glow-worm-luciferin-full-firmware-using-the-web-installer)
   to set up your device.
@@ -65,6 +66,7 @@ a {
   its [IP address](https://github.com/sblantipodi/firefly_luciferin/wiki/Static-IP-and-auto-discovery) without manually
   restarting the application.
 - Introduced an AI-powered moderator for Issues and Pull Requests.
+- Switched back to JDK25.
 
 As always, users running a previous version of Luciferin can use the automatic update feature for both the PC software
 and the firmware.
