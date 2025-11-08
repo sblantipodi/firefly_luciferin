@@ -11,3 +11,8 @@ updates:
     schedule:
       interval: daily
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "*"
+        # Regex to exclude non stable version
+        versions:
+          - "/(?i)(alpha|beta|rc|m|preview|snapshot)/"
