@@ -914,11 +914,13 @@ public class SettingsController {
         }
         if (improvDialogController != null) {
             improvDialogController.save();
-        } else {
-            if (MainSingleton.getInstance().config != null) {
-                config.setBaudRate(MainSingleton.getInstance().config.getBaudRate());
-            }
         }
+        // TODO check this
+//        else {
+//            if (MainSingleton.getInstance().config != null) {
+//                config.setBaudRate(MainSingleton.getInstance().config.getBaudRate());
+//            }
+//        }
         if (smoothingDialogController != null) {
             smoothingDialogController.save(config);
         } else {
