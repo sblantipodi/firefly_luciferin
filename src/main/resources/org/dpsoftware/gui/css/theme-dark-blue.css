@@ -47,3 +47,16 @@
 .windowMinimizeBtn:hover {
     -fx-background-color: #385180;
 }
+
+.tray_menu_item_selectionbackground { color: #1DA8FFFF; }
+.tray_menu_item_selectionforeground { color: #FFFFFFFF; }
+.tray_menu_item_foreground { color: #FFFFFFFF; }
+.tray_menu_foreground { color: #FFFFFFFF; }
+.tray_menu_selectionbackground { color: #1DA8FFFF; }
+.tray_menu_selectionforeground { color: #FFFFFFFF; }
+
+.tray_menu_item_text { color: #1DA8FFFF; }
+.tray_menu_border { color: #A0A0A0FF; }
+.tray_menu_item_border { color: #0000ff; }
+.tray_background { color: #505960FF; }
+.tray_separator { color: #D7D7D7FF; }

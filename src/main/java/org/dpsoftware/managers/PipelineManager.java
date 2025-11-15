@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.*;
@@ -312,9 +313,41 @@ public class PipelineManager {
     }
 
     /**
+     * Check for satellites orphans
+     *
+     * @return true if there is a satellite that is configured on a LED zone that doesn't exist in the ledmatrix
+     */
+    private static boolean checkForSatelliteOrphans() {
+        boolean orphanSatellite = false;
+        if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getSatellites() != null && !MainSingleton.getInstance().config.getSatellites().isEmpty()) {
+            Configuration conf = MainSingleton.getInstance().config;
+            for (Map.Entry<String, Satellite> sat : conf.getSatellites().entrySet()) {
+                LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+                boolean found = ledMatrix.values().stream().anyMatch(led -> sat.getValue().getZone().equals(led.getZone()));
+                if (!found) {
+                    orphanSatellite = true;
+                    for (Enums.PossibleZones zone : Enums.PossibleZones.values()) {
+                        if (zone.getBaseI18n().equals(sat.getValue().getZone())) {
+                            orphanSatellite = false;
+                        }
+                    }
+                    break;
+                }
+            }
+            return orphanSatellite;
+        }
+        return false;
+    }
+
+    /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
      */
     public void startCapturePipeline() {
+        boolean orphanSat = checkForSatelliteOrphans();
+        if (orphanSat) {
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ZONE_ERROR_TITLE, Constants.SAT_ZONE_ERROR, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            return;
+        }
         ManagerSingleton.getInstance().pipelineStarting = true;
         ManagerSingleton.getInstance().pipelineStopping = false;
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {

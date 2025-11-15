@@ -334,7 +334,7 @@ public class GStreamerGrabber extends JComponent {
                                 pickNumber += mask1.trueCount() + mask2.trueCount();
                             }
                         }
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive());
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
@@ -355,7 +355,7 @@ public class GStreamerGrabber extends JComponent {
                                 pickNumber++;
                             }
                         }
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive());
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
@@ -508,8 +508,13 @@ public class GStreamerGrabber extends JComponent {
             Buffer buffer = sample.getBuffer();
             ByteBuffer bb = buffer.map(false);
             if (bb != null) {
-                rgbFrame(w, h, bb.asIntBuffer());
-                buffer.unmap();
+                try {
+                    rgbFrame(w, h, bb.asIntBuffer());
+                } catch (ArrayIndexOutOfBoundsException ignored) {
+                    // ignoring the out of bound when changing LED num on the fly
+                } finally {
+                    buffer.unmap();
+                }
             }
             sample.dispose();
             return FlowReturn.OK;
