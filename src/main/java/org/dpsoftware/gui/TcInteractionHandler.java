@@ -188,6 +188,13 @@ public class TcInteractionHandler {
         int totalHeight = maxY - minY;
         boolean horizontal = totalWidth > totalHeight;
         if (horizontal) {
+            // Top or bottom side -> sort by increasing X
+            tiles.sort(Comparator.comparingInt(LEDCoordinate::getX));
+        } else {
+            // Left or right side -> sort by increasing Y
+            tiles.sort(Comparator.comparingInt(LEDCoordinate::getY));
+        }
+        if (horizontal) {
             // Distribute along the X axis
             int space = (maxX - minX) / tiles.size();
             int newWidth = Math.max(space - 1, tc.getMIN_TILE_SIZE()); // no more than MIN_TILE_SIZE
