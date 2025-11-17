@@ -93,7 +93,7 @@ public abstract class TrayIconBase extends CommonBinding {
     public void setProfileAndRestart(String menuItemText) {
         StorageManager sm = new StorageManager();
         MainSingleton.getInstance().config = sm.readProfileAndCheckDifference(menuItemText, sm);
-        if (sm.restartNeeded) {
+        if (MainSingleton.getInstance().isRestartNeeded()) {
             if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
                 NativeExecutor.restartNativeInstance(null);
             } else {

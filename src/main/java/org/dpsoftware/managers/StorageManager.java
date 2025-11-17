@@ -54,7 +54,6 @@ public class StorageManager {
 
     private final ObjectMapper mapper;
     private final String path;
-    public boolean restartNeeded = false;
 
     /**
      * Constructor
@@ -259,7 +258,7 @@ public class StorageManager {
      */
     public void checkProfileDifferences(Configuration defaultConfig, Configuration profileConfig) {
         if (profileConfig != null && defaultConfig != null) {
-            restartNeeded = false;
+            MainSingleton.getInstance().setRestartNeeded(false);
             Set<String> restartReasons = new LinkedHashSet<>();
             if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage()))
                 restartReasons.add(Constants.TOOLTIP_LANGUAGE);
@@ -296,7 +295,7 @@ public class StorageManager {
             if (defaultConfig.getSimdAvx() != profileConfig.getSimdAvx())
                 restartReasons.add(Constants.TOOLTIP_SIMD);
             if (!restartReasons.isEmpty()) {
-                restartNeeded = true;
+                MainSingleton.getInstance().setRestartNeeded(true);
                 log.info(String.join("\n", restartReasons));
             }
         }
@@ -368,6 +367,7 @@ public class StorageManager {
                 writeToStorage = updateConfig(profileConfig, getProfileFileName(profileFilename));
                 if (writeToStorage) {
                     log.info("Profile ({}) is old, writing a new one.", profileFilename);
+                    profileConfig.setConfigVersion(MainSingleton.getInstance().version);
                     writeConfig(profileConfig, MainSingleton.getInstance().whoAmI + "_" + profileFilename + Constants.YAML_EXTENSION);
                 }
             }

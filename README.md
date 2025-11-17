@@ -76,7 +76,9 @@ Effortless setup with minimal configuration required, yet highly customizable to
   <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_3.png">
 </p>
 
-<img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/pr_oct_2025/data/img/test_image_anim_color.gif?raw=true">  
+[<img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/pr_oct_2025/data/img/test_image_anim_color.gif?raw=true">](https://youtu.be/j7IV9rQr7J8)
+
+#### (click the image above to watch it on YouTube)
 
 ## Luciferin Official PCB
 

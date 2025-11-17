@@ -454,7 +454,7 @@ public class MiscTabController {
             if (selectedIndex >= 0) {
                 StorageManager sm = new StorageManager();
                 sm.readProfileAndCheckDifference(profiles.getValue(), sm);
-                if (sm.restartNeeded) {
+                if (MainSingleton.getInstance().isRestartNeeded()) {
                     settingsController.setProfileButtonColor(true, 0);
                 } else {
                     settingsController.setProfileButtonColor(false, Constants.TOOLTIP_DELAY);

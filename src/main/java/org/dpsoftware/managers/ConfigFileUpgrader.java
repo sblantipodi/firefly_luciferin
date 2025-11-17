@@ -256,6 +256,7 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
+    // TODO change version
     boolean updatePrevious2248(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.24.8")) {
             switch (config.getTheme()) {

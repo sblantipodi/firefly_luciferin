@@ -315,7 +315,12 @@ public class SettingsController {
      */
     @FXML
     public void save(InputEvent e) {
-        save(e, null);
+        String fileToWrite = MainSingleton.getInstance().profileArg;
+        if (Constants.DEFAULT.equals(fileToWrite)) {
+            save(e, null);
+        } else {
+            save(e, MainSingleton.getInstance().whoAmI + "_" + fileToWrite + Constants.YAML_EXTENSION);
+        }
     }
 
     /**
@@ -369,6 +374,7 @@ public class SettingsController {
             } else {
                 saveProfileParams(config);
                 sm.writeConfig(config, profileName);
+                saveExitRestart(e, config);
             }
             if (colorCorrectionDialogController != null && colorCorrectionDialogController.testCanvas != null) {
                 colorCorrectionDialogController.testCanvas.drawTestShapes(config, 0);
@@ -443,15 +449,26 @@ public class SettingsController {
             cancel(e);
         }
         if (!firstStartup) {
-            String oldBaudrate = currentConfig.getBaudRate();
-            boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
-            if (isBaudRateChanged || isMqttParamChanged()) {
-                programFirmware(config, e, oldBaudrate, isBaudRateChanged, isMqttParamChanged());
-            } else if (sm.restartNeeded) {
-                exit(e);
-            }
+            saveExitRestart(e, config);
         }
         refreshValuesOnScene();
+    }
+
+    /**
+     * Save button event
+     *
+     * @param e      event
+     * @param config to save
+     * @throws IOException can't write
+     */
+    private void saveExitRestart(InputEvent e, Configuration config) throws IOException {
+        String oldBaudrate = currentConfig.getBaudRate();
+        boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
+        if (isBaudRateChanged || isMqttParamChanged()) {
+            programFirmware(config, e, oldBaudrate, isBaudRateChanged, isMqttParamChanged());
+        } else if (MainSingleton.getInstance().isRestartNeeded()) {
+            exit(e);
+        }
     }
 
     /**
@@ -831,7 +848,7 @@ public class SettingsController {
     @FXML
     public void exit(InputEvent event) {
         cancel(event);
-        NativeExecutor.restartNativeInstance();
+        NativeExecutor.restartNativeInstanceWithCurrentProfile();
     }
 
     /**
@@ -915,12 +932,6 @@ public class SettingsController {
         if (improvDialogController != null) {
             improvDialogController.save();
         }
-        // TODO check this
-//        else {
-//            if (MainSingleton.getInstance().config != null) {
-//                config.setBaudRate(MainSingleton.getInstance().config.getBaudRate());
-//            }
-//        }
         if (smoothingDialogController != null) {
             smoothingDialogController.save(config);
         } else {
@@ -974,17 +985,19 @@ public class SettingsController {
     public void checkProfileDifferences(String profileToUse) {
         StorageManager sm = new StorageManager();
         Configuration profileInUse;
-        Configuration currentSettingsInUse = new Configuration();
+        Configuration currentSettingsInUse;
         if (profileToUse == null) {
             profileInUse = sm.readProfileInUseConfig();
+            currentSettingsInUse = sm.readProfileInUseConfig();
         } else {
             profileInUse = sm.readProfileConfig(profileToUse);
+            currentSettingsInUse = sm.readProfileConfig(profileToUse);
         }
         setModeTabParams(currentSettingsInUse);
         setMqttTabParams(currentSettingsInUse);
         setDevicesTabParams(currentSettingsInUse);
         sm.checkProfileDifferences(profileInUse, currentSettingsInUse);
-        if (sm.restartNeeded) {
+        if (MainSingleton.getInstance().isRestartNeeded()) {
             if (profileToUse != null) {
                 setProfileButtonColor(true, 0);
             } else {

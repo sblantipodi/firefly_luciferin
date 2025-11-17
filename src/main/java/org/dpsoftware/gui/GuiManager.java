@@ -158,6 +158,10 @@ public class GuiManager {
                 case 3 -> title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
             }
         }
+        if (!CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)
+                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
+            title += " [" + MainSingleton.getInstance().profileArg + "]";
+        }
         return title;
     }
 

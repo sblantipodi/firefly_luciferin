@@ -104,6 +104,7 @@ public class MainSingleton {
     public boolean waitingWaylandToken = false;
     public boolean cpuLatencyBenchRunning = false;
     public int cpuLatencyBench = 0;
+    public boolean restartNeeded = false;
 
 }
 
