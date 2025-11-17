@@ -80,7 +80,7 @@ public class GuiManager {
     public TrayIconManager trayIconManager;
     // Label and framerate dialog
     WebView wv;
-    private Stage stage;
+    public Stage stage;
     private Stage stageInfo;
     private Scene mainScene;
     private Scene mainSceneInfo;
@@ -1063,7 +1063,7 @@ public class GuiManager {
         upgradeManager.checkForUpdates(showChangelog);
     }
 
-    Stage getStage(String stageName) {
+    public Stage getStage(String stageName) {
         return stageName.equals(Constants.FXML_INFO) ? stageInfo : stage;
     }
 
