@@ -805,12 +805,23 @@ public class MiscTabController {
         profiles.commitValue();
         saveUsingProfile(e);
         MainSingleton.getInstance().profileArg = profiles.getValue();
+        setTitleBar();
         if (MainSingleton.getInstance().config.isMqttEnable()) {
             NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
             NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
         }
         setProfileButtonContext();
         enableDisableProfileButtons();
+    }
+
+    /**
+     * Set title bar
+     */
+    private void setTitleBar() {
+        Label titleBarLabel = (Label) settingsController.shadowPane.lookup(Constants.TITLE_BAR_SELECTOR);
+        if (titleBarLabel != null) {
+            titleBarLabel.setText(GuiManager.createWindowTitle().trim());
+        }
     }
 
     /**
@@ -834,6 +845,9 @@ public class MiscTabController {
             NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
             NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
         }
+        if (profileName.equals(MainSingleton.getInstance().profileArg)) {
+            NativeExecutor.restartNativeInstance();
+        }
     }
 
     /**
@@ -845,6 +859,7 @@ public class MiscTabController {
     @SuppressWarnings("unused")
     public void applyProfile(InputEvent e) {
         MainSingleton.getInstance().profileArg = profiles.getValue();
+        setTitleBar();
         int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
             MainSingleton.getInstance().guiManager.trayIconManager.manageProfileListener(getFormattedProfileName());
