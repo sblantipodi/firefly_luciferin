@@ -34,6 +34,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.managers.ProfileManager;
 import org.dpsoftware.managers.StorageManager;
@@ -182,6 +183,7 @@ public class ProfileDialogController {
         process3.commitValue();
         settingsController.injectProfileController(this);
         settingsController.miscTabController.addProfile(e);
+        settingsController.save(e);
     }
 
     /**
@@ -192,6 +194,19 @@ public class ProfileDialogController {
     @FXML
     @SuppressWarnings("All")
     public void save(Configuration config) {
+        config.getProfileProcesses().clear();
+        if (!process1.getValue().isEmpty()) {
+            config.getProfileProcesses().add(process1.getValue());
+        }
+        if (!process2.getValue().isEmpty()) {
+            config.getProfileProcesses().add(process2.getValue());
+        }
+        if (!process3.getValue().isEmpty()) {
+            config.getProfileProcesses().add(process3.getValue());
+        }
+        config.setCpuThreshold(LocalizedEnum.fromStr(Enums.CpuGpuLoadThreshold.class, cpuThreshold.getValue()).getCpuGpuLoadThresholdVal());
+        config.setGpuThreshold(LocalizedEnum.fromStr(Enums.CpuGpuLoadThreshold.class, gpuThreshold.getValue()).getCpuGpuLoadThresholdVal());
+        config.setCheckFullScreen(enableFullScreenDetection.isSelected());
     }
 
 }

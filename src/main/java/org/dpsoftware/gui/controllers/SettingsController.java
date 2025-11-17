@@ -330,7 +330,6 @@ public class SettingsController {
      */
     @FXML
     public void save(InputEvent e, String profileName) {
-        // No config found, init with a default config
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
                 Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
@@ -346,9 +345,17 @@ public class SettingsController {
             LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
             LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, false);
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
-            Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
+            Configuration config;
             if (MainSingleton.getInstance().config != null) {
+                config = new StorageManager().readProfileInUseConfig();
+                config.setHueMap(hueMap);
+                config.setLedMatrix(new LinkedHashMap<>());
+                config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledFullScreenMatrix);
+                config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledLetterboxMatrix);
+                config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), fitToScreenMatrix);
                 config.setRuntimeLogLevel(MainSingleton.getInstance().config.getRuntimeLogLevel());
+            } else {
+                config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
             }
             ledsConfigTabController.save(config);
             modeTabController.save(config);
@@ -372,7 +379,6 @@ public class SettingsController {
             if (profileName == null) {
                 writeDefaultConfig(e, config, firstStartup);
             } else {
-                saveProfileParams(config);
                 sm.writeConfig(config, profileName);
                 saveExitRestart(e, config);
             }
@@ -381,29 +387,6 @@ public class SettingsController {
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
-        }
-    }
-
-    /**
-     * Save all the dialog params
-     *
-     * @param config to write
-     */
-    private void saveProfileParams(Configuration config) {
-        if (profileDialogController != null) {
-            config.getProfileProcesses().clear();
-            if (profileDialogController.getProcess1() != null && profileDialogController.getProcess1().getValue() != null && !profileDialogController.getProcess1().getValue().isEmpty()) {
-                config.getProfileProcesses().add(profileDialogController.getProcess1().getValue());
-            }
-            if (profileDialogController.getProcess2() != null && profileDialogController.getProcess2().getValue() != null && !profileDialogController.getProcess2().getValue().isEmpty()) {
-                config.getProfileProcesses().add(profileDialogController.getProcess2().getValue());
-            }
-            if (profileDialogController.getProcess3() != null && profileDialogController.getProcess3().getValue() != null && !profileDialogController.getProcess3().getValue().isEmpty()) {
-                config.getProfileProcesses().add(profileDialogController.getProcess3().getValue());
-            }
-            config.setCpuThreshold(LocalizedEnum.fromStr(Enums.CpuGpuLoadThreshold.class, profileDialogController.getCpuThreshold().getValue()).getCpuGpuLoadThresholdVal());
-            config.setGpuThreshold(LocalizedEnum.fromStr(Enums.CpuGpuLoadThreshold.class, profileDialogController.getGpuThreshold().getValue()).getCpuGpuLoadThresholdVal());
-            config.setCheckFullScreen(profileDialogController.getEnableFullScreenDetection().isSelected());
         }
     }
 
@@ -912,42 +895,21 @@ public class SettingsController {
     private void saveDialogues(Configuration config) {
         if (colorCorrectionDialogController != null) {
             colorCorrectionDialogController.save(config);
-        } else if (MainSingleton.getInstance().config != null) {
-            config.setHueMap(MainSingleton.getInstance().config.getHueMap());
         }
         if (eyeCareDialogController != null) {
             eyeCareDialogController.save(config);
-        } else {
-            if (MainSingleton.getInstance().config != null) {
-                config.setEnableLDR(MainSingleton.getInstance().config.isEnableLDR());
-                config.setLdrTurnOff(MainSingleton.getInstance().config.isLdrTurnOff());
-                config.setLdrInterval(MainSingleton.getInstance().config.getLdrInterval());
-                config.setLdrMin(MainSingleton.getInstance().config.getLdrMin());
-                config.setBrightnessLimiter(MainSingleton.getInstance().config.getBrightnessLimiter());
-                config.setNightLight(MainSingleton.getInstance().config.getNightLight());
-                config.setNightLightLvl(MainSingleton.getInstance().config.getNightLightLvl());
-                config.setLuminosityThreshold(MainSingleton.getInstance().config.getLuminosityThreshold());
-            }
         }
         if (improvDialogController != null) {
             improvDialogController.save();
         }
         if (smoothingDialogController != null) {
             smoothingDialogController.save(config);
-        } else {
-            if (MainSingleton.getInstance().config != null) {
-                config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
-                config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
-                config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(MainSingleton.getInstance().config.getFrameInsertionTarget(),
-                        MainSingleton.getInstance().config.getEmaAlpha()).getBaseI18n());
-            }
         }
         if (satellitesDialogController != null) {
             satellitesDialogController.save(config);
-        } else {
-            if (MainSingleton.getInstance().config != null) {
-                config.setSatellites(MainSingleton.getInstance().config.getSatellites());
-            }
+        }
+        if (profileDialogController != null) {
+            profileDialogController.save(config);
         }
     }
 
