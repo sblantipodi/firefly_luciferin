@@ -10,7 +10,7 @@ jobs:
   windows_build_parallel:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.ref }}
       - name: Set env
@@ -72,7 +72,7 @@ jobs:
   linux_build_parallel:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.ref }}
       - name: Set env
