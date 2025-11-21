@@ -61,6 +61,10 @@ public abstract class TrayIconBase extends CommonBinding {
         } else {
             tooltipStr = Constants.FIREFLY_LUCIFERIN;
         }
+        if (!CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)
+                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
+            tooltipStr += " [" + MainSingleton.getInstance().profileArg + "]";
+        }
         return tooltipStr;
     }
 

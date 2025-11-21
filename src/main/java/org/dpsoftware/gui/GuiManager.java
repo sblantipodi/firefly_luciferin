@@ -829,7 +829,7 @@ public class GuiManager {
             getStage(stageName).resizableProperty().setValue(Boolean.FALSE);
             setScene(stageName, isMainStage, isClassicTheme);
             String title = createWindowTitle();
-            getStage(stageName).setTitle("dasads");
+            getStage(stageName).setTitle(title);
             setStageIcon(getStage(stageName));
             if (NativeExecutor.isWindows() && !isClassicTheme) {
                 manageNativeWindow(getStage(stageName).getScene(), title, preloadFxml, configPresent, stageName);
