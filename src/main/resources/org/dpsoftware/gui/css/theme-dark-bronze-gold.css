@@ -55,3 +55,8 @@
 .tray_menu_item_border { color: #0000ff; }
 .tray_background { color: #505960FF; }
 .tray_separator { color: #D7D7D7FF; }
+
+.button:pressed {
+    -fx-background-color: linear-gradient(to bottom, #6b563f, #2f241a);
+    -fx-text-fill: #ffffff;
+}
