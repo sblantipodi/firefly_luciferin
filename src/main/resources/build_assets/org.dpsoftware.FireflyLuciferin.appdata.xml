@@ -77,32 +77,77 @@
         <release version="2.25.6" date="2025-12-05">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.25.6</url>
             <description>
-                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.23.1).</p>
-                <p>Manual LED Layout Configuration: In addition to the automatic LED layout setup, you can now manually
-                    configure your LED layout directly from the test image.
+                <p>**Breaking changes**: requires Firefly Luciferin (v2.25.6)</p>
+
+                <p>**Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can now
+                    manually configure your LED layout directly from the test image. Closes #349 and #343.
                 </p>
-                <p>Firefly Luciferin can provision the firmware directly, letting you configure WiFi and MQTT without
-                    touching the browser.
+
+                <ul>
+                    <li>Drag and drop LED zones to reposition them.</li>
+                    <li>Resize LED zones.</li>
+                    <li>Disable individual LEDs.</li>
+                    <li>Create new custom LED zones and link them to satellites for surround lighting.</li>
+                    <li>Custom LED layouts are now supported within profiles, allowing Firefly Luciferin to
+                        automatically switch layouts based on the active app or game.
+                    </li>
+                    <li>Watch this feature in action on YouTube.</li>
+                </ul>
+
+                <p>**Improved Device Provisioning:** You don’t always need the web installer to set up your device.
+                    Firefly Luciferin can provision the firmware directly, letting you configure WiFi and MQTT without
+                    touching the browser. This feature becomes extremely handy if your device suddenly goes offline, for
+                    instance when your WiFi password changes and the device can’t reconnect. With Firefly Luciferin, you
+                    can bring it back to life in seconds, no reflashing required.
                 </p>
-                <p>New Themes: Added new visual themes:</p>
-                <p>Enhanced Log Level Configurability: You can now easily customize the application’s default log level
-                    by setting the LUCIFERIN_LOG_LEVEL environment variable.
+
+                <p>**New Themes:** Added new visual themes:</p>
+
+                <ul>
+                    <li>Light Silver</li>
+                    <li>Light Cyan</li>
+                    <li>Dark Amethyst</li>
+                    <li>Dark Arctic</li>
+                    <li>Dark Bronze Gold</li>
+                    <li>Dark Emerald</li>
+                    <li>Dark Ruby</li>
+                </ul>
+
+                <p>**Improved profile handling:**</p>
+
+                <ul>
+                    <li>The active profile name is now shown in the window title and in the tray icon tooltip.</li>
+                    <li>If an event triggers an automatic profile switch while the Settings window is open, the switch
+                        is postponed until the window is closed.
+                    </li>
+                </ul>
+
+                <p>**Enhanced Log Level Configurability:** You can now easily customize the application’s default log
+                    level by setting the <code>LUCIFERIN_LOG_LEVEL</code> environment variable.
                 </p>
+
+                <p>LDR readings were causing occasional LED flickering, fixed.</p>
+
                 <p>Fixed an issue preventing satellites from being added by IP if they were not reachable on the
                     network.
                 </p>
+
                 <p>Fixed errors occurring when satellites were configured but turned off.</p>
+
                 <p>Fixed an issue where Firefly Luciferin could not connect to a new output device after changing its IP
                     address without manually restarting the application.
                 </p>
+
                 <p>Introduced an AI-powered moderator for Issues and Pull Requests.</p>
+
                 <p>Switched back to JDK25.</p>
+
                 <p>As always, users running a previous version of Luciferin can use the automatic update feature for
                     both the PC software and the firmware.
                 </p>
+
             </description>
         </release>
-
     </releases>
     <content_rating type="oars-1.1"/>
     <update_contact>perini.davide_at_dpsoftware.org</update_contact>
