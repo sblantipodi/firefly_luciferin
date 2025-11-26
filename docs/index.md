@@ -22,7 +22,7 @@ a {
 
 ### In this release
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.23.1).
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.23.6)
 - **Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can
   now [manually configure your LED layout](https://github.com/sblantipodi/firefly_luciferin/wiki/Test-image-and-latency-test)
   directly from the test image. Closes [#349](https://github.com/sblantipodi/firefly_luciferin/issues/349)
@@ -36,6 +36,7 @@ a {
   - Custom LED layouts are now supported
     within [profiles](https://github.com/sblantipodi/firefly_luciferin/wiki/Profiles), allowing Firefly Luciferin to
     automatically switch layouts based on the active app or game.
+  - [Watch this feature in action on YouTube](https://youtu.be/j7IV9rQr7J8?si=lby1C7nJFvqjXNiA).
 - **Improved Device Provisioning:** You don’t always need
   the [web installer](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#configure-wifi-ethernet-mqtt-on-glow-worm-luciferin-full-firmware-using-the-web-installer)
   to set up your device.
@@ -53,9 +54,15 @@ a {
     - Dark Bronze Gold
     - Dark Emerald
     - Dark Ruby
-- **Enhanced Log Level Configurability:** You can now easily customize the application’s
+- Improved [profile](https://github.com/sblantipodi/firefly_luciferin/wiki/Profiles) handling:
+    - The active profile name is now shown in the window title and in the tray icon tooltip.
+    - If an event triggers an automatic profile switch while the Settings window is open, the switch is postponed until
+      the window is closed.
+- Enhanced Log Level Configurability: You can now easily customize the application’s
   default [log level](https://github.com/sblantipodi/firefly_luciferin/wiki/Debug) by setting the `LUCIFERIN_LOG_LEVEL`
   environment variable.
+- [LDR readings](https://github.com/sblantipodi/firefly_luciferin/wiki/Eye-care-and-night-mode#automatic-brightness-control-using-ldr)
+  was causing occasional LED flickering, fixed.
 - Fixed an issue
   preventing [satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites) from
   being added by IP if they were not reachable on the network.
@@ -68,8 +75,9 @@ a {
 - Introduced an AI-powered moderator for Issues and Pull Requests.
 - Switched back to JDK25.
 
-As always, users running a previous version of Luciferin can use the automatic update feature for both the PC software
-and the firmware.
+As always, users running a previous version of Luciferin can use
+the [automatic update feature](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) for
+both the PC software and the firmware.
 
 ### In the previous release:
 
