@@ -395,7 +395,7 @@ public class StorageManager {
         writeToStorage = configFileUpgrader.updatePrevious2187(config, writeToStorage); // Version < 2.18.7
         writeToStorage = configFileUpgrader.updatePrevious2226(config, writeToStorage, filename); // Version <= 2.22.6
         writeToStorage = configFileUpgrader.updatePrevious2237(config, writeToStorage); // Version <= 2.23.7
-        writeToStorage = configFileUpgrader.updatePrevious2248(config, writeToStorage); // Version <= 2.24.8
+        writeToStorage = configFileUpgrader.updatePrevious2256(config, writeToStorage); // Version <= 2.25.6
         return writeToStorage;
     }
 

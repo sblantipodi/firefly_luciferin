@@ -22,7 +22,7 @@ a {
 
 ### In this release
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.23.6)
+- ***Update requirement***: requires `Glow Worm Luciferin` firmware (v5.23.6)
 - **Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can
   now [manually configure your LED layout](https://github.com/sblantipodi/firefly_luciferin/wiki/Test-image-and-latency-test)
   directly from the test image. Closes [#349](https://github.com/sblantipodi/firefly_luciferin/issues/349)

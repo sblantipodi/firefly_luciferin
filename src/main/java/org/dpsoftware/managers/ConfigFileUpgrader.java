@@ -250,15 +250,14 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
     }
 
     /**
-     * Update configuration file previous than 2.24.8
+     * Update configuration file previous than 2.25.6
      *
      * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
-    // TODO change version
-    boolean updatePrevious2248(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.24.8")) {
+    boolean updatePrevious2256(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.25.6")) {
             switch (config.getTheme()) {
                 case "Classic theme":
                     config.setTheme(Enums.Theme.CLASSIC.getBaseI18n());

@@ -77,7 +77,7 @@
         <release version="2.25.6" date="2025-12-05">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.25.6</url>
             <description>
-                <p>**Breaking changes**: requires Firefly Luciferin (v2.25.6)</p>
+                <p>**Update requirement**: requires Firefly Luciferin (v2.25.6)</p>
 
                 <p>**Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can now
                     manually configure your LED layout directly from the test image. Closes #349 and #343.
