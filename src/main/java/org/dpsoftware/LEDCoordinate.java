@@ -51,8 +51,18 @@ public class LEDCoordinate {
     private int y;
     private int width;
     private int height;
+    private boolean active = true;
     private boolean groupedLed;
     private String zone;
+
+    public LEDCoordinate(int x, int y, int width, int height, boolean groupedLed, String zone) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.groupedLed = groupedLed;
+        this.zone = zone;
+    }
 
     /**
      * Calculate tale border size
@@ -121,42 +131,6 @@ public class LEDCoordinate {
     }
 
     /**
-     * Init FullScreen LED Matrix with a default general purpose config
-     *
-     * @param ledMatrixInfo required infos to create LED Matrix
-     * @return LED Matrix
-     */
-    public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(LedMatrixInfo ledMatrixInfo) {
-        LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.FULLSCREEN, ledMatrixInfo);
-        return defaultLedMatrix;
-    }
-
-    /**
-     * Init Letterbox LED Matrix with a default general purpose config
-     *
-     * @param ledMatrixInfo required infos to create LED Matrix
-     * @return LED letterbox matrix
-     */
-    public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(LedMatrixInfo ledMatrixInfo) {
-        LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.LETTERBOX, ledMatrixInfo);
-        return defaultLedMatrix;
-    }
-
-    /**
-     * Init Pillarbox LED Matrix with a default general purpose config
-     *
-     * @param ledMatrixInfo required infos to create LED Matrix
-     * @return LED letterbox matrix
-     */
-    public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(LedMatrixInfo ledMatrixInfo) {
-        LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.PILLARBOX, ledMatrixInfo);
-        return defaultLedMatrix;
-    }
-
-    /**
      * Calculate borders for fit to screen, 4:3, 16:9, 21:9, 32:9
      *
      * @param screenWidth  screen width
@@ -175,11 +149,20 @@ public class LEDCoordinate {
     /**
      * Init LED Matrixes
      *
-     * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param aspectRatio    aspect ratio in use
+     * @param ledMatrixInfo  infos used to create the LED matrix
+     * @param forceNewMatrix use a previously initialized matrix
+     * @return
      */
     @SuppressWarnings({"All"})
-    void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
+    public LinkedHashMap<Integer, LEDCoordinate> initializeLedMatrix(Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo, boolean forceNewMatrix) {
+        LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
+        if (MainSingleton.getInstance().config != null && !forceNewMatrix) {
+            if (MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n()) != null && !MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n()).isEmpty()) {
+                defaultLedMatrix = MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n());
+                return defaultLedMatrix;
+            }
+        }
         // Store original values before grouping them
         ledMatrixInfo.setBottomRightLedOriginal(ledMatrixInfo.getBottomRightLed());
         ledMatrixInfo.setRightLedOriginal(ledMatrixInfo.getRightLed());
@@ -223,6 +206,7 @@ public class LEDCoordinate {
         ledNum = topLed(defaultLedMatrix, ledMatrixInfo, ledNum);
         ledNum = leftLed(defaultLedMatrix, ledMatrixInfo, ledNum);
         bottomLeft(defaultLedMatrix, ledMatrixInfo, ledNum);
+        return defaultLedMatrix;
     }
 
     /**

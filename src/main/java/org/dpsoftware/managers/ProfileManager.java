@@ -144,12 +144,21 @@ public class ProfileManager {
                 }
             }
             if (!profileNameToUse.get().isEmpty() && !profileInUseStillActive) {
-                log.debug("Profile switch triggered, switch to: {}.", profileNameToUse.get());
-                NativeExecutor.restartNativeInstance(profileNameToUse.get());
+                log.debug("Profile switch triggered");
+                if (!MainSingleton.getInstance().getGuiManager().getStage(Constants.FXML_SETTINGS).isShowing()) {
+                    log.debug("Switch to: {}.", profileNameToUse.get());
+                    NativeExecutor.restartNativeInstance(profileNameToUse.get());
+                }
             }
             if (profileNameToUse.get().isEmpty() && !MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
-                log.debug("Profile switch triggered, switch to default profile.");
-                NativeExecutor.restartNativeInstance();
+                Configuration currentConfig = MainSingleton.getInstance().config;
+                if (!currentConfig.getProfileProcesses().isEmpty() || currentConfig.getGpuThreshold() != 0 || currentConfig.getCpuThreshold() != 0 || currentConfig.isCheckFullScreen()) {
+                    log.debug("Profile switch triggered");
+                    if (!MainSingleton.getInstance().getGuiManager().getStage(Constants.FXML_SETTINGS).isShowing()) {
+                        log.debug("Switch to default profile.");
+                        NativeExecutor.restartNativeInstance();
+                    }
+                }
             }
         };
     }

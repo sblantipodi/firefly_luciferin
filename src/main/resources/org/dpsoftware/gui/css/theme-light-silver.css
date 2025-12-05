@@ -1,0 +1,72 @@
+/*
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+ */
+
+.root {
+    -fx-accent: #7faaff;
+    -fx-focus-color: -fx-accent;
+    -fx-base: #d8d8d8;
+    -fx-control-inner-background: #eaeaea;
+    -fx-control-inner-background-alt: #d8d8d8;
+    -fx-text-fill: #111111;
+}
+
+.text-input {
+    -fx-text-fill: #111111;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #7faaff;
+}
+
+.roundedBordersDialog {
+    -fx-border-color: #a0a0a0 !important;
+}
+
+#rootPane {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #c8c8c8);
+}
+
+.windowCloseBtn, .windowMinimizeBtn {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #c8c8c8);
+    -fx-text-fill: #111111;
+}
+
+.windowMinimizeBtn:hover {
+    -fx-background-color: #7faaff;
+}
+
+.label, .button, .table-cell, .hyperlink, .dialoglabel {
+    -fx-text-fill: #111111;
+}
+
+.button:hover {
+    -fx-text-fill: darkslategray;
+}
+
+#hyper {
+    -fx-text-fill: #3C3C3C !important;
+}
+
+.hyperlink {
+    -fx-text-fill: #3C3C3C !important;
+}
+
+.tray_menu_item_selectionbackground { color: #7faaff; }
+.tray_menu_item_selectionforeground { color: #3C3C3C; }
+.tray_menu_item_foreground { color: #323232FF; }
+.tray_menu_foreground { color: #323232FF; }
+.tray_menu_selectionbackground { color: #7faaff; }
+.tray_menu_selectionforeground { color: #3C3C3C; }
+
+.tray_menu_item_text { color: #7faaff; }
+.tray_menu_border { color: #A0A0A0FF; }
+.tray_menu_item_border { color: #808080FF; }
+.tray_background { color: #F4F4F4FF; }
+.tray_separator { color: #D7D7D7FF; }
+
+.button:pressed {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #c8c8c8);
+}

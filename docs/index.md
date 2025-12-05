@@ -22,10 +22,62 @@ a {
 
 ### In this release
 
-- ***Hotfix release: This issue affects only Firefly Luciferin; no firmware update is required.***
-- Reverted to Java 24 due to compatibility issues:
-  - Some users experienced startup crashes on Windows caused by permission issues with temporary native files. If you are among the users experiencing this issue, please download the installer manually and install it over your current installation. Other user can use the automatic update offered by Luciferin. Closes [#354](https://github.com/sblantipodi/firefly_luciferin/issues/354).
-  - Project cannot build on Linux with Java 25 from Temurin.
+- ***Update requirement***: requires `Glow Worm Luciferin` firmware (v5.23.6)
+- **Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can
+  now [manually configure your LED layout](https://github.com/sblantipodi/firefly_luciferin/wiki/Test-image-and-latency-test)
+  directly from the test image. Closes [#349](https://github.com/sblantipodi/firefly_luciferin/issues/349)
+  and [#343](https://github.com/sblantipodi/firefly_luciferin/issues/343).
+  New options include:
+    - Drag & drop LED zones to reposition them.
+    - Resize LED zones.
+    - Disable individual LEDs.
+  - Create new custom LED zones and link them
+    to [satellites for surround lighting](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites).
+  - Custom LED layouts are now supported
+    within [profiles](https://github.com/sblantipodi/firefly_luciferin/wiki/Profiles), allowing Firefly Luciferin to
+    automatically switch layouts based on the active app or game.
+  - [Watch this feature in action on YouTube](https://youtu.be/j7IV9rQr7J8?si=lby1C7nJFvqjXNiA).
+- **Improved Device Provisioning:** You don’t always need
+  the [web installer](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#configure-wifi-ethernet-mqtt-on-glow-worm-luciferin-full-firmware-using-the-web-installer)
+  to set up your device.
+  Firefly Luciferin
+  can [provision the firmware directly](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#provision-directly-from-firefly-luciferin),
+  letting you configure WiFi and MQTT without touching the browser.
+  This feature becomes extremely handy if your device suddenly goes offline. for instance, when your WiFi password
+  changes and the device can’t reconnect. With Firefly Luciferin, you can bring it back to life in seconds, no
+  reflashing required.
+- **New Themes:** Added new visual [themes](https://github.com/sblantipodi/firefly_luciferin/wiki/Themes):
+    - Light Silver
+    - Light Cyan
+    - Dark Amethyst
+    - Dark Arctic
+    - Dark Bronze Gold
+    - Dark Emerald
+    - Dark Ruby
+- Improved [profile](https://github.com/sblantipodi/firefly_luciferin/wiki/Profiles) handling:
+    - The active profile name is now shown in the window title and in the tray icon tooltip.
+    - If an event triggers an automatic profile switch while the Settings window is open, the switch is postponed until
+      the window is closed.
+- Enhanced Log Level Configurability: You can now easily customize the application’s
+  default [log level](https://github.com/sblantipodi/firefly_luciferin/wiki/Debug) by setting the `LUCIFERIN_LOG_LEVEL`
+  environment variable.
+- [LDR readings](https://github.com/sblantipodi/firefly_luciferin/wiki/Eye-care-and-night-mode#automatic-brightness-control-using-ldr)
+  was causing occasional LED flickering, fixed.
+- Fixed an issue
+  preventing [satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites) from
+  being added by IP if they were not reachable on the network.
+- Fixed errors occurring
+  when [satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites) were
+  configured but turned off.
+- Fixed an issue where Firefly Luciferin could not connect to a new output device after changing
+  its [IP address](https://github.com/sblantipodi/firefly_luciferin/wiki/Static-IP-and-auto-discovery) without manually
+  restarting the application.
+- Introduced an AI-powered moderator for Issues and Pull Requests.
+- Switched back to JDK25.
+
+As always, users running a previous version of Luciferin can use
+the [automatic update feature](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) for
+both the PC software and the firmware.
 
 ### In the previous release:
 

@@ -48,6 +48,8 @@ public class NetworkTabController {
     @FXML
     public Button saveMQTTButton;
     @FXML
+    public Button programDeviceButton;
+    @FXML
     public TextField mqttHost;
     @FXML
     public TextField mqttPort;
@@ -165,7 +167,7 @@ public class NetworkTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
-        mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.TOPIC_DEFAULT_MQTT) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
+        mqttTopic.setText(Constants.TOPIC_DEFAULT_MQTT.equals(currentConfig.getMqttTopic()) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
         mqttDiscoveryTopic.setText(currentConfig.getMqttDiscoveryTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
@@ -242,6 +244,16 @@ public class NetworkTabController {
     }
 
     /**
+     * Show improv dialog
+     */
+    @FXML
+    public void improvWiFiDialog() {
+        if (MainSingleton.getInstance().guiManager != null) {
+            MainSingleton.getInstance().guiManager.showImprovDialog(settingsController);
+        }
+    }
+
+    /**
      * Save button event
      *
      * @param e event
@@ -314,6 +326,7 @@ public class NetworkTabController {
         GuiManager.createTooltip(Constants.TOOLTIP_MQTTPWD, mqttPwd);
         GuiManager.createTooltip(Constants.TOOLTIP_MQTTENABLE, mqttEnable);
         GuiManager.createTooltip(Constants.TOOLTIP_MQTTSTREAM, mqttStream);
+        GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_CONTEXT, programDeviceButton);
         if (currentConfig == null) {
             GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMQTTButton);
         }

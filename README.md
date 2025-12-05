@@ -46,15 +46,19 @@ You can **download the installer for Windows or Linux [here](https://github.com/
 The Linux version is also available on [Flathub](https://flathub.org/apps/org.dpsoftware.FireflyLuciferin)
 and [Snap Store](https://github.com/sblantipodi/firefly_luciferin/issues/207)
   
-This software can run on any Desktop PC using **Windows or Linux**. MacOS support will be added later. 
-To get the full `Bias Lighting` experience you need a microcontroller (ex. ESP8266, ESP32) running [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware. You can connect the microcontroller to the PC via USB or via wirelss (MQTT server is optional). 
+This software can run on any Desktop PC using **Windows or Linux**. MacOS support will be added later.
+To get the full `Bias Lighting` experience you need a microcontroller (ex. ESP8266, ESP32)
+running [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware. You can connect the
+microcontroller to the PC via USB or via wireless (WiFi/Ethernet, MQTT server is optional).
 
 Why don't you build your own `Luciferin`?  
 Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)  
 
-## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
+## Firefly Luciferin (PC Software) + Glow Worm Luciferin (Firmware)
 
 [![Luciferin YouTube Video #1](https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/ambilight_color.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
+
+#### (click the image above to watch it on YouTube)
 
 ## Easy to learn, easy to use
 
@@ -71,6 +75,10 @@ Effortless setup with minimal configuration required, yet highly customizable to
 <p align="center">
   <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_3.png">
 </p>
+
+[<img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/pr_oct_2025/data/img/test_image_anim_color.gif?raw=true">](https://youtu.be/j7IV9rQr7J8)
+
+#### (click the image above to watch it on YouTube)
 
 ## Luciferin Official PCB
 

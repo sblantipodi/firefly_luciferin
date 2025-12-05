@@ -235,8 +235,12 @@ public class FireflyLuciferin extends Application {
      */
     private void setRuntimeLogLevel() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        log.debug("** Log level -> {} **", MainSingleton.getInstance().config.getRuntimeLogLevel());
-        loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(MainSingleton.getInstance().config.getRuntimeLogLevel()));
+        String logLevel = System.getenv(Constants.LUCIFERIN_LOG_LEVEL);
+        if (logLevel == null || logLevel.isEmpty()) {
+            logLevel = MainSingleton.getInstance().config.getRuntimeLogLevel();
+        }
+        loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(logLevel));
+        log.debug("** Log level -> {} **", logLevel);
         if (JavaFXStarter.startupArgs != null && JavaFXStarter.startupArgs.length > 0) {
             log.info("Starting instance #: {}", JavaFXStarter.startupArgs[0]);
             if (JavaFXStarter.startupArgs.length > 1) {

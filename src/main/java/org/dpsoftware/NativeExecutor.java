@@ -59,8 +59,40 @@ import java.util.concurrent.TimeUnit;
 public final class NativeExecutor {
 
     /**
-     * This is the real runner that executes command.
-     * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
+     * This is the real runner that executes command. Non blocking method.
+     *
+     * @param cmdToRunUsingArgs Command to run and args, in an array
+     * @return A list of string containing the output, empty list if command does not exist
+     */
+    public static List<String> runNative(String[] cmdToRunUsingArgs) {
+        ArrayList<String> cmdOutput = new ArrayList<>();
+        try {
+            log.trace("Executing cmd={}", Arrays.toString(cmdToRunUsingArgs));
+            ProcessBuilder processBuilder = new ProcessBuilder(cmdToRunUsingArgs);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                long start = System.currentTimeMillis();
+                while ((line = reader.readLine()) != null) {
+                    log.trace(line);
+                    cmdOutput.add(line);
+                    if (System.currentTimeMillis() - start > Constants.CMD_WAIT_DELAY) {
+                        log.error("Timeout reading output of {}", Arrays.toString(cmdToRunUsingArgs));
+                        process.destroy();
+                        break;
+                    }
+                }
+            }
+            process.waitFor();
+        } catch (Exception e) {
+            log.error("Error executing command: {}", e.getMessage(), e);
+        }
+        return cmdOutput;
+    }
+
+    /**
+     * This is the real runner that executes command. Blocking method.
      *
      * @param cmdToRunUsingArgs Command to run and args, in an array
      * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit (millis)

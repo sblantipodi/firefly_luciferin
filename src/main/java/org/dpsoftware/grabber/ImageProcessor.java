@@ -179,7 +179,7 @@ public class ImageProcessor {
                 pickNumber++;
             }
         }
-        return correctColors(r, g, b, pickNumber);
+        return correctColors(r, g, b, pickNumber, ledCoordinate.isActive());
     }
 
     /**
@@ -194,9 +194,10 @@ public class ImageProcessor {
      * @param g          avg green channel
      * @param b          avg blue channel
      * @param pickNumber number of computed pixel, used to get the avg
+     * @param active     if led is active
      * @return corrected color
      */
-    public static Color correctColors(int r, int g, int b, int pickNumber) {
+    public static Color correctColors(int r, int g, int b, int pickNumber, boolean active) {
         // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
         Color adjusted = new Color(r / pickNumber, g / pickNumber, b / pickNumber);
         // Saturate colors and shift bits if needed, apply HSL correcction
@@ -229,6 +230,7 @@ public class ImageProcessor {
             }
             return ColorUtilities.HSLtoRGB(brightnessLimitedRGB[0], brightnessLimitedRGB[1], brightnessLimitedRGB[2]);
         }
+        if (!active) adjusted = new Color(0, 0, 0);
         return adjusted;
     }
 

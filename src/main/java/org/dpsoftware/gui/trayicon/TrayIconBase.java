@@ -61,6 +61,10 @@ public abstract class TrayIconBase extends CommonBinding {
         } else {
             tooltipStr = Constants.FIREFLY_LUCIFERIN;
         }
+        if (!CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)
+                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
+            tooltipStr += " [" + MainSingleton.getInstance().profileArg + "]";
+        }
         return tooltipStr;
     }
 
@@ -93,7 +97,7 @@ public abstract class TrayIconBase extends CommonBinding {
     public void setProfileAndRestart(String menuItemText) {
         StorageManager sm = new StorageManager();
         MainSingleton.getInstance().config = sm.readProfileAndCheckDifference(menuItemText, sm);
-        if (sm.restartNeeded) {
+        if (MainSingleton.getInstance().isRestartNeeded()) {
             if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
                 NativeExecutor.restartNativeInstance(null);
             } else {

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="278.0" prefWidth="369.0"
+            styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="org.dpsoftware.gui.controllers.ImprovDialogController">
+
+    <GridPane alignment="CENTER" prefHeight="277.0" prefWidth="370.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="204.66666666666666" minWidth="10.0" prefWidth="151.0"/>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="179.0" minWidth="10.0" prefWidth="179.0"/>
+            <ColumnConstraints/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="17.0" prefHeight="17.0" valignment="CENTER" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="10.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+        </rowConstraints>
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
+        </padding>
+        <Label text="%fxml.improv.wifi" wrapText="true" GridPane.rowIndex="3"/>
+        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="7" GridPane.valignment="BOTTOM">
+            <Button fx:id="okButton" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose"
+                    text="%fxml.dialog.ok">
+                <HBox.margin>
+                    <Insets top="10.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+            <Button fx:id="cancelButton" contentDisplay="TOP" minWidth="60.0" mnemonicParsing="false"
+                    onMouseClicked="#close" prefHeight="25.0" text="%fxml.dialog.cancel">
+                <HBox.margin>
+                    <Insets top="10.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        <Label text="%fxml.improv.pwd" wrapText="true" GridPane.rowIndex="4"/>
+        <Label text="%fxml.improv.baudrate" wrapText="true" GridPane.rowIndex="6"/>
+        <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="334.0"
+               style="-fx-font-weight: bold;" text="%fxml.improv.title" textAlignment="CENTER" wrapText="true"
+               GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.valignment="TOP">
+            <opaqueInsets>
+                <Insets/>
+            </opaqueInsets>
+            <GridPane.margin>
+                <Insets top="2.0"/>
+            </GridPane.margin>
+        </Label>
+        <Separator prefHeight="0.1" prefWidth="200.0" styleClass="separator" GridPane.columnSpan="2"
+                   GridPane.rowIndex="1"/>
+        <ComboBox fx:id="ssid" editable="true" prefHeight="25.0" prefWidth="187.0" GridPane.columnIndex="1"
+                  GridPane.rowIndex="3"/>
+        <PasswordField fx:id="wifiPwd" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <ComboBox fx:id="comPort" editable="true" prefHeight="26.0" prefWidth="194.0" GridPane.columnIndex="1"
+                  GridPane.rowIndex="5"/>
+        <ComboBox fx:id="baudrate" prefHeight="26.0" prefWidth="238.0" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+        <Label text="%fxml.improv.comport" GridPane.rowIndex="5"/>
+        <Label prefHeight="60.0" prefWidth="345.0" text="%fxml.mqtttab.improv.context" wrapText="true"
+               GridPane.columnSpan="3" GridPane.rowIndex="2"/>
+    </GridPane>
+</AnchorPane>
