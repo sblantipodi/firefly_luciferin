@@ -69,7 +69,7 @@
         <screenshot type="default">
             <caption>Test Image</caption>
             <image type="source">
-                https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/2a848b0161ec9f488c15af8036b131a4a8bcc0e5/data/img/test_image_black.gif
+                https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/c0c2b8f1a8acd898f9ecd2746f44e0e242eca33f/data/img/test_image_black.gif
             </image>
         </screenshot>
     </screenshots>
@@ -77,7 +77,7 @@
         <release version="2.25.6" date="2025-12-05">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.25.6</url>
             <description>
-                <p>**Update requirement**: requires Firefly Luciferin (v2.25.6)</p>
+                <p>**Update requirement**: requires Glow Worm Luciferin Firmware (v5.23.6)</p>
 
                 <p>**Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can now
                     manually configure your LED layout directly from the test image. Closes #349 and #343.
