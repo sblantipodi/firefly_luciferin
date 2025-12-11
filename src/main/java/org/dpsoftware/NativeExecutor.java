@@ -33,6 +33,7 @@ import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
@@ -389,13 +390,14 @@ public final class NativeExecutor {
         if (MainSingleton.getInstance().RUNNING) {
             MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
         }
+        if (MainSingleton.getInstance().serial != null) {
+            SerialManager sm = new SerialManager();
+            sm.closeSerial();
+        }
         MainSingleton.getInstance().exitTriggered = true;
         log.info(Constants.CLEAN_EXIT);
         NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
         exitOtherInstances();
-        if (MainSingleton.getInstance().serial != null) {
-            MainSingleton.getInstance().serial.closePort();
-        }
         AudioSingleton.getInstance().RUNNING_AUDIO = false;
         CommonUtility.delaySeconds(() -> {
             lastWill();

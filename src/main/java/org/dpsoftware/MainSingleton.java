@@ -105,6 +105,7 @@ public class MainSingleton {
     public boolean cpuLatencyBenchRunning = false;
     public int cpuLatencyBench = 0;
     public boolean restartNeeded = false;
+    public String improvActive = "";
 
 }
 

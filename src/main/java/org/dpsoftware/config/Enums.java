@@ -42,6 +42,7 @@ public class Enums {
         ESP8266,
         ESP32,
         ESP32_C3_CDC,
+        ESP32_C6,
         ESP32_S2,
         ESP32_S3,
         ESP32_S3_CDC
