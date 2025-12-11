@@ -238,7 +238,7 @@ public class SettingsController {
      * Init all the settings listener
      */
     private void initListeners() {
-        CommonUtility.delayMilliseconds(this::setSerialPortAvailableCombo, 10);
+        setSerialPortAvailableCombo();
         networkTabController.initListeners();
         modeTabController.initListeners();
         miscTabController.initListeners(currentConfig);
@@ -604,11 +604,7 @@ public class SettingsController {
                 if (device.getBaudRate().isEmpty()) {
                     firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(MainSingleton.getInstance().config.getBaudRate()).getBaudRateValue());
                 } else {
-                    try {
-                        firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
-                    } catch (Exception nullPointerException) {
-                        firmwareConfigDto.setBr(Enums.BaudRate.BAUD_RATE_115200.getBaudRateValue());
-                    }
+                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
                 }
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
