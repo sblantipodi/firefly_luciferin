@@ -39,9 +39,8 @@ import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class SerialManager {
                     closeSerial();
                     SerialPort[] ports = SerialPort.getCommPorts();
                     int numberOfSerialDevices = 0;
-                    int readTimeout = MainSingleton.getInstance().config.getTimeout() * 15;
+                    int readTimeout = MainSingleton.getInstance().config.getTimeout();
                     int writeTimeout = MainSingleton.getInstance().config.getTimeout();
                     if (ports != null && ports.length > 0) {
                         numberOfSerialDevices = ports.length;
@@ -92,7 +91,7 @@ public class SerialManager {
                             MainSingleton.getInstance().serial = ports[0];
                         }
                     }
-                    MainSingleton.getInstance().serial.setDTRandRTS(true, false);
+                    MainSingleton.getInstance().serial.setDTRandRTS(false, false);
                     if (MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.openPort()) {
                         int baudrateToUse = baudrate.isEmpty() ? Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()) : Integer.parseInt(baudrate);
                         MainSingleton.getInstance().serial.setComPortParameters(baudrateToUse, 8, 1, SerialPort.NO_PARITY);
@@ -157,8 +156,9 @@ public class SerialManager {
     private void listenSerialEvents() {
         // No autocloseable because this thread must not be terminated
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        // Aggiungi un listener per leggere i dati in modalità non bloccante
         MainSingleton.getInstance().serial.addDataListener(new SerialPortDataListener() {
+            private StringBuilder lineBuffer = new StringBuilder();
+
             @Override
             public int getListeningEvents() {
                 return SerialPort.LISTENING_EVENT_DATA_AVAILABLE | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
@@ -167,22 +167,36 @@ public class SerialManager {
             @Override
             public void serialEvent(SerialPortEvent event) {
                 if (event.getEventType() == SerialPort.LISTENING_EVENT_DATA_AVAILABLE) {
-                    executor.submit(() -> {
-                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(MainSingleton.getInstance().serial.getInputStream()))) {
-                            while (reader.ready()) {
-                                String line = reader.readLine();
-                                handleSerialEvent(line);
-                            }
-                        } catch (Exception e) {
-                            log.error(e.getMessage());
+                    SerialPort serial = MainSingleton.getInstance().serial;
+                    int available = serial.bytesAvailable();
+                    if (available <= 0) return;
+
+                    byte[] buffer = new byte[available];
+                    int numRead = serial.readBytes(buffer, buffer.length);
+                    if (numRead > 0) {
+                        String data = new String(buffer, StandardCharsets.UTF_8);
+                        lineBuffer.append(data);
+
+                        String line;
+                        while ((line = extractLineFromBuffer(lineBuffer)) != null) {
+                            handleSerialEvent(line);
                         }
-                    });
+                    }
                 } else if (event.getEventType() == SerialPort.LISTENING_EVENT_PORT_DISCONNECTED) {
                     log.info("USB device disconnected");
                     SerialManager sm = new SerialManager();
                     sm.closeSerial();
                     scheduleReconnect();
                 }
+            }
+
+            // Get a complete line from the buffer, if present
+            private String extractLineFromBuffer(StringBuilder buffer) {
+                int idx = buffer.indexOf("\n");
+                if (idx == -1) return null;
+                String line = buffer.substring(0, idx).replaceAll("\r$", "");
+                buffer.delete(0, idx + 1);
+                return line;
             }
         });
     }
