@@ -23,7 +23,6 @@ package org.dpsoftware;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-import javafx.scene.control.Alert;
 import jdk.incubator.vector.IntVector;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -537,22 +536,6 @@ public final class NativeExecutor {
             }
         }
         return nightLightEnabled;
-    }
-
-    /**
-     * Check if user is dialout or uucp to use USB
-     */
-    public static void checkUsbGroup() {
-        try {
-            List<String> scrProcess = runNative(Constants.USB_GRP, Constants.CMD_WAIT_DELAY);
-            boolean isUserAbleToUseUsb = scrProcess.stream().anyMatch(s -> s.contains(Constants.USB_DIALOUT) || s.contains(Constants.USB_UUCP));
-            if (!isUserAbleToUseUsb) {
-                MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.USB_NOT_AVAILABLE_TITLE, Constants.USB_NOT_AVAILABLE_HEADER,
-                        Constants.USB_NOT_AVAILABLE_CONTENT, Alert.AlertType.WARNING);
-            }
-        } catch (Exception e) {
-            log.warn(e.getMessage());
-        }
     }
 
     /**

@@ -24,6 +24,8 @@ package org.dpsoftware.managers;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -58,6 +60,7 @@ public class SerialManager {
 
     ScheduledExecutorService serialAttachScheduler = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledFuture;
+    boolean alertSent = false;
 
     /**
      * Initialize Serial communication
@@ -70,9 +73,6 @@ public class SerialManager {
      * Initialize Serial communication
      */
     public void initSerial(String portName, String baudrate) {
-        if (NativeExecutor.isLinux()) {
-            NativeExecutor.checkUsbGroup();
-        }
         if (!MainSingleton.getInstance().config.isWirelessStream() || !portName.isEmpty()) {
             CommonUtility.delayMilliseconds(() -> {
                 try {
@@ -140,6 +140,11 @@ public class SerialManager {
             MainSingleton.getInstance().output = MainSingleton.getInstance().serial.getOutputStream();
             listenSerialEvents();
         } else {
+            if (NativeExecutor.isLinux() && !alertSent) {
+                alertSent = true;
+                Platform.runLater(() -> MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.USB_NOT_AVAILABLE_TITLE, Constants.USB_NOT_AVAILABLE_HEADER,
+                        Constants.USB_NOT_AVAILABLE_CONTENT, Alert.AlertType.WARNING));
+            }
             MainSingleton.getInstance().communicationError = true;
         }
     }
