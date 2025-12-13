@@ -42,7 +42,10 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,52 +96,7 @@ public class SerialManager {
                         }
                     }
                     MainSingleton.getInstance().serial.setDTRandRTS(false, false);
-                    if (MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.openPort()) {
-                        int baudrateToUse = baudrate.isEmpty() ? Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()) : Integer.parseInt(baudrate);
-                        MainSingleton.getInstance().serial.setComPortParameters(baudrateToUse, 8, 1, SerialPort.NO_PARITY);
-                        MainSingleton.getInstance().serial.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, readTimeout, writeTimeout);
-                        log.info("{}{}", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
-                        GlowWormDevice gwDevice = new GlowWormDevice();
-                        gwDevice.setDeviceName(Constants.USB_DEVICE);
-                        gwDevice.setDeviceIP(MainSingleton.getInstance().serial.getSystemPortName());
-                        gwDevice.setDhcpInUse(false);
-                        gwDevice.setWifi(Constants.DASH);
-                        gwDevice.setDeviceVersion(Constants.DASH);
-                        gwDevice.setDeviceBoard(Constants.DASH);
-                        gwDevice.setMac(Constants.DASH);
-                        gwDevice.setGpio(Constants.DASH);
-                        gwDevice.setNumberOfLEDSconnected(Constants.DASH);
-                        gwDevice.setLastSeen(MainSingleton.getInstance().formatter.format(new Date()));
-                        gwDevice.setFirmwareType(Constants.DASH);
-                        gwDevice.setBaudRate(Constants.DASH);
-                        gwDevice.setMqttTopic(Constants.DASH);
-                        gwDevice.setColorMode(Constants.DASH);
-                        gwDevice.setColorOrder(Enums.ColorOrder.GRB_GRBW.name());
-                        gwDevice.setLdrValue(Constants.DASH);
-                        gwDevice.setRelayPin(Constants.DASH);
-                        gwDevice.setRelayInvertedPin(false);
-                        gwDevice.setSbPin(Constants.DASH);
-                        gwDevice.setLdrPin(Constants.DASH);
-                        gwDevice.setGpioClock(Constants.DASH);
-                        GuiSingleton.getInstance().deviceTableData.add(gwDevice);
-                        GuiManager guiManager = new GuiManager();
-                        if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO) && portName.isEmpty()) {
-                            MainSingleton.getInstance().communicationError = true;
-                            guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
-                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Constants.SERIAL_ERROR_TITLE, TrayIcon.MessageType.ERROR);
-                            log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
-                        }
-                        log.info("Connected: Serial {}", MainSingleton.getInstance().serial.getDescriptivePortName());
-                        if (MainSingleton.getInstance().guiManager != null) {
-                            MainSingleton.getInstance().guiManager.trayIconManager.resetTray();
-                        }
-                        MainSingleton.getInstance().serialConnected = true;
-                        MainSingleton.getInstance().communicationError = false;
-                        MainSingleton.getInstance().output = MainSingleton.getInstance().serial.getOutputStream();
-                        listenSerialEvents();
-                    } else {
-                        MainSingleton.getInstance().communicationError = true;
-                    }
+                    openSerial(portName, baudrate, readTimeout, writeTimeout, numberOfSerialDevices);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                     MainSingleton.getInstance().communicationError = true;
@@ -148,6 +106,73 @@ public class SerialManager {
                 }
             }, 10);
         }
+    }
+
+    /**
+     * Open serial
+     *
+     * @param portName              serial port
+     * @param baudrate              baudrate
+     * @param readTimeout           read timeout
+     * @param writeTimeout          write timeout
+     * @param numberOfSerialDevices number of serial devices
+     */
+    private void openSerial(String portName, String baudrate, int readTimeout, int writeTimeout, int numberOfSerialDevices) {
+        if (MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.openPort()) {
+            int baudrateToUse = baudrate.isEmpty() ? Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()) : Integer.parseInt(baudrate);
+            MainSingleton.getInstance().serial.setComPortParameters(baudrateToUse, 8, 1, SerialPort.NO_PARITY);
+            MainSingleton.getInstance().serial.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, readTimeout, writeTimeout);
+            log.info("{}{}", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
+            GlowWormDevice gwDevice = createDefaultDevice();
+            GuiSingleton.getInstance().deviceTableData.add(gwDevice);
+            GuiManager guiManager = new GuiManager();
+            if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO) && portName.isEmpty()) {
+                MainSingleton.getInstance().communicationError = true;
+                guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS, Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Constants.SERIAL_ERROR_TITLE, TrayIcon.MessageType.ERROR);
+                log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
+            }
+            log.info("Connected: Serial {}", MainSingleton.getInstance().serial.getDescriptivePortName());
+            if (MainSingleton.getInstance().guiManager != null) {
+                MainSingleton.getInstance().guiManager.trayIconManager.resetTray();
+            }
+            MainSingleton.getInstance().serialConnected = true;
+            MainSingleton.getInstance().communicationError = false;
+            MainSingleton.getInstance().output = MainSingleton.getInstance().serial.getOutputStream();
+            listenSerialEvents();
+        } else {
+            MainSingleton.getInstance().communicationError = true;
+        }
+    }
+
+    /**
+     * Create a default device
+     *
+     * @return default device
+     */
+    private GlowWormDevice createDefaultDevice() {
+        GlowWormDevice gwDevice = new GlowWormDevice();
+        gwDevice.setDeviceName(Constants.USB_DEVICE);
+        gwDevice.setDeviceIP(MainSingleton.getInstance().serial.getSystemPortName());
+        gwDevice.setDhcpInUse(false);
+        gwDevice.setWifi(Constants.DASH);
+        gwDevice.setDeviceVersion(Constants.DASH);
+        gwDevice.setDeviceBoard(Constants.DASH);
+        gwDevice.setMac(Constants.DASH);
+        gwDevice.setGpio(Constants.DASH);
+        gwDevice.setNumberOfLEDSconnected(Constants.DASH);
+        gwDevice.setLastSeen(MainSingleton.getInstance().formatter.format(new Date()));
+        gwDevice.setFirmwareType(Constants.DASH);
+        gwDevice.setBaudRate(Constants.DASH);
+        gwDevice.setMqttTopic(Constants.DASH);
+        gwDevice.setColorMode(Constants.DASH);
+        gwDevice.setColorOrder(Enums.ColorOrder.GRB_GRBW.name());
+        gwDevice.setLdrValue(Constants.DASH);
+        gwDevice.setRelayPin(Constants.DASH);
+        gwDevice.setRelayInvertedPin(false);
+        gwDevice.setSbPin(Constants.DASH);
+        gwDevice.setLdrPin(Constants.DASH);
+        gwDevice.setGpioClock(Constants.DASH);
+        return gwDevice;
     }
 
     /**
