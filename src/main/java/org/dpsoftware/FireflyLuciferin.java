@@ -601,7 +601,8 @@ public class FireflyLuciferin extends Application {
             }
         }
         if (MainSingleton.getInstance().serial != null) {
-            MainSingleton.getInstance().serial.closePort();
+            SerialManager sm = new SerialManager();
+            sm.closeSerial();
         }
     }
 

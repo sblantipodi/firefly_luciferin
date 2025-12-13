@@ -52,10 +52,7 @@ import org.dpsoftware.utilities.PropertiesLoader;
 import java.awt.*;
 import java.io.*;
 import java.math.BigInteger;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -141,11 +138,11 @@ public class UpgradeManager {
      * Show upgrade alert/notification result
      *
      * @param glowWormDevice device that has been programmed
-     * @param response       from the device
+     * @param responseCode   from the device
      */
-    private static void showUpgradeResult(GlowWormDevice glowWormDevice, StringBuilder response) {
+    private static void showUpgradeResult(GlowWormDevice glowWormDevice, int responseCode) {
         String notificationContext = glowWormDevice.getDeviceName() + " ";
-        if (Constants.OK.contentEquals(response)) {
+        if (HttpURLConnection.HTTP_OK == responseCode) {
             log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
                 notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
@@ -402,7 +399,6 @@ public class UpgradeManager {
                     }
                 }
                 if (!downloadFirmwareOnly) {
-                    // Send data
                     postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
@@ -424,39 +420,47 @@ public class UpgradeManager {
     private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException, URISyntaxException {
         String boundary = new BigInteger(256, new Random()).toString();
         String url = Constants.UPGRADE_URL.replace("{0}", glowWormDevice.getDeviceIP());
-
-        URLConnection connection = new URI(url).toURL().openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
-
+        HttpURLConnection http = (HttpURLConnection) new URI(url).toURL().openConnection();
+        http.setDoOutput(true);
+        http.setRequestMethod("POST");
+        http.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
+        // Multipart
         byte[] input1 = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
         byte[] input2 = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
-        byte[] input3 = (Files.readAllBytes(path));
+        byte[] input3 = Files.readAllBytes(path);
         byte[] input4 = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
         byte[] input5 = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
-
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(input1);
         output.write(input2);
         output.write(input3);
         output.write(input4);
         output.write(input5);
-        // Write POST data
-        try (OutputStream os = connection.getOutputStream()) {
+        // Write data
+        try (OutputStream os = http.getOutputStream()) {
             byte[] input = output.toByteArray();
             os.write(input, 0, input.length);
+            os.flush();
         }
-        // Read response
-        StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-            String responseLine;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
+        int responseCode;
+        String responseBody = "";
+        try {
+            responseCode = http.getResponseCode();
+            try (InputStream is = http.getInputStream()) {
+                responseBody = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             }
-            log.info("Response={}", response);
+        } catch (IOException e) {
+            responseCode = http.getResponseCode();
+            InputStream errorStream = http.getErrorStream();
+            if (errorStream != null) {
+                responseBody = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            log.warn("HTTP error during OTA upload: code={}, body={}", responseCode, responseBody, e);
         }
-        showUpgradeResult(glowWormDevice, response);
+        log.info("HTTP response code={}, body={}", responseCode, responseBody);
+        showUpgradeResult(glowWormDevice, responseCode);
     }
+
 
     /**
      * Download Glow Worm Luciferin firmware
