@@ -26,6 +26,7 @@ import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -41,10 +42,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,6 +67,9 @@ public class SerialManager {
      * Initialize Serial communication
      */
     public void initSerial(String portName, String baudrate) {
+        if (NativeExecutor.isLinux()) {
+            NativeExecutor.checkUsbGroup();
+        }
         if (!MainSingleton.getInstance().config.isWirelessStream() || !portName.isEmpty()) {
             CommonUtility.delayMilliseconds(() -> {
                 try {
