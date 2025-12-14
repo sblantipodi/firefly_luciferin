@@ -142,8 +142,14 @@ public class SerialManager {
         } else {
             if (NativeExecutor.isLinux() && !alertSent) {
                 alertSent = true;
-                Platform.runLater(() -> MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.USB_NOT_AVAILABLE_TITLE, Constants.USB_NOT_AVAILABLE_HEADER,
-                        Constants.USB_NOT_AVAILABLE_CONTENT, Alert.AlertType.WARNING));
+                Platform.runLater(() -> {
+                    String content = CommonUtility.getWord(Constants.USB_NOT_AVAILABLE_CONTENT);
+                    if (NativeExecutor.isSnap()) {
+                        content += CommonUtility.getWord(Constants.USB_NOT_AVAILABLE_CONTENT_SNAP);
+                    }
+                    MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.USB_NOT_AVAILABLE_TITLE),
+                            CommonUtility.getWord(Constants.USB_NOT_AVAILABLE_HEADER), content, Alert.AlertType.WARNING);
+                });
             }
             MainSingleton.getInstance().communicationError = true;
         }

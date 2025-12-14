@@ -773,6 +773,7 @@ public class Constants {
     public static String USB_NOT_AVAILABLE_TITLE = "usb.not.available.title";
     public static String USB_NOT_AVAILABLE_HEADER = "usb.not.available.header";
     public static String USB_NOT_AVAILABLE_CONTENT = "usb.not.available.content";
+    public static String USB_NOT_AVAILABLE_CONTENT_SNAP = "usb.not.available.content.snap";
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
