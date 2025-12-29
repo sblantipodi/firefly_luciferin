@@ -38,7 +38,7 @@
         <logback.version>1.5.23</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
-        <dbus.java.version>5.1.1</dbus.java.version>
+        <dbus.java.version>5.2.0</dbus.java.version>
     </properties>
 
     <profiles>
