@@ -8,3 +8,6 @@
 FireflyLuciferin.iml
 /build_tools/wixtools/Firefly*.exe
 /fireflyluciferin.iml
+/src/main/resources/org/dpsoftware/gui/.idea/.gitignore
+/src/main/resources/org/dpsoftware/gui/.idea/copilot.data.migration.agent.xml
+/src/main/resources/org/dpsoftware/gui/.idea/vcs.xml
