@@ -26,6 +26,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -44,7 +45,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +69,8 @@ public class ImprovDialogController {
     public Button cancelButton;
     @FXML
     private SettingsController settingsController;
+    @FXML
+    public TextField deviceName;
 
     /**
      * Inject main controller containing the TabPane
@@ -96,6 +99,7 @@ public class ImprovDialogController {
             if (comPort != null && !comPort.getItems().isEmpty()) {
                 comPort.setValue(comPort.getItems().getFirst());
             }
+            deviceName.setText(MainSingleton.getInstance().config.getOutputDevice());
             baudrate.setValue(Enums.BaudRate.BAUD_RATE_115200.getBaudRate());
         });
     }
@@ -108,6 +112,7 @@ public class ImprovDialogController {
         GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_PWD, wifiPwd);
         GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_COM, comPort);
         GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_BAUD, baudrate);
+        GuiManager.createTooltip(Constants.TOOLTIP_DEV_NAME, deviceName);
     }
 
     /**
@@ -145,15 +150,25 @@ public class ImprovDialogController {
         wifiPwd.commitValue();
         baudrate.commitValue();
         comPort.commitValue();
-        AtomicBoolean error = new AtomicBoolean(false);
-        AtomicBoolean postponed = new AtomicBoolean(false);
+        manageImprov();
+        CommonUtility.closeCurrentStage(e);
+    }
+
+    /**
+     * Program device using the IMPROV WiFi protocol
+     */
+    private void manageImprov() {
+        SerialManager serialManager = new SerialManager();
+        serialManager.initSerial(comPort.getValue(), baudrate.getValue());
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        AtomicInteger retryNumber = new AtomicInteger(0);
+        MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
+        final int MAX_RETRY = 5;
         Runnable checkAndRun = () -> {
-            if (MainSingleton.getInstance().config != null) {
-                if (postponed.get()) {
-                    CommonUtility.sleepSeconds(5);
-                }
-                MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
+            boolean improvError;
+            retryNumber.getAndIncrement();
+            log.debug("Trying to send an Improv WiFi command");
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.isOpen()) {
                 MainSingleton.getInstance().config.setOutputDevice(settingsController.modeTabController.serialPort.getValue());
                 MainSingleton.getInstance().config.setMqttEnable(settingsController.networkTabController.mqttEnable.isSelected());
                 if (MainSingleton.getInstance().config.isMqttEnable()) {
@@ -163,20 +178,71 @@ public class ImprovDialogController {
                     MainSingleton.getInstance().config.setMqttUsername(settingsController.networkTabController.mqttUser.getText());
                     MainSingleton.getInstance().config.setMqttPwd(settingsController.networkTabController.mqttPwd.getText());
                 }
-                error.set(improvWiFiCommand());
-                scheduler.shutdown();
+                try {
+                    improvError = sendImprov();
+                } catch (IOException ex) {
+                    log.error(ex.getMessage());
+                    improvError = true;
+                }
             } else {
-                postponed.set(true);
-                if (!postponed.get()) {
-                    // logger isn't initialized yet, don't use the logger here.
-                    System.out.println("Postponing provisioning...");
+                improvError = true;
+            }
+            if (!improvError || retryNumber.get() >= MAX_RETRY) {
+                scheduler.shutdown();
+                if (MainSingleton.getInstance().communicationError) {
+                    MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROVISION_NOTIFY),
+                            CommonUtility.getWord(Constants.FIRMWARE_PROVISION_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
                 }
             }
         };
-        scheduler.scheduleAtFixedRate(checkAndRun, 0, 500, TimeUnit.MILLISECONDS);
-        if (!error.get()) {
-            CommonUtility.closeCurrentStage(e);
+        scheduler.scheduleAtFixedRate(checkAndRun, 100, 2000, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Send improv wifi msg
+     *
+     * @return error
+     * @throws IOException can't open port
+     */
+    private boolean sendImprov() throws IOException {
+        byte version = 0x01;
+        byte rpcPacketType = 0x03;
+        byte rpcCommandType = 0x01;
+        byte[] ssidBytes = ssid.getValue().getBytes(StandardCharsets.UTF_8);
+        byte[] passBytes = wifiPwd.getText().getBytes(StandardCharsets.UTF_8);
+        int dataLen = 1 + ssidBytes.length + 1 + passBytes.length;
+        int packetLen = Constants.IMPROV_HEADER.length + 1 + 1 + 1 + 1 + 1 + dataLen + 1;
+        byte[] packet = new byte[packetLen];
+        int idx = 0;
+        // Header
+        for (byte b : Constants.IMPROV_HEADER) packet[idx++] = b;
+        packet[idx++] = version;
+        packet[idx++] = rpcPacketType;
+        packet[idx++] = (byte) (dataLen + 2);
+        packet[idx++] = rpcCommandType;
+        // Data
+        packet[idx++] = (byte) (ssidBytes.length + passBytes.length);
+        packet[idx++] = (byte) ssidBytes.length;
+        System.arraycopy(ssidBytes, 0, packet, idx, ssidBytes.length);
+        idx += ssidBytes.length;
+        packet[idx++] = (byte) passBytes.length;
+        System.arraycopy(passBytes, 0, packet, idx, passBytes.length);
+        idx += passBytes.length;
+        // Checksum
+        int checksum = 0;
+        for (int i = 0; i < idx; i++) {
+            checksum += packet[i] & 0xFF;
         }
+        byte checksumByte = (byte) (checksum & 0xFF);
+        packet[idx] = checksumByte;
+        if (MainSingleton.getInstance().output != null) {
+            log.debug("Improv WiFi packet sent");
+            MainSingleton.getInstance().improvActive = deviceName.getText();
+            MainSingleton.getInstance().output.write(packet);
+        } else {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -264,60 +330,6 @@ public class ImprovDialogController {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-    }
-
-    /**
-     * Program device using the IMPROV WiFi protocol
-     *
-     * @return true if there is a serial error
-     */
-    public boolean improvWiFiCommand() {
-        SerialManager serialManager = new SerialManager();
-        serialManager.closeSerial();
-        serialManager.initSerial(comPort.getValue(), baudrate.getValue());
-        try {
-            byte version = 0x01;
-            byte rpcPacketType = 0x03;
-            byte rpcCommandType = 0x01;
-            byte[] ssidBytes = ssid.getValue().getBytes(StandardCharsets.UTF_8);
-            byte[] passBytes = wifiPwd.getText().getBytes(StandardCharsets.UTF_8);
-            int dataLen = 1 + ssidBytes.length + 1 + passBytes.length;
-            int packetLen = Constants.IMPROV_HEADER.length + 1 + 1 + 1 + 1 + 1 + dataLen + 1;
-            byte[] packet = new byte[packetLen];
-            int idx = 0;
-            // Header
-            for (byte b : Constants.IMPROV_HEADER) packet[idx++] = b;
-            packet[idx++] = version;
-            packet[idx++] = rpcPacketType;
-            packet[idx++] = (byte) (dataLen + 2);
-            packet[idx++] = rpcCommandType;
-            // Data
-            packet[idx++] = (byte) (ssidBytes.length + passBytes.length);
-            packet[idx++] = (byte) ssidBytes.length;
-            System.arraycopy(ssidBytes, 0, packet, idx, ssidBytes.length);
-            idx += ssidBytes.length;
-            packet[idx++] = (byte) passBytes.length;
-            System.arraycopy(passBytes, 0, packet, idx, passBytes.length);
-            idx += passBytes.length;
-            // Checksum
-            int checksum = 0;
-            for (int i = 0; i < idx; i++) {
-                checksum += packet[i] & 0xFF;
-            }
-            byte checksumByte = (byte) (checksum & 0xFF);
-            packet[idx] = checksumByte;
-            if (MainSingleton.getInstance().output == null) {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROVISION_NOTIFY),
-                        CommonUtility.getWord(Constants.FIRMWARE_PROVISION_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
-                return true;
-            } else {
-                MainSingleton.getInstance().output.write(packet);
-            }
-        } catch (IOException ex) {
-            log.error(ex.getMessage());
-            return true;
-        }
-        return false;
     }
 
 }

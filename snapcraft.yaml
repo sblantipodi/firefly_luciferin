@@ -124,6 +124,8 @@ apps:
       - alsa
       - audio-playback
       - audio-record
+      - serial-port
+      - raw-usb
     environment:
       TMPDIR: $XDG_RUNTIME_DIR
       DISABLE_WAYLAND: 1
