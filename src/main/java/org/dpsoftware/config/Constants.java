@@ -282,6 +282,7 @@ public class Constants {
     public static final String HTTP_LDR_RELAYPIN = "relayPin";
     public static final String HTTP_LDR_RELAYINV = "relayInv";
     public static final String HTTP_LDR_SBPIN = "sbPin";
+    public static final String HTTP_LED_BUILTIN = "ledBuiltin";
     public static final String HTTP_LDR_LDRPIN = "ldrPin";
     public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
     public static final String MQTT_REMOVE_DEVICE = "fxml.mqtttab.mqttremovedevice";
@@ -294,6 +295,7 @@ public class Constants {
     public static final String EDITABLE_PIN_RELAYPIN = "relayPinColumn";
     public static final String EDITABLE_PIN_SBPIN = "sbPinColumn";
     public static final String EDITABLE_PIN_GPIO_CLOCK = "gpioClockColumn";
+    public static final String EDITABLE_PIN_LED_BUILTIN = "ledBuiltinColumn";
     public static final String CDC_DEVICE = "_CDC";
     // GUI
     public static final String TRANSPARENT = "TRANSPARENT";

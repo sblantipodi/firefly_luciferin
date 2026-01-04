@@ -183,6 +183,7 @@ public class SerialManager {
         gwDevice.setSbPin(Constants.DASH);
         gwDevice.setLdrPin(Constants.DASH);
         gwDevice.setGpioClock(Constants.DASH);
+        gwDevice.setLedBuiltin(Constants.DASH);
         return gwDevice;
     }
 

@@ -123,6 +123,8 @@ public class DevicesTabController {
     @FXML
     private TableColumn<GlowWormDevice, String> sbPinColumn;
     @FXML
+    private TableColumn<GlowWormDevice, String> ledBuiltinColumn;
+    @FXML
     private Label versionLabel;
 
     /**
@@ -192,6 +194,12 @@ public class DevicesTabController {
         sbPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
         sbPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         sbPinColumn.setOnEditCommit(this::setPins);
+        ledBuiltinColumn.setCellValueFactory(cellData -> cellData.getValue().ledBuiltinProperty());
+        ledBuiltinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        ledBuiltinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        ledBuiltinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        ledBuiltinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
+        ledBuiltinColumn.setOnEditCommit(this::setPins);
         gpioClockColumn.setCellValueFactory(cellData -> cellData.getValue().gpioClockProperty());
         gpioClockColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         gpioClockColumn.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -243,6 +251,7 @@ public class DevicesTabController {
                     device.setSbPin(d.getSbPin());
                     device.setLdrPin(d.getLdrPin());
                     device.setGpioClock(d.getGpioClock());
+                    device.setLedBuiltin(d.getLedBuiltin());
                     boolean newValue = checkBox.isSelected();
                     Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
                             Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
@@ -346,7 +355,7 @@ public class DevicesTabController {
     }
 
     /**
-     * Set GPIO pins: relay pin, smart button pin, ldr pin
+     * Set GPIO pins: relay pin, smart button pin, ldr pin, builtin led
      *
      * @param t device table row
      */
@@ -368,6 +377,8 @@ public class DevicesTabController {
                 device.setSbPin(t.getNewValue());
             } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_GPIO_CLOCK)) {
                 device.setGpioClock(t.getNewValue());
+            } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_LED_BUILTIN)) {
+                device.setLedBuiltin(t.getNewValue());
             }
             callFirmwareConfig(device);
         }
@@ -390,8 +401,8 @@ public class DevicesTabController {
             firmwareConfigDto.setRelayInv(device.getRelayInvertedPin());
             firmwareConfigDto.setSbPin(Integer.parseInt(device.getSbPin()));
             firmwareConfigDto.setGpioClock(Integer.parseInt(device.getGpioClock()));
-            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
-                    CommonUtility.toJsonString(firmwareConfigDto));
+            firmwareConfigDto.setLedBuiltin(Integer.parseInt(device.getLedBuiltin()));
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG), CommonUtility.toJsonString(firmwareConfigDto));
         } else if (MainSingleton.getInstance().config != null) {
             MainSingleton.getInstance().ldrPin = Integer.parseInt(device.getLdrPin());
             MainSingleton.getInstance().relayPin = Integer.parseInt(device.getRelayPin());

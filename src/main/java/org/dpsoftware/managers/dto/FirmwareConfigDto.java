@@ -57,4 +57,5 @@ public class FirmwareConfigDto {
     Integer relayPin;
     Boolean relayInv;
     Integer sbPin;
+    Integer ledBuiltin;
 }
