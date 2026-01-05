@@ -247,6 +247,7 @@ public class SerialManager {
             scheduledFuture = serialAttachScheduler.scheduleAtFixedRate(() -> {
                 try {
                     if (MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.openPort()) {
+                        initSerial();
                         log.debug("USB device reconnected successfully");
                         MainSingleton.getInstance().communicationError = false;
                         MainSingleton.getInstance().guiManager.startCapturingThreads();
