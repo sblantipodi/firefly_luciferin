@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -282,6 +282,7 @@ public class Constants {
     public static final String HTTP_LDR_RELAYPIN = "relayPin";
     public static final String HTTP_LDR_RELAYINV = "relayInv";
     public static final String HTTP_LDR_SBPIN = "sbPin";
+    public static final String HTTP_LED_BUILTIN = "ledBuiltin";
     public static final String HTTP_LDR_LDRPIN = "ldrPin";
     public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
     public static final String MQTT_REMOVE_DEVICE = "fxml.mqtttab.mqttremovedevice";
@@ -294,6 +295,7 @@ public class Constants {
     public static final String EDITABLE_PIN_RELAYPIN = "relayPinColumn";
     public static final String EDITABLE_PIN_SBPIN = "sbPinColumn";
     public static final String EDITABLE_PIN_GPIO_CLOCK = "gpioClockColumn";
+    public static final String EDITABLE_PIN_LED_BUILTIN = "ledBuiltinColumn";
     public static final String CDC_DEVICE = "_CDC";
     // GUI
     public static final String TRANSPARENT = "TRANSPARENT";
@@ -379,6 +381,7 @@ public class Constants {
 
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
+    public static final String BC = "0.0.0.0";
     public static final int HTTP_SUCCESS = 200;
     public static final String SERIAL_PORT_AUTO = "AUTO";
     public static final String SERIAL_PORT_COM = "COM";
@@ -407,6 +410,7 @@ public class Constants {
     public static final String SERIAL_LDR_SBPIN = "sbPin:";
     public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
     public static final String SERIAL_GPIO_CLOCK = "gpioClock:";
+    public static final String IP_ADDRESS = "IP Address";
     public static final String SERIAL_IMPROV = "IMPROV";
     public static final byte[] IMPROV_HEADER = {'I', 'M', 'P', 'R', 'O', 'V'};
     public static final String NO_DEVICE_FOUND = "no.device.found";
@@ -549,6 +553,7 @@ public class Constants {
     public static final String TOOLTIP_IMPROV_PWD = "fxml.mqtttab.improv.pwd";
     public static final String TOOLTIP_IMPROV_COM = "fxml.mqtttab.improv.comport";
     public static final String TOOLTIP_IMPROV_BAUD = "fxml.mqtttab.improv.baudrate";
+    public static final String TOOLTIP_DEV_NAME = "fxml.mqtttab.improv.baudrate";
     public static final String TOOLTIP_IMPROV_CONTEXT = "fxml.mqtttab.improv.context";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
@@ -766,12 +771,17 @@ public class Constants {
     public static final int PROFILE_THREAD_DELAY = 30000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
     public static String REGEXP_URL = "https?://(\\d{1,3}(?:\\.\\d{1,3}){3})";
+    public static String REGEXP_IP = "\\b((25[0-5]|2[0-4]\\d|1?\\d?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1?\\d?\\d)\\b";
+    public static String USB_NOT_AVAILABLE_TITLE = "usb.not.available.title";
+    public static String USB_NOT_AVAILABLE_HEADER = "usb.not.available.header";
+    public static String USB_NOT_AVAILABLE_CONTENT = "usb.not.available.content";
+    public static String USB_NOT_AVAILABLE_CONTENT_SNAP = "usb.not.available.content.snap";
+    // Native executor
+    public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
-    // Native executor
-    public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String OBJPATH_KDE_NIGHTLIGHT = "/org/kde/KWin/NightLight";
     public static final String PROP_KDE_NIGHTLIGHT = "enabled";
     public static final String BUSNAME_GNOME_NIGHTLIGHT = "org.gnome.SettingsDaemon.Color";
