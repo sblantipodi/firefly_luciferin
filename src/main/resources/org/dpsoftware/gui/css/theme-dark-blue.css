@@ -60,3 +60,7 @@
 .tray_menu_item_border { color: #0000ff; }
 .tray_background { color: #505960FF; }
 .tray_separator { color: #D7D7D7FF; }
+
+.text-field {
+    -fx-prompt-text-fill: #D0D0D0;
+}

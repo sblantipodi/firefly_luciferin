@@ -60,3 +60,7 @@
     -fx-background-color: linear-gradient(to bottom, #6b563f, #2f241a);
     -fx-text-fill: #ffffff;
 }
+
+.text-field {
+    -fx-prompt-text-fill: #D0D0D0;
+}

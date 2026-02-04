@@ -594,11 +594,11 @@ public class LedsConfigTabController {
      */
     void setNumericTextField() {
         addLedOffsetListener();
-        SettingsController.addTextFieldListener(topLed);
-        SettingsController.addTextFieldListener(leftLed);
-        SettingsController.addTextFieldListener(rightLed);
-        SettingsController.addTextFieldListener(bottomLeftLed);
-        SettingsController.addTextFieldListener(bottomRightLed);
-        SettingsController.addTextFieldListener(bottomRowLed);
+        SettingsController.addTextFieldListener(topLed, false);
+        SettingsController.addTextFieldListener(leftLed, false);
+        SettingsController.addTextFieldListener(rightLed, false);
+        SettingsController.addTextFieldListener(bottomLeftLed, false);
+        SettingsController.addTextFieldListener(bottomRightLed, false);
+        SettingsController.addTextFieldListener(bottomRowLed, false);
     }
 }

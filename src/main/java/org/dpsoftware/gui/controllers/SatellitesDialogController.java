@@ -385,7 +385,7 @@ public class SatellitesDialogController {
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        SettingsController.addTextFieldListener(ledNum);
+        SettingsController.addTextFieldListener(ledNum, false);
     }
 
 }

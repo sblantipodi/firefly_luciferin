@@ -223,6 +223,8 @@ public class Constants {
     public static final String HTTP_SET_LDR = "ldr";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
+    public static final String OTA_PWD = "XXX";
+    public static final String BREK_IMPROV = "BREAKIMPROV";
     public static final String COLOR_ORDER = "colorOrder";
     public static final String WIFI = "wifi";
     public static final String DEVICE_VER = "ver";
@@ -362,6 +364,8 @@ public class Constants {
     public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
     public static final String FIRMWARE_PROVISION_NOTIFY = "device.provision.error";
     public static final String FIRMWARE_PROVISION_NOTIFY_HEADER = "device.provision.error.header";
+    public static final String FIRMWARE_IMPROV_ERROR_HEADER = "fxml.mqtttab.improv.wifi.error";
+    public static final String FIRMWARE_IMPROV_ERROR2_HEADER = "fxml.mqtttab.improv.eth.field.error";
     public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
     public static final String CANT_UPGRADE_TOO_OLD = "cant.upgrade.too.old";
     public static final String MANUAL_UPGRADE = "manual.upgrade";
@@ -410,9 +414,10 @@ public class Constants {
     public static final String SERIAL_LDR_SBPIN = "sbPin:";
     public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
     public static final String SERIAL_GPIO_CLOCK = "gpioClock:";
-    public static final String IP_ADDRESS = "IP Address";
-    public static final String SERIAL_IMPROV = "IMPROV";
+    public static final String SERIAL_IMPROV = "WIFI CONNECTED";
+    public static final String SERIAL_IMPROV_ETH = "ETH Started";
     public static final byte[] IMPROV_HEADER = {'I', 'M', 'P', 'R', 'O', 'V'};
+    public static final byte[] IMPROV_CUSTOM_HEADER = {'D', 'P', 'S', 'E', 'T', 'H'};
     public static final String NO_DEVICE_FOUND = "no.device.found";
     public static final int FAKE_GUI_TRAY_ICON = -100;
     public static final int PRIMARY_DISPLAY_TOLERANCE = 100;
@@ -553,7 +558,8 @@ public class Constants {
     public static final String TOOLTIP_IMPROV_PWD = "fxml.mqtttab.improv.pwd";
     public static final String TOOLTIP_IMPROV_COM = "fxml.mqtttab.improv.comport";
     public static final String TOOLTIP_IMPROV_BAUD = "fxml.mqtttab.improv.baudrate";
-    public static final String TOOLTIP_DEV_NAME = "fxml.mqtttab.improv.baudrate";
+    public static final String TOOLTIP_DEV_NAME = "fxml.mqtttab.improv.devicename";
+    public static final String TOOLTIP_ETHERNET = "fxml.mqtttab.improv.ethernet";
     public static final String TOOLTIP_IMPROV_CONTEXT = "fxml.mqtttab.improv.context";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";

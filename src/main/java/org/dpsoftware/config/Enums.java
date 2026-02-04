@@ -829,4 +829,51 @@ public class Enums {
         }
     }
 
+    public enum EthernetBoards implements LocalizedEnum {
+        ETH_BOARD_TETH_ELITE_S3("T-ETH ELite ESP32-S3", 101),
+        ETH_BOARD_TETH_LITE_S3("T-ETH Lite ESP32-S3", 102),
+        ETH_BOARD_QUINLED_32("QuinLed-ESP32-Ethernet", 1),
+        ETH_BOARD_QUINLED_OCTA_32("QuinLed-Dig-Octa Brainboard-32-8L and LilyGO-T-ETH-POE", 2),
+        ETH_BOARD_LILYGO_32("LilyGO-T-POE-Pro", 7),
+        ETH_BOARD_WT32("WT32-ETH01", 3),
+        ETH_BOARD_ESP32_KIT("ESP32-ETHERNET-KIT-VE", 4),
+        ETH_BOARD_ESP32_POE("ESP32-POE", 5),
+        ETH_BOARD_ESP32_WROVER("ESP32-POE-WROVER", 8),
+        ETH_BOARD_WESP32("WESP32", 6);
+        private final String ethBoardName;
+        @Getter
+        private final int ethBoardId;
+
+        EthernetBoards(String ethBoardName, int ethBoardId) {
+            this.ethBoardName = ethBoardName;
+            this.ethBoardId = ethBoardId;
+        }
+
+        public static EthernetBoards findByValue(final int ethBoardToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getEthBoardId() == ethBoardToSearch).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return ethBoardName;
+        }
+    }
+
+    public enum EthernetOptions implements LocalizedEnum {
+        ETH_NO_ETH("fxml.mqtttab.improv.no.eth", 0),
+        ETH_CUSTOM_SPI("fxml.mqtttab.improv.custom.eth", 100),
+        ETH_PREBUILT("fxml.mqtttab.improv.prebuilt.eth", 101);
+        private final String ethOption;
+        @Getter
+        private final int optionId;
+
+        EthernetOptions(String ethOption, int optionId) {
+            this.ethOption = ethOption;
+            this.optionId = optionId;
+        }
+
+        public String getValue() {
+            return ethOption;
+        }
+    }
+
 }

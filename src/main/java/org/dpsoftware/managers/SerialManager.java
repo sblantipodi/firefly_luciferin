@@ -30,15 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.dto.FirmwareConfigDto;
-import org.dpsoftware.managers.dto.TcpResponse;
-import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -47,10 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Serial port utility
@@ -462,17 +455,12 @@ public class SerialManager {
                             glowWormDevice.setSbPin(inputLine.replace(Constants.SERIAL_LDR_SBPIN, ""));
                         } else if (inputLine.contains(Constants.SERIAL_GPIO_CLOCK)) {
                             glowWormDevice.setGpioClock(inputLine.replace(Constants.SERIAL_GPIO_CLOCK, ""));
-                        } else if ((inputLine.contains(Constants.SERIAL_IMPROV) && inputLine.contains(Constants.HTTP))
-                                || (inputLine.contains(Constants.IP_ADDRESS) && !inputLine.contains(Constants.BC))) {
-                            if (!MainSingleton.getInstance().getImprovActive().isEmpty()) {
-                                Pattern p = Pattern.compile(Constants.REGEXP_IP);
-                                Matcher m = p.matcher(inputLine);
-                                if (m.find()) {
-                                    String deviceToProvision = MainSingleton.getInstance().improvActive;
-                                    MainSingleton.getInstance().improvActive = "";
-                                    programFirmwareAfterImprov(inputLine, deviceToProvision);
-                                }
-                            }
+                        } else if (!MainSingleton.getInstance().getImprovActive().isEmpty() && inputLine.contains(Constants.SERIAL_IMPROV) || inputLine.contains(Constants.SERIAL_IMPROV_ETH)) {
+                            MainSingleton.getInstance().improvActive = "";
+                            MainSingleton.getInstance().guiManager.pipelineManager.startCapturePipeline();
+                            log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
+                            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
+                                    CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
                         }
                     }
                 }
@@ -480,79 +468,6 @@ public class SerialManager {
         } catch (Exception e) {
             // We don't care about this exception, it's caused by unknown serial messages
         }
-    }
-
-    /**
-     * This method programs firmware after the improv protocol has been triggered
-     *
-     * @param inputLine         input received via Serial port
-     * @param deviceToProvision device to program
-     */
-    private void programFirmwareAfterImprov(String inputLine, String deviceToProvision) {
-        Pattern p = Pattern.compile(Constants.REGEXP_URL);
-        Matcher m = p.matcher(inputLine);
-        Pattern p2 = Pattern.compile(Constants.REGEXP_IP);
-        Matcher m2 = p2.matcher(inputLine);
-        String ip;
-        if (m.find()) {
-            ip = m.group(1);
-        } else if (m2.find()) {
-            ip = m2.group();
-        } else {
-            ip = "";
-        }
-        if (!ip.isEmpty()) {
-            log.info("IMPROV protocol, device connected: {}", ip);
-            closeSerial();
-            if (MainSingleton.getInstance().config != null) {
-                CommonUtility.delaySeconds(() -> {
-                    FirmwareConfigDto firmwareConfigDto = getFirmwareConfigDto(deviceToProvision);
-                    TcpResponse tcpResponse = null;
-                    final int MAX_RETRY = 30;
-                    for (int attempt = 1; attempt <= MAX_RETRY; attempt++) {
-                        tcpResponse = TcpClient.httpGet(CommonUtility.toJsonString(firmwareConfigDto), Constants.HTTP_SETTING, ip);
-                        if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
-                            MainSingleton.getInstance().guiManager.pipelineManager.startCapturePipeline();
-                            log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
-                            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
-                                    CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
-                            break;
-                        }
-                        // No response, retry
-                        log.warn("Attempt to program firmware {} of {}. Retrying...", attempt, MAX_RETRY);
-                    }
-                    // After all retries
-                    if (tcpResponse.getErrorCode() != Constants.HTTP_SUCCESS) {
-                        log.error("Unable to contact IP {} after {} attempts.", ip, MAX_RETRY);
-                    }
-                }, 5);
-            }
-        }
-    }
-
-    /**
-     * Firmware configuration
-     *
-     * @param deviceToProvision device to program
-     * @return Firmware configuration
-     */
-    private FirmwareConfigDto getFirmwareConfigDto(String deviceToProvision) {
-        Configuration config = MainSingleton.getInstance().config;
-        FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-        String deviceNameForAuto = "GW_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        firmwareConfigDto.setDeviceName(Constants.SERIAL_PORT_AUTO.equals(config.getOutputDevice()) ? deviceNameForAuto : deviceToProvision);
-        firmwareConfigDto.setMicrocontrollerIP("");
-        firmwareConfigDto.setMqttCheckbox(config.isMqttEnable());
-        firmwareConfigDto.setSsid("");
-        firmwareConfigDto.setWifipwd("");
-        if (config.isMqttEnable()) {
-            firmwareConfigDto.setMqttIP(config.getMqttServer().substring(0, config.getMqttServer().lastIndexOf(":")).replace(Constants.DEFAULT_MQTT_PROTOCOL, ""));
-            firmwareConfigDto.setMqttPort(config.getMqttServer().substring(config.getMqttServer().lastIndexOf(":") + 1));
-            firmwareConfigDto.setMqttTopic(config.getMqttTopic().equals(Constants.TOPIC_DEFAULT_MQTT) ? Constants.MQTT_BASE_TOPIC : config.getMqttTopic());
-            firmwareConfigDto.setMqttuser(config.getMqttUsername());
-            firmwareConfigDto.setMqttpass(config.getMqttPwd());
-        }
-        return firmwareConfigDto;
     }
 
     /**
