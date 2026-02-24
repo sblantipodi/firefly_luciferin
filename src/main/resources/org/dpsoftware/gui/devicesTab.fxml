@@ -54,6 +54,7 @@
                 <TableColumn fx:id="relayPinInvertedColumn" prefWidth="70.66668450832367" text="Invert Relay"/>
                 <TableColumn fx:id="sbPinColumn" prefWidth="70.66668450832367" text="Button GPIO"/>
                 <TableColumn fx:id="ldrPinColumn" prefWidth="60.66668450832367" text="LDR GPIO"/>
+                <TableColumn fx:id="ledBuiltinColumn" prefWidth="100.66668450832367" text="LED built-in GPIO"/>
                 <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #"/>
             </columns>
             <GridPane.margin>

@@ -1,7 +1,7 @@
 /*
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
  */
 
 .root {
@@ -59,4 +59,8 @@
 .button:pressed {
     -fx-background-color: linear-gradient(to bottom, #496057, #1f2b27);
     -fx-text-fill: #ffffff;
+}
+
+.text-field {
+    -fx-prompt-text-fill: #D0D0D0;
 }

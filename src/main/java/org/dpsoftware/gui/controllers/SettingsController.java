@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -121,12 +121,13 @@ public class SettingsController {
     /**
      * Force TextField to be numeric
      *
-     * @param textField numeric fields
+     * @param textField  numeric fields
+     * @param allowEmpty allow empty
      */
-    public static void addTextFieldListener(TextField textField) {
+    public static void addTextFieldListener(TextField textField, boolean allowEmpty) {
         textField.textProperty().addListener((_, _, newValue) -> {
             if (newValue.isEmpty()) {
-                textField.setText("0");
+                textField.setText(allowEmpty ? "" : "0");
             } else {
                 textField.setText(CommonUtility.removeChars(newValue));
             }
@@ -238,7 +239,7 @@ public class SettingsController {
      * Init all the settings listener
      */
     private void initListeners() {
-        setSerialPortAvailableCombo();
+        CommonUtility.delayMilliseconds(this::setSerialPortAvailableCombo, 10);
         networkTabController.initListeners();
         modeTabController.initListeners();
         miscTabController.initListeners(currentConfig);
@@ -462,7 +463,7 @@ public class SettingsController {
     public boolean isMqttParamChanged() {
         return currentConfig.isWirelessStream() != networkTabController.mqttStream.isSelected()
                 || currentConfig.isMqttEnable() != networkTabController.mqttEnable.isSelected()
-                || !currentConfig.getMqttServer().equals(networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText())
+                || !currentConfig.getMqttServer().equals(Constants.DEFAULT_MQTT_PROTOCOL + networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText())
                 || !currentConfig.getMqttTopic().equals(networkTabController.mqttTopic.getText())
                 || !currentConfig.getMqttUsername().equals(networkTabController.mqttUser.getText())
                 || !currentConfig.getMqttPwd().equals(networkTabController.mqttPwd.getText());
@@ -590,7 +591,7 @@ public class SettingsController {
             firmwareConfigDto.setSsid("");
             firmwareConfigDto.setWifipwd("");
             if (networkTabController.mqttEnable.isSelected()) {
-                firmwareConfigDto.setMqttIP(networkTabController.mqttHost.getText().split("//")[1]);
+                firmwareConfigDto.setMqttIP(networkTabController.mqttHost.getText());
                 firmwareConfigDto.setMqttPort(networkTabController.mqttPort.getText());
                 firmwareConfigDto.setMqttTopic(networkTabController.mqttTopic.getText());
                 firmwareConfigDto.setMqttuser(networkTabController.mqttUser.getText());
@@ -604,7 +605,11 @@ public class SettingsController {
                 if (device.getBaudRate().isEmpty()) {
                     firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(MainSingleton.getInstance().config.getBaudRate()).getBaudRateValue());
                 } else {
-                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
+                    try {
+                        firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
+                    } catch (Exception nullPointerException) {
+                        firmwareConfigDto.setBr(Enums.BaudRate.BAUD_RATE_115200.getBaudRateValue());
+                    }
                 }
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
@@ -996,7 +1001,7 @@ public class SettingsController {
      * @param currentSettingsInUse object used for the comparison with the profile object
      */
     private void setMqttTabParams(Configuration currentSettingsInUse) {
-        currentSettingsInUse.setMqttServer(networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText());
+        currentSettingsInUse.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText());
         currentSettingsInUse.setMqttTopic(networkTabController.mqttTopic.getText());
         currentSettingsInUse.setMqttUsername(networkTabController.mqttUser.getText());
         currentSettingsInUse.setMqttPwd(networkTabController.mqttPwd.getText());

@@ -21,7 +21,7 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 
 [![GitHub stars](https://img.shields.io/github/stars/sblantipodi/firefly_luciferin.svg?style=social&label=Star)](https://github.com/sblantipodi/firefly_luciferin/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sblantipodi/firefly_luciferin.svg?style=social&label=Fork)](https://github.com/sblantipodi/firefly_luciferin/network)
-[![Downloads](https://img.shields.io/github/downloads/sblantipodi/firefly_luciferin/total.svg?logoColor=white&color=5865F2&label=downloads)](https://github.com/sblantipodi/firefly_luciferin/releases)
+[![Downloads](https://img.shields.io/badge/dynamic/json?color=5865F2&label=downloads&query=%24.installs_total&url=https://dpsoftware.org/luciferin_download.out)](https://github.com/sblantipodi/firefly_luciferin/releases)
 [![CI Build](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/build.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions)
 [![CodeQL Analysis](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml)
 
@@ -82,8 +82,8 @@ Effortless setup with minimal configuration required, yet highly customizable to
 
 ## Luciferin Official PCB
 
-<img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/PCB_front.jpg?raw=true">
-<img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/pre_after.jpg?raw=true">
+<a href="https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB"><img width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/CORE3_IDF5/assets/CAD_schematics/luciferin_official_pcb/img/PCB_front.jpg?raw=true"></a>
+<a href="https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB"><img width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/CORE3_IDF5/assets/CAD_schematics/luciferin_official_pcb/img/pre_after.jpg?raw=true"></a>
 
 If you don't want to design your own PCB and you have a soldering iron, you might
 find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.  

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -165,7 +165,7 @@ public class NetworkTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
+        mqttHost.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf("/") + 1, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
         mqttTopic.setText(Constants.TOPIC_DEFAULT_MQTT.equals(currentConfig.getMqttTopic()) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
         mqttDiscoveryTopic.setText(currentConfig.getMqttDiscoveryTopic());
@@ -270,7 +270,7 @@ public class NetworkTabController {
      */
     @FXML
     public void save(Configuration config) {
-        config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
+        config.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + mqttHost.getText() + ":" + mqttPort.getText());
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttDiscoveryTopic(mqttDiscoveryTopic.getText());
         config.setMqttUsername(mqttUser.getText());
@@ -337,6 +337,6 @@ public class NetworkTabController {
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        SettingsController.addTextFieldListener(mqttPort);
+        SettingsController.addTextFieldListener(mqttPort, false);
     }
 }
