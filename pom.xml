@@ -35,7 +35,7 @@
         <jna.version>5.18.1</jna.version>
         <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.28</logback.version>
+        <logback.version>1.5.32</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.2.0</dbus.java.version>
