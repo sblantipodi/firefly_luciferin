@@ -502,7 +502,7 @@ public class CommonUtility {
                     if (mqttmsg.get(Constants.GPIO_CLOCK) != null) {
                         glowWormDevice.setGpioClock(mqttmsg.get(Constants.GPIO_CLOCK).toString());
                     }
-                    if (mqttmsg.get(Constants.WIFI) != null) {
+                    if (mqttmsg.get(Constants.WIFI) != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
                         MainSingleton.getInstance().wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
                         if (MainSingleton.getInstance().wifiStrength == -1) {
                             MainSingleton.getInstance().wifiStrength = 0;
