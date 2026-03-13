@@ -29,13 +29,13 @@
         <maven.assembly.version>3.8.0</maven.assembly.version>
         <maven.shade.version>3.6.0</maven.shade.version>
         <jserialcomm.version>2.11.4</jserialcomm.version>
-        <jackson.version>2.21.0</jackson.version>
-        <lombok.version>1.18.42</lombok.version>
+        <jackson.version>2.21.1</jackson.version>
+        <lombok.version>1.18.44</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <jna.version>5.18.1</jna.version>
         <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.27</logback.version>
+        <logback.version>1.5.32</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.2.0</dbus.java.version>
