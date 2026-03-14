@@ -839,7 +839,8 @@ public class Enums {
         ETH_BOARD_ESP32_KIT("ESP32-ETHERNET-KIT-VE", 4),
         ETH_BOARD_ESP32_POE("ESP32-POE", 5),
         ETH_BOARD_ESP32_WROVER("ESP32-POE-WROVER", 8),
-        ETH_BOARD_WESP32("WESP32", 6);
+        ETH_BOARD_WESP32("WESP32", 6),
+        ETH_BOARD_GLEDOPTO("Gledopto-Ethernet", 9);
         private final String ethBoardName;
         @Getter
         private final int ethBoardId;
