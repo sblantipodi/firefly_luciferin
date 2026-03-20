@@ -175,9 +175,9 @@ jobs:
         run: |
           mkdir "tmp/winget-pkgs/manifests/d/DpSoftware/FireflyLuciferin/${VERSION}"
           cd "tmp/winget-pkgs/manifests/d/DpSoftware/FireflyLuciferin/${VERSION}"
-          wget https://raw.githubusercontent.com/sblantipodi/build_tools/CORE3_IDF5/winget/DpSoftware.FireflyLuciferin.yaml
-          wget https://raw.githubusercontent.com/sblantipodi/build_tools/CORE3_IDF5/winget/DpSoftware.FireflyLuciferin.installer.yaml
-          wget https://raw.githubusercontent.com/sblantipodi/build_tools/CORE3_IDF5/winget/DpSoftware.FireflyLuciferin.locale.en-US.yaml
+          wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.yaml
+          wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.installer.yaml
+          wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.locale.en-US.yaml
           
           sed -i "s/PackageVersion: .*/PackageVersion: ${VERSION}/" DpSoftware.FireflyLuciferin.yaml
           
