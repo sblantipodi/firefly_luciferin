@@ -149,18 +149,21 @@ public class DevicesTabController {
             @Override
             protected void updateItem(Hyperlink item, boolean empty) {
                 super.updateItem(item, empty);
+                if (empty || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                    setText(null);
+                    return;
+                }
                 final Hyperlink link;
-                if (!empty) {
-                    GlowWormDevice glowWormDevice = getTableRow().getItem();
-                    if (glowWormDevice != null) {
-                        link = new Hyperlink(item != null ? item.getText() : glowWormDevice.getDeviceIP());
-                        if (glowWormDevice.getWifi().contains(Constants.DASH)) {
-                            link.setStyle(Constants.CSS_NO_UNDERLINE + Constants.TC_NO_BOLD_TEXT);
-                        } else {
-                            link.setOnAction(_ -> MainSingleton.getInstance().guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
-                        }
-                        setGraphic(link);
+                GlowWormDevice glowWormDevice = getTableRow().getItem();
+                if (glowWormDevice != null) {
+                    link = new Hyperlink(item != null ? item.getText() : glowWormDevice.getDeviceIP());
+                    if (glowWormDevice.getWifi().contains(Constants.DASH)) {
+                        link.setStyle(Constants.CSS_NO_UNDERLINE + Constants.TC_NO_BOLD_TEXT);
+                    } else {
+                        link.setOnAction(_ -> MainSingleton.getInstance().guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
                     }
+                    setGraphic(link);
                 }
             }
         });
