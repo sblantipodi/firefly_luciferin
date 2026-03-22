@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -463,6 +463,11 @@ public class CommonUtility {
                         ? Constants.DASH
                         : actualObj.get(Constants.HTTP_LDR_SBPIN).toString()
         );
+        deviceToAdd.setLedBuiltin(
+                actualObj.get(Constants.HTTP_LED_BUILTIN) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.HTTP_LED_BUILTIN).toString()
+        );
         deviceToAdd.setLdrPin(
                 actualObj.get(Constants.HTTP_LDR_LDRPIN) == null
                         ? Constants.DASH
@@ -497,7 +502,7 @@ public class CommonUtility {
                     if (mqttmsg.get(Constants.GPIO_CLOCK) != null) {
                         glowWormDevice.setGpioClock(mqttmsg.get(Constants.GPIO_CLOCK).toString());
                     }
-                    if (mqttmsg.get(Constants.WIFI) != null) {
+                    if (mqttmsg.get(Constants.WIFI) != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
                         MainSingleton.getInstance().wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
                         if (MainSingleton.getInstance().wifiStrength == -1) {
                             MainSingleton.getInstance().wifiStrength = 0;
@@ -543,6 +548,9 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.HTTP_LDR_SBPIN) != null) {
                         glowWormDevice.setSbPin(mqttmsg.get(Constants.HTTP_LDR_SBPIN).asText());
+                    }
+                    if (mqttmsg.get(Constants.HTTP_LED_BUILTIN) != null) {
+                        glowWormDevice.setLedBuiltin(mqttmsg.get(Constants.HTTP_LED_BUILTIN).asText());
                     }
                     if (mqttmsg.get(Constants.HTTP_LDR_LDRPIN) != null) {
                         glowWormDevice.setLdrPin(mqttmsg.get(Constants.HTTP_LDR_LDRPIN).asText());
