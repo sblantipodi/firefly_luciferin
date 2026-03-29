@@ -1,9 +1,16 @@
 # Firefly Luciferin
-Ambient Lighting or Bias Light is a technology that enhances your viewing experience by projecting colored lights onto the wall behind your TV/Monitor, matching the colors on the screen. This creates a more immersive and engaging atmosphere, making your favorite shows, movies, and games feel even more captivating.  
 
-**Luciferin** is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms. `Firefly Luciferin is a Java Fast Screen Capture` PC software designed for the [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware, the combination of these software create the perfect `Bias Lighting and Ambient Light system for PC`.  
-_Written in Java with a native flavour for Windows and Linux._  
+Ambient Lighting or Bias Light is a technology that enhances your viewing experience by projecting colored lights onto
+the wall behind your TV/Monitor, matching the colors on the screen. This creates a more immersive and engaging
+atmosphere, making your favorite shows, movies, and games feel even more captivating.
 
+**Luciferin** is a generic term for the light-emitting compound found in organisms that generate bioluminescence like
+Fireflies and Glow Worms.
+
+[Firefly Luciferin](https://github.com/sblantipodi/firefly_luciferin) is a Java Fast Screen Capture PC software designed
+for the [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware,  
+the combination of these software create the perfect `Bias Lighting and Ambient Light system for PC`.  
+_Written in Java with a native flavour for Windows and Linux._
 
 <img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
 
@@ -42,14 +49,19 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 
 ## Quick start
 
-You can **download the installer for Windows or Linux [here](https://github.com/sblantipodi/firefly_luciferin/releases)**.  
+You can **download the Firefly Lucferin installer for Windows or
+Linux [here](https://github.com/sblantipodi/firefly_luciferin/releases)**.  
 The Linux version is also available on [Flathub](https://flathub.org/apps/org.dpsoftware.FireflyLuciferin)
-and [Snap Store](https://github.com/sblantipodi/firefly_luciferin/issues/207)
-  
+and [Snap Store](https://github.com/sblantipodi/firefly_luciferin/issues/207).
+
 This software can run on any Desktop PC using **Windows or Linux**. MacOS support will be added later.
+
 To get the full `Bias Lighting` experience you need a microcontroller (ex. ESP8266, ESP32)
 running [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware. You can connect the
 microcontroller to the PC via USB or via wireless (WiFi/Ethernet, MQTT server is optional).
+
+**Glow Worm Luciferin firmware can be flashed on your device using the**  
+[![Web Installer](https://img.shields.io/website/https/sblantipodi.github.io/glow_worm_luciferin.svg?label=Web%20Installer&down_color=red&down_message=offline&up_color=4bc51d&up_message=online&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAD1BMVEUAAAD%2F%2F%2F%2F%2F%2F%2F%2F%2FVyL%2F%2F%2F8bK2t7AAAAA3RSTlMAARYXuUDOAAAAhklEQVR42u3WyQ2AMAwEQAz9lxxCCRCuONHse2XPy3JsS98EAAAAAAAAQDpAfLywAgAADAuoJ716dw4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAwgLcCAACQH%2FB3AAAAAAAAAPoDWovrxYdjBwAAmA7QerAKAADANICnD0sBAADIDjgAPijZuQgZskEAAAAASUVORK5CYII%3D)](https://sblantipodi.github.io/glow_worm_luciferin)
 
 Why don't you build your own `Luciferin`?  
 Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)  
@@ -88,7 +100,9 @@ Effortless setup with minimal configuration required, yet highly customizable to
 If you don't want to design your own PCB and you have a soldering iron, you might
 find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.  
 This page provides more information about
-the [hardware compatibility](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware) of Luciferin.
+
+Luciferin's [hardware compatibility](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware), along
+with a list of the **supported pre-built boards**.
 
 ## What is the Performance Impact on your System?
 Firefly Luciferin is a very optimized software and it has **nearly no impact on your system performance**.  
