@@ -112,7 +112,11 @@ public class TcInteractionHandler {
             // clamp
             keyboardClamp(saturation, event);
             if (event.getCode() == KeyCode.TAB) {
-                shrinkAndEqualizeTiles();
+                if (event.isShiftDown()) {
+                    equalizeTilesEdgeAware();
+                } else {
+                    shrinkAndEqualizeTiles();
+                }
                 tc.drawTestShapes(MainSingleton.getInstance().config, 0);
                 drawSelectionOverlay(MainSingleton.getInstance().config);
                 manageHistoryOnRelease(MainSingleton.getInstance().config);
@@ -130,6 +134,56 @@ public class TcInteractionHandler {
                 drawSelectionOverlay(MainSingleton.getInstance().config);
             }
         });
+    }
+
+    /**
+     * Equalize tiles edge aware when SHIFT + TAB is pressed
+     */
+    private void equalizeTilesEdgeAware() {
+        if (selectedLeds.size() < 2) return;
+        List<LEDCoordinate> tiles = new ArrayList<>(selectedLeds);
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
+        for (LEDCoordinate t : tiles) {
+            minX = Math.min(minX, t.getX());
+            minY = Math.min(minY, t.getY());
+            maxX = Math.max(maxX, t.getX() + t.getWidth());
+            maxY = Math.max(maxY, t.getY() + t.getHeight());
+        }
+        boolean horizontal = (maxX - minX) > (maxY - minY);
+        if (horizontal) {
+            tiles.sort(Comparator.comparingInt(LEDCoordinate::getX));
+            int startX = tiles.getFirst().getX();
+            int endX = tiles.getLast().getX() + tiles.getLast().getWidth();
+            int totalWidth = endX - startX;
+            int count = tiles.size();
+            int baseWidth = totalWidth / count;
+            int remainder = totalWidth % count; // important to avoid small gaps
+            int currentX = startX;
+            for (int i = 0; i < count; i++) {
+                LEDCoordinate t = tiles.get(i);
+                int w = baseWidth + (i < remainder ? 1 : 0); // residual pixels distribution
+                t.setWidth(Math.max(w, tc.getMIN_TILE_SIZE()));
+                t.setX(currentX);
+                currentX += w;
+            }
+        } else {
+            tiles.sort(Comparator.comparingInt(LEDCoordinate::getY));
+            int startY = tiles.getFirst().getY();
+            int endY = tiles.getLast().getY() + tiles.getLast().getHeight();
+            int totalHeight = endY - startY;
+            int count = tiles.size();
+            int baseHeight = totalHeight / count;
+            int remainder = totalHeight % count;
+            int currentY = startY;
+            for (int i = 0; i < count; i++) {
+                LEDCoordinate t = tiles.get(i);
+                int h = baseHeight + (i < remainder ? 1 : 0);
+                t.setHeight(Math.max(h, tc.getMIN_TILE_SIZE()));
+                t.setY(currentY);
+                currentY += h;
+            }
+        }
     }
 
     /**
