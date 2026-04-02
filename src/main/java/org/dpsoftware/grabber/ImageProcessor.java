@@ -62,6 +62,13 @@ public class ImageProcessor {
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
     WinDef.HWND hwnd;
+    private static final int SWITCH_THRESHOLD = 10;
+    private static final long SWITCH_COOLDOWN_MS = 3000;
+    // Aspect Ratio stability
+    private static int letterboxCounter = 0;
+    private static int pillarboxCounter = 0;
+    private static int fullscreenCounter = 0;
+    private static long lastSwitchTime = 0;
 
     /**
      * Constructor
@@ -390,40 +397,75 @@ public class ImageProcessor {
      * @return boolean if aspect ratio is changed
      */
     static boolean switchAspectRatio(Enums.AspectRatio aspectRatio, int[][] blackPixelMatrix, boolean setFullscreen) {
-        boolean isPillarboxLetterbox;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
         int bottomMatrix = Arrays.stream(blackPixelMatrix[2]).sum();
-        // To swìtch to another aspect ratio some center pixels should not be black. Don't switch if the screen is too black.
-        int whitePixelPercentage = (Constants.NUMBER_OF_AREA_TO_CHECK * Constants.MINIMUM_WHITE_PIXELS_PCT) / 100;
-        boolean enoughWhitePixelForTheChange = centerMatrix < (Constants.NUMBER_OF_AREA_TO_CHECK - whitePixelPercentage);
-        // NUMBER_OF_AREA_TO_CHECK must be black on botton/top left/right, center pixels must be less than NUMBER_OF_AREA_TO_CHECK (at least on NON black pixel in the center)
-        if (topMatrix == Constants.NUMBER_OF_AREA_TO_CHECK && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomMatrix == Constants.NUMBER_OF_AREA_TO_CHECK) {
-            if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
-                if (enoughWhitePixelForTheChange) {
-                    MainSingleton.getInstance().config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
-                    GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(aspectRatio.getBaseI18n());
-                    log.info("Switching to {} aspect ratio.", aspectRatio.getBaseI18n());
-                    if (MainSingleton.getInstance().config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), aspectRatio.getBaseI18n());
-                    }
-                }
-            }
-            isPillarboxLetterbox = true;
-        } else {
-            if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
-                if (setFullscreen && enoughWhitePixelForTheChange) {
-                    MainSingleton.getInstance().config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    log.info("Switching to {} aspect ratio.", Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    if (MainSingleton.getInstance().config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    }
-                }
-            }
-            isPillarboxLetterbox = false;
+        int total = Constants.NUMBER_OF_AREA_TO_CHECK;
+        boolean isBlackTop = topMatrix >= total * 0.9;
+        boolean isBlackBottom = bottomMatrix >= total * 0.9;
+        boolean isCenterNotBlack = centerMatrix < total * 0.8;
+        boolean isDetected = isBlackTop && isCenterNotBlack && isBlackBottom;
+        long now = System.currentTimeMillis();
+        // cooldown anti flicker
+        if (now - lastSwitchTime < SWITCH_COOLDOWN_MS) {
+            return false;
         }
-        return isPillarboxLetterbox;
+        // letterbox / pillarbox
+        if (aspectRatio != Enums.AspectRatio.FULLSCREEN && isDetected) {
+            if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
+                letterboxCounter++;
+                pillarboxCounter = 0;
+                fullscreenCounter = 0;
+                if (letterboxCounter >= SWITCH_THRESHOLD) {
+                    applyAspectRatio(aspectRatio);
+                    return true;
+                }
+            } else if (aspectRatio == Enums.AspectRatio.PILLARBOX) {
+                pillarboxCounter++;
+                letterboxCounter = 0;
+                fullscreenCounter = 0;
+                if (pillarboxCounter >= SWITCH_THRESHOLD) {
+                    applyAspectRatio(aspectRatio);
+                    return true;
+                }
+            }
+        } else {
+            // fullscreen
+            if (setFullscreen) {
+                fullscreenCounter++;
+                letterboxCounter = 0;
+                pillarboxCounter = 0;
+                if (fullscreenCounter >= SWITCH_THRESHOLD) {
+                    applyAspectRatio(Enums.AspectRatio.FULLSCREEN);
+                    return false;
+                }
+            }
+        }
+        return isDetected;
+    }
+
+    /**
+     * Apply aspect ratio
+     *
+     * @param aspectRatio Letterbox or Pillarbox or Fullscreen
+     */
+    private static void applyAspectRatio(Enums.AspectRatio aspectRatio) {
+        if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
+            MainSingleton.getInstance().config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
+            GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(aspectRatio.getBaseI18n());
+            lastSwitchTime = System.currentTimeMillis();
+            // reset counters
+            letterboxCounter = 0;
+            pillarboxCounter = 0;
+            fullscreenCounter = 0;
+            log.info("Switching to {} aspect ratio.", aspectRatio.getBaseI18n());
+            if (MainSingleton.getInstance().config.isMqttEnable()) {
+                NetworkManager.publishToTopic(
+                        NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO),
+                        aspectRatio.getBaseI18n()
+                );
+            }
+        }
     }
 
     /**
