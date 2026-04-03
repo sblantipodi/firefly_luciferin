@@ -69,10 +69,11 @@ public class Constants {
     public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
     public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
     public static final int NUMBER_OF_AREA_TO_CHECK = 50;
-    public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 10;
+    public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 15;
     public static final int MINIMUM_WHITE_PIXELS_PCT = 40;
     public static final int AR_LETTERBOX_GAP = 42;
     public static final int AR_PILLARBOX_GAP = 480;
+    public static final int REQUIRED_CONFIRMATIONS = 4;
     public static final String CONTEXT_MENU_COLOR = "context.menu.color";
     public static final String CONTEXT_MENU_GAMMA = "context.menu.gamma";
     public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";

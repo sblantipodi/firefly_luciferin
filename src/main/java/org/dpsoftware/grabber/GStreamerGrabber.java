@@ -384,7 +384,7 @@ public class GStreamerGrabber extends JComponent {
             if (!bufferLock.tryLock()) {
                 return;
             }
-            // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
+            // CHECK_ASPECT_RATIO is true 4 times per second, if true and black bars auto detection is on, auto detect black bars
             if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
                 if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
                     GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = false;
