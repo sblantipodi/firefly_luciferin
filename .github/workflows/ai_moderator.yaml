@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Extract text content
         id: prepare
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const isPR = !!context.payload.pull_request;
@@ -111,7 +111,7 @@ jobs:
 
       - name: Handle result
         if: steps.prepare.outputs.should_continue == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           AI_LANG: ${{ steps.detect_lang.outputs.response }}
           AI_ABUSE: ${{ steps.detect_abuse.outputs.response }}
