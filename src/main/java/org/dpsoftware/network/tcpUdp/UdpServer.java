@@ -36,9 +36,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,8 +49,7 @@ import java.util.concurrent.TimeUnit;
 public class UdpServer {
 
     DatagramSocket socket;
-    InetAddress localIP;
-    InetAddress broadcastAddress;
+    List<InterfaceAddress> eligibleInterfaceAddresses = Collections.emptyList();
     boolean firstConnection = true;
 
     /**
@@ -70,36 +67,16 @@ public class UdpServer {
             }
             assert socket != null;
             socket.setBroadcast(true);
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = interfaces.nextElement();
-                if (networkInterface.isUp() && !networkInterface.isLoopback() && !networkInterface.isVirtual()) {
-                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-                    while (addresses.hasMoreElements()) {
-                        InetAddress address = addresses.nextElement();
-                        if (address instanceof Inet4Address) {
-                            if (!isVirtualOrHypervisor(networkInterface)) {
-                                localIP = address;
-                                log.info("Local IP={}", address.getHostAddress());
-                            }
-                        }
-                    }
-                }
-            }
+            log.debug("UDP discovery socket initialized on port={}", socket.getLocalPort());
         } catch (SocketException e) {
             log.error(e.getMessage());
         }
     }
 
-    /**
-     * Not the best way to detect if the interface is a Virtual Hypervisor
-     *
-     * @param networkInterface to check
-     * @return true if the network interface is a virtual hupervisor
-     */
-    private static boolean isVirtualOrHypervisor(NetworkInterface networkInterface) {
-        String displayName = networkInterface.getDisplayName().toLowerCase();
-        return Enums.InterfaceToExclude.contains(displayName);
+    private static boolean interfaceMatchesExcludedKeywords(NetworkInterface networkInterface) {
+        String interfaceName = networkInterface.getName() != null ? networkInterface.getName().toLowerCase() : "";
+        String displayName = networkInterface.getDisplayName() != null ? networkInterface.getDisplayName().toLowerCase() : "";
+        return Enums.InterfaceToExclude.contains(interfaceName) || Enums.InterfaceToExclude.contains(displayName);
     }
 
     /**
@@ -144,13 +121,13 @@ public class UdpServer {
                                 } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
                                     CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
                                 } else if (ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(received)) {
-                                    log.info("Update successful={}", received);
+                                    logUpdateSuccessful(received);
                                     CommonUtility.sleepSeconds(60);
                                     MainSingleton.getInstance().guiManager.startCapturingThreads();
                                 } else {
                                     GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
                                         if (glowWormDevice.getDeviceName().equals(received)) {
-                                            log.info("Update successful={}", received);
+                                            logUpdateSuccessful(received);
                                             shareBroadCastToOtherInstances(received);
                                         }
                                     });
@@ -183,38 +160,173 @@ public class UdpServer {
         }
     }
 
+    private void logUpdateSuccessful(String received) {
+        log.info("Update successful={}", received);
+    }
+
     /**
      * Manage UDP communication with Glow Worm
      */
     @SuppressWarnings("Duplicates")
     void broadcastToCorrectNetworkAdapter() {
-        Enumeration<NetworkInterface> interfaces;
         try {
-            interfaces = NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = interfaces.nextElement();
-                // Do not want to use the loopback interface.
-                if (!networkInterface.isLoopback() && !networkInterface.isVirtual()) {
-                    for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                        boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
-                        if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
-                                && interfaceAddress.getAddress().getHostAddress() != null && ((interfaceAddress.getBroadcast() != null) || useBroadcast)
-                                && localIP.getHostAddress().equals(interfaceAddress.getAddress().getHostAddress())) {
-                            log.info("Network adapter in use={}", networkInterface.getDisplayName());
-                            if (useBroadcast) {
-                                log.info("Broadcast address found={}", interfaceAddress.getBroadcast());
-                            } else {
-                                log.info("Use static IP address={}", MainSingleton.getInstance().config.getOutputDevice());
-                            }
-                            pingTask(interfaceAddress);
-                            setIpTask(interfaceAddress);
-                        }
-                    }
+            boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
+            log.debug("Starting UDP discovery. mode={}, staticGlowWormIp={}",
+                    useBroadcast ? "broadcast" : "static-ip", MainSingleton.getInstance().config.getStaticGlowWormIp());
+            eligibleInterfaceAddresses = getEligibleInterfaceAddresses(useBroadcast);
+            log.info("Eligible UDP interface addresses count={}", eligibleInterfaceAddresses.size());
+            for (InterfaceAddress interfaceAddress : eligibleInterfaceAddresses) {
+                InetAddress address = interfaceAddress.getAddress();
+                if (address != null) {
+                    log.info("Local IP={}", address.getHostAddress());
                 }
+                if (useBroadcast) {
+                    log.info("Broadcast address found={}", interfaceAddress.getBroadcast());
+                } else {
+                    log.info("Use static IP address={} via interface={}",
+                            MainSingleton.getInstance().config.getStaticGlowWormIp(), address != null ? address.getHostAddress() : "unknown");
+                }
+                pingTask(interfaceAddress);
+                setIpTask(interfaceAddress);
+            }
+            if (eligibleInterfaceAddresses.isEmpty()) {
+                log.warn("No eligible network adapter found for UDP discovery. useBroadcast={}", useBroadcast);
             }
         } catch (SocketException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Find all IPv4 interfaces that can be used for UDP discovery.
+     *
+     * @param useBroadcast whether to target subnet broadcast addresses
+     * @return eligible interface addresses
+     */
+    private List<InterfaceAddress> getEligibleInterfaceAddresses(boolean useBroadcast) throws SocketException {
+        List<InterfaceAddress> interfaceAddresses = new ArrayList<>();
+        String staticGlowWormIp = MainSingleton.getInstance().config.getStaticGlowWormIp();
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = interfaces.nextElement();
+            log.debug("Inspecting interface name={}, displayName={}, up={}, loopback={}, virtual={}",
+                    networkInterface.getName(), networkInterface.getDisplayName(), networkInterface.isUp(),
+                    networkInterface.isLoopback(), networkInterface.isVirtual());
+            if (!isEligibleNetworkInterface(networkInterface)) {
+                log.debug("Skipping interface {} because it is not eligible for UDP discovery", networkInterface.getDisplayName());
+                continue;
+            }
+            log.debug("Network adapter candidate={}", networkInterface.getDisplayName());
+            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                InetAddress address = interfaceAddress.getAddress();
+                log.debug("Inspecting interface address ip={}, broadcast={}, prefixLength={}",
+                        address != null ? address.getHostAddress() : "null",
+                        interfaceAddress.getBroadcast(),
+                        interfaceAddress.getNetworkPrefixLength());
+                if (!(address instanceof Inet4Address)) {
+                    log.debug("Skipping interface address {} because it is not IPv4",
+                            address != null ? address.getHostAddress() : "null");
+                    continue;
+                }
+                if (useBroadcast) {
+                    if (interfaceAddress.getBroadcast() != null) {
+                        interfaceAddresses.add(interfaceAddress);
+                        log.debug("Selected interface {} with IPv4 {} for broadcast discovery on {}",
+                                networkInterface.getDisplayName(), address.getHostAddress(), interfaceAddress.getBroadcast());
+                    } else {
+                        log.debug("Skipping IPv4 {} because it has no broadcast address", address.getHostAddress());
+                    }
+                } else {
+                    boolean sameSubnet = isAddressInSameSubnet(interfaceAddress, staticGlowWormIp);
+                    if (sameSubnet) {
+                        interfaceAddresses.add(interfaceAddress);
+                        log.debug("Selected interface {} with IPv4 {} for static target {}",
+                                networkInterface.getDisplayName(), address.getHostAddress(), staticGlowWormIp);
+                    } else {
+                        log.debug("Skipping IPv4 {} because it is not in the same subnet as {}",
+                                address.getHostAddress(), staticGlowWormIp);
+                    }
+                }
+            }
+        }
+        return interfaceAddresses;
+    }
+
+    /**
+     * Validate a network interface before using it for discovery.
+     *
+     * @param networkInterface interface to check
+     * @return true if the interface can be used
+     */
+    private boolean isEligibleNetworkInterface(NetworkInterface networkInterface) throws SocketException {
+        if (!networkInterface.isUp()) {
+            log.debug("Interface {} excluded because it is down", networkInterface.getDisplayName());
+            return false;
+        }
+        if (networkInterface.isLoopback()) {
+            log.debug("Interface {} excluded because it is loopback", networkInterface.getDisplayName());
+            return false;
+        }
+        if (networkInterface.isVirtual()) {
+            log.debug("Interface {} excluded because it is virtual", networkInterface.getDisplayName());
+            return false;
+        }
+        if (networkInterface.isPointToPoint()) {
+            log.debug("Interface {} excluded because it is point-to-point", networkInterface.getDisplayName());
+            return false;
+        }
+        if (interfaceMatchesExcludedKeywords(networkInterface)) {
+            log.debug("Interface {} excluded because it matches the interface exclusion list", networkInterface.getDisplayName());
+            return false;
+        }
+        return networkInterface.isUp()
+                && !networkInterface.isLoopback()
+                && !networkInterface.isVirtual()
+                && !networkInterface.isPointToPoint()
+                && !interfaceMatchesExcludedKeywords(networkInterface);
+    }
+
+    /**
+     * Check if a target IP belongs to the same subnet of an interface.
+     *
+     * @param interfaceAddress interface to check
+     * @param targetIp         target IP address
+     * @return true if the target IP belongs to the same subnet
+     */
+    private boolean isAddressInSameSubnet(InterfaceAddress interfaceAddress, String targetIp) {
+        if (!NetworkManager.isValidIp(targetIp) || interfaceAddress == null || interfaceAddress.getAddress() == null) {
+            log.debug("Cannot evaluate subnet match for interfaceAddress={} and targetIp={}", interfaceAddress, targetIp);
+            return false;
+        }
+        short prefixLength = interfaceAddress.getNetworkPrefixLength();
+        if (prefixLength < 0 || prefixLength > 32) {
+            log.debug("Invalid prefixLength={} for address={}", prefixLength, interfaceAddress.getAddress().getHostAddress());
+            return false;
+        }
+        byte[] localAddress = interfaceAddress.getAddress().getAddress();
+        byte[] targetAddress;
+        try {
+            targetAddress = InetAddress.getByName(targetIp).getAddress();
+        } catch (UnknownHostException e) {
+            log.debug("Unable to resolve staticGlowWormIp={} while checking subnet match", targetIp);
+            return false;
+        }
+        // Split the CIDR prefix into full bytes plus any remaining bits of the next byte.
+        int fullBytes = prefixLength / 8;
+        int remainingBits = prefixLength % 8;
+        for (int index = 0; index < fullBytes; index++) {
+            if (localAddress[index] != targetAddress[index]) {
+                return false;
+            }
+        }
+        if (remainingBits == 0) {
+            return true;
+        }
+        int mask = (0xFF << (8 - remainingBits)) & 0xFF;
+        boolean sameSubnet = (localAddress[fullBytes] & mask) == (targetAddress[fullBytes] & mask);
+        log.debug("Subnet match check localIp={}, targetIp={}, prefixLength={}, result={}",
+                interfaceAddress.getAddress().getHostAddress(), targetIp, prefixLength, sameSubnet);
+        return sameSubnet;
     }
 
     /**
@@ -234,13 +346,20 @@ public class UdpServer {
                     if (MainSingleton.getInstance().config.getSatellites() != null) {
                         boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                         if (useBroadcast) {
-                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME, MainSingleton.getInstance().config.getOutputDevice(), interfaceAddress.getBroadcast(), interfaceAddress.getBroadcast());
+                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME, MainSingleton.getInstance().config.getOutputDevice(), interfaceAddress.getBroadcast());
                         } else {
-                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, MainSingleton.getInstance().config.getOutputDevice(), interfaceAddress.getAddress(), InetAddress.getByName(MainSingleton.getInstance().config.getStaticGlowWormIp()));
+                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, MainSingleton.getInstance().config.getOutputDevice(), InetAddress.getByName(MainSingleton.getInstance().config.getStaticGlowWormIp()));
                         }
+                        log.trace("Sending UDP device-name packet from interfaceIp={} to targetIp={} payloadPrefix={}",
+                                interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
+                                broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
+                                useBroadcast ? Constants.UDP_DEVICE_NAME : Constants.UDP_DEVICE_NAME_STATIC);
                         socket.send(broadCastPing);
                         for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
-                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, sat.getValue().getDeviceIp(), interfaceAddress.getAddress(), InetAddress.getByName(sat.getValue().getDeviceIp()));
+                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, sat.getValue().getDeviceIp(), InetAddress.getByName(sat.getValue().getDeviceIp()));
+                            log.trace("Sending UDP satellite device-name packet from interfaceIp={} to satelliteIp={}",
+                                    interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
+                                    sat.getValue().getDeviceIp());
                             socket.send(broadCastPing);
                         }
                     }
@@ -268,13 +387,20 @@ public class UdpServer {
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
                     boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                     if (useBroadcast) {
-                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getBroadcast().toString().substring(1), interfaceAddress.getBroadcast(), interfaceAddress.getBroadcast());
+                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getBroadcast().toString().substring(1), interfaceAddress.getBroadcast());
                     } else {
-                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(MainSingleton.getInstance().config.getStaticGlowWormIp()));
+                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), InetAddress.getByName(MainSingleton.getInstance().config.getStaticGlowWormIp()));
                     }
+                    log.trace("Sending UDP ping from interfaceIp={} to targetIp={} mode={}",
+                            interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
+                            broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
+                            useBroadcast ? "broadcast" : "static-ip");
                     socket.send(broadCastPing);
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
-                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(sat.getValue().getDeviceIp()));
+                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), InetAddress.getByName(sat.getValue().getDeviceIp()));
+                        log.trace("Sending UDP ping from interfaceIp={} to satelliteIp={}",
+                                interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
+                                sat.getValue().getDeviceIp());
                         socket.send(broadCastPing);
                     }
                 }
@@ -289,18 +415,16 @@ public class UdpServer {
      * Set Ip datagram packet
      *
      * @param outputDevice device name
-     * @param broadcastIp  IP to use for broadcast
      * @param deviceIp     device IP for communication
      * @return datagram packet to use for sending the msg
      */
-    private DatagramPacket getDatagramPacket(String prefix, String outputDevice, InetAddress broadcastIp, InetAddress deviceIp) {
+    private DatagramPacket getDatagramPacket(String prefix, String outputDevice, InetAddress deviceIp) {
         byte[] bufferBroadcastPing;
         DatagramPacket broadCastPing;
         String udpMsg;
         udpMsg = (prefix + outputDevice);
         bufferBroadcastPing = udpMsg.getBytes();
         log.trace(udpMsg);
-        broadcastAddress = broadcastIp;
         broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
                 deviceIp, Constants.UDP_BROADCAST_PORT);
         return broadCastPing;
@@ -330,11 +454,19 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     void shareBroadCastToOtherInstance(byte[] bufferBroadcastPing, int broadcastPort) {
-        DatagramPacket broadCastPing;
         try {
-            broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
-                    broadcastAddress, broadcastPort);
-            socket.send(broadCastPing);
+            for (InterfaceAddress interfaceAddress : eligibleInterfaceAddresses) {
+                InetAddress broadcastAddress = interfaceAddress.getBroadcast();
+                if (broadcastAddress == null) {
+                    log.debug("Skipping UDP relay on interfaceIp={} because no broadcast address is available",
+                            interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown");
+                    continue;
+                }
+                DatagramPacket broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
+                        broadcastAddress, broadcastPort);
+                log.debug("Relaying UDP payload to broadcastIp={} port={}", broadcastAddress.getHostAddress(), broadcastPort);
+                socket.send(broadCastPing);
+            }
         } catch (IOException e) {
             log.error(e.getMessage());
         }

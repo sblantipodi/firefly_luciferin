@@ -25,12 +25,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
+import java.util.Enumeration;
 
 /**
  * UDP Client to manage UDP wireless stream, this is an alternative to MQTT stream
@@ -48,10 +51,127 @@ public class UdpClient {
      * @param deviceIP device IP
      */
     public UdpClient(String deviceIP) throws SocketException, UnknownHostException {
-        socket = new DatagramSocket();
+        address = InetAddress.getByName(deviceIP);
+        socket = createSocket(address);
         socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
         setTrafficClass();
-        address = InetAddress.getByName(deviceIP);
+    }
+
+    /**
+     * Create a UDP socket bound to the local interface that can best reach the target device.
+     *
+     * @param targetAddress device IP address
+     * @return UDP socket
+     * @throws SocketException when the socket cannot be created
+     */
+    private DatagramSocket createSocket(InetAddress targetAddress) throws SocketException {
+        InetAddress localBindAddress = findLocalAddressForTarget(targetAddress);
+        if (localBindAddress != null) {
+            DatagramSocket datagramSocket = new DatagramSocket(new InetSocketAddress(localBindAddress, 0));
+            log.info("UDP stream socket bound to localIp={} for targetIp={}",
+                    localBindAddress.getHostAddress(), targetAddress.getHostAddress());
+            return datagramSocket;
+        }
+        log.info("UDP stream socket using OS-selected interface for targetIp={}", targetAddress.getHostAddress());
+        return new DatagramSocket();
+    }
+
+    /**
+     * Find the local IPv4 address that belongs to the same subnet as the target device.
+     *
+     * @param targetAddress device IP address
+     * @return matching local IPv4 address, or null if none is found
+     */
+    private InetAddress findLocalAddressForTarget(InetAddress targetAddress) throws SocketException {
+        if (!(targetAddress instanceof Inet4Address) || !NetworkManager.isValidIp(targetAddress.getHostAddress())) {
+            log.debug("UDP stream targetIp={} is not a valid IPv4 candidate for local binding", targetAddress.getHostAddress());
+            return null;
+        }
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = interfaces.nextElement();
+            log.debug("Inspecting UDP stream interface name={}, displayName={}, up={}, loopback={}, virtual={}",
+                    networkInterface.getName(), networkInterface.getDisplayName(), networkInterface.isUp(),
+                    networkInterface.isLoopback(), networkInterface.isVirtual());
+            if (!isEligibleNetworkInterface(networkInterface)) {
+                log.debug("Skipping UDP stream interface {} because it is not eligible", networkInterface.getDisplayName());
+                continue;
+            }
+            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                InetAddress localAddress = interfaceAddress.getAddress();
+                if (!(localAddress instanceof Inet4Address)) {
+                    continue;
+                }
+                boolean sameSubnet = isAddressInSameSubnet(interfaceAddress, targetAddress.getHostAddress());
+                log.debug("UDP stream subnet check localIp={}, targetIp={}, prefixLength={}, result={}",
+                        localAddress.getHostAddress(), targetAddress.getHostAddress(), interfaceAddress.getNetworkPrefixLength(), sameSubnet);
+                if (sameSubnet) {
+                    log.debug("Selected UDP stream interface {} with localIp={} for targetIp={}",
+                            networkInterface.getDisplayName(), localAddress.getHostAddress(), targetAddress.getHostAddress());
+                    return localAddress;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean interfaceMatchesExcludedKeywords(NetworkInterface networkInterface) {
+        String interfaceName = networkInterface.getName() != null ? networkInterface.getName().toLowerCase() : "";
+        String displayName = networkInterface.getDisplayName() != null ? networkInterface.getDisplayName().toLowerCase() : "";
+        return Enums.InterfaceToExclude.contains(interfaceName) || Enums.InterfaceToExclude.contains(displayName);
+    }
+
+    /**
+     * Validate a network interface before using it for UDP streaming.
+     *
+     * @param networkInterface interface to check
+     * @return true if the interface can be used
+     */
+    private boolean isEligibleNetworkInterface(NetworkInterface networkInterface) throws SocketException {
+        if (!networkInterface.isUp()) {
+            return false;
+        }
+        if (networkInterface.isLoopback() || networkInterface.isVirtual() || networkInterface.isPointToPoint()) {
+            return false;
+        }
+        return !interfaceMatchesExcludedKeywords(networkInterface);
+    }
+
+    /**
+     * Check if a target IP belongs to the same subnet of an interface.
+     *
+     * @param interfaceAddress interface to check
+     * @param targetIp         target IP address
+     * @return true if the target IP belongs to the same subnet
+     */
+    private boolean isAddressInSameSubnet(InterfaceAddress interfaceAddress, String targetIp) {
+        if (!NetworkManager.isValidIp(targetIp) || interfaceAddress == null || interfaceAddress.getAddress() == null) {
+            return false;
+        }
+        short prefixLength = interfaceAddress.getNetworkPrefixLength();
+        if (prefixLength < 0 || prefixLength > 32) {
+            return false;
+        }
+        byte[] localAddress = interfaceAddress.getAddress().getAddress();
+        byte[] targetAddress;
+        try {
+            targetAddress = InetAddress.getByName(targetIp).getAddress();
+        } catch (UnknownHostException e) {
+            return false;
+        }
+        // Split the CIDR prefix into full bytes plus any remaining bits of the next byte.
+        int fullBytes = prefixLength / 8;
+        int remainingBits = prefixLength % 8;
+        for (int index = 0; index < fullBytes; index++) {
+            if (localAddress[index] != targetAddress[index]) {
+                return false;
+            }
+        }
+        if (remainingBits == 0) {
+            return true;
+        }
+        int mask = (0xFF << (8 - remainingBits)) & 0xFF;
+        return (localAddress[fullBytes] & mask) == (targetAddress[fullBytes] & mask);
     }
 
     /**
@@ -85,6 +205,8 @@ public class UdpClient {
         byte[] buf = msg.getBytes();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, UDP_PORT);
         try {
+            log.trace("Sending UDP stream packet from localPort={} to targetIp={} targetPort={}",
+                    socket.getLocalPort(), address.getHostAddress(), UDP_PORT);
             socket.send(packet);
         } catch (IOException e) {
             socket.close();
