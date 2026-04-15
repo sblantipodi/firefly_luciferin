@@ -127,17 +127,20 @@ public class Constants {
     public static final String DOWNLOAD_COMPLETE = "download.complete";
     public static final String INSTALL_PASSIVE = "/passive";
     public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
+    public static final String POST = "POST";
     public static final String HTTP_RESPONSE = "application/json";
     public static final int HTTP_TIMEOUT = 2000;
+    public static final int HTTP_UPGRADE_TIMEOUT = 10_000;
+    public static final int HTTP_UPGRADE_READ_TIMEOUT = 60_000;
     public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
     public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
     public static final String UPGRADE_URL = "http://{0}/update";
-    public static final String MULTIPART_1 = "--{0}\r\nContent-Disposition: form-data; name=";
     public static final String SHOW_MORE_SETTINGS = "show.more.settings";
     @SuppressWarnings("all")
-    public static final String MULTIPART_2 = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
-    public static final String MULTIPART_4 = ("\r\n");
-    public static final String MULTIPART_5 = (("--{0}--"));
+    public static final String MULTIPART_1 = "--{0}\r\nContent-Disposition: form-data; name=\"update\"; filename=\"";
+    public static final String MULTIPART_2 = "{0}\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+    public static final String MULTIPART_4 = "\r\n";
+    public static final String MULTIPART_5 = "--{0}--\r\n";
     public static final String PROP_MINIMUM_FIRMWARE_VERSION = "minimum.firmware.version";
     public static final String GW_ALPHA_DOWNLOAD = "gw.alpha.download";
     // Properties

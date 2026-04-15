@@ -51,7 +51,6 @@ import org.dpsoftware.utilities.PropertiesLoader;
 
 import java.awt.*;
 import java.io.*;
-import java.math.BigInteger;
 import java.net.*;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -410,6 +409,36 @@ public class UpgradeManager {
     }
 
     /**
+     * Opens an HTTP connection and sends a multipart POST request containing the firmware binary.
+     *
+     * @param output   the multipart body to send, including boundary delimiters and firmware bytes
+     * @param url      the target URL of the ESP32 OTA update endpoint
+     * @param boundary the multipart boundary string used to delimit the body parts
+     * @return the opened {@link HttpURLConnection} after writing the request body
+     * @throws IOException        if an I/O error occurs while opening the connection or writing the body
+     * @throws URISyntaxException if the provided URL string is not a valid URI
+     */
+    private static HttpURLConnection getHttpURLConnection(ByteArrayOutputStream output, String url, String boundary) throws IOException, URISyntaxException {
+        byte[] body = output.toByteArray();
+        // Open connection to the device OTA endpoint
+        HttpURLConnection http = (HttpURLConnection) new URI(url).toURL().openConnection();
+        http.setDoOutput(true);
+        http.setRequestMethod(Constants.POST);
+        http.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
+        // Set Content-Length upfront to avoid buffering and ensure that the device knows how many bytes to expect
+        http.setFixedLengthStreamingMode(body.length);
+        http.setConnectTimeout(Constants.HTTP_UPGRADE_TIMEOUT);
+        http.setReadTimeout(Constants.HTTP_UPGRADE_READ_TIMEOUT);
+        // Write the multipart body containing the firmware binary
+        try (OutputStream os = http.getOutputStream()) {
+            os.write(body);
+            os.flush();
+        }
+        log.trace("Body as string:\n{}", output.toString(StandardCharsets.UTF_8));
+        return http;
+    }
+
+    /**
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
      * Java 16 broke it again
      *
@@ -418,12 +447,8 @@ public class UpgradeManager {
      * @throws IOException something bad happened in the connection
      */
     private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException, URISyntaxException {
-        String boundary = new BigInteger(256, new Random()).toString();
+        String boundary = Long.toHexString(new Random().nextLong()) + Long.toHexString(new Random().nextLong());
         String url = Constants.UPGRADE_URL.replace("{0}", glowWormDevice.getDeviceIP());
-        HttpURLConnection http = (HttpURLConnection) new URI(url).toURL().openConnection();
-        http.setDoOutput(true);
-        http.setRequestMethod("POST");
-        http.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
         // Multipart
         byte[] input1 = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
         byte[] input2 = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
@@ -436,12 +461,7 @@ public class UpgradeManager {
         output.write(input3);
         output.write(input4);
         output.write(input5);
-        // Write data
-        try (OutputStream os = http.getOutputStream()) {
-            byte[] input = output.toByteArray();
-            os.write(input, 0, input.length);
-            os.flush();
-        }
+        HttpURLConnection http = getHttpURLConnection(output, url, boundary);
         int responseCode;
         String responseBody = "";
         try {
@@ -460,7 +480,6 @@ public class UpgradeManager {
         log.info("HTTP response code={}, body={}", responseCode, responseBody);
         showUpgradeResult(glowWormDevice, responseCode);
     }
-
 
     /**
      * Download Glow Worm Luciferin firmware
