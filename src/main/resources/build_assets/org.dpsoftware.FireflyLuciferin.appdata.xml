@@ -81,100 +81,58 @@
                 <p>Changes in this Release</p>
                 <ul>
                     <li>Update requirement: requires <code>Glow Worm Luciferin</code> firmware (v5.24.7)</li>
-
-                    <li>
-                        The Luciferin Official PCB requires a "D1 Mini format" board. With the new Luciferin Module for the Official PCB,
-                        you can use a smaller board, enabling upgrades without replacing the PCB or redoing soldering or cabling.
-                        The Luciferin Ethernet Module can add Ethernet connectivity to boards that do not natively support it.
+                    <li>The Luciferin Official PCB now supports the new Luciferin Module, compatible with smaller D1
+                        Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any
+                        soldering or cabling. The Luciferin Ethernet Module adds Ethernet connectivity to boards that do
+                        not natively support it.
                     </li>
-
-                    <li>
-                        Added support for Espressif ESP32-C6 and ESP32-C5, enabling Wi-Fi 6 and 5 GHz support on the C5. Closes #92.
+                    <li>Added support for Espressif ESP32-C6 and ESP32-C5, enabling Wi-Fi 6 and 5 GHz band support on
+                        the C5. Closes #92.
                     </li>
-
-                    <li>
-                        Web installer updated to support newer devices. Firmware installation is now easier on devices with native USB (non-UART).
+                    <li>Added support for SPI-based Ethernet devices; GPIO pins for custom SPI configurations can now be
+                        assigned directly from the Web Interface or the Provisioning section in Firefly Luciferin.
                     </li>
-
-                    <li>
-                        Added support for SPI-based Ethernet devices with configurable control pin.
+                    <li>Added support for the Gledopto series with Ethernet.</li>
+                    <li>Luciferin is now available via the Windows Package Manager.</li>
+                    <li>The Web Installer has been updated to support newer devices. Firmware installation is now
+                        significantly easier on devices with a native USB interface (non-UART).
                     </li>
-
-                    <li>
-                        WiFi and Ethernet can now coexist simultaneously. Wired (Ethernet) is automatically prioritized.
+                    <li>Wi-Fi and Ethernet can now coexist and operate simultaneously. Firefly Luciferin automatically
+                        prioritizes the wired Ethernet connection when both are available.
                     </li>
-
-                    <li>
-                        Added support for Gledopto series with Ethernet.
+                    <li>Driving LEDs via USB is now considered stable on native USB devices (non-UART).</li>
+                    <li>USB provisioning via Firefly Luciferin now supports custom device naming, preventing name
+                        collisions when provisioning multiple devices simultaneously.
                     </li>
-
-                    <li>
-                        Driving LEDs via USB is now considered stable on native USB devices (non-UART).
+                    <li>Users can now configure the GPIO pin of the built-in LED on their microcontroller, which
+                        provides visual feedback on the device's connection status.
                     </li>
-
-                    <li>
-                        USB provisioning via Firefly Luciferin now allows specifying the device name to avoid collisions.
+                    <li>The Windows installation footprint has also been significantly reduced.</li>
+                    <li>Enhanced black bar detection with debounce logic to reduce false positives.</li>
+                    <li>Firmware upgraded to Arduino Core 3 (based on IDF5).</li>
+                    <li>Improved LED placement and alignment on the test canvas, with better spacing and resizing
+                        behavior when pressing Shift+Tab. Closes #406.
                     </li>
-
-                    <li>
-                        You can now configure the GPIO pin of the built-in LED on your microcontroller.
+                    <li>Improved Glow Worm device discovery and UDP communication reliability on complex or
+                        multi-network setups, with refined interface selection, static IP fallback preservation,
+                        explicit stream socket binding to the correct subnet, and extended debug logging. Closes #400.
                     </li>
-
-                    <li>
-                        Luciferin has been added to the Windows Package Manager.
+                    <li>Added a reminder for Linux users to add their account to the dialout or uucp group for USB
+                        device access. Closes #371.
                     </li>
-
-                    <li>
-                        The Windows installation footprint has been significantly reduced.
+                    <li>Improved visibility of option buttons on the Web Interface. Parts of the UI loading have been
+                        offloaded to the server side to reduce rendering overhead during heavy data streaming.
                     </li>
-
-                    <li>
-                        Enhanced black bar detection with debounce logic to reduce false positives.
+                    <li>Fixed GPIO0 being unable to drive the LED strip.</li>
+                    <li>Fixed baud rate changes not being applied when the device was under load.</li>
+                    <li>Fixed incorrect Wi-Fi signal strength readings when two or more MQTT devices were in use and one
+                        of them was connected via Ethernet.
                     </li>
-
-                    <li>
-                        Firmware upgraded to Arduino Core 3 (based on IDF5).
+                    <li>Fixed duplicate devices appearing in the Devices tab when using multiple devices
+                        simultaneously.
                     </li>
-
-                    <li>
-                        Improved LED placement and alignment on the test canvas. Closes #406.
-                    </li>
-
-                    <li>
-                        Improved device discovery and UDP communication reliability on complex networks. Closes #400.
-                    </li>
-
-                    <li>
-                        Added a reminder for Linux users to add the user to the dialout or uucp group. Closes #371.
-                    </li>
-
-                    <li>
-                        GPIO0 was not able to drive the LED strip. Fixed.
-                    </li>
-
-                    <li>
-                        Baud rate changes were not applied under load. Fixed.
-                    </li>
-
-                    <li>
-                        Improved UI visibility and rendering on the Web Interface.
-                    </li>
-
-                    <li>
-                        Fixed incorrect Wi-Fi signal strength with multiple MQTT devices.
-                    </li>
-
-                    <li>
-                        Fixed duplicate devices appearing in the Devices tab.
-                    </li>
-
-                    <li>
-                        Web Interface showed incorrect framerate when using USB. Fixed.
-                    </li>
-
-                    <li>
-                        Arduino Bootstrapper updated (v1.19.7).
-                    </li>
+                    <li>Fixed the Web Interface not reporting the correct framerate when driving LEDs via USB.</li>
+                    <li>Arduino Bootstrapper updated to v1.19.7.</li>
                 </ul>
 
                 <p>

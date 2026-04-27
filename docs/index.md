@@ -22,62 +22,65 @@ a {
 
 ### In this release
 
-- ***Update requirement***: requires `Glow Worm Luciferin` firmware (v5.24.7)
-- The [Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) requires a "D1
-  Mini format" board. With the
-  new [Luciferin Module for the Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb),
-  you can use a smaller board, opening up more upgrade possibilities without the need to replace the PCB or redo any
+- ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.24.7**.
+- The **[Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) now supports
+  the
+  new [Luciferin Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb)
+  **, compatible with smaller D1 Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any
   soldering or cabling.
   The [Luciferin Ethernet Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-ethernet-module-for-the-official-pcb)
-  can also add Ethernet connectivity to boards that do not natively support it.
-- Added support for
-  Espressif [ESP32-C6 and ESP32-C5](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware), enabling
-  Wi‑Fi 6 and 5 GHz support on the C5. Closes [#92](https://github.com/sblantipodi/glow_worm_luciferin/issues/92).
-- [Web installer](https://sblantipodi.github.io/glow_worm_luciferin/) updated to support newer devices. Firmware
-  installation is now much easier on devices with a native USB interface (non-UART).
-- Added support for SPI-based Ethernet devices. The Web Installer now allows you to specify which pin to use to control
-  the Ethernet chip, opening up possibilities for custom Ethernet devices.
-- WiFi and Ethernet can now coexist and be connected at the same time. Firefly Luciferin automatically gives priority to
-  the wired (Ethernet) network when both connections are available.
-- Added support
-  for [Gledopto](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware#pre-build-boards-support)
-  series with Ethernet.
+  **adds Ethernet connectivity to boards that do not natively support it**.
+- **Added support for
+  Espressif [ESP32-C6 and ESP32-C5](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware)**,
+  enabling Wi-Fi 6 and 5 GHz band support on the C5.
+  Closes [#92](https://github.com/sblantipodi/glow_worm_luciferin/issues/92).
+- **Added support for SPI-based Ethernet devices**; GPIO pins for custom SPI configurations can now be assigned directly
+  from the Web Interface or the Provisioning section in Firefly Luciferin.
+- **Added support for
+  the [Gledopto](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware#pre-build-boards-support)
+  series with Ethernet**.
+- **Luciferin is now available via
+  the [Windows Package Manager](https://github.com/sblantipodi/firefly_luciferin/wiki/Installers-and-binaries)**.
+- The [Web Installer](https://sblantipodi.github.io/glow_worm_luciferin/) has been updated to support newer devices.
+  Firmware installation is now significantly easier on devices with a native USB interface (non-UART).
+- Wi-Fi and Ethernet can now coexist and operate simultaneously. Firefly Luciferin automatically prioritizes the wired
+  Ethernet connection when both are available.
 - Driving LEDs via USB is now considered stable on native USB devices (non-UART).
--
-USB [provisioning via Firefly Luciferin](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#provision-directly-from-firefly-luciferin)
-now allows specifying the device name, enabling the provisioning of multiple devices without name collisions.
-- You can
+- [USB provisioning via Firefly Luciferin](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#provision-directly-from-firefly-luciferin)
+  now supports custom device naming, preventing name collisions when provisioning multiple devices simultaneously.
+- Users can
   now [configure the GPIO pin](https://github.com/sblantipodi/firefly_luciferin/wiki/Supported-GPIO-and-Baud-Rate#how-to-change-the-gpio-in-use)
-  of the built-in LED on your microcontroller. The built-in LED provides visual feedback on your device’s connection
-  status.
-- Luciferin has been added to
-  the [Windows Package Manager](https://github.com/sblantipodi/firefly_luciferin/wiki/Installers-and-binaries).
-- The Windows installation footprint of the program has been significantly reduced.
+  of the built-in LED on their microcontroller, which provides visual feedback on the device's connection status.
+- The Windows installation footprint has also been significantly reduced.
 - Enhanced [black bar detection](https://github.com/sblantipodi/firefly_luciferin/wiki/Aspect-ratio) with debounce logic
   to reduce false positives.
 - Firmware upgraded to Arduino Core 3 (based on IDF5).
 -
 Improved [LED placement and alignment](https://github.com/sblantipodi/firefly_luciferin/wiki/Test-image-and-latency-test#custom-led-layout)
-on the test canvas, with better spacing and resizing behavior when pressing Shift+Tab.
+on the test canvas, with better spacing and resizing behavior when pressing `Shift+Tab`.
 Closes [#406](https://github.com/sblantipodi/firefly_luciferin/issues/406).
-- Improved Glow Worm device discovery and UDP communication reliability on complex or multi-network setups by refining
-  interface selection, preserving static IP fallback, explicitly binding stream sockets to the correct subnet, and
-  adding detailed debug logging. Closes [#400](https://github.com/sblantipodi/firefly_luciferin/issues/400).
-- Added a reminder for Linux users to add the user to the dialout or uucp group for USB device access.
+- Improved Glow Worm device discovery and UDP communication reliability on complex or multi-network setups, with refined
+  interface selection, static IP fallback preservation, explicit stream socket binding to the correct subnet, and
+  extended debug logging. Closes [#400](https://github.com/sblantipodi/firefly_luciferin/issues/400).
+- Added a reminder for Linux users to add their account to the `dialout` or `uucp` group for USB device access.
   Closes [#371](https://github.com/sblantipodi/firefly_luciferin/issues/371).
-- GPIO0 was not able to drive the LED strip. Fixed.
-- [Baud rate](https://github.com/sblantipodi/firefly_luciferin/wiki/Supported-GPIO-and-Baud-Rate#baud-rate) changes were
-  not applied when the device was under load, fixed.
-- Improved visibility of option buttons through small UI enhancements on
+- Improved visibility of option buttons on
   the [Web Interface](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface).
-  Parts of the UI loading have been offloaded to the server side to ease UI rendering during heavy data streaming.
-- Fixed an issue that caused incorrect Wi-Fi signal strength readings when there were two or more MQTT devices and one
-  of them was using Ethernet.
-- Fixed an issue that caused duplicate devices to appear in the Devices tab of Firefly Luciferin when using multiple
-  devices simultaneously.
-- [Web Interface](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface) was not
-  showing correct framerate when driving LEDs via USB. Fixed.
-- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.19.7).
+  Parts of the UI loading have been offloaded to the server side to reduce rendering overhead during heavy data
+  streaming.
+- Fixed GPIO0 being unable to drive the LED strip.
+- Fixed [baud rate](https://github.com/sblantipodi/firefly_luciferin/wiki/Supported-GPIO-and-Baud-Rate#baud-rate)
+  changes not being applied when the device was under load.
+- Fixed incorrect Wi-Fi signal strength readings when two or more MQTT devices were in use and one of them was connected
+  via Ethernet.
+- Fixed duplicate devices appearing in the Devices tab when using multiple devices simultaneously.
+- Fixed the [Web Interface](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface)
+  not reporting the correct framerate when driving LEDs via USB.
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) updated to **v1.19.7**.
+
+Users running a previous version of Luciferin can upgrade using
+the [automatic update feature](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management),
+available for both the PC software and the firmware.
 
 ### In the previous release:
 
