@@ -1,0 +1,228 @@
+name: Release Pipeline (Snap + Flathub + Winget)
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (example: v2.17.1)'
+        required: false
+        default: ''   # if empty, use tag from release
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.setver.outputs.version }}
+
+    steps:
+      - name: Determine version
+        id: setver
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            VERSION="${VERSION#v}"
+          elif [ -n "${{ github.event.release.tag_name }}" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          else
+            echo "Error: no version specified"
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION"
+
+  snap:
+    runs-on: ubuntu-latest
+    needs: setup
+    env:
+      VERSION: ${{ needs.setup.outputs.version }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update snapcraft file
+        run: |
+          file_to_edit="build_tools/snapcraft/snap/snapcraft.remote.yaml"
+
+          sed -i "s/version: '[0-9]\+\.[0-9]\+\.[0-9]\+'/version: '${VERSION}'/" "$file_to_edit"
+
+          sed -i "s#\(wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v\)[0-9]\+\.[0-9]\+\.[0-9]\+\(/FireflyLuciferinLinux.deb\)#\1${VERSION}\2#" "$file_to_edit"
+
+      - name: Commit snap changes
+        run: |
+          git config --global user.email "perini.davide@dpsoftware.org";
+          git config --global user.name "Davide Perini";
+
+          git add build_tools/snapcraft/snap/snapcraft.remote.yaml
+          git commit -m "snap release ${VERSION}" || echo "No changes"
+          git push
+
+      - name: Sync root snapcraft.yaml
+        run: |
+          cp build_tools/snapcraft/snap/snapcraft.remote.yaml snapcraft.yaml
+
+          git add snapcraft.yaml
+          git commit -m "snap release ${VERSION}" || echo "No changes"
+          git push
+
+      - name: Done
+        run: |
+          echo "Snap release completed"
+          echo "### ✅ Snap release completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "👉 [Open Snap builds](https://snapcraft.io/fireflyluciferin/builds)" >> $GITHUB_STEP_SUMMARY
+
+
+  flathub:
+    runs-on: ubuntu-latest
+    needs: setup
+    env:
+      VERSION: ${{ needs.setup.outputs.version }}
+      GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq gh wget
+
+      - name: Prepare temp workspace
+        run: mkdir tmp
+
+      - name: Download .deb and compute SHA256
+        run: |
+          wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux.deb -P tmp
+          SHA256=$(sha256sum tmp/FireflyLuciferinLinux.deb | awk '{print $1}')
+          echo "SHA256=$SHA256" >> $GITHUB_ENV
+
+      - name: Clone Flathub repo
+        run: |
+          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/flathub/org.dpsoftware.FireflyLuciferin.git tmp/org.dpsoftware.FireflyLuciferin
+
+      - name: Create release branch and update manifest
+        run: |
+          cd tmp/org.dpsoftware.FireflyLuciferin
+          git config --global user.email "perini.davide@dpsoftware.org";
+          git config --global user.name "Davide Perini";
+          git fetch origin master
+          git checkout master
+          git pull origin master
+          git checkout -b release-${VERSION}
+
+          cp $GITHUB_WORKSPACE/build_tools/flatpak/org.dpsoftware.FireflyLuciferin.json .
+
+          jq --arg sha256 "$SHA256" \
+             --arg url "https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux.deb" \
+             '(.modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0]) |= (.sha256 = $sha256 | .url = $url)' \
+             org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json
+
+          git add org.dpsoftware.FireflyLuciferin.json
+          git commit -m "Bot: release ${VERSION}"
+
+      - name: Push release branch
+        run: |
+          cd tmp/org.dpsoftware.FireflyLuciferin
+          git push origin release-${VERSION}
+
+      - name: Create Pull Request
+        run: |
+          cd tmp/org.dpsoftware.FireflyLuciferin
+          PR_URL=$(gh pr create \
+            --title "DPsoftware Gentle Bot release ${VERSION}" \
+            --body "Automated release from DPsoftware Gentle Bot" \
+            --base master \
+            --head release-${VERSION}
+          )
+          echo "### ✅ Flathub release completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "👉 [Open Flathub PR]($PR_URL)" >> $GITHUB_STEP_SUMMARY
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: Done
+        run: echo "Flathub PR created successfully"
+
+  winget:
+    runs-on: ubuntu-latest
+    needs: setup
+    env:
+      VERSION: ${{ needs.setup.outputs.version }}
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+    steps:
+      - name: Checkout Winget fork
+        run: |
+          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/sblantipodi/winget-pkgs.git tmp/winget-pkgs
+          cd tmp/winget-pkgs
+          git fetch origin master
+          git checkout master
+
+      - name: Create release branch
+        run: |
+          cd tmp/winget-pkgs
+          git checkout -b DpSoftware.FireflyLuciferin.release-${VERSION}
+
+      - name: Update Winget manifests
+        run: |
+          mkdir "tmp/winget-pkgs/manifests/d/DpSoftware/FireflyLuciferin/${VERSION}"
+          cd "tmp/winget-pkgs/manifests/d/DpSoftware/FireflyLuciferin/${VERSION}"
+          wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.yaml
+          wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.installer.yaml
+          wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.locale.en-US.yaml
+          
+          sed -i "s/PackageVersion: .*/PackageVersion: ${VERSION}/" DpSoftware.FireflyLuciferin.yaml
+          
+          sed -i "s/PackageVersion: .*/PackageVersion: ${VERSION}/" DpSoftware.FireflyLuciferin.locale.en-US.yaml
+          sed -i "s#ReleaseNotesUrl: .*#ReleaseNotesUrl: https://github.com/sblantipodi/firefly_luciferin/releases/tag/v${VERSION}#" DpSoftware.FireflyLuciferin.locale.en-US.yaml
+          
+          sed -i "s/PackageVersion: .*/PackageVersion: ${VERSION}/" DpSoftware.FireflyLuciferin.installer.yaml
+          sed -i "s#InstallerUrl: .*#InstallerUrl: https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinSetup.exe#" DpSoftware.FireflyLuciferin.installer.yaml
+          
+          TODAY=$(date +%F)
+          sed -i "s/ReleaseDate: .*/ReleaseDate: ${TODAY}/" DpSoftware.FireflyLuciferin.installer.yaml
+          
+          wget -q https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinSetup.exe -O temp.exe
+          SHA256=$(sha256sum temp.exe | awk '{print $1}')
+          sed -i "s/InstallerSha256: .*/InstallerSha256: ${SHA256}/" DpSoftware.FireflyLuciferin.installer.yaml
+          rm temp.exe
+
+      - name: Configure Git user
+        run: |
+          cd tmp/winget-pkgs
+          git config --global user.email "perini.davide@dpsoftware.org";
+          git config --global user.name "Davide Perini";
+
+      - name: Commit and push
+        run: |
+          cd tmp/winget-pkgs
+          git add .
+          git commit -m "Bot: release ${VERSION}" || echo "No changes"
+          git push origin DpSoftware.FireflyLuciferin.release-${VERSION}
+
+      - name: Create Pull Request
+        run: |
+          cd tmp/winget-pkgs
+          PR_URL=$(gh pr create \
+            --repo microsoft/winget-pkgs \
+            --title "New version: DpSoftware.FireflyLuciferin version ${VERSION}" \
+            --body "Automated release from GitHub Actions" \
+            --base master \
+            --head sblantipodi:DpSoftware.FireflyLuciferin.release-${VERSION}
+          )
+          echo "### ✅ Winget release completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "👉 [Open Winget PR]($PR_URL)" >> $GITHUB_STEP_SUMMARY
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: Done
+        run: echo "Winget PR created successfully"
