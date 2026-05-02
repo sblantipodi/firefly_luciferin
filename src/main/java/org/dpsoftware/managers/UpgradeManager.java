@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -51,11 +51,7 @@ import org.dpsoftware.utilities.PropertiesLoader;
 
 import java.awt.*;
 import java.io.*;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -141,11 +137,11 @@ public class UpgradeManager {
      * Show upgrade alert/notification result
      *
      * @param glowWormDevice device that has been programmed
-     * @param response       from the device
+     * @param responseCode   from the device
      */
-    private static void showUpgradeResult(GlowWormDevice glowWormDevice, StringBuilder response) {
+    private static void showUpgradeResult(GlowWormDevice glowWormDevice, int responseCode) {
         String notificationContext = glowWormDevice.getDeviceName() + " ";
-        if (Constants.OK.contentEquals(response)) {
+        if (HttpURLConnection.HTTP_OK == responseCode) {
             log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
                 notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
@@ -402,7 +398,6 @@ public class UpgradeManager {
                     }
                 }
                 if (!downloadFirmwareOnly) {
-                    // Send data
                     postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
@@ -414,6 +409,36 @@ public class UpgradeManager {
     }
 
     /**
+     * Opens an HTTP connection and sends a multipart POST request containing the firmware binary.
+     *
+     * @param output   the multipart body to send, including boundary delimiters and firmware bytes
+     * @param url      the target URL of the ESP32 OTA update endpoint
+     * @param boundary the multipart boundary string used to delimit the body parts
+     * @return the opened {@link HttpURLConnection} after writing the request body
+     * @throws IOException        if an I/O error occurs while opening the connection or writing the body
+     * @throws URISyntaxException if the provided URL string is not a valid URI
+     */
+    private static HttpURLConnection getHttpURLConnection(ByteArrayOutputStream output, String url, String boundary) throws IOException, URISyntaxException {
+        byte[] body = output.toByteArray();
+        // Open connection to the device OTA endpoint
+        HttpURLConnection http = (HttpURLConnection) new URI(url).toURL().openConnection();
+        http.setDoOutput(true);
+        http.setRequestMethod(Constants.POST);
+        http.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
+        // Set Content-Length upfront to avoid buffering and ensure that the device knows how many bytes to expect
+        http.setFixedLengthStreamingMode(body.length);
+        http.setConnectTimeout(Constants.HTTP_UPGRADE_TIMEOUT);
+        http.setReadTimeout(Constants.HTTP_UPGRADE_READ_TIMEOUT);
+        // Write the multipart body containing the firmware binary
+        try (OutputStream os = http.getOutputStream()) {
+            os.write(body);
+            os.flush();
+        }
+        log.trace("Body as string:\n{}", output.toString(StandardCharsets.UTF_8));
+        return http;
+    }
+
+    /**
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
      * Java 16 broke it again
      *
@@ -422,40 +447,38 @@ public class UpgradeManager {
      * @throws IOException something bad happened in the connection
      */
     private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException, URISyntaxException {
-        String boundary = new BigInteger(256, new Random()).toString();
+        String boundary = Long.toHexString(new Random().nextLong()) + Long.toHexString(new Random().nextLong());
         String url = Constants.UPGRADE_URL.replace("{0}", glowWormDevice.getDeviceIP());
-
-        URLConnection connection = new URI(url).toURL().openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
-
+        // Multipart
         byte[] input1 = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
         byte[] input2 = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
-        byte[] input3 = (Files.readAllBytes(path));
+        byte[] input3 = Files.readAllBytes(path);
         byte[] input4 = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
         byte[] input5 = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
-
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(input1);
         output.write(input2);
         output.write(input3);
         output.write(input4);
         output.write(input5);
-        // Write POST data
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = output.toByteArray();
-            os.write(input, 0, input.length);
-        }
-        // Read response
-        StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-            String responseLine;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
+        HttpURLConnection http = getHttpURLConnection(output, url, boundary);
+        int responseCode;
+        String responseBody = "";
+        try {
+            responseCode = http.getResponseCode();
+            try (InputStream is = http.getInputStream()) {
+                responseBody = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             }
-            log.info("Response={}", response);
+        } catch (IOException e) {
+            responseCode = http.getResponseCode();
+            InputStream errorStream = http.getErrorStream();
+            if (errorStream != null) {
+                responseBody = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            log.warn("HTTP error during OTA upload: code={}, body={}", responseCode, responseBody, e);
         }
-        showUpgradeResult(glowWormDevice, response);
+        log.info("HTTP response code={}, body={}", responseCode, responseBody);
+        showUpgradeResult(glowWormDevice, responseCode);
     }
 
     /**

@@ -74,76 +74,69 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.25.6" date="2025-12-05">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.25.6</url>
+        <release version="2.26.8" date="2026-04-26">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.26.8</url>
             <description>
-                <p>**Update requirement**: requires Glow Worm Luciferin Firmware (v5.23.6)</p>
 
-                <p>**Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can now
-                    manually configure your LED layout directly from the test image. Closes #349 and #343.
-                </p>
-
+                <p>Changes in this Release</p>
                 <ul>
-                    <li>Drag and drop LED zones to reposition them.</li>
-                    <li>Resize LED zones.</li>
-                    <li>Disable individual LEDs.</li>
-                    <li>Create new custom LED zones and link them to satellites for surround lighting.</li>
-                    <li>Custom LED layouts are now supported within profiles, allowing Firefly Luciferin to
-                        automatically switch layouts based on the active app or game.
+                    <li>Update requirement: requires <code>Glow Worm Luciferin</code> firmware (v5.24.7)</li>
+                    <li>The Luciferin Official PCB now supports the new Luciferin Module, compatible with smaller D1
+                        Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any
+                        soldering or cabling. The Luciferin Ethernet Module adds Ethernet connectivity to boards that do
+                        not natively support it.
                     </li>
-                    <li>Watch this feature in action on YouTube.</li>
-                </ul>
-
-                <p>**Improved Device Provisioning:** You don’t always need the web installer to set up your device.
-                    Firefly Luciferin can provision the firmware directly, letting you configure WiFi and MQTT without
-                    touching the browser. This feature becomes extremely handy if your device suddenly goes offline, for
-                    instance when your WiFi password changes and the device can’t reconnect. With Firefly Luciferin, you
-                    can bring it back to life in seconds, no reflashing required.
-                </p>
-
-                <p>**New Themes:** Added new visual themes:</p>
-
-                <ul>
-                    <li>Light Silver</li>
-                    <li>Light Cyan</li>
-                    <li>Dark Amethyst</li>
-                    <li>Dark Arctic</li>
-                    <li>Dark Bronze Gold</li>
-                    <li>Dark Emerald</li>
-                    <li>Dark Ruby</li>
-                </ul>
-
-                <p>**Improved profile handling:**</p>
-
-                <ul>
-                    <li>The active profile name is now shown in the window title and in the tray icon tooltip.</li>
-                    <li>If an event triggers an automatic profile switch while the Settings window is open, the switch
-                        is postponed until the window is closed.
+                    <li>Added support for Espressif ESP32-C6 and ESP32-C5, enabling Wi-Fi 6 and 5 GHz band support on
+                        the C5. Closes #92.
                     </li>
+                    <li>Added support for SPI-based Ethernet devices; GPIO pins for custom SPI configurations can now be
+                        assigned directly from the Web Interface or the Provisioning section in Firefly Luciferin.
+                    </li>
+                    <li>Added support for the Gledopto series with Ethernet.</li>
+                    <li>Luciferin is now available via the Windows Package Manager.</li>
+                    <li>The Web Installer has been updated to support newer devices. Firmware installation is now
+                        significantly easier on devices with a native USB interface (non-UART).
+                    </li>
+                    <li>Wi-Fi and Ethernet can now coexist and operate simultaneously. Firefly Luciferin automatically
+                        prioritizes the wired Ethernet connection when both are available.
+                    </li>
+                    <li>Driving LEDs via USB is now considered stable on native USB devices (non-UART).</li>
+                    <li>USB provisioning via Firefly Luciferin now supports custom device naming, preventing name
+                        collisions when provisioning multiple devices simultaneously.
+                    </li>
+                    <li>Users can now configure the GPIO pin of the built-in LED on their microcontroller, which
+                        provides visual feedback on the device's connection status.
+                    </li>
+                    <li>The Windows installation footprint has also been significantly reduced.</li>
+                    <li>Enhanced black bar detection with debounce logic to reduce false positives.</li>
+                    <li>Firmware upgraded to Arduino Core 3 (based on IDF5).</li>
+                    <li>Improved LED placement and alignment on the test canvas, with better spacing and resizing
+                        behavior when pressing Shift+Tab. Closes #406.
+                    </li>
+                    <li>Improved Glow Worm device discovery and UDP communication reliability on complex or
+                        multi-network setups, with refined interface selection, static IP fallback preservation,
+                        explicit stream socket binding to the correct subnet, and extended debug logging. Closes #400.
+                    </li>
+                    <li>Added a reminder for Linux users to add their account to the dialout or uucp group for USB
+                        device access. Closes #371.
+                    </li>
+                    <li>Improved visibility of option buttons on the Web Interface. Parts of the UI loading have been
+                        offloaded to the server side to reduce rendering overhead during heavy data streaming.
+                    </li>
+                    <li>Fixed GPIO0 being unable to drive the LED strip.</li>
+                    <li>Fixed baud rate changes not being applied when the device was under load.</li>
+                    <li>Fixed incorrect Wi-Fi signal strength readings when two or more MQTT devices were in use and one
+                        of them was connected via Ethernet.
+                    </li>
+                    <li>Fixed duplicate devices appearing in the Devices tab when using multiple devices
+                        simultaneously.
+                    </li>
+                    <li>Fixed the Web Interface not reporting the correct framerate when driving LEDs via USB.</li>
+                    <li>Arduino Bootstrapper updated to v1.19.7.</li>
                 </ul>
 
-                <p>**Enhanced Log Level Configurability:** You can now easily customize the application’s default log
-                    level by setting the <code>LUCIFERIN_LOG_LEVEL</code> environment variable.
-                </p>
-
-                <p>LDR readings were causing occasional LED flickering, fixed.</p>
-
-                <p>Fixed an issue preventing satellites from being added by IP if they were not reachable on the
-                    network.
-                </p>
-
-                <p>Fixed errors occurring when satellites were configured but turned off.</p>
-
-                <p>Fixed an issue where Firefly Luciferin could not connect to a new output device after changing its IP
-                    address without manually restarting the application.
-                </p>
-
-                <p>Introduced an AI-powered moderator for Issues and Pull Requests.</p>
-
-                <p>Switched back to JDK25.</p>
-
-                <p>As always, users running a previous version of Luciferin can use the automatic update feature for
-                    both the PC software and the firmware.
+                <p>
+                    Users running a previous version can use the automatic update feature for both the PC software and the firmware.
                 </p>
 
             </description>
