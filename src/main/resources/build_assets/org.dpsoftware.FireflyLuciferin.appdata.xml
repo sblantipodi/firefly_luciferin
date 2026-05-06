@@ -123,6 +123,7 @@
                     <li>Improved visibility of option buttons on the Web Interface. Parts of the UI loading have been
                         offloaded to the server side to reduce rendering overhead during heavy data streaming.
                     </li>
+                    <li>Fixed a screen capture issue on KDE Plasma KWin 6.4 that occurred when using the Flatpak or Snap sandboxed version of Firefly Luciferin. </li>
                     <li>Fixed GPIO0 being unable to drive the LED strip.</li>
                     <li>Fixed baud rate changes not being applied when the device was under load.</li>
                     <li>Fixed incorrect Wi-Fi signal strength readings when two or more MQTT devices were in use and one
