@@ -168,7 +168,7 @@ public class ImprovDialogController {
         for (Enums.EthernetBoards ethBoard : Enums.EthernetBoards.values()) {
             ethSelCombo.getItems().add(ethBoard.getValue());
         }
-        ethSelCombo.setValue(Enums.EthernetBoards.ETH_BOARD_TETH_ELITE_S3.getI18n());
+        ethSelCombo.setValue(Enums.EthernetBoards.ETH_BOARD_GLEDOPTO.getI18n());
     }
 
     /**

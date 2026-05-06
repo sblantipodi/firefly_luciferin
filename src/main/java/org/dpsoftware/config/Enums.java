@@ -831,6 +831,7 @@ public class Enums {
     }
 
     public enum EthernetBoards implements LocalizedEnum {
+        ETH_BOARD_GLEDOPTO("Gledopto-Ethernet", 9),
         ETH_BOARD_TETH_ELITE_S3("T-ETH ELite ESP32-S3", 101),
         ETH_BOARD_TETH_LITE_S3("T-ETH Lite ESP32-S3", 102),
         ETH_BOARD_QUINLED_32("QuinLed-ESP32-Ethernet", 1),
@@ -840,8 +841,7 @@ public class Enums {
         ETH_BOARD_ESP32_KIT("ESP32-ETHERNET-KIT-VE", 4),
         ETH_BOARD_ESP32_POE("ESP32-POE", 5),
         ETH_BOARD_ESP32_WROVER("ESP32-POE-WROVER", 8),
-        ETH_BOARD_WESP32("WESP32", 6),
-        ETH_BOARD_GLEDOPTO("Gledopto-Ethernet", 9);
+        ETH_BOARD_WESP32("WESP32", 6);
         private final String ethBoardName;
         @Getter
         private final int ethBoardId;
