@@ -23,7 +23,14 @@ a {
 ### In this release
 
 - ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.24.7**.
-- The **[Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) now supports the new [Luciferin Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb)**, compatible with smaller D1 Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any soldering or cabling. The [Luciferin Ethernet Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-ethernet-module-for-the-official-pcb) **adds Ethernet connectivity to boards that do not natively support it**.
+- **The [Wiki](https://github.com/sblantipodi/firefly_luciferin/wiki) has been reorganized** for better readability.
+- **The [Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) now supports
+  the
+  new [Luciferin Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb)
+  **, compatible with smaller D1 Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any
+  soldering or cabling.
+  The [Luciferin Ethernet Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-ethernet-module-for-the-official-pcb)
+  **adds Ethernet connectivity to boards that do not natively support it**.
 - **Added support for Espressif [ESP32-C6 and ESP32-C5](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware)**, enabling Wi-Fi 6 and 5 GHz band support on the C5. Closes [#92](https://github.com/sblantipodi/glow_worm_luciferin/issues/92).
 - **Added support for SPI-based Ethernet devices**; GPIO pins for custom SPI configurations can now be assigned directly from the Web Interface or the Provisioning section in Firefly Luciferin.
 - **Added support for the [Gledopto](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware#pre-build-boards-support) series with Ethernet**.

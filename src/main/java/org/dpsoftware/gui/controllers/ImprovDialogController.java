@@ -274,6 +274,7 @@ public class ImprovDialogController {
      * @throws IOException can't open port
      */
     @SuppressWarnings("unused")
+    @Deprecated
     private boolean sendImprov() throws IOException {
         byte version = 0x01;
         byte rpcPacketType = 0x03;

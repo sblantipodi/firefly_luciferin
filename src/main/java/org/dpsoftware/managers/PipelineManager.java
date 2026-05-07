@@ -46,12 +46,14 @@ import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
-import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
+import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
+import org.freedesktop.dbus.messages.constants.MessageTypes;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
@@ -97,8 +99,11 @@ public class PipelineManager {
             DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
             DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
             String handleToken = (Constants.FIREFLY_LUCIFERIN + MainSingleton.getInstance().whoAmI).replaceAll("-", "").replaceAll(" ", "");
-            DBusMatchRule matchRule = new DBusMatchRule("signal", "org.freedesktop.portal.Request", "Response");
-            dBusConnection.addGenericSigHandler(matchRule, signal -> {
+            DBusMatchRule dBusMatchRule = (DBusMatchRule) DBusMatchRuleBuilder.create().withType(MessageTypes.SIGNAL)
+                    .withInterface("Response")
+                    .withMember("org.freedesktop.portal.Request")
+                    .build();
+            dBusConnection.addGenericSigHandler(dBusMatchRule, signal -> {
                 try {
                     if (signal.getParameters().length == 2 // verify amount of arguments
                             && signal.getParameters()[0] instanceof UInt32 // verify argument types
