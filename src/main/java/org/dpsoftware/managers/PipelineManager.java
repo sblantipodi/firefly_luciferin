@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,12 +46,14 @@ import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
-import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
+import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
+import org.freedesktop.dbus.messages.constants.MessageTypes;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
@@ -97,7 +99,11 @@ public class PipelineManager {
             DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
             DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
             String handleToken = (Constants.FIREFLY_LUCIFERIN + MainSingleton.getInstance().whoAmI).replaceAll("-", "").replaceAll(" ", "");
-            DBusMatchRule matchRule = new DBusMatchRule("signal", "org.freedesktop.portal.Request", "Response");
+            DBusMatchRule matchRule = DBusMatchRuleBuilder.create()
+                    .withType(MessageTypes.SIGNAL)
+                    .withInterface("org.freedesktop.portal.Request")
+                    .withMember("Response")
+                    .build();
             dBusConnection.addGenericSigHandler(matchRule, signal -> {
                 try {
                     if (signal.getParameters().length == 2 // verify amount of arguments

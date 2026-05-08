@@ -187,6 +187,7 @@ jobs:
           git add pom.xml;
           git commit -m "Released by Maven using CI";
           git push;
+          echo "### ✅ [Release had been drafted](https://github.com/sblantipodi/firefly_luciferin/releases). Please test it and set it as the latest release." >> $GITHUB_STEP_SUMMARY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash

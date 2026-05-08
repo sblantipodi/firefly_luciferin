@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -538,8 +538,8 @@ public class ModeTabController {
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        SettingsController.addTextFieldListener(screenWidth);
-        SettingsController.addTextFieldListener(screenHeight);
-        SettingsController.addTextFieldListener(numberOfThreads);
+        SettingsController.addTextFieldListener(screenWidth, false);
+        SettingsController.addTextFieldListener(screenHeight, false);
+        SettingsController.addTextFieldListener(numberOfThreads, false);
     }
 }

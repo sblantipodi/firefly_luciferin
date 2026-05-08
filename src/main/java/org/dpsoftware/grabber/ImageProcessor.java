@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -62,6 +62,8 @@ public class ImageProcessor {
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
     WinDef.HWND hwnd;
+    private static Enums.AspectRatio pendingAspectRatio = null;
+    private static int consecutiveDetections = 0;
 
     /**
      * Constructor
@@ -310,8 +312,41 @@ public class ImageProcessor {
         if (!letterbox) {
             pillarbox = switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix, false);
         }
-        if (!letterbox && !pillarbox) {
-            switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix, true);
+        Enums.AspectRatio detected;
+        if (letterbox) {
+            detected = Enums.AspectRatio.LETTERBOX;
+        } else if (pillarbox) {
+            detected = Enums.AspectRatio.PILLARBOX;
+        } else {
+            detected = Enums.AspectRatio.FULLSCREEN;
+        }
+        // debounce logic
+        if (detected == pendingAspectRatio) {
+            consecutiveDetections++;
+        } else {
+            pendingAspectRatio = detected;
+            consecutiveDetections = 1;
+        }
+        if (consecutiveDetections >= Constants.REQUIRED_CONFIRMATIONS) {
+            applyAspectRatio(pendingAspectRatio);
+            consecutiveDetections = 0;
+        }
+    }
+
+    /**
+     * Apply aspect ratio change after debounce
+     *
+     * @param aspectRatio
+     */
+    private static void applyAspectRatio(Enums.AspectRatio aspectRatio) {
+        if (MainSingleton.getInstance().config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
+            return;
+        }
+        MainSingleton.getInstance().config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
+        GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(aspectRatio.getBaseI18n());
+        log.info("Switching to {} aspect ratio (confirmed).", aspectRatio.getBaseI18n());
+        if (MainSingleton.getInstance().config.isMqttEnable()) {
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), aspectRatio.getBaseI18n());
         }
     }
 
@@ -911,7 +946,7 @@ public class ImageProcessor {
     public void calculateBorders() {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = true;
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 250, TimeUnit.MILLISECONDS);
     }
 
     /**
