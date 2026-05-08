@@ -309,8 +309,16 @@ public class UpgradeManager {
                     Thread.sleep(1000);
                     if (NativeExecutor.isWindows()) {
                         List<String> execCommand = new ArrayList<>();
-                        execCommand.add(downloadPath);
-                        execCommand.add(Constants.INSTALL_PASSIVE);
+                        execCommand.add(Constants.POWERSHELL);
+                        execCommand.add(Constants.POWERSHELL_COMMAND);
+                        execCommand.add(Constants.POWERSHELL_START_PROCESS);
+                        execCommand.add(Constants.POWERSHELL_FILE_PATH);
+                        execCommand.add("\"" + downloadPath + "\"");
+                        execCommand.add(Constants.POWERSHELL_ARGUMENT_LIST);
+                        execCommand.add("'" + Constants.INSTALL_PASSIVE + "'");
+                        execCommand.add(Constants.POWERSHELL_VERB);
+                        execCommand.add(Constants.POWERSHELL_RUN_AS);
+                        execCommand.add(Constants.POWERSHELL_WAIT);
                         NativeExecutor.runNative(execCommand.toArray(String[]::new), 0);
                     }
                     NativeExecutor.exit();

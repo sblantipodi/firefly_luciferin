@@ -400,14 +400,8 @@ public final class NativeExecutor {
         exitOtherInstances();
         AudioSingleton.getInstance().RUNNING_AUDIO = false;
         CommonUtility.delaySeconds(() -> {
-            log.info("CLOSIGN?");
-            try {
-                lastWill();
-                System.exit(0);
-            } catch (Exception ignore) {
-                log.info("exception");
-                System.exit(0);
-            }
+            lastWill();
+            System.exit(0);
         }, 2);
     }
 

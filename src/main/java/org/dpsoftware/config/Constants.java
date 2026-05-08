@@ -813,6 +813,14 @@ public class Constants {
             + "$gpu.CounterSamples | Where-Object { $_.CookedValue -gt 0 } | "
             + "Measure-Object -Property CookedValue -Sum | Select-Object -ExpandProperty Sum"
             + "\"";
+    public static final String POWERSHELL = "powershell";
+    public static final String POWERSHELL_COMMAND = "-Command";
+    public static final String POWERSHELL_START_PROCESS = "Start-Process";
+    public static final String POWERSHELL_FILE_PATH = "-FilePath";
+    public static final String POWERSHELL_ARGUMENT_LIST = "-ArgumentList";
+    public static final String POWERSHELL_VERB = "-Verb";
+    public static final String POWERSHELL_RUN_AS = "RunAs";
+    public static final String POWERSHELL_WAIT = "-Wait";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
     // HTTP or MQTT topic to skip
