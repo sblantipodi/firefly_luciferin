@@ -99,11 +99,12 @@ public class PipelineManager {
             DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
             DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
             String handleToken = (Constants.FIREFLY_LUCIFERIN + MainSingleton.getInstance().whoAmI).replaceAll("-", "").replaceAll(" ", "");
-            DBusMatchRule dBusMatchRule = (DBusMatchRule) DBusMatchRuleBuilder.create().withType(MessageTypes.SIGNAL)
-                    .withInterface("Response")
-                    .withMember("org.freedesktop.portal.Request")
+            DBusMatchRule matchRule = DBusMatchRuleBuilder.create()
+                    .withType(MessageTypes.SIGNAL)
+                    .withInterface("org.freedesktop.portal.Request")
+                    .withMember("Response")
                     .build();
-            dBusConnection.addGenericSigHandler(dBusMatchRule, signal -> {
+            dBusConnection.addGenericSigHandler(matchRule, signal -> {
                 try {
                     if (signal.getParameters().length == 2 // verify amount of arguments
                             && signal.getParameters()[0] instanceof UInt32 // verify argument types
