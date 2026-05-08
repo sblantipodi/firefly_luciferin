@@ -56,13 +56,6 @@ jobs:
           git config --global user.email "perini.davide@dpsoftware.org";
           git config --global user.name "Davide Perini";
 
-      - name: Checkout build tools master
-        run: |
-          cd build_tools
-          git fetch origin master
-          git checkout master
-          git pull --ff-only origin master
-
       - name: Update snapcraft file
         run: |
           file_to_edit="build_tools/snapcraft/snap/snapcraft.remote.yaml"
@@ -71,19 +64,11 @@ jobs:
 
           sed -i "s#\(wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v\)[0-9]\+\.[0-9]\+\.[0-9]\+\(/FireflyLuciferinLinux.deb\)#\1${VERSION}\2#" "$file_to_edit"
 
-      - name: Commit build tools snap changes
-        run: |
-          cd build_tools
-          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/sblantipodi/build_tools.git
-          git add snapcraft/snap/snapcraft.remote.yaml
-          git commit -m "snap release ${VERSION}" || echo "No changes"
-          git push origin HEAD:master
-
       - name: Sync root snapcraft.yaml
         run: |
           cp build_tools/snapcraft/snap/snapcraft.remote.yaml snapcraft.yaml
 
-          git add build_tools snapcraft.yaml
+          git add snapcraft.yaml
           git commit -m "snap release ${VERSION}" || echo "No changes"
           git push
 
