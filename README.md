@@ -99,10 +99,7 @@ Effortless setup with minimal configuration required, yet highly customizable to
 
 If you don't want to design your own PCB and you have a soldering iron, you might
 find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.  
-This page provides more information about
-
-Luciferin's [hardware compatibility](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware), along
-with a list of the **supported pre-built boards**.
+This page provides more information about Luciferin's [hardware compatibility](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware), along with a list of the **supported pre-built boards**.
 
 ## What is the Performance Impact on your System?
 Firefly Luciferin is a very optimized software and it has **nearly no impact on your system performance**.  
