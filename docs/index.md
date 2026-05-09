@@ -27,7 +27,7 @@ a {
   administrator, and repeat the update process.**
 
 
-- ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.24.8**.
+- ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.24.9**.
 - **The [Wiki](https://github.com/sblantipodi/firefly_luciferin/wiki) has been reorganized** for better readability.
 - **The [Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) now supports
   the
