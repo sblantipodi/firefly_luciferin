@@ -492,6 +492,7 @@ public class CommonUtility {
             CommonUtility.addDevice(mqttmsg);
         } else {
             AtomicBoolean isDevicePresent = new AtomicBoolean(false);
+            GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
             GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
                 if (glowWormDevice.getDeviceName().equals(freshDeviceName)) {
                     isDevicePresent.set(true);
@@ -502,7 +503,7 @@ public class CommonUtility {
                     if (mqttmsg.get(Constants.GPIO_CLOCK) != null) {
                         glowWormDevice.setGpioClock(mqttmsg.get(Constants.GPIO_CLOCK).toString());
                     }
-                    if (mqttmsg.get(Constants.WIFI) != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
+                    if (mqttmsg.get(Constants.WIFI) != null && deviceToUse != null && deviceToUse.getMac().equals(glowWormDevice.getMac())) {
                         MainSingleton.getInstance().wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
                         if (MainSingleton.getInstance().wifiStrength == -1) {
                             MainSingleton.getInstance().wifiStrength = 0;
