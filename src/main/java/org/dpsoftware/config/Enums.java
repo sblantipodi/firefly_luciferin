@@ -41,6 +41,7 @@ public class Enums {
     public enum SupportedDevice {
         ESP8266,
         ESP32,
+        ESP32_C3,
         ESP32_C3_CDC,
         ESP32_C5,
         ESP32_C6,
