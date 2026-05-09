@@ -22,6 +22,11 @@ a {
 
 ### In this release
 
+- **NOTE: Due to a recent Windows security update, Windows users will need to run Luciferin with administrator
+  privileges to complete the automatic update. If you launched Luciferin normally, close it, restart it as
+  administrator, and repeat the update process.**
+
+
 - ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.24.7**.
 - **The [Wiki](https://github.com/sblantipodi/firefly_luciferin/wiki) has been reorganized** for better readability.
 - **The [Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) now supports
