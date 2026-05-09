@@ -27,7 +27,7 @@ a {
   administrator, and repeat the update process.**
 
 
-- ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.24.7**.
+- ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.24.8**.
 - **The [Wiki](https://github.com/sblantipodi/firefly_luciferin/wiki) has been reorganized** for better readability.
 - **The [Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) now supports
   the
@@ -58,6 +58,10 @@ a {
 - Fixed incorrect Wi-Fi signal strength readings when two or more MQTT devices were in use and one of them was connected via Ethernet.
 - Fixed duplicate devices appearing in the Devices tab when using multiple devices simultaneously.
 - Fixed the [Web Interface](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface) not reporting the correct framerate when driving LEDs via USB.
+- Fixed an issue that reset the LED GPIO to 0 when driving the LEDs over USB.
+  Closes [#414](https://github.com/sblantipodi/firefly_luciferin/issues/414).
+- Fixed an issue that prevented some Linux distributions from displaying
+  the [test image](https://github.com/sblantipodi/firefly_luciferin/wiki/Test-image-and-latency-test).
 - [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) updated to **v1.19.7**.
 - [PlatformIO Version Increment](https://github.com/sblantipodi/platformio_version_increment/releases) update (v0.2.0).
 

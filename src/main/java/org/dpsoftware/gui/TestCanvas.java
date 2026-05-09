@@ -126,8 +126,10 @@ public class TestCanvas {
         stageX = settingStage.getX();
         stageY = settingStage.getY();
         stage = new Stage();
+        stage.initOwner(settingStage);
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setAlwaysOnTop(true);
         interactionHandler = new TcInteractionHandler(this);
         interactionHandler.manageCanvasKeyPressed(0);
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
@@ -149,6 +151,18 @@ public class TestCanvas {
             stage.setFullScreen(true);
         }
         stage.show();
+        bringToFront();
+    }
+
+    /**
+     * Keep the test image canvas above regular application windows.
+     */
+    public void bringToFront() {
+        if (stage != null) {
+            stage.setIconified(false);
+            stage.setAlwaysOnTop(true);
+            stage.toFront();
+        }
     }
 
     /**

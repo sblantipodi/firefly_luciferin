@@ -590,20 +590,21 @@ public class GuiManager {
      */
     public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
         Platform.runLater(() -> {
-            try {
-                TestCanvas testCanvas = new TestCanvas();
-                testCanvas.buildAndShowTestImage(event);
+            TestCanvas testCanvas = new TestCanvas();
+            testCanvas.buildAndShowTestImage(event);
+            Platform.runLater(() -> {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_COLOR_CORRECTION_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
-                Parent root = fxmlLoader.load();
+                Parent root;
+                try {
+                    root = fxmlLoader.load();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 ColorCorrectionDialogController controller = fxmlLoader.getController();
                 controller.injectSettingsController(settingsController);
                 controller.injectTestCanvas(testCanvas);
                 controller.initValuesFromSettingsFile(MainSingleton.getInstance().config);
                 Stage stage = initStage(root);
-                Platform.runLater(() -> {
-                    new TestCanvas().setDialogMargin(stage);
-                    testCanvas.setDialogY((int) stage.getY());
-                });
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.initModality(Modality.NONE);
                 stage.setAlwaysOnTop(true);
@@ -620,9 +621,11 @@ public class GuiManager {
                 GuiSingleton.getInstance().colorDialog = stage;
                 stage.getProperties().put(Constants.FXML_COLOR_CORRECTION_DIALOG, controller);
                 GuiSingleton.getInstance().colorDialog.show();
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
+                Platform.runLater(() -> {
+                    new TestCanvas().setDialogMargin(stage);
+                    testCanvas.setDialogY((int) stage.getY());
+                });
+            });
         });
     }
 

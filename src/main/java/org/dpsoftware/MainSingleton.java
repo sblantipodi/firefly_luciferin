@@ -79,7 +79,7 @@ public class MainSingleton {
     public GuiManager guiManager;
     public boolean communicationError = false;
     public Color colorInUse;
-    public int gpio = 0; // 0 means not set, firmware discards this value
+    public int gpio = 255; // 255 means not set, firmware discards this value
     public int colorOrder = 0; // 1 means GRB, 2 RGB, 3 BGR
     public int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public int fireflyEffect = 0;
@@ -87,7 +87,7 @@ public class MainSingleton {
     public Boolean relayInv = true;
     public int sbPin = -1;
     public int ldrPin = -1;
-    public int gpioClockPin = 0;
+    public int gpioClockPin = 255;
     public boolean nightMode = false;
     public String version = "";
     public ResourceBundle bundle;

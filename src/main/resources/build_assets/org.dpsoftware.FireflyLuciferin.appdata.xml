@@ -74,13 +74,14 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.27.3" date="2026-05-09">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.27.3</url>
+        <release version="2.27.4" date="2026-05-09">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.27.4</url>
             <description>
 
                 <p>Changes in this Release</p>
                 <ul>
-                    <li>Update requirement: requires <code>Glow Worm Luciferin</code> firmware (v5.24.7)</li>
+                    <li>Update requirement: requires <code>Glow Worm Luciferin</code> firmware (v5.24.8)
+                    </li>
                     <li>The Luciferin Official PCB now supports the new Luciferin Module, compatible with smaller D1
                         Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any
                         soldering or cabling. The Luciferin Ethernet Module adds Ethernet connectivity to boards that do
@@ -133,7 +134,10 @@
                         simultaneously.
                     </li>
                     <li>Fixed the Web Interface not reporting the correct framerate when driving LEDs via USB.</li>
+                    <li>Fixed an issue that reset the LED GPIO to 0 when driving the LEDs over USB.</li>
+                    <li>Fixed an issue that prevented some Linux distributions from displaying the test image.</li>
                     <li>Arduino Bootstrapper updated to v1.19.7.</li>
+                    <li>PlatformIO Version Increment updated to (v0.2.0).</li>
                 </ul>
 
                 <p>

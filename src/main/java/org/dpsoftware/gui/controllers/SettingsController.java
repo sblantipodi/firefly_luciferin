@@ -985,14 +985,16 @@ public class SettingsController {
      * @param currentSettingsInUse object used for the comparison with the profile object
      */
     private void setDevicesTabParams(Configuration currentSettingsInUse) {
-        if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_2))) {
-            currentSettingsInUse.setMultiMonitor(2);
-        } else if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_3))) {
-            currentSettingsInUse.setMultiMonitor(3);
-        } else {
-            currentSettingsInUse.setMultiMonitor(1);
+        if (currentSettingsInUse != null) {
+            if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_2))) {
+                currentSettingsInUse.setMultiMonitor(2);
+            } else if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_3))) {
+                currentSettingsInUse.setMultiMonitor(3);
+            } else {
+                currentSettingsInUse.setMultiMonitor(1);
+            }
+            currentSettingsInUse.setMultiScreenSingleDevice(devicesTabController.multiScreenSingleDevice.isSelected());
         }
-        currentSettingsInUse.setMultiScreenSingleDevice(devicesTabController.multiScreenSingleDevice.isSelected());
     }
 
     /**
@@ -1001,14 +1003,16 @@ public class SettingsController {
      * @param currentSettingsInUse object used for the comparison with the profile object
      */
     private void setMqttTabParams(Configuration currentSettingsInUse) {
-        currentSettingsInUse.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText());
-        currentSettingsInUse.setMqttTopic(networkTabController.mqttTopic.getText());
-        currentSettingsInUse.setMqttUsername(networkTabController.mqttUser.getText());
-        currentSettingsInUse.setMqttPwd(networkTabController.mqttPwd.getText());
-        currentSettingsInUse.setFullFirmware(modeTabController.firmTypeFull.isSelected());
-        currentSettingsInUse.setMqttEnable(networkTabController.mqttEnable.isSelected());
-        currentSettingsInUse.setWirelessStream(networkTabController.mqttStream.isSelected());
-        currentSettingsInUse.setStreamType(networkTabController.streamType.getValue());
+        if (currentSettingsInUse != null) {
+            currentSettingsInUse.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText());
+            currentSettingsInUse.setMqttTopic(networkTabController.mqttTopic.getText());
+            currentSettingsInUse.setMqttUsername(networkTabController.mqttUser.getText());
+            currentSettingsInUse.setMqttPwd(networkTabController.mqttPwd.getText());
+            currentSettingsInUse.setFullFirmware(modeTabController.firmTypeFull.isSelected());
+            currentSettingsInUse.setMqttEnable(networkTabController.mqttEnable.isSelected());
+            currentSettingsInUse.setWirelessStream(networkTabController.mqttStream.isSelected());
+            currentSettingsInUse.setStreamType(networkTabController.streamType.getValue());
+        }
     }
 
     /**
@@ -1017,14 +1021,16 @@ public class SettingsController {
      * @param currentSettingsInUse object used for the comparison with the profile object
      */
     private void setModeTabParams(Configuration currentSettingsInUse) {
-        currentSettingsInUse.setTheme(modeTabController.theme.getValue());
-        currentSettingsInUse.setBaudRate(modeTabController.baudRate.getValue());
-        currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
-        currentSettingsInUse.setLanguage(modeTabController.language.getValue());
-        currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
-        currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
-        currentSettingsInUse.setOutputDevice(modeTabController.serialPort.getValue());
-        currentSettingsInUse.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, modeTabController.simdOption.getValue()).getSimdOptionNumeric());
+        if (currentSettingsInUse != null) {
+            currentSettingsInUse.setTheme(modeTabController.theme.getValue());
+            currentSettingsInUse.setBaudRate(modeTabController.baudRate.getValue());
+            currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
+            currentSettingsInUse.setLanguage(modeTabController.language.getValue());
+            currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
+            currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
+            currentSettingsInUse.setOutputDevice(modeTabController.serialPort.getValue());
+            currentSettingsInUse.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, modeTabController.simdOption.getValue()).getSimdOptionNumeric());
+        }
     }
 
     /**
