@@ -117,7 +117,7 @@ public class GrabberManager {
                 if (GrabberSingleton.getInstance().pipe == null || !GrabberSingleton.getInstance().pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (GrabberSingleton.getInstance().pipe != null) {
                         log.info("Restarting pipeline");
-                        GrabberSingleton.getInstance().pipe.stop();
+                        disposePipeline(true);
                         restartCounter.getAndIncrement();
                         if (restartCounter.get() >= Constants.MAX_PIPELINE_RESTARTS) {
                             log.error("Pipeline restarted too many times, restarting...");
@@ -126,22 +126,24 @@ public class GrabberManager {
                     } else {
                         log.info("Starting a new pipeline");
                         restartCounter.set(0);
-                        GrabberSingleton.getInstance().pipe = new Pipeline();
-                        if (NativeExecutor.isWindows()) {
-                            DisplayManager displayManager = new DisplayManager();
-                            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
-                            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11.replace("{0}", monitorNativePeer), true);
-                            } else {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12.replace("{0}", monitorNativePeer), true);
-                            }
-                        } else if (NativeExecutor.isLinux()) {
-                            int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
-                            String runtimeParams = finalLinuxParams.replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime));
-                            bin = Gst.parseBinFromDescription(runtimeParams, true);
+                    }
+                    GrabberSingleton.getInstance().pipe = new Pipeline();
+                    if (NativeExecutor.isWindows()) {
+                        DisplayManager displayManager = new DisplayManager();
+                        String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
+                        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11.replace("{0}", monitorNativePeer), true);
                         } else {
-                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
+                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12.replace("{0}", monitorNativePeer), true);
                         }
+                    } else if (NativeExecutor.isLinux()) {
+                        int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
+                        String runtimeParams = finalLinuxParams
+                                .replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime))
+                                .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
+                        bin = Gst.parseBinFromDescription(runtimeParams, true);
+                    } else {
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
                     }
                     vc = new GStreamerGrabber();
                     GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
@@ -165,15 +167,37 @@ public class GrabberManager {
      * Old pipeline is not needed anymore, dispose the pipeline and all the related objects to free up system memory.
      */
     private void disposePipeline() {
-        if (GrabberSingleton.getInstance().pipe != null && !GrabberSingleton.getInstance().pipe.isPlaying() && !ManagerSingleton.getInstance().pipelineStarting) {
+        disposePipeline(false);
+    }
+
+    /**
+     * Old pipeline is not needed anymore, dispose the pipeline and all the related objects to free up system memory.
+     *
+     * @param force dispose a still playing pipeline during a restart
+     */
+    private void disposePipeline(boolean force) {
+        if (GrabberSingleton.getInstance().pipe != null && (force || !GrabberSingleton.getInstance().pipe.isPlaying()) && !ManagerSingleton.getInstance().pipelineStarting) {
             log.info("Free up system memory");
-            Gst.invokeLater(bin::dispose);
-            Gst.invokeLater(vc.videosink::dispose);
-            Gst.invokeLater(vc.getElement()::dispose);
+            if (GrabberSingleton.getInstance().pipe.isPlaying()) {
+                GrabberSingleton.getInstance().pipe.stop();
+            }
+            if (bin != null) {
+                Gst.invokeLater(bin::dispose);
+            }
+            if (vc != null) {
+                if (vc.videosink != null) {
+                    Gst.invokeLater(vc.videosink::dispose);
+                }
+                if (vc.getElement() != null) {
+                    Gst.invokeLater(vc.getElement()::dispose);
+                }
+            }
             Gst.invokeLater(GrabberSingleton.getInstance().pipe::dispose);
             GStreamerGrabber.ledMatrix = null;
             bin = null;
-            vc.videosink = null;
+            if (vc != null) {
+                vc.videosink = null;
+            }
             vc = null;
             GrabberSingleton.getInstance().pipe = null;
             System.gc();
