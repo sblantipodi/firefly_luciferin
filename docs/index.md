@@ -26,16 +26,11 @@ a {
   privileges to complete the automatic update. If you launched Luciferin normally, close it, restart it as
   administrator, and repeat the update process.**
 
-
 - ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.24.9**.
 - **The [Wiki](https://github.com/sblantipodi/firefly_luciferin/wiki) has been reorganized** for better readability.
-- **The [Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) now supports
-  the
-  new [Luciferin Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb)
-  **, compatible with smaller D1 Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any
-  soldering or cabling.
-  The [Luciferin Ethernet Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-ethernet-module-for-the-official-pcb)
-  **adds Ethernet connectivity to boards that do not natively support it**.
+- **The [Luciferin Official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) now supports the new [Luciferin Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb)**,
+compatible with smaller D1 Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any soldering or cabling.
+The **[Luciferin Ethernet Module](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB#luciferin-ethernet-module-for-the-official-pcb) adds Ethernet connectivity to boards that do not natively support it**.
 - **Added support for Espressif [ESP32-C6 and ESP32-C5](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware)**, enabling Wi-Fi 6 and 5 GHz band support on the C5. Closes [#92](https://github.com/sblantipodi/glow_worm_luciferin/issues/92).
 - **Added support for SPI-based Ethernet devices**; GPIO pins for custom SPI configurations can now be assigned directly from the Web Interface or the Provisioning section in Firefly Luciferin.
 - **Added support for the [Gledopto](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware#pre-build-boards-support) series with Ethernet**.
@@ -58,10 +53,8 @@ a {
 - Fixed incorrect Wi-Fi signal strength readings when two or more MQTT devices were in use and one of them was connected via Ethernet.
 - Fixed duplicate devices appearing in the Devices tab when using multiple devices simultaneously.
 - Fixed the [Web Interface](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface) not reporting the correct framerate when driving LEDs via USB.
-- Fixed an issue that reset the LED GPIO to 0 when driving the LEDs over USB.
-  Closes [#414](https://github.com/sblantipodi/firefly_luciferin/issues/414).
-- Fixed an issue that prevented some Linux distributions from displaying
-  the [test image](https://github.com/sblantipodi/firefly_luciferin/wiki/Test-image-and-latency-test).
+- Fixed an issue that reset the LED GPIO to 0 when driving the LEDs over USB. Closes [#414](https://github.com/sblantipodi/firefly_luciferin/issues/414).
+- Fixed an issue that prevented some Linux distributions from displaying the [test image](https://github.com/sblantipodi/firefly_luciferin/wiki/Test-image-and-latency-test).
 - [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) updated to **v1.19.7**.
 - [PlatformIO Version Increment](https://github.com/sblantipodi/platformio_version_increment/releases) update (v0.2.0).
 
