@@ -74,13 +74,13 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.27.5" date="2026-05-09">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.27.5</url>
+        <release version="2.27.6" date="2026-05-09">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.27.6</url>
             <description>
 
                 <p>Changes in this Release</p>
                 <ul>
-                    <li>Update requirement: requires <code>Glow Worm Luciferin</code> firmware (v5.24.8)
+                    <li>Update requirement: requires <code>Glow Worm Luciferin</code> firmware (v5.24.9)
                     </li>
                     <li>The Luciferin Official PCB now supports the new Luciferin Module, compatible with smaller D1
                         Mini format boards, allowing hardware upgrades without replacing the PCB or redoing any
