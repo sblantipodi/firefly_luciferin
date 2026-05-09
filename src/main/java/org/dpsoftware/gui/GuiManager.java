@@ -624,6 +624,7 @@ public class GuiManager {
                 Platform.runLater(() -> {
                     new TestCanvas().setDialogMargin(stage);
                     testCanvas.setDialogY((int) stage.getY());
+                    stage.setAlwaysOnTop(true);
                 });
             });
         });

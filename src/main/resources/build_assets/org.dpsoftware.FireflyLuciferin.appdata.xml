@@ -74,8 +74,8 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.27.4" date="2026-05-09">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.27.4</url>
+        <release version="2.27.5" date="2026-05-09">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.27.5</url>
             <description>
 
                 <p>Changes in this Release</p>

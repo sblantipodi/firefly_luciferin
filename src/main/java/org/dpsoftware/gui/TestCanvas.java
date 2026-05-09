@@ -129,7 +129,7 @@ public class TestCanvas {
         stage.initOwner(settingStage);
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setAlwaysOnTop(true);
+        stage.setAlwaysOnTop(false);
         interactionHandler = new TcInteractionHandler(this);
         interactionHandler.manageCanvasKeyPressed(0);
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
@@ -160,7 +160,7 @@ public class TestCanvas {
     public void bringToFront() {
         if (stage != null) {
             stage.setIconified(false);
-            stage.setAlwaysOnTop(true);
+            stage.setAlwaysOnTop(false);
             stage.toFront();
         }
     }
