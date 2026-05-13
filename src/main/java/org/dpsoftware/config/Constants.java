@@ -650,6 +650,7 @@ public class Constants {
     public static final String ACTION = "action";
     public static final String CLIENT_ACTION = "clientActionSetState";
     // UDP
+    public static final long UDP_RECONNECT_DELAY_MS = 2000;
     public static final int UDP_PORT = 4210;
     public static final int UDP_BROADCAST_PORT = 5001;
     public static final int UDP_BROADCAST_PORT_2 = 5002;

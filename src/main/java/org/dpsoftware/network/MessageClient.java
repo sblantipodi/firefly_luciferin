@@ -52,6 +52,7 @@ public class MessageClient {
     public Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
+    private long lastConnectionAttempt;
 
     /**
      * Get the main instance status when in multi screen single device
@@ -61,11 +62,16 @@ public class MessageClient {
         // Create a task that runs every 2 seconds
         Runnable framerateTask = () -> {
             try {
-                if (NetworkSingleton.getInstance().msgClient == null || NetworkSingleton.getInstance().msgClient.clientSocket == null) {
+                if (NetworkSingleton.getInstance().msgClient == null) {
                     NetworkSingleton.getInstance().msgClient = new MessageClient();
-                    NetworkSingleton.getInstance().msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
+                }
+                if (!NetworkSingleton.getInstance().msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT)) {
+                    return;
                 }
                 String response = NetworkSingleton.getInstance().msgClient.sendMessage(Constants.MSG_SERVER_STATUS);
+                if (response.isEmpty()) {
+                    return;
+                }
                 JsonNode stateStatusDto = CommonUtility.fromJsonToObject(response);
                 assert stateStatusDto != null;
                 MainSingleton.getInstance().config.setEffect(stateStatusDto.get(Constants.EFFECT).asText());
@@ -107,14 +113,34 @@ public class MessageClient {
      * @param ip   ip of the msg server
      * @param port port of the msg server
      */
-    public void startConnection(String ip, int port) {
+    public boolean startConnection(String ip, int port) {
+        if (isConnected()) {
+            return true;
+        }
+        long now = System.currentTimeMillis();
+        if (now - lastConnectionAttempt < Constants.UDP_RECONNECT_DELAY_MS) {
+            return false;
+        }
+        lastConnectionAttempt = now;
         try {
             clientSocket = new Socket(ip, port);
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            return true;
         } catch (IOException e) {
-            log.error(e.getMessage());
+            closeConnection();
+            log.info("Message server not ready: {}", e.getMessage());
+            return false;
         }
+    }
+
+    /**
+     * Check if the client is connected to the message server.
+     *
+     * @return true if connected
+     */
+    public boolean isConnected() {
+        return clientSocket != null && clientSocket.isConnected() && !clientSocket.isClosed() && out != null && in != null;
     }
 
     /**
@@ -125,27 +151,44 @@ public class MessageClient {
      */
     public String sendMessage(String msg) {
         try {
-            if (out != null) {
+            if (isConnected()) {
                 out.println(msg);
                 return in.readLine();
             }
         } catch (IOException e) {
-            NetworkSingleton.getInstance().msgClient = null;
-            log.error(e.getMessage());
+            closeConnection();
+            log.warn("Message server connection lost: {}", e.getMessage());
         }
         return "";
+    }
+
+    private void closeConnection() {
+        try {
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (clientSocket != null) {
+                clientSocket.close();
+            }
+        } catch (IOException e) {
+            log.debug(e.getMessage());
+        } finally {
+            in = null;
+            out = null;
+            clientSocket = null;
+        }
     }
 
     /**
      * Close connection to the msg server
      *
-     * @throws IOException socket error
      */
     @SuppressWarnings("unused")
-    public void stopConnection() throws IOException {
+    public void stopConnection() {
         log.info("Stopping message client");
-        in.close();
-        out.close();
-        clientSocket.close();
+        closeConnection();
     }
 }

@@ -40,8 +40,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Message server using Java Sockets, used for single instance multi monitor
@@ -59,6 +63,7 @@ public class MessageServer {
     private int secondDisplayLedNum = 0;
     private ServerSocket serverSocket;
     private Configuration monitorConfig1, monitorConfig2, monitorConfig3;
+    private ScheduledExecutorService serverWatchdog;
 
     private static StateStatusDto getStateStatusDto() {
         StateStatusDto stateStatusDto = new StateStatusDto();
@@ -74,13 +79,20 @@ public class MessageServer {
      * Start message server for multi screen, single instance
      */
     public void startMessageServer() {
-        CommonUtility.delaySeconds(() -> {
-            try {
-                NetworkSingleton.getInstance().messageServer.start(Constants.MSG_SERVER_PORT);
-            } catch (IOException e) {
-                log.error(e.getMessage());
+        if (serverWatchdog != null && !serverWatchdog.isShutdown()) {
+            return;
+        }
+        serverWatchdog = Executors.newSingleThreadScheduledExecutor();
+        serverWatchdog.scheduleWithFixedDelay(() -> {
+            if (isRunning()) {
+                return;
             }
-        }, 0);
+            try {
+                start(Constants.MSG_SERVER_PORT);
+            } catch (IOException e) {
+                log.error("Unable to start message server: {}", e.getMessage());
+            }
+        }, 0, 2, TimeUnit.SECONDS);
     }
 
     /**
@@ -111,7 +123,8 @@ public class MessageServer {
     public void start(int port) throws IOException {
         log.info("Starting message server");
         leds = new Color[NetworkSingleton.getInstance().totalLedNum];
-        serverSocket = new ServerSocket(port);
+        serverSocket = new ServerSocket(port, 50, InetAddress.getByName(Constants.MSG_SERVER_HOST));
+        log.info("Message server listening on {}:{}", Constants.MSG_SERVER_HOST, port);
         while (!NetworkSingleton.getInstance().closeServer) {
             if (!serverSocket.isClosed()) {
                 new ClientHandler(serverSocket.accept()).start();
@@ -129,6 +142,18 @@ public class MessageServer {
         if (serverSocket != null) {
             serverSocket.close();
         }
+        if (serverWatchdog != null) {
+            serverWatchdog.shutdownNow();
+        }
+    }
+
+    /**
+     * Check if message server is listening.
+     *
+     * @return true if server socket is open
+     */
+    public boolean isRunning() {
+        return serverSocket != null && !serverSocket.isClosed();
     }
 
     /**

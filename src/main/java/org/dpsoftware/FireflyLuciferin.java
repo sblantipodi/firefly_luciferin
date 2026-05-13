@@ -285,14 +285,13 @@ public class FireflyLuciferin extends Application {
         grabberManager.getFPS();
         grabberManager.pingDevice();
         imageProcessor.calculateBorders();
+        // If multi monitor, first instance, single device, start message server before grabbers produce frames.
+        if (CommonUtility.isSingleDeviceMainInstance()) {
+            NetworkSingleton.getInstance().messageServer.startMessageServer();
+        }
         // If this instance spawns new instances, don't launch grabbers here.
         if (!(MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1)) {
             launchGrabberAndConsumers();
-        }
-        // If multi monitor, first instance, single instance, start message server
-        if (CommonUtility.isSingleDeviceMainInstance()) {
-            MessageServer messageServer = new MessageServer();
-            messageServer.startMessageServer();
         }
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();

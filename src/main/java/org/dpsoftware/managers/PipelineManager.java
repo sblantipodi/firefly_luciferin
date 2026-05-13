@@ -245,11 +245,11 @@ public class PipelineManager {
         ImageProcessor.exponentialMovingAverage(leds);
         ImageProcessor.adjustStripWhiteBalance(leds);
         if (CommonUtility.isSingleDeviceMultiScreen()) {
-            if (NetworkSingleton.getInstance().msgClient == null || NetworkSingleton.getInstance().msgClient.clientSocket == null) {
+            if (NetworkSingleton.getInstance().msgClient == null) {
                 NetworkSingleton.getInstance().msgClient = new MessageClient();
-                if (CommonUtility.isSingleDeviceMultiScreen()) {
-                    NetworkSingleton.getInstance().msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
-                }
+            }
+            if (!NetworkSingleton.getInstance().msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT)) {
+                return;
             }
             StringBuilder sb = new StringBuilder();
             sb.append(MainSingleton.getInstance().whoAmI).append(",");
