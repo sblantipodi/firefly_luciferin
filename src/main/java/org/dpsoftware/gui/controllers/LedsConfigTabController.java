@@ -165,7 +165,8 @@ public class LedsConfigTabController {
         }
         if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
             groupBy.setDisable(true);
-            splitBottomMargin.setDisable(true);
+            // TODO
+            //splitBottomMargin.setDisable(true);
             if (MainSingleton.getInstance().config.getMultiMonitor() == 3 && MainSingleton.getInstance().whoAmI == 2) {
                 splitBottomMargin.setDisable(false);
             }
@@ -244,7 +245,8 @@ public class LedsConfigTabController {
         gapTypeTopBottom.setValue(currentConfig.getGapTypeTopBottom());
         gapTypeSide.setValue(currentConfig.getGapTypeSide());
         groupBy.setValue(currentConfig.getGroupBy());
-        forceSingleDeviceMultiScreenValues();
+        // TODO
+//        forceSingleDeviceMultiScreenValues();
         initGroupByCombo();
     }
 

@@ -577,14 +577,15 @@ public class FireflyLuciferin extends Application {
             Color[] colorArray = MainSingleton.getInstance().sharedQueue.take();
             if (isWayland) MainSingleton.getInstance().lastLedColor = colorArray;
             if (MainSingleton.getInstance().RUNNING) {
-                if (CommonUtility.isSingleDeviceMultiScreen()) {
-                    if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
-                        NetworkSingleton.getInstance().orderArray(colorArray);
-                        sendColors(colorArray);
-                    }
-                } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {
+                // TODO
+//                if (CommonUtility.isSingleDeviceMultiScreen()) {
+//                    if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
+//                        NetworkSingleton.getInstance().orderArray(colorArray);
+//                        sendColors(colorArray);
+//                    }
+//                } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {
                     sendColors(colorArray);
-                }
+//                }
             }
         }
     }
