@@ -113,6 +113,7 @@ public class MessageClient {
      * @param ip   ip of the msg server
      * @param port port of the msg server
      */
+    @SuppressWarnings("all")
     public boolean startConnection(String ip, int port) {
         if (isConnected()) {
             return true;
