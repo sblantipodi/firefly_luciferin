@@ -51,12 +51,21 @@ public class UdpServer {
     DatagramSocket socket;
     List<InterfaceAddress> eligibleInterfaceAddresses = Collections.emptyList();
     boolean firstConnection = true;
+    private ScheduledExecutorService socketRetryExecutor;
+    private boolean udpReceiverStarted = false;
 
     /**
      * Initialize the main socket for receiving devices infos.
      * Find local IP address, used to get local broadcast address. This way works well when there are multiple network interfaces.
      */
     public UdpServer() {
+        initSocket();
+    }
+
+    private void initSocket() {
+        if (isSocketAvailable()) {
+            return;
+        }
         try {
             if (MainSingleton.getInstance().whoAmI == 1) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT);
@@ -92,10 +101,33 @@ public class UdpServer {
     @SuppressWarnings("Duplicates")
     public void receiveBroadcastUDPPacket() {
         if (!isSocketAvailable()) {
-            NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
-            log.warn("UDP discovery disabled because the socket is not available");
+            retrySocketInitialization();
             return;
         }
+        startUdpReceiver();
+    }
+
+    private void retrySocketInitialization() {
+        if (socketRetryExecutor != null && !socketRetryExecutor.isShutdown()) {
+            return;
+        }
+        log.warn("UDP discovery socket is not available, retrying bind in background");
+        socketRetryExecutor = Executors.newSingleThreadScheduledExecutor();
+        socketRetryExecutor.scheduleWithFixedDelay(() -> {
+            initSocket();
+            if (isSocketAvailable()) {
+                socketRetryExecutor.shutdown();
+                startUdpReceiver();
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+    }
+
+    private void startUdpReceiver() {
+        if (udpReceiverStarted) {
+            return;
+        }
+        udpReceiverStarted = true;
+        NetworkSingleton.getInstance().udpBroadcastReceiverRunning = true;
         broadcastToCorrectNetworkAdapter();
         CompletableFuture.supplyAsync(() -> {
             try {
