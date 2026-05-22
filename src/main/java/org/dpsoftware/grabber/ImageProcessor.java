@@ -313,11 +313,11 @@ public class ImageProcessor {
         int intBufferSize = (width * height) - 1;
         int[][] blackPixelMatrix;
         blackPixelMatrix = calculateBlackPixels(Enums.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
-        boolean letterbox = switchAspectRatio(Enums.AspectRatio.LETTERBOX, blackPixelMatrix, false);
+        boolean letterbox = switchAspectRatio(Enums.AspectRatio.LETTERBOX, blackPixelMatrix);
         blackPixelMatrix = calculateBlackPixels(Enums.AspectRatio.PILLARBOX, width, height, intBufferSize, rgbBuffer);
         boolean pillarbox = false;
         if (!letterbox) {
-            pillarbox = switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix, false);
+            pillarbox = switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix);
         }
         Enums.AspectRatio detected;
         if (letterbox) {
@@ -431,7 +431,7 @@ public class ImageProcessor {
      * @param blackPixelMatrix contains black and non black pixels
      * @return boolean if aspect ratio is changed
      */
-    static boolean switchAspectRatio(Enums.AspectRatio aspectRatio, int[][] blackPixelMatrix, boolean setFullscreen) {
+    static boolean switchAspectRatio(Enums.AspectRatio aspectRatio, int[][] blackPixelMatrix) {
         boolean isPillarboxLetterbox;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
@@ -454,7 +454,7 @@ public class ImageProcessor {
             isPillarboxLetterbox = true;
         } else {
             if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
-                if (setFullscreen && enoughWhitePixelForTheChange) {
+                if (enoughWhitePixelForTheChange) {
                     MainSingleton.getInstance().config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     log.info("Switching to {} aspect ratio.", Enums.AspectRatio.FULLSCREEN.getBaseI18n());
