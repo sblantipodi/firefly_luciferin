@@ -154,7 +154,12 @@ public class MessageClient {
         try {
             if (isConnected()) {
                 out.println(msg);
-                return in.readLine();
+                String response = in.readLine();
+                if (response == null) {
+                    closeConnection();
+                    return "";
+                }
+                return response;
             }
         } catch (IOException e) {
             closeConnection();

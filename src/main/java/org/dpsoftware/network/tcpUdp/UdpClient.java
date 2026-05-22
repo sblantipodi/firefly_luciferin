@@ -77,7 +77,7 @@ public class UdpClient {
     }
 
     /**
-     * Find the local IPv4 address that belongs to the same subnet as the target device.
+     * Find the local IPv4 address that the OS routing table would use for the target device.
      *
      * @param targetAddress device IP address
      * @return matching local IPv4 address, or null if none is found
@@ -102,10 +102,10 @@ public class UdpClient {
                 if (!(localAddress instanceof Inet4Address)) {
                     continue;
                 }
-                boolean sameSubnet = isAddressInSameSubnet(interfaceAddress, targetAddress.getHostAddress());
-                log.debug("UDP stream subnet check localIp={}, targetIp={}, prefixLength={}, result={}",
-                        localAddress.getHostAddress(), targetAddress.getHostAddress(), interfaceAddress.getNetworkPrefixLength(), sameSubnet);
-                if (sameSubnet) {
+                boolean routedViaInterface = isReachableViaInterface(localAddress, targetAddress);
+                log.debug("UDP stream routing check localIp={}, targetIp={}, result={}",
+                        localAddress.getHostAddress(), targetAddress.getHostAddress(), routedViaInterface);
+                if (routedViaInterface) {
                     log.debug("Selected UDP stream interface {} with localIp={} for targetIp={}",
                             networkInterface.getDisplayName(), localAddress.getHostAddress(), targetAddress.getHostAddress());
                     return localAddress;
@@ -138,40 +138,26 @@ public class UdpClient {
     }
 
     /**
-     * Check if a target IP belongs to the same subnet of an interface.
+     * Check if a target IP is routable via a specific local interface address.
      *
-     * @param interfaceAddress interface to check
-     * @param targetIp         target IP address
-     * @return true if the target IP belongs to the same subnet
+     * @param localAddress  local interface address to bind to
+     * @param targetAddress target IP address
+     * @return true if the OS routes the target through the local interface
      */
-    private boolean isAddressInSameSubnet(InterfaceAddress interfaceAddress, String targetIp) {
-        if (!NetworkManager.isValidIp(targetIp) || interfaceAddress == null || interfaceAddress.getAddress() == null) {
+    private boolean isReachableViaInterface(InetAddress localAddress, InetAddress targetAddress) {
+        if (localAddress == null || targetAddress == null || !NetworkManager.isValidIp(targetAddress.getHostAddress())) {
             return false;
         }
-        short prefixLength = interfaceAddress.getNetworkPrefixLength();
-        if (prefixLength < 0 || prefixLength > 32) {
+        try (DatagramSocket testSocket = new DatagramSocket(null)) {
+            testSocket.bind(new InetSocketAddress(localAddress, 0));
+            testSocket.connect(new InetSocketAddress(targetAddress, UDP_PORT));
+            InetAddress routedVia = testSocket.getLocalAddress();
+            return routedVia != null && routedVia.equals(localAddress);
+        } catch (Exception e) {
+            log.debug("UDP stream routing check failed for localIp={} targetIp={}: {}",
+                    localAddress.getHostAddress(), targetAddress.getHostAddress(), e.getMessage());
             return false;
         }
-        byte[] localAddress = interfaceAddress.getAddress().getAddress();
-        byte[] targetAddress;
-        try {
-            targetAddress = InetAddress.getByName(targetIp).getAddress();
-        } catch (UnknownHostException e) {
-            return false;
-        }
-        // Split the CIDR prefix into full bytes plus any remaining bits of the next byte.
-        int fullBytes = prefixLength / 8;
-        int remainingBits = prefixLength % 8;
-        for (int index = 0; index < fullBytes; index++) {
-            if (localAddress[index] != targetAddress[index]) {
-                return false;
-            }
-        }
-        if (remainingBits == 0) {
-            return true;
-        }
-        int mask = (0xFF << (8 - remainingBits)) & 0xFF;
-        return (localAddress[fullBytes] & mask) == (targetAddress[fullBytes] & mask);
     }
 
     /**

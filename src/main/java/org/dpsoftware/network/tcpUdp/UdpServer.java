@@ -65,12 +65,19 @@ public class UdpServer {
             } else if (MainSingleton.getInstance().whoAmI == 3) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT_3);
             }
-            assert socket != null;
+            if (socket == null) {
+                log.warn("UDP discovery socket not initialized for instance={}", MainSingleton.getInstance().whoAmI);
+                return;
+            }
             socket.setBroadcast(true);
             log.debug("UDP discovery socket initialized on port={}", socket.getLocalPort());
         } catch (SocketException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private boolean isSocketAvailable() {
+        return socket != null && !socket.isClosed();
     }
 
     private static boolean interfaceMatchesExcludedKeywords(NetworkInterface networkInterface) {
@@ -84,9 +91,17 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     public void receiveBroadcastUDPPacket() {
+        if (!isSocketAvailable()) {
+            NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
+            log.warn("UDP discovery disabled because the socket is not available");
+            return;
+        }
         broadcastToCorrectNetworkAdapter();
         CompletableFuture.supplyAsync(() -> {
             try {
+                if (!isSocketAvailable()) {
+                    return null;
+                }
                 log.debug("UDP broadcast listen on {}", socket.getLocalAddress());
                 byte[] buf = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
@@ -169,6 +184,10 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     void broadcastToCorrectNetworkAdapter() {
+        if (!isSocketAvailable()) {
+            log.warn("Skipping UDP discovery tasks because the socket is not available");
+            return;
+        }
         try {
             boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
             log.debug("Starting UDP discovery. mode={}, staticGlowWormIp={}",
@@ -278,6 +297,25 @@ public class UdpServer {
     }
 
     /**
+     * Send a UDP packet using the given local interface as source address.
+     *
+     * @param interfaceAddress local interface used for the outgoing packet
+     * @param packet           packet to send
+     * @throws IOException if send fails
+     */
+    private void sendFromInterface(InterfaceAddress interfaceAddress, DatagramPacket packet) throws IOException {
+        InetAddress localAddress = interfaceAddress != null ? interfaceAddress.getAddress() : null;
+        if (localAddress instanceof Inet4Address) {
+            try (DatagramSocket interfaceSocket = new DatagramSocket(new InetSocketAddress(localAddress, 0))) {
+                interfaceSocket.setBroadcast(true);
+                interfaceSocket.send(packet);
+                return;
+            }
+        }
+        socket.send(packet);
+    }
+
+    /**
      * Validate a network interface before using it for discovery.
      *
      * @param networkInterface interface to check
@@ -322,6 +360,10 @@ public class UdpServer {
         ScheduledExecutorService udpIpExecutorService = Executors.newScheduledThreadPool(1);
         Runnable setIpTask = () -> {
             try {
+                if (!isSocketAvailable()) {
+                    udpIpExecutorService.shutdown();
+                    return;
+                }
                 DatagramPacket broadCastPing;
                 // Send the name of the device where Firefly wants to connect
                 if (!Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice())) {
@@ -336,13 +378,19 @@ public class UdpServer {
                                 interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                                 broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
                                 useBroadcast ? Constants.UDP_DEVICE_NAME : Constants.UDP_DEVICE_NAME_STATIC);
-                        socket.send(broadCastPing);
+                        sendFromInterface(interfaceAddress, broadCastPing);
                         for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
+                            if (!isReachableViaInterface(interfaceAddress.getAddress(), sat.getValue().getDeviceIp())) {
+                                log.trace("Skipping UDP satellite device-name packet from interfaceIp={} to satelliteIp={} because route does not use this interface",
+                                        interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
+                                        sat.getValue().getDeviceIp());
+                                continue;
+                            }
                             broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, sat.getValue().getDeviceIp(), InetAddress.getByName(sat.getValue().getDeviceIp()));
                             log.trace("Sending UDP satellite device-name packet from interfaceIp={} to satelliteIp={}",
                                     interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                                     sat.getValue().getDeviceIp());
-                            socket.send(broadCastPing);
+                            sendFromInterface(interfaceAddress, broadCastPing);
                         }
                     }
                 }
@@ -365,6 +413,10 @@ public class UdpServer {
         ScheduledExecutorService udpBrExecutorService = Executors.newScheduledThreadPool(1);
         Runnable pingTask = () -> {
             try {
+                if (!isSocketAvailable()) {
+                    udpBrExecutorService.shutdown();
+                    return;
+                }
                 DatagramPacket broadCastPing;
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
                     boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
@@ -377,13 +429,19 @@ public class UdpServer {
                             interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                             broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
                             useBroadcast ? "broadcast" : "static-ip");
-                    socket.send(broadCastPing);
+                    sendFromInterface(interfaceAddress, broadCastPing);
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
+                        if (!isReachableViaInterface(interfaceAddress.getAddress(), sat.getValue().getDeviceIp())) {
+                            log.trace("Skipping UDP ping from interfaceIp={} to satelliteIp={} because route does not use this interface",
+                                    interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
+                                    sat.getValue().getDeviceIp());
+                            continue;
+                        }
                         broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), InetAddress.getByName(sat.getValue().getDeviceIp()));
                         log.trace("Sending UDP ping from interfaceIp={} to satelliteIp={}",
                                 interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                                 sat.getValue().getDeviceIp());
-                        socket.send(broadCastPing);
+                        sendFromInterface(interfaceAddress, broadCastPing);
                     }
                 }
             } catch (Exception e) {
@@ -436,6 +494,9 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     void shareBroadCastToOtherInstance(byte[] bufferBroadcastPing, int broadcastPort) {
+        if (!isSocketAvailable()) {
+            return;
+        }
         try {
             for (InterfaceAddress interfaceAddress : eligibleInterfaceAddresses) {
                 InetAddress broadcastAddress = interfaceAddress.getBroadcast();
@@ -447,7 +508,7 @@ public class UdpServer {
                 DatagramPacket broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
                         broadcastAddress, broadcastPort);
                 log.debug("Relaying UDP payload to broadcastIp={} port={}", broadcastAddress.getHostAddress(), broadcastPort);
-                socket.send(broadCastPing);
+                sendFromInterface(interfaceAddress, broadCastPing);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
