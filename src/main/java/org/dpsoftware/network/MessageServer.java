@@ -43,6 +43,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -98,20 +99,60 @@ public class MessageServer {
     /**
      * Init totalNumLed based on all instances
      */
-    public void initNumLed() {
+    public synchronized void initNumLed() {
         StorageManager sm = new StorageManager();
         // Server starts if there are 2 or more monitors
-        monitorConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
-        firstDisplayLedNum = monitorConfig1.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-        monitorConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
-        secondDisplayLedNum = monitorConfig2.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+        Configuration newMonitorConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
+        Configuration newMonitorConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
+        Integer newFirstDisplayLedNum = getFullscreenLedNum(newMonitorConfig1);
+        Integer newSecondDisplayLedNum = getFullscreenLedNum(newMonitorConfig2);
+        if (newFirstDisplayLedNum == null || newSecondDisplayLedNum == null) {
+            log.warn("Unable to refresh LED number, keeping previous monitor configuration");
+            return;
+        }
+        monitorConfig1 = newMonitorConfig1;
+        monitorConfig2 = newMonitorConfig2;
+        firstDisplayLedNum = newFirstDisplayLedNum;
+        secondDisplayLedNum = newSecondDisplayLedNum;
         if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
-            monitorConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
-            int thirdDisplayLedNum = monitorConfig3.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+            Configuration newMonitorConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
+            Integer thirdDisplayLedNum = getFullscreenLedNum(newMonitorConfig3);
+            if (thirdDisplayLedNum == null) {
+                log.warn("Unable to refresh LED number, keeping previous monitor configuration");
+                return;
+            }
+            monitorConfig3 = newMonitorConfig3;
             NetworkSingleton.getInstance().totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
         } else {
             NetworkSingleton.getInstance().totalLedNum = firstDisplayLedNum + secondDisplayLedNum;
         }
+        if (leds == null || leds.length != NetworkSingleton.getInstance().totalLedNum) {
+            leds = new Color[NetworkSingleton.getInstance().totalLedNum];
+            resetDisplayReceived();
+        }
+    }
+
+    /**
+     * Get fullscreen LED count from a monitor configuration.
+     *
+     * @param config monitor configuration
+     * @return LED count, null when config is temporarily unavailable or incomplete
+     */
+    private Integer getFullscreenLedNum(Configuration config) {
+        if (config == null || config.getLedMatrix() == null) {
+            return null;
+        }
+        LinkedHashMap<Integer, org.dpsoftware.LEDCoordinate> fullscreenLedMatrix = config.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+        return fullscreenLedMatrix == null ? null : fullscreenLedMatrix.size();
+    }
+
+    /**
+     * Reset received-frame flags when LED buffers are rebuilt.
+     */
+    private void resetDisplayReceived() {
+        firstDisplayReceived = false;
+        secondDisplayReceived = false;
+        thirdDisplayReceived = false;
     }
 
     /**
@@ -180,35 +221,82 @@ public class MessageServer {
      * @param inputLine message received from the client
      * @param out       response sent to the client
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void collectAndSendData(String inputLine, PrintWriter out) {
-        String[] ledsString = inputLine.split(",");
-        int instanceNumber = Integer.parseInt(ledsString[0]);
-        int startIndex = 0;
-        if (instanceNumber == 1) {
-            firstDisplayReceived = true;
-            startIndex = -1;
-        } else if (instanceNumber == 2) {
-            secondDisplayReceived = true;
-            startIndex = firstDisplayLedNum - 1;
-        } else if (instanceNumber == 3) {
-            thirdDisplayReceived = true;
-            startIndex = (firstDisplayLedNum + secondDisplayLedNum) - 1;
+        try {
+            initNumLed();
+            String[] ledsString = inputLine.split(",");
+            int instanceNumber = Integer.parseInt(ledsString[0]);
+            int receivedLedNum = ledsString.length - 1;
+            int expectedLedNum = getExpectedLedNum(instanceNumber);
+            if (expectedLedNum == 0 || receivedLedNum != expectedLedNum) {
+                log.debug("Led number has changed");
+                resetDisplayReceived();
+                initNumLed();
+                out.println(inputLine);
+                return;
+            }
+            int startIndex;
+            if (instanceNumber == 1) {
+                firstDisplayReceived = true;
+                startIndex = -1;
+            } else if (instanceNumber == 2) {
+                secondDisplayReceived = true;
+                startIndex = firstDisplayLedNum - 1;
+            } else if (instanceNumber == 3) {
+                thirdDisplayReceived = true;
+                startIndex = (firstDisplayLedNum + secondDisplayLedNum) - 1;
+            } else {
+                out.println(inputLine);
+                return;
+            }
+            for (int i = 1; i <= ledsString.length - 1; i++) {
+                leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
+            }
+            if (MainSingleton.getInstance().config.getMultiMonitor() == 2 && firstDisplayReceived && secondDisplayReceived) {
+                firstDisplayReceived = false;
+                secondDisplayReceived = false;
+                offerCompleteFrame();
+            } else if (MainSingleton.getInstance().config.getMultiMonitor() == 3 && firstDisplayReceived && secondDisplayReceived && thirdDisplayReceived) {
+                firstDisplayReceived = false;
+                secondDisplayReceived = false;
+                thirdDisplayReceived = false;
+                offerCompleteFrame();
+            }
+            out.println(inputLine);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            log.debug("Led number has changed");
+            initNumLed();
+            out.println(inputLine);
         }
-        for (int i = 1; i <= ledsString.length - 1; i++) {
-            leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
+    }
+
+    /**
+     * Get expected LED count for a monitor instance.
+     *
+     * @param instanceNumber monitor instance number
+     * @return expected LED count
+     */
+    private int getExpectedLedNum(int instanceNumber) {
+        return switch (instanceNumber) {
+            case 1 -> firstDisplayLedNum;
+            case 2 -> secondDisplayLedNum;
+            case 3 ->
+                    MainSingleton.getInstance().config.getMultiMonitor() == 3 && monitorConfig3 != null ? getFullscreenLedNum(monitorConfig3) : 0;
+            default -> 0;
+        };
+    }
+
+    /**
+     * Offer a frame only when all LEDs have been filled with the current matrix size.
+     */
+    private void offerCompleteFrame() {
+        for (Color led : leds) {
+            if (led == null) {
+                resetDisplayReceived();
+                return;
+            }
         }
-        if (MainSingleton.getInstance().config.getMultiMonitor() == 2 && firstDisplayReceived && secondDisplayReceived) {
-            firstDisplayReceived = false;
-            secondDisplayReceived = false;
-            MainSingleton.getInstance().sharedQueue.offer(leds);
-        } else if (MainSingleton.getInstance().config.getMultiMonitor() == 3 && firstDisplayReceived && secondDisplayReceived && thirdDisplayReceived) {
-            firstDisplayReceived = false;
-            secondDisplayReceived = false;
-            thirdDisplayReceived = false;
-            MainSingleton.getInstance().sharedQueue.offer(leds);
-        }
-        out.println(inputLine);
+        MainSingleton.getInstance().sharedQueue.offer(leds);
     }
 
     /**

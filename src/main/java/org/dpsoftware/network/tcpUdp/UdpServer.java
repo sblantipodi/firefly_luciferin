@@ -237,19 +237,44 @@ public class UdpServer {
                         log.debug("Skipping IPv4 {} because it has no broadcast address", address.getHostAddress());
                     }
                 } else {
-                    boolean sameSubnet = isAddressInSameSubnet(interfaceAddress, staticGlowWormIp);
-                    if (sameSubnet) {
+                    if (isReachableViaInterface(address, staticGlowWormIp)) {
                         interfaceAddresses.add(interfaceAddress);
                         log.debug("Selected interface {} with IPv4 {} for static target {}",
                                 networkInterface.getDisplayName(), address.getHostAddress(), staticGlowWormIp);
                     } else {
-                        log.debug("Skipping IPv4 {} because it is not in the same subnet as {}",
+                        log.debug("Skipping {} because it is not reachable to static target {} according to OS routing table",
                                 address.getHostAddress(), staticGlowWormIp);
                     }
                 }
             }
         }
         return interfaceAddresses;
+    }
+
+    /**
+     * Check if a target IP is routable via a specific local interface address,
+     * by binding a UDP socket to that interface and connecting toward the target.
+     * No actual traffic is sent — connect() on UDP just asks the OS routing table.
+     *
+     * @param localAddress the local interface address to bind to
+     * @param targetIp     the static Glow Worm IP to reach
+     * @return true if the OS routing table can route the target via this interface
+     */
+    private boolean isReachableViaInterface(InetAddress localAddress, String targetIp) {
+        try (DatagramSocket testSocket = new DatagramSocket(null)) {
+            testSocket.bind(new InetSocketAddress(localAddress, 0));
+            testSocket.connect(new InetSocketAddress(targetIp, Constants.UDP_BROADCAST_PORT));
+            InetAddress routedVia = testSocket.getLocalAddress();
+            boolean match = routedVia != null && routedVia.equals(localAddress);
+            log.debug("Routing check localIp={} targetIp={} routedVia={} match={}",
+                    localAddress.getHostAddress(), targetIp,
+                    routedVia != null ? routedVia.getHostAddress() : "null", match);
+            return match;
+        } catch (Exception e) {
+            log.debug("isReachableViaInterface failed for localIp={} targetIp={}: {}",
+                    localAddress.getHostAddress(), targetIp, e.getMessage());
+            return false;
+        }
     }
 
     /**
@@ -284,49 +309,6 @@ public class UdpServer {
                 && !networkInterface.isVirtual()
                 && !networkInterface.isPointToPoint()
                 && !interfaceMatchesExcludedKeywords(networkInterface);
-    }
-
-    /**
-     * Check if a target IP belongs to the same subnet of an interface.
-     *
-     * @param interfaceAddress interface to check
-     * @param targetIp         target IP address
-     * @return true if the target IP belongs to the same subnet
-     */
-    private boolean isAddressInSameSubnet(InterfaceAddress interfaceAddress, String targetIp) {
-        if (!NetworkManager.isValidIp(targetIp) || interfaceAddress == null || interfaceAddress.getAddress() == null) {
-            log.debug("Cannot evaluate subnet match for interfaceAddress={} and targetIp={}", interfaceAddress, targetIp);
-            return false;
-        }
-        short prefixLength = interfaceAddress.getNetworkPrefixLength();
-        if (prefixLength < 0 || prefixLength > 32) {
-            log.debug("Invalid prefixLength={} for address={}", prefixLength, interfaceAddress.getAddress().getHostAddress());
-            return false;
-        }
-        byte[] localAddress = interfaceAddress.getAddress().getAddress();
-        byte[] targetAddress;
-        try {
-            targetAddress = InetAddress.getByName(targetIp).getAddress();
-        } catch (UnknownHostException e) {
-            log.debug("Unable to resolve staticGlowWormIp={} while checking subnet match", targetIp);
-            return false;
-        }
-        // Split the CIDR prefix into full bytes plus any remaining bits of the next byte.
-        int fullBytes = prefixLength / 8;
-        int remainingBits = prefixLength % 8;
-        for (int index = 0; index < fullBytes; index++) {
-            if (localAddress[index] != targetAddress[index]) {
-                return false;
-            }
-        }
-        if (remainingBits == 0) {
-            return true;
-        }
-        int mask = (0xFF << (8 - remainingBits)) & 0xFF;
-        boolean sameSubnet = (localAddress[fullBytes] & mask) == (targetAddress[fullBytes] & mask);
-        log.debug("Subnet match check localIp={}, targetIp={}, prefixLength={}, result={}",
-                interfaceAddress.getAddress().getHostAddress(), targetIp, prefixLength, sameSubnet);
-        return sameSubnet;
     }
 
     /**

@@ -249,10 +249,9 @@ public class NetworkManager implements MqttCallback {
                 }
             } catch (SocketException | UnknownHostException e) {
                 log.error(e.getMessage());
-                try {
-                    ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).close();
-                } catch (Exception ex) {
-                    log.error(ex.getMessage());
+                UdpClient client = ManagerSingleton.getInstance().udpClient.get(deviceToUseIp);
+                if (client != null) {
+                    client.close();
                 }
             }
         } else {

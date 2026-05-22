@@ -194,5 +194,32 @@ public class NetworkSingleton {
         orderZonedList(zonedList, config2, orderedList);
         orderedList.toArray(colorArray);
     }
-}
 
+    /**
+     * Check if the multi screen single device LED stream must be reordered.
+     * Reordering is needed when at least one monitor does not have a full strip around all its sides.
+     *
+     * @return true if LED data must be reordered before sending it to the device
+     */
+    public boolean isLedOrderRequired() {
+        if (messageServer == null || !CommonUtility.isSingleDeviceMultiScreen()) {
+            return false;
+        }
+        if (messageServer.getMonitorConfig1() == null || messageServer.getMonitorConfig2() == null
+                || (MainSingleton.getInstance().config.getMultiMonitor() == 3 && messageServer.getMonitorConfig3() == null)) {
+            return false;
+        }
+        if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
+            return messageServer.getMonitorConfig1().getLeftLed() == 0
+                    && messageServer.getMonitorConfig2().getLeftLed() == 0
+                    && messageServer.getMonitorConfig2().getRightLed() == 0
+                    && messageServer.getMonitorConfig3().getRightLed() == 0;
+        }
+        if (MainSingleton.getInstance().config.getMultiMonitor() == 2) {
+            return messageServer.getMonitorConfig1().getLeftLed() == 0
+                    && messageServer.getMonitorConfig2().getRightLed() == 0;
+        }
+        return false;
+    }
+
+}

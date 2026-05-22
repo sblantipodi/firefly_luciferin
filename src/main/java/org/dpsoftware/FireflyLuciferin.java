@@ -572,19 +572,30 @@ public class FireflyLuciferin extends Application {
     @SuppressWarnings("InfiniteLoopStatement")
     void consume() throws InterruptedException, IOException {
         boolean isWayland = NativeExecutor.isWayland();
+        boolean multiMonitorLedStripOrdering = false;
         while (true) {
             Color[] colorArray = MainSingleton.getInstance().sharedQueue.take();
             if (isWayland) MainSingleton.getInstance().lastLedColor = colorArray;
             if (MainSingleton.getInstance().RUNNING) {
-                // TODO
-//                if (CommonUtility.isSingleDeviceMultiScreen()) {
-//                    if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
-//                        NetworkSingleton.getInstance().orderArray(colorArray);
-//                        sendColors(colorArray);
-//                    }
-//                } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {
+                if (CommonUtility.isSingleDeviceMultiScreen()) {
+                    if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
+                        if (NetworkSingleton.getInstance().isLedOrderRequired()) {
+                            if (!multiMonitorLedStripOrdering) {
+                                multiMonitorLedStripOrdering = true;
+                                log.info("Using custom ordering");
+                            }
+                            NetworkSingleton.getInstance().orderArray(colorArray);
+                        } else {
+                            if (multiMonitorLedStripOrdering) {
+                                multiMonitorLedStripOrdering = false;
+                                log.info("Using normal ordering");
+                            }
+                        }
+                        sendColors(colorArray);
+                    }
+                } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {
                     sendColors(colorArray);
-//                }
+                }
             }
         }
     }

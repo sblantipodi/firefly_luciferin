@@ -192,8 +192,12 @@ public class UdpClient {
      * | Excellent Effort            | 16              | 0x10               |
      * | Background                  | 8               | 0x08               |
      */
-    private void setTrafficClass() throws SocketException {
-        socket.setTrafficClass(MainSingleton.getInstance().config.getUdpTrafficClass());
+    private void setTrafficClass() {
+        try {
+            socket.setTrafficClass(MainSingleton.getInstance().config.getUdpTrafficClass());
+        } catch (SocketException e) {
+            log.warn("Cannot set UDP traffic class (not supported on this OS/NIC): {}", e.getMessage());
+        }
     }
 
     /**

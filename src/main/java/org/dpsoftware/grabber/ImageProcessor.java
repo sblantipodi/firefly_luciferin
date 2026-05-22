@@ -82,6 +82,13 @@ public class ImageProcessor {
     }
 
     /**
+     * Reset smoothing history when the LED matrix changes.
+     */
+    public static void resetPreviousColors() {
+        previousColorFloat = null;
+    }
+
+    /**
      * Screen Capture and analysis
      *
      * @param robot an AWT Robot instance for screen capture.
@@ -336,7 +343,7 @@ public class ImageProcessor {
     /**
      * Apply aspect ratio change after debounce
      *
-     * @param aspectRatio
+     * @param aspectRatio aspect ratio to use
      */
     private static void applyAspectRatio(Enums.AspectRatio aspectRatio) {
         if (MainSingleton.getInstance().config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
@@ -962,8 +969,8 @@ public class ImageProcessor {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
                     + Constants.MAIN_RES;
         }
-        log.info(Constants.GSTREAMER_PATH_IN_USE + "{}", installationPath.replaceAll("%20", " "));
-        return installationPath.replaceAll("%20", " ");
+        log.info(Constants.GSTREAMER_PATH_IN_USE + "{}", installationPath.replace("%20", " "));
+        return installationPath.replace("%20", " ");
     }
 
 }
