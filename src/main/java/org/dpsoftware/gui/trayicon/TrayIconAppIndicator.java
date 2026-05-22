@@ -166,7 +166,9 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             } else if (!MainSingleton.getInstance().RUNNING && ManagerSingleton.getInstance().pipelineStarting && !ManagerSingleton.getInstance().pipelineStopping) {
                 setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
             } else if (MainSingleton.getInstance().config.isToggleLed()) {
-                setTrayIconImage(Enums.PlayerStatus.STOP);
+                if (!CommonUtility.isSingleDeviceOtherInstance()) {
+                    setTrayIconImage(Enums.PlayerStatus.STOP);
+                }
             } else {
                 setTrayIconImage(Enums.PlayerStatus.OFF);
             }
