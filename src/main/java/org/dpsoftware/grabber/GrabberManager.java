@@ -59,6 +59,7 @@ public class GrabberManager {
 
     public Bin bin;
     GStreamerGrabber vc;
+    private boolean linuxPingUnavailable = false;
 
     /**
      * Get suggested framerate
@@ -296,9 +297,20 @@ public class GrabberManager {
             Runnable framerateTask = () -> {
                 if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null
                         && NetworkManager.isValidIp(CommonUtility.getDeviceToUse().getDeviceIP())) {
-                    List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
-                    pingCmd.add(CommonUtility.getDeviceToUse().getDeviceIP());
-                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 4000);
+                    String deviceIp = CommonUtility.getDeviceToUse().getDeviceIP();
+                    if (NativeExecutor.isWindows() || !linuxPingUnavailable) {
+                        List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
+                        pingCmd.add(deviceIp);
+                        List<String> pingResult = NativeExecutor.runNative(pingCmd.toArray(String[]::new), 4000);
+                        if (NativeExecutor.isWindows() || !pingResult.isEmpty()) {
+                            return;
+                        }
+                        linuxPingUnavailable = true;
+                        log.debug("Linux ping command not available, using curl HEAD fallback.");
+                    }
+                    List<String> curlCmd = new ArrayList<>(Arrays.stream(Constants.CURL_HEAD_LINUX).toList());
+                    curlCmd.add(Constants.HTTP + deviceIp);
+                    NativeExecutor.runNative(curlCmd.toArray(String[]::new), 4000);
                 }
             };
             scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
