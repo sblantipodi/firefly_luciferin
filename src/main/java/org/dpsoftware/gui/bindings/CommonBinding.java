@@ -75,11 +75,11 @@ public class CommonBinding {
                     List<String> collection = lines.filter(line -> line.startsWith("/")).toList();
                     allPath.addAll(collection);
                 } catch (IOException e) {
-                    log.error("File '{}' could not be loaded", file);
+                    log.warn("File '{}' could not be loaded", file);
                 }
             });
         } catch (IOException e) {
-            log.error("Directory '{}' does not exist", LD_CONFIG);
+            log.warn("Directory '{}' does not exist", LD_CONFIG);
         }
         return allPath;
     }
