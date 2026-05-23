@@ -317,7 +317,7 @@ public class UdpServer {
             testSocket.connect(new InetSocketAddress(targetIp, Constants.UDP_BROADCAST_PORT));
             InetAddress routedVia = testSocket.getLocalAddress();
             boolean match = routedVia != null && routedVia.equals(localAddress);
-            log.debug("Routing check localIp={} targetIp={} routedVia={} match={}",
+            log.trace("Routing check localIp={} targetIp={} routedVia={} match={}",
                     localAddress.getHostAddress(), targetIp,
                     routedVia != null ? routedVia.getHostAddress() : "null", match);
             return match;

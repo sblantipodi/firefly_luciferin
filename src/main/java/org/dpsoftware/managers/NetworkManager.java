@@ -237,13 +237,14 @@ public class NetworkManager implements MqttCallback {
                 ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).manageStream(leds);
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
-                        if ((ManagerSingleton.getInstance().udpClient == null || ManagerSingleton.getInstance().udpClient.isEmpty())
-                                || ManagerSingleton.getInstance().udpClient.get(sat.getKey()) == null || ManagerSingleton.getInstance().udpClient.get(sat.getKey()).socket.isClosed()) {
-                            assert ManagerSingleton.getInstance().udpClient != null;
-                            ManagerSingleton.getInstance().udpClient.put(sat.getValue().getDeviceIp(), new UdpClient(sat.getValue().getDeviceIp()));
+                        String satIp = sat.getValue().getDeviceIp();
+                        UdpClient satClient = ManagerSingleton.getInstance().udpClient.get(satIp);
+                        if (satClient == null || satClient.socket == null || satClient.socket.isClosed()) {
+                            if (satClient != null) {
+                                satClient.close();
+                            }
+                            ManagerSingleton.getInstance().udpClient.put(satIp, new UdpClient(satIp));
                         }
-                        assert ManagerSingleton.getInstance().udpClient != null;
-                        assert ManagerSingleton.getInstance().udpClient.get(sat.getKey()) == null;
                         sendColorToSatellites(leds, sat.getValue());
                     }
                 }
