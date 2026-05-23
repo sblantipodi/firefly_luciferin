@@ -116,8 +116,12 @@ public class CommonUtility {
         // MQTT Stream
         if (MainSingleton.getInstance().config.isWirelessStream()) {
             if (!MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO) || MainSingleton.getInstance().config.getMultiMonitor() > 1) {
+                String outputDevice = MainSingleton.getInstance().config.getOutputDevice();
+                String staticGlowWormIp = MainSingleton.getInstance().config.getStaticGlowWormIp();
                 glowWormDeviceToUse = GuiSingleton.getInstance().deviceTableData.stream()
-                        .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice()))
+                        .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(outputDevice)
+                                || glowWormDevice.getDeviceIP().equals(outputDevice)
+                                || (NetworkManager.isValidIp(staticGlowWormIp) && glowWormDevice.getDeviceIP().equals(staticGlowWormIp)))
                         .findAny().orElse(null);
             } else if (GuiSingleton.getInstance().deviceTableData != null && !GuiSingleton.getInstance().deviceTableData.isEmpty()) {
                 glowWormDeviceToUse = GuiSingleton.getInstance().deviceTableData.getFirst();
