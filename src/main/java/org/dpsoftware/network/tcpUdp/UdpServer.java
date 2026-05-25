@@ -31,6 +31,8 @@ import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
+// TODO remove or not
+import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -411,6 +413,9 @@ public class UdpServer {
                                 broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
                                 useBroadcast ? Constants.UDP_DEVICE_NAME : Constants.UDP_DEVICE_NAME_STATIC);
                         sendFromInterface(interfaceAddress, broadCastPing);
+                        if (!useBroadcast) {
+                            sendTcpPing(interfaceAddress, broadCastPing);
+                        }
                         for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                             if (!isReachableViaInterface(interfaceAddress.getAddress(), sat.getValue().getDeviceIp())) {
                                 log.trace("Skipping UDP satellite device-name packet from interfaceIp={} to satelliteIp={} because route does not use this interface",
@@ -423,6 +428,9 @@ public class UdpServer {
                                     interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                                     sat.getValue().getDeviceIp());
                             sendFromInterface(interfaceAddress, broadCastPing);
+                            if (!useBroadcast) {
+                                sendTcpPing(interfaceAddress, broadCastPing);
+                            }
                         }
                     }
                 }
@@ -431,6 +439,23 @@ public class UdpServer {
             }
         };
         udpIpExecutorService.scheduleAtFixedRate(setIpTask, 0, 2, TimeUnit.SECONDS);
+    }
+
+    // TODO remove or not
+
+    /**
+     *
+     * @param interfaceAddress local interface used for the outgoing packet
+     * @param packet           packet to send
+     */
+    public void sendTcpPing(InterfaceAddress interfaceAddress, DatagramPacket packet) {
+        boolean deviceFound = GuiSingleton.getInstance().deviceTableData != null
+                && GuiSingleton.getInstance().deviceTableData.stream()
+                .anyMatch(d -> d.getDeviceIP().equals(packet.getAddress().getHostAddress()));
+        if (!deviceFound) {
+            TcpResponse tcpResponse = TcpClient.httpGet(interfaceAddress.getAddress().getHostAddress(), Constants.HTTP_SET_IP, packet.getAddress().getHostAddress());
+            log.debug("TCP ping http://{}?setip?payload={} with response code: {}", interfaceAddress.getAddress().getHostAddress(), packet.getAddress().getHostAddress(), tcpResponse.getErrorCode());
+        }
     }
 
     /**

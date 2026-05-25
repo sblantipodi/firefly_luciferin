@@ -225,6 +225,8 @@ public class Constants {
     public static final String TOPIC_SET_EMA = "lights/firelyluciferin/smoothing/set";
     public static final String TOPIC_SET_FG = "lights/firelyluciferin/framgen/set";
     public static final String HTTP_SET_LDR = "ldr";
+    // TODO remove or not
+    public static final String HTTP_SET_IP = "setip";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
     public static final String OTA_PWD = "XXX";
