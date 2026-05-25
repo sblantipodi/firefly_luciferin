@@ -349,6 +349,30 @@ public class UdpServer {
         socket.send(packet);
     }
 
+    // TODO remove or not
+
+    /**
+     *
+     * @param interfaceAddress local interface used for the outgoing packet
+     * @param packet           packet to send
+     */
+    public void sendTcpPing(InterfaceAddress interfaceAddress, DatagramPacket packet) {
+        boolean deviceFound = GuiSingleton.getInstance().deviceTableData != null
+                && GuiSingleton.getInstance().deviceTableData.stream()
+                .anyMatch(d -> d.getDeviceIP().equals(packet.getAddress().getHostAddress()));
+        if (!deviceFound) {
+            CommonUtility.delaySeconds(() -> {
+                boolean isPresentNow = GuiSingleton.getInstance().deviceTableData != null
+                        && GuiSingleton.getInstance().deviceTableData.stream()
+                        .anyMatch(d -> d.getDeviceIP().equals(packet.getAddress().getHostAddress()));
+                if (!isPresentNow) {
+                    TcpResponse tcpResponse = TcpClient.httpGet(interfaceAddress.getAddress().getHostAddress(), Constants.HTTP_SET_IP, packet.getAddress().getHostAddress());
+                    log.debug("TCP ping http://{}?setip?payload={} with response code: {}", interfaceAddress.getAddress().getHostAddress(), packet.getAddress().getHostAddress(), tcpResponse.getErrorCode());
+                }
+            }, 10);
+        }
+    }
+
     /**
      * Validate a network interface before using it for discovery.
      *
@@ -439,23 +463,6 @@ public class UdpServer {
             }
         };
         udpIpExecutorService.scheduleAtFixedRate(setIpTask, 0, 2, TimeUnit.SECONDS);
-    }
-
-    // TODO remove or not
-
-    /**
-     *
-     * @param interfaceAddress local interface used for the outgoing packet
-     * @param packet           packet to send
-     */
-    public void sendTcpPing(InterfaceAddress interfaceAddress, DatagramPacket packet) {
-        boolean deviceFound = GuiSingleton.getInstance().deviceTableData != null
-                && GuiSingleton.getInstance().deviceTableData.stream()
-                .anyMatch(d -> d.getDeviceIP().equals(packet.getAddress().getHostAddress()));
-        if (!deviceFound) {
-            TcpResponse tcpResponse = TcpClient.httpGet(interfaceAddress.getAddress().getHostAddress(), Constants.HTTP_SET_IP, packet.getAddress().getHostAddress());
-            log.debug("TCP ping http://{}?setip?payload={} with response code: {}", interfaceAddress.getAddress().getHostAddress(), packet.getAddress().getHostAddress(), tcpResponse.getErrorCode());
-        }
     }
 
     /**
