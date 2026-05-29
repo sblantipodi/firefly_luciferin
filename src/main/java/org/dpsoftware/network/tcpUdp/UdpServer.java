@@ -31,7 +31,6 @@ import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
-// TODO remove or not
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
@@ -348,8 +347,6 @@ public class UdpServer {
         }
         socket.send(packet);
     }
-
-    // TODO remove or not
 
     /**
      *
