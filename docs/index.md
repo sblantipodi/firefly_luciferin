@@ -22,6 +22,33 @@ a {
 
 ### In this release
 
+##### If you want to say thank you, you can do it for free by logging into GitHub, <br> clicking [Follow](https://github.com/sblantipodi), and giving a star to both the [Firefly Luciferin](https://github.com/sblantipodi/firefly_luciferin) and [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) repositories.
+
+- ***Update Requirement:*** This release requires `Glow Worm Luciferin` firmware **v5.25.3**.
+- **Enabled all LED configuration options
+  for [multi‑monitor setups](https://github.com/sblantipodi/firefly_luciferin/wiki/Multi-monitor-support).**
+  Closes [#417](https://github.com/sblantipodi/firefly_luciferin/issues/417).
+- Due to recent Windows
+  changes, [installing or updating software](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management)
+  now requires administrator privileges. Firefly Luciferin no longer needs to be launched in admin mode; it will request
+  elevation only when required during the auto‑update process.
+- Improved [device discovery](https://github.com/sblantipodi/firefly_luciferin/wiki/Static-IP-and-auto-discovery) when
+  using subnets/VLANs. Device discovery across different networks no longer relies solely on UDP unicast but now uses a
+  TCP fallback, improving discoverability on certain routers.
+- Fixed DSCP/Traffic Class handling for UDP sockets. Ensured correct IPv4 TOS byte encoding to maintain compatibility
+  with recent Windows networking stack changes.
+  Closes [#419](https://github.com/sblantipodi/firefly_luciferin/issues/419).
+- Fixed race conditions on UDP ports that occurred when using the multi‑monitor configuration with a single device.
+- Fixed an issue preventing firmware auto‑update on ESP32‑C3 devices.
+- Fixed a crash occurring when
+  enabling [EMA smoothing technique](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions).
+  Closes [#416](https://github.com/sblantipodi/firefly_luciferin/issues/416).
+- Fixed a crash that occurred when changing the configured LED count on the fly during UDP streaming while using a
+  device with a Static IP.
+- The tray icon tooltip did not display the device’s IP address when using multiple monitors. Fixed.
+
+### In the previous release:
+
 - **NOTE: Due to a recent Windows security update, Windows users will need to run Luciferin with administrator
   privileges to complete the automatic update. If you launched Luciferin normally, close it, restart it as
   administrator, and repeat the update process.**
@@ -58,8 +85,7 @@ a {
 
 Users running a previous version of Luciferin can upgrade using the [automatic update feature](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management), available for both the PC software and the firmware.
 
-
-### In the previous release:
+### Two Versions Ago:
 
 - ***Update requirement***: requires `Glow Worm Luciferin` firmware (v5.23.6)
 - **Manual LED Layout Configuration:** In addition to the automatic LED layout setup, you can
@@ -117,24 +143,5 @@ Users running a previous version of Luciferin can upgrade using the [automatic u
 As always, users running a previous version of Luciferin can use
 the [automatic update feature](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) for
 both the PC software and the firmware.
-
-### Two Versions Ago:
-
-- ***Hotfix release: This issue affects only Firefly Luciferin; no firmware update is required.***
-- **Added a setting to adjust screen capture quality.** Balanced is recommended for most users, while higher quality
-  offers more precision at the cost of higher resource usage, and lower quality reduces the load on the system. This is
-  particularly useful on lower-end hardware or
-  in [multi-screen](https://github.com/sblantipodi/firefly_luciferin/wiki/Multi-monitor-support#screen-capture-quality)
-  setups with high resolutions.
-- **Installation improvements** (Windows only – not required on Linux):
-    - Added a checkbox option to launch Firefly Luciferin immediately
-      after [installation](https://github.com/sblantipodi/firefly_luciferin/wiki/Installers-and-binaries).
-    - Enhanced
-      the [auto-update process](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management): no
-      manual confirmation is needed in the UI anymore, and the app now starts
-    automatically once the update is complete. This will take effect starting with the next update.
-- Fixed a Linux-only issue that prevented Firefly Luciferin from running when multiple installation types were present
-  on the system, such as .deb/.rpm, Snap, or Flatpak.
-- Java/JavaFX 25, libs update, code refactor to avoid using deprecated methods, CI/CD pipeline improvements.
 
 [Click here for the complete changelog of previous versions.](https://github.com/sblantipodi/firefly_luciferin/releases)
