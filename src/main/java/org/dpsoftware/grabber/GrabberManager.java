@@ -59,6 +59,7 @@ public class GrabberManager {
 
     public Bin bin;
     GStreamerGrabber vc;
+    private boolean linuxPingUnavailable = false;
 
     /**
      * Get suggested framerate
@@ -117,7 +118,7 @@ public class GrabberManager {
                 if (GrabberSingleton.getInstance().pipe == null || !GrabberSingleton.getInstance().pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (GrabberSingleton.getInstance().pipe != null) {
                         log.info("Restarting pipeline");
-                        disposePipeline(true);
+                        GrabberSingleton.getInstance().pipe.stop();
                         restartCounter.getAndIncrement();
                         if (restartCounter.get() >= Constants.MAX_PIPELINE_RESTARTS) {
                             log.error("Pipeline restarted too many times, restarting...");
@@ -126,24 +127,24 @@ public class GrabberManager {
                     } else {
                         log.info("Starting a new pipeline");
                         restartCounter.set(0);
-                    }
-                    GrabberSingleton.getInstance().pipe = new Pipeline();
-                    if (NativeExecutor.isWindows()) {
-                        DisplayManager displayManager = new DisplayManager();
-                        String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
-                        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
-                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11.replace("{0}", monitorNativePeer), true);
+                        GrabberSingleton.getInstance().pipe = new Pipeline();
+                        if (NativeExecutor.isWindows()) {
+                            DisplayManager displayManager = new DisplayManager();
+                            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
+                            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11.replace("{0}", monitorNativePeer), true);
+                            } else {
+                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12.replace("{0}", monitorNativePeer), true);
+                            }
+                        } else if (NativeExecutor.isLinux()) {
+                            int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
+                            String runtimeParams = finalLinuxParams
+                                    .replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime))
+                                    .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
+                            bin = Gst.parseBinFromDescription(runtimeParams, true);
                         } else {
-                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12.replace("{0}", monitorNativePeer), true);
+                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
                         }
-                    } else if (NativeExecutor.isLinux()) {
-                        int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
-                        String runtimeParams = finalLinuxParams
-                                .replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime))
-                                .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
-                        bin = Gst.parseBinFromDescription(runtimeParams, true);
-                    } else {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
                     }
                     vc = new GStreamerGrabber();
                     GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
@@ -167,37 +168,15 @@ public class GrabberManager {
      * Old pipeline is not needed anymore, dispose the pipeline and all the related objects to free up system memory.
      */
     private void disposePipeline() {
-        disposePipeline(false);
-    }
-
-    /**
-     * Old pipeline is not needed anymore, dispose the pipeline and all the related objects to free up system memory.
-     *
-     * @param force dispose a still playing pipeline during a restart
-     */
-    private void disposePipeline(boolean force) {
-        if (GrabberSingleton.getInstance().pipe != null && (force || !GrabberSingleton.getInstance().pipe.isPlaying()) && !ManagerSingleton.getInstance().pipelineStarting) {
+        if (GrabberSingleton.getInstance().pipe != null && !GrabberSingleton.getInstance().pipe.isPlaying() && !ManagerSingleton.getInstance().pipelineStarting) {
             log.info("Free up system memory");
-            if (GrabberSingleton.getInstance().pipe.isPlaying()) {
-                GrabberSingleton.getInstance().pipe.stop();
-            }
-            if (bin != null) {
-                Gst.invokeLater(bin::dispose);
-            }
-            if (vc != null) {
-                if (vc.videosink != null) {
-                    Gst.invokeLater(vc.videosink::dispose);
-                }
-                if (vc.getElement() != null) {
-                    Gst.invokeLater(vc.getElement()::dispose);
-                }
-            }
+            Gst.invokeLater(bin::dispose);
+            Gst.invokeLater(vc.videosink::dispose);
+            Gst.invokeLater(vc.getElement()::dispose);
             Gst.invokeLater(GrabberSingleton.getInstance().pipe::dispose);
             GStreamerGrabber.ledMatrix = null;
             bin = null;
-            if (vc != null) {
-                vc.videosink = null;
-            }
+            vc.videosink = null;
             vc = null;
             GrabberSingleton.getInstance().pipe = null;
             System.gc();
@@ -296,9 +275,20 @@ public class GrabberManager {
             Runnable framerateTask = () -> {
                 if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null
                         && NetworkManager.isValidIp(CommonUtility.getDeviceToUse().getDeviceIP())) {
-                    List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
-                    pingCmd.add(CommonUtility.getDeviceToUse().getDeviceIP());
-                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 4000);
+                    String deviceIp = CommonUtility.getDeviceToUse().getDeviceIP();
+                    if (NativeExecutor.isWindows() || !linuxPingUnavailable) {
+                        List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
+                        pingCmd.add(deviceIp);
+                        List<String> pingResult = NativeExecutor.runNative(pingCmd.toArray(String[]::new), 4000);
+                        if (NativeExecutor.isWindows() || !pingResult.isEmpty()) {
+                            return;
+                        }
+                        linuxPingUnavailable = true;
+                        log.debug("Linux ping command not available, using curl HEAD fallback.");
+                    }
+                    List<String> curlCmd = new ArrayList<>(Arrays.stream(Constants.CURL_HEAD_LINUX).toList());
+                    curlCmd.add(Constants.HTTP + deviceIp);
+                    NativeExecutor.runNative(curlCmd.toArray(String[]::new), 4000);
                 }
             };
             scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
@@ -315,7 +305,7 @@ public class GrabberManager {
         int benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION;
         // Wayland has a more swinging frame rate due to the fact that it doesn't capture an image if frame is still, give it some more room for error.
         if (NativeExecutor.isWayland()) {
-            benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION * 4;
+            benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION * 10;
         }
         if (!notified.get()) {
             if ((MainSingleton.getInstance().FPS_PRODUCER > 0) && (framerateAlert.get() < benchIteration)

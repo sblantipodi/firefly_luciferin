@@ -164,11 +164,6 @@ public class LedsConfigTabController {
             ledStartOffset.setDisable(true);
         }
         if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
-            groupBy.setDisable(true);
-            splitBottomMargin.setDisable(true);
-            if (MainSingleton.getInstance().config.getMultiMonitor() == 3 && MainSingleton.getInstance().whoAmI == 2) {
-                splitBottomMargin.setDisable(false);
-            }
             ledStartOffset.getItems().clear();
             ledStartOffset.getItems().add("0");
         }
@@ -244,49 +239,7 @@ public class LedsConfigTabController {
         gapTypeTopBottom.setValue(currentConfig.getGapTypeTopBottom());
         gapTypeSide.setValue(currentConfig.getGapTypeSide());
         groupBy.setValue(currentConfig.getGroupBy());
-        forceSingleDeviceMultiScreenValues();
         initGroupByCombo();
-    }
-
-    /**
-     * Force single device multi screen values
-     */
-    private void forceSingleDeviceMultiScreenValues() {
-        if (CommonUtility.isSingleDeviceMultiScreen()) {
-            switch (MainSingleton.getInstance().whoAmI) {
-                case 1 -> {
-                    if ((MainSingleton.getInstance().config.getMultiMonitor() != 1)) {
-                        // RIGHT
-                        leftLed.setDisable(true);
-                        leftLed.setText(String.valueOf(0));
-                        splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_OFF);
-                    }
-                }
-                case 2 -> {
-                    if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                        // LEFT
-                        rightLed.setDisable(true);
-                        rightLed.setText(String.valueOf(0));
-                        splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_OFF);
-                    } else {
-                        // CENTER
-                        leftLed.setDisable(true);
-                        rightLed.setDisable(true);
-                        leftLed.setText(String.valueOf(0));
-                        rightLed.setText(String.valueOf(0));
-                    }
-                }
-                case 3 -> {
-                    // LEFT
-                    rightLed.setDisable(true);
-                    rightLed.setText(String.valueOf(0));
-                    splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_OFF);
-                }
-            }
-            if (CommonUtility.isSingleDeviceOtherInstance()) {
-                ledStartOffset.setValue(String.valueOf(0));
-            }
-        }
     }
 
     /**

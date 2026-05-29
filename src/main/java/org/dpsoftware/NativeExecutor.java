@@ -163,7 +163,8 @@ public final class NativeExecutor {
                     NativeExecutor.spawnNewInstance(2);
                 }
             }
-            NativeExecutor.exit();
+            // We don't use NativeExecutor.exit() here because we need to avoid race conditions
+            System.exit(0);
         }
     }
 

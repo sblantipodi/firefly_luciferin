@@ -1059,6 +1059,7 @@ public class GuiManager {
      *
      * @param showChangelog show changelog
      */
+    // TODO prevent to launch 2 checks at the same time
     public void showSettingsAndCheckForUpgrade(boolean showChangelog) {
         if (!NativeExecutor.isSystemTraySupported()) {
             showSettingsDialog(false);

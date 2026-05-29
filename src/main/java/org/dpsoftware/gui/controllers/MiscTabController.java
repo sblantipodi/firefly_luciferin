@@ -113,6 +113,7 @@ public class MiscTabController {
     private Label contextChooseColorChooseLoopback;
     @FXML
     private Label contextGammaGain;
+    private boolean suppressListener = false;
 
     /**
      * Inject main controller containing the TabPane
@@ -239,7 +240,7 @@ public class MiscTabController {
      */
     private void setFramerateIntoConfig(Configuration config) {
         if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-            config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+            config.setDesiredFramerate(framerate.getValue().replace(Constants.FPS_VAL, ""));
         } else {
             config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
         }
@@ -988,9 +989,11 @@ public class MiscTabController {
      * Smoothing management
      */
     public void evaluateSmoothing() {
+        suppressListener = true;
         var smooth = Enums.Smoothing.findByFramerateAndAlpha(MainSingleton.getInstance().config.getFrameInsertionTarget(), MainSingleton.getInstance().config.getEmaAlpha());
         smoothing.setValue(smooth.getI18n());
         setFramerateEditable(smooth);
+        suppressListener = false;
     }
 
     /**
@@ -1072,7 +1075,7 @@ public class MiscTabController {
             if (settingsController != null && settingsController.smoothingDialogController != null) {
                 settingsController.smoothingDialogController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
             }
-            PipelineManager.restartCapture(CommonUtility::run);
+            if (!suppressListener) PipelineManager.restartCapture(CommonUtility::run);
         }
     }
 

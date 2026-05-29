@@ -82,6 +82,13 @@ public class ImageProcessor {
     }
 
     /**
+     * Reset smoothing history when the LED matrix changes.
+     */
+    public static void resetPreviousColors() {
+        previousColorFloat = null;
+    }
+
+    /**
      * Screen Capture and analysis
      *
      * @param robot an AWT Robot instance for screen capture.
@@ -306,11 +313,11 @@ public class ImageProcessor {
         int intBufferSize = (width * height) - 1;
         int[][] blackPixelMatrix;
         blackPixelMatrix = calculateBlackPixels(Enums.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
-        boolean letterbox = switchAspectRatio(Enums.AspectRatio.LETTERBOX, blackPixelMatrix, false);
+        boolean letterbox = switchAspectRatio(Enums.AspectRatio.LETTERBOX, blackPixelMatrix);
         blackPixelMatrix = calculateBlackPixels(Enums.AspectRatio.PILLARBOX, width, height, intBufferSize, rgbBuffer);
         boolean pillarbox = false;
         if (!letterbox) {
-            pillarbox = switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix, false);
+            pillarbox = switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix);
         }
         Enums.AspectRatio detected;
         if (letterbox) {
@@ -336,7 +343,7 @@ public class ImageProcessor {
     /**
      * Apply aspect ratio change after debounce
      *
-     * @param aspectRatio
+     * @param aspectRatio aspect ratio to use
      */
     private static void applyAspectRatio(Enums.AspectRatio aspectRatio) {
         if (MainSingleton.getInstance().config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
@@ -424,7 +431,7 @@ public class ImageProcessor {
      * @param blackPixelMatrix contains black and non black pixels
      * @return boolean if aspect ratio is changed
      */
-    static boolean switchAspectRatio(Enums.AspectRatio aspectRatio, int[][] blackPixelMatrix, boolean setFullscreen) {
+    static boolean switchAspectRatio(Enums.AspectRatio aspectRatio, int[][] blackPixelMatrix) {
         boolean isPillarboxLetterbox;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
@@ -447,7 +454,7 @@ public class ImageProcessor {
             isPillarboxLetterbox = true;
         } else {
             if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
-                if (setFullscreen && enoughWhitePixelForTheChange) {
+                if (enoughWhitePixelForTheChange) {
                     MainSingleton.getInstance().config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     log.info("Switching to {} aspect ratio.", Enums.AspectRatio.FULLSCREEN.getBaseI18n());
@@ -962,8 +969,8 @@ public class ImageProcessor {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
                     + Constants.MAIN_RES;
         }
-        log.info(Constants.GSTREAMER_PATH_IN_USE + "{}", installationPath.replaceAll("%20", " "));
-        return installationPath.replaceAll("%20", " ");
+        log.info(Constants.GSTREAMER_PATH_IN_USE + "{}", installationPath.replace("%20", " "));
+        return installationPath.replace("%20", " ");
     }
 
 }

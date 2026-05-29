@@ -225,6 +225,7 @@ public class Constants {
     public static final String TOPIC_SET_EMA = "lights/firelyluciferin/smoothing/set";
     public static final String TOPIC_SET_FG = "lights/firelyluciferin/framgen/set";
     public static final String HTTP_SET_LDR = "ldr";
+    public static final String HTTP_SET_IP = "setip";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
     public static final String OTA_PWD = "XXX";
@@ -650,6 +651,7 @@ public class Constants {
     public static final String ACTION = "action";
     public static final String CLIENT_ACTION = "clientActionSetState";
     // UDP
+    public static final long UDP_RECONNECT_DELAY_MS = 2000;
     public static final int UDP_PORT = 4210;
     public static final int UDP_BROADCAST_PORT = 5001;
     public static final int UDP_BROADCAST_PORT_2 = 5002;
@@ -658,7 +660,7 @@ public class Constants {
     public static final String UDP_DEVICE_NAME = "DN";
     public static final String UDP_DEVICE_NAME_STATIC = "DNStatic";
     public static final String UDP_PONG = "PONG";
-    public static final int DEFAULT_UDP_TRAFFIC_CLASS = 0x2E;
+    public static final int DEFAULT_UDP_TRAFFIC_CLASS = 184;
     public static final double UDP_CHUNK_SIZE = 140;
     public static final int UDP_MAX_BUFFER_SIZE = 4096;
     public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
@@ -791,6 +793,7 @@ public class Constants {
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};
+    public static final String[] CURL_HEAD_LINUX = {"curl", "-I", "--max-time", "4"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     public static final String OBJPATH_KDE_NIGHTLIGHT = "/org/kde/KWin/NightLight";
     public static final String PROP_KDE_NIGHTLIGHT = "enabled";

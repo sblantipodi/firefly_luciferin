@@ -281,6 +281,23 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
     }
 
     /**
+     * Update configuration file previous than 2.28.4
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    boolean updatePrevious2284(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.28.4")) {
+            if (config.getUdpTrafficClass() != Constants.DEFAULT_UDP_TRAFFIC_CLASS) {
+                config.setUdpTrafficClass(Constants.DEFAULT_UDP_TRAFFIC_CLASS);
+            }
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
      * Reconfigure LED matrix
      *
      * @param config app config params

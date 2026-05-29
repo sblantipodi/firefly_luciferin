@@ -31,6 +31,7 @@ import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
+import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -51,12 +52,21 @@ public class UdpServer {
     DatagramSocket socket;
     List<InterfaceAddress> eligibleInterfaceAddresses = Collections.emptyList();
     boolean firstConnection = true;
+    private ScheduledExecutorService socketRetryExecutor;
+    private boolean udpReceiverStarted = false;
 
     /**
      * Initialize the main socket for receiving devices infos.
      * Find local IP address, used to get local broadcast address. This way works well when there are multiple network interfaces.
      */
     public UdpServer() {
+        initSocket();
+    }
+
+    private void initSocket() {
+        if (isSocketAvailable()) {
+            return;
+        }
         try {
             if (MainSingleton.getInstance().whoAmI == 1) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT);
@@ -65,12 +75,19 @@ public class UdpServer {
             } else if (MainSingleton.getInstance().whoAmI == 3) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT_3);
             }
-            assert socket != null;
+            if (socket == null) {
+                log.warn("UDP discovery socket not initialized for instance={}", MainSingleton.getInstance().whoAmI);
+                return;
+            }
             socket.setBroadcast(true);
             log.debug("UDP discovery socket initialized on port={}", socket.getLocalPort());
         } catch (SocketException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private boolean isSocketAvailable() {
+        return socket != null && !socket.isClosed();
     }
 
     private static boolean interfaceMatchesExcludedKeywords(NetworkInterface networkInterface) {
@@ -84,9 +101,40 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     public void receiveBroadcastUDPPacket() {
+        if (!isSocketAvailable()) {
+            retrySocketInitialization();
+            return;
+        }
+        startUdpReceiver();
+    }
+
+    private void retrySocketInitialization() {
+        if (socketRetryExecutor != null && !socketRetryExecutor.isShutdown()) {
+            return;
+        }
+        log.warn("UDP discovery socket is not available, retrying bind in background");
+        socketRetryExecutor = Executors.newSingleThreadScheduledExecutor();
+        socketRetryExecutor.scheduleWithFixedDelay(() -> {
+            initSocket();
+            if (isSocketAvailable()) {
+                socketRetryExecutor.shutdown();
+                startUdpReceiver();
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+    }
+
+    private void startUdpReceiver() {
+        if (udpReceiverStarted) {
+            return;
+        }
+        udpReceiverStarted = true;
+        NetworkSingleton.getInstance().udpBroadcastReceiverRunning = true;
         broadcastToCorrectNetworkAdapter();
         CompletableFuture.supplyAsync(() -> {
             try {
+                if (!isSocketAvailable()) {
+                    return null;
+                }
                 log.debug("UDP broadcast listen on {}", socket.getLocalAddress());
                 byte[] buf = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
@@ -169,6 +217,10 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     void broadcastToCorrectNetworkAdapter() {
+        if (!isSocketAvailable()) {
+            log.warn("Skipping UDP discovery tasks because the socket is not available");
+            return;
+        }
         try {
             boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
             log.debug("Starting UDP discovery. mode={}, staticGlowWormIp={}",
@@ -237,19 +289,85 @@ public class UdpServer {
                         log.debug("Skipping IPv4 {} because it has no broadcast address", address.getHostAddress());
                     }
                 } else {
-                    boolean sameSubnet = isAddressInSameSubnet(interfaceAddress, staticGlowWormIp);
-                    if (sameSubnet) {
+                    if (isReachableViaInterface(address, staticGlowWormIp)) {
                         interfaceAddresses.add(interfaceAddress);
                         log.debug("Selected interface {} with IPv4 {} for static target {}",
                                 networkInterface.getDisplayName(), address.getHostAddress(), staticGlowWormIp);
                     } else {
-                        log.debug("Skipping IPv4 {} because it is not in the same subnet as {}",
+                        log.debug("Skipping {} because it is not reachable to static target {} according to OS routing table",
                                 address.getHostAddress(), staticGlowWormIp);
                     }
                 }
             }
         }
         return interfaceAddresses;
+    }
+
+    /**
+     * Check if a target IP is routable via a specific local interface address,
+     * by binding a UDP socket to that interface and connecting toward the target.
+     * No actual traffic is sent — connect() on UDP just asks the OS routing table.
+     *
+     * @param localAddress the local interface address to bind to
+     * @param targetIp     the static Glow Worm IP to reach
+     * @return true if the OS routing table can route the target via this interface
+     */
+    private boolean isReachableViaInterface(InetAddress localAddress, String targetIp) {
+        try (DatagramSocket testSocket = new DatagramSocket(null)) {
+            testSocket.bind(new InetSocketAddress(localAddress, 0));
+            testSocket.connect(new InetSocketAddress(targetIp, Constants.UDP_BROADCAST_PORT));
+            InetAddress routedVia = testSocket.getLocalAddress();
+            boolean match = routedVia != null && routedVia.equals(localAddress);
+            log.trace("Routing check localIp={} targetIp={} routedVia={} match={}",
+                    localAddress.getHostAddress(), targetIp,
+                    routedVia != null ? routedVia.getHostAddress() : "null", match);
+            return match;
+        } catch (Exception e) {
+            log.debug("isReachableViaInterface failed for localIp={} targetIp={}: {}",
+                    localAddress.getHostAddress(), targetIp, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Send a UDP packet using the given local interface as source address.
+     *
+     * @param interfaceAddress local interface used for the outgoing packet
+     * @param packet           packet to send
+     * @throws IOException if send fails
+     */
+    private void sendFromInterface(InterfaceAddress interfaceAddress, DatagramPacket packet) throws IOException {
+        InetAddress localAddress = interfaceAddress != null ? interfaceAddress.getAddress() : null;
+        if (localAddress instanceof Inet4Address) {
+            try (DatagramSocket interfaceSocket = new DatagramSocket(new InetSocketAddress(localAddress, 0))) {
+                interfaceSocket.setBroadcast(true);
+                interfaceSocket.send(packet);
+                return;
+            }
+        }
+        socket.send(packet);
+    }
+
+    /**
+     *
+     * @param interfaceAddress local interface used for the outgoing packet
+     * @param packet           packet to send
+     */
+    public void sendTcpPing(InterfaceAddress interfaceAddress, DatagramPacket packet) {
+        boolean deviceFound = GuiSingleton.getInstance().deviceTableData != null
+                && GuiSingleton.getInstance().deviceTableData.stream()
+                .anyMatch(d -> d.getDeviceIP().equals(packet.getAddress().getHostAddress()));
+        if (!deviceFound) {
+            CommonUtility.delaySeconds(() -> {
+                boolean isPresentNow = GuiSingleton.getInstance().deviceTableData != null
+                        && GuiSingleton.getInstance().deviceTableData.stream()
+                        .anyMatch(d -> d.getDeviceIP().equals(packet.getAddress().getHostAddress()));
+                if (!isPresentNow) {
+                    TcpResponse tcpResponse = TcpClient.httpGet(interfaceAddress.getAddress().getHostAddress(), Constants.HTTP_SET_IP, packet.getAddress().getHostAddress());
+                    log.debug("TCP ping http://{}?setip?payload={} with response code: {}", interfaceAddress.getAddress().getHostAddress(), packet.getAddress().getHostAddress(), tcpResponse.getErrorCode());
+                }
+            }, 10);
+        }
     }
 
     /**
@@ -287,49 +405,6 @@ public class UdpServer {
     }
 
     /**
-     * Check if a target IP belongs to the same subnet of an interface.
-     *
-     * @param interfaceAddress interface to check
-     * @param targetIp         target IP address
-     * @return true if the target IP belongs to the same subnet
-     */
-    private boolean isAddressInSameSubnet(InterfaceAddress interfaceAddress, String targetIp) {
-        if (!NetworkManager.isValidIp(targetIp) || interfaceAddress == null || interfaceAddress.getAddress() == null) {
-            log.debug("Cannot evaluate subnet match for interfaceAddress={} and targetIp={}", interfaceAddress, targetIp);
-            return false;
-        }
-        short prefixLength = interfaceAddress.getNetworkPrefixLength();
-        if (prefixLength < 0 || prefixLength > 32) {
-            log.debug("Invalid prefixLength={} for address={}", prefixLength, interfaceAddress.getAddress().getHostAddress());
-            return false;
-        }
-        byte[] localAddress = interfaceAddress.getAddress().getAddress();
-        byte[] targetAddress;
-        try {
-            targetAddress = InetAddress.getByName(targetIp).getAddress();
-        } catch (UnknownHostException e) {
-            log.debug("Unable to resolve staticGlowWormIp={} while checking subnet match", targetIp);
-            return false;
-        }
-        // Split the CIDR prefix into full bytes plus any remaining bits of the next byte.
-        int fullBytes = prefixLength / 8;
-        int remainingBits = prefixLength % 8;
-        for (int index = 0; index < fullBytes; index++) {
-            if (localAddress[index] != targetAddress[index]) {
-                return false;
-            }
-        }
-        if (remainingBits == 0) {
-            return true;
-        }
-        int mask = (0xFF << (8 - remainingBits)) & 0xFF;
-        boolean sameSubnet = (localAddress[fullBytes] & mask) == (targetAddress[fullBytes] & mask);
-        log.debug("Subnet match check localIp={}, targetIp={}, prefixLength={}, result={}",
-                interfaceAddress.getAddress().getHostAddress(), targetIp, prefixLength, sameSubnet);
-        return sameSubnet;
-    }
-
-    /**
      * Send device name to GW. If the device name is the one used by the GW device,
      * GW will use the Firefly Luciferin IP for the next communications.
      *
@@ -340,6 +415,10 @@ public class UdpServer {
         ScheduledExecutorService udpIpExecutorService = Executors.newScheduledThreadPool(1);
         Runnable setIpTask = () -> {
             try {
+                if (!isSocketAvailable()) {
+                    udpIpExecutorService.shutdown();
+                    return;
+                }
                 DatagramPacket broadCastPing;
                 // Send the name of the device where Firefly wants to connect
                 if (!Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice())) {
@@ -354,13 +433,25 @@ public class UdpServer {
                                 interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                                 broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
                                 useBroadcast ? Constants.UDP_DEVICE_NAME : Constants.UDP_DEVICE_NAME_STATIC);
-                        socket.send(broadCastPing);
+                        sendFromInterface(interfaceAddress, broadCastPing);
+                        if (!useBroadcast) {
+                            sendTcpPing(interfaceAddress, broadCastPing);
+                        }
                         for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
+                            if (!isReachableViaInterface(interfaceAddress.getAddress(), sat.getValue().getDeviceIp())) {
+                                log.trace("Skipping UDP satellite device-name packet from interfaceIp={} to satelliteIp={} because route does not use this interface",
+                                        interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
+                                        sat.getValue().getDeviceIp());
+                                continue;
+                            }
                             broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, sat.getValue().getDeviceIp(), InetAddress.getByName(sat.getValue().getDeviceIp()));
                             log.trace("Sending UDP satellite device-name packet from interfaceIp={} to satelliteIp={}",
                                     interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                                     sat.getValue().getDeviceIp());
-                            socket.send(broadCastPing);
+                            sendFromInterface(interfaceAddress, broadCastPing);
+                            if (!useBroadcast) {
+                                sendTcpPing(interfaceAddress, broadCastPing);
+                            }
                         }
                     }
                 }
@@ -383,6 +474,10 @@ public class UdpServer {
         ScheduledExecutorService udpBrExecutorService = Executors.newScheduledThreadPool(1);
         Runnable pingTask = () -> {
             try {
+                if (!isSocketAvailable()) {
+                    udpBrExecutorService.shutdown();
+                    return;
+                }
                 DatagramPacket broadCastPing;
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
                     boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
@@ -395,13 +490,19 @@ public class UdpServer {
                             interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                             broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
                             useBroadcast ? "broadcast" : "static-ip");
-                    socket.send(broadCastPing);
+                    sendFromInterface(interfaceAddress, broadCastPing);
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
+                        if (!isReachableViaInterface(interfaceAddress.getAddress(), sat.getValue().getDeviceIp())) {
+                            log.trace("Skipping UDP ping from interfaceIp={} to satelliteIp={} because route does not use this interface",
+                                    interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
+                                    sat.getValue().getDeviceIp());
+                            continue;
+                        }
                         broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), InetAddress.getByName(sat.getValue().getDeviceIp()));
                         log.trace("Sending UDP ping from interfaceIp={} to satelliteIp={}",
                                 interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                                 sat.getValue().getDeviceIp());
-                        socket.send(broadCastPing);
+                        sendFromInterface(interfaceAddress, broadCastPing);
                     }
                 }
             } catch (Exception e) {
@@ -454,6 +555,9 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     void shareBroadCastToOtherInstance(byte[] bufferBroadcastPing, int broadcastPort) {
+        if (!isSocketAvailable()) {
+            return;
+        }
         try {
             for (InterfaceAddress interfaceAddress : eligibleInterfaceAddresses) {
                 InetAddress broadcastAddress = interfaceAddress.getBroadcast();
@@ -465,7 +569,7 @@ public class UdpServer {
                 DatagramPacket broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
                         broadcastAddress, broadcastPort);
                 log.debug("Relaying UDP payload to broadcastIp={} port={}", broadcastAddress.getHostAddress(), broadcastPort);
-                socket.send(broadCastPing);
+                sendFromInterface(interfaceAddress, broadCastPing);
             }
         } catch (IOException e) {
             log.error(e.getMessage());

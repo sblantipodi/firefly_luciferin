@@ -53,7 +53,8 @@ public abstract class TrayIconBase extends CommonBinding {
     public String getTooltip() {
         String tooltipStr;
         if (MainSingleton.getInstance().config.getMultiMonitor() > 1) {
-            if (Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice()) && NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
+            if (Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice()) && NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())
+                    || Constants.DASH.equals(MainSingleton.getInstance().config.getOutputDevice()) && NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
                 tooltipStr = MainSingleton.getInstance().config.getStaticGlowWormIp();
             } else {
                 tooltipStr = MainSingleton.getInstance().config.getOutputDevice();

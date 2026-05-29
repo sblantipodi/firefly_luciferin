@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -33,6 +34,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.DbusScreenCast;
+import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
@@ -245,11 +247,11 @@ public class PipelineManager {
         ImageProcessor.exponentialMovingAverage(leds);
         ImageProcessor.adjustStripWhiteBalance(leds);
         if (CommonUtility.isSingleDeviceMultiScreen()) {
-            if (NetworkSingleton.getInstance().msgClient == null || NetworkSingleton.getInstance().msgClient.clientSocket == null) {
+            if (NetworkSingleton.getInstance().msgClient == null) {
                 NetworkSingleton.getInstance().msgClient = new MessageClient();
-                if (CommonUtility.isSingleDeviceMultiScreen()) {
-                    NetworkSingleton.getInstance().msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
-                }
+            }
+            if (!NetworkSingleton.getInstance().msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT)) {
+                return;
             }
             StringBuilder sb = new StringBuilder();
             sb.append(MainSingleton.getInstance().whoAmI).append(",");
@@ -313,9 +315,28 @@ public class PipelineManager {
             }
             CommonUtility.delaySeconds(() -> {
                 if (commandAfter != null) commandAfter.run();
+                refreshCaptureLedState();
                 MainSingleton.getInstance().guiManager.startCapturingThreads();
             }, Constants.TIME_TO_RESTART_CAPTURE);
         });
+    }
+
+    /**
+     * Refresh LED-related runtime caches before the capture pipeline starts again.
+     */
+    public static void refreshCaptureLedState() {
+        if (MainSingleton.getInstance().config == null || NetworkSingleton.getInstance().messageServer == null) {
+            return;
+        }
+        NetworkSingleton.getInstance().messageServer.initNumLed();
+        FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
+        GrabberSingleton.getInstance().ledMatrix = ledMatrix;
+        GStreamerGrabber.ledMatrix = ledMatrix;
+        if (MainSingleton.getInstance().sharedQueue != null) {
+            MainSingleton.getInstance().sharedQueue.clear();
+        }
+        ImageProcessor.resetPreviousColors();
     }
 
     /**
@@ -349,6 +370,7 @@ public class PipelineManager {
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
      */
     public void startCapturePipeline() {
+        refreshCaptureLedState();
         boolean orphanSat = checkForSatelliteOrphans();
         if (orphanSat) {
             MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ZONE_ERROR_TITLE, Constants.SAT_ZONE_ERROR, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);

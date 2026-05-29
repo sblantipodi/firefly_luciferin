@@ -285,14 +285,13 @@ public class FireflyLuciferin extends Application {
         grabberManager.getFPS();
         grabberManager.pingDevice();
         imageProcessor.calculateBorders();
+        // If multi monitor, first instance, single device, start message server before grabbers produce frames.
+        if (CommonUtility.isSingleDeviceMainInstance()) {
+            NetworkSingleton.getInstance().messageServer.startMessageServer();
+        }
         // If this instance spawns new instances, don't launch grabbers here.
         if (!(MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1)) {
             launchGrabberAndConsumers();
-        }
-        // If multi monitor, first instance, single instance, start message server
-        if (CommonUtility.isSingleDeviceMainInstance()) {
-            MessageServer messageServer = new MessageServer();
-            messageServer.startMessageServer();
         }
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();
@@ -573,13 +572,25 @@ public class FireflyLuciferin extends Application {
     @SuppressWarnings("InfiniteLoopStatement")
     void consume() throws InterruptedException, IOException {
         boolean isWayland = NativeExecutor.isWayland();
+        boolean multiMonitorLedStripOrdering = false;
         while (true) {
             Color[] colorArray = MainSingleton.getInstance().sharedQueue.take();
             if (isWayland) MainSingleton.getInstance().lastLedColor = colorArray;
             if (MainSingleton.getInstance().RUNNING) {
                 if (CommonUtility.isSingleDeviceMultiScreen()) {
                     if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
-                        NetworkSingleton.getInstance().orderArray(colorArray);
+                        if (NetworkSingleton.getInstance().isLedOrderRequired()) {
+                            if (!multiMonitorLedStripOrdering) {
+                                multiMonitorLedStripOrdering = true;
+                                log.info("Using custom ordering");
+                            }
+                            NetworkSingleton.getInstance().orderArray(colorArray);
+                        } else {
+                            if (multiMonitorLedStripOrdering) {
+                                multiMonitorLedStripOrdering = false;
+                                log.info("Using normal ordering");
+                            }
+                        }
                         sendColors(colorArray);
                     }
                 } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {
