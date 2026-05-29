@@ -305,7 +305,7 @@ public class GrabberManager {
         int benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION;
         // Wayland has a more swinging frame rate due to the fact that it doesn't capture an image if frame is still, give it some more room for error.
         if (NativeExecutor.isWayland()) {
-            benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION * 4;
+            benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION * 10;
         }
         if (!notified.get()) {
             if ((MainSingleton.getInstance().FPS_PRODUCER > 0) && (framerateAlert.get() < benchIteration)
