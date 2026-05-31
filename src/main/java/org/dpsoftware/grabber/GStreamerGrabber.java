@@ -367,6 +367,7 @@ public class GStreamerGrabber extends JComponent {
             if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                 benchSimd(leds, 0, 0, 0, 0);
             }
+
             return leds;
         }
 

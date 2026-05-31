@@ -22,8 +22,10 @@
 package org.dpsoftware.network.tcpUdp;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.managers.NetworkManager;
@@ -32,8 +34,8 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.*;
+import java.util.List;
 
 /**
  * UDP Client to manage UDP wireless stream, this is an alternative to MQTT stream
@@ -211,26 +213,59 @@ public class UdpClient {
      * @param leds array containing color information
      */
     public void manageStream(Color[] leds) {
-        int chunkTotal;
-        chunkTotal = (int) Math.ceil(leds.length / Constants.UDP_CHUNK_SIZE);
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = MainSingleton.getInstance().config
+                .getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
+
+        // Build compressed LED array (only capogruppo)
+        List<Color> leaderColors = new ArrayList<>();
+        for (LEDCoordinate coord : ledMatrix.values()) {
+            if (!coord.isGroupedLed()) {
+                leaderColors.add(leds[leaderColors.size()]);
+            }
+        }
+        // Fix: iterate with index to map correctly
+        leaderColors.clear();
+        int ledIndex = 0;
+        for (LEDCoordinate coord : ledMatrix.values()) {
+            if (!coord.isGroupedLed()) {
+                leaderColors.add(leds[ledIndex]);
+            }
+            ledIndex++;
+        }
+
+        Color[] compressedLeds = leaderColors.toArray(new Color[0]);
+        String rleMap = buildRleGroupMap(MainSingleton.getInstance().config,
+                MainSingleton.getInstance().config.getDefaultLedMatrix());
+        // Extract just the RLE entries part (after "DPsoftwareGRP,118,5,")
+        String rleEntries = rleMap.substring(rleMap.indexOf(',', rleMap.indexOf(',') + 1) + 1); // skip header and numLedsPhysical
+        // Simpler: rebuild just the "numRleEntries,e1,e2,..." part
+        String[] rleparts = rleMap.split(",", 4);
+        String rleInline = rleparts[2] + "," + rleparts[3]; // "5,7x2,1x3,42x2,1x3,7x2"
+
+        int numLedsPhysical = leds.length;
+        int chunkTotal = (int) Math.ceil(compressedLeds.length / Constants.UDP_CHUNK_SIZE);
+
         for (int chunkNum = 0; chunkNum < chunkTotal; chunkNum++) {
             StringBuilder sb = new StringBuilder();
             sb.append("DPsoftware").append(",");
-            sb.append(leds.length).append(",");
+            sb.append(numLedsPhysical).append(",");
             sb.append((AudioSingleton.getInstance().AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioSingleton.getInstance().AUDIO_BRIGHTNESS)).append(",");
             sb.append(chunkTotal).append(",");
             sb.append(chunkNum).append(",");
+            // RLE map only in first chunk
+            if (chunkNum == 0) {
+                sb.append(rleInline).append(",");
+            }
             int chunkSizeInteger = (int) Constants.UDP_CHUNK_SIZE * chunkNum;
             int nextChunk = (int) (chunkSizeInteger + Constants.UDP_CHUNK_SIZE);
-            Color[] ledChunk = Arrays.copyOfRange(leds, chunkSizeInteger, Math.min(nextChunk, leds.length));
-            for (int ledIndex = 0; ledIndex < ledChunk.length; ledIndex++) {
-                sb.append(ledChunk[ledIndex].getRGB());
-                if (ledIndex < ledChunk.length - 1) {
-                    sb.append(",");
-                }
+            Color[] ledChunk = Arrays.copyOfRange(compressedLeds, chunkSizeInteger, Math.min(nextChunk, compressedLeds.length));
+            for (int i = 0; i < ledChunk.length; i++) {
+                sb.append(ledChunk[i].getRGB());
+                if (i < ledChunk.length - 1) sb.append(",");
             }
             sendUdpStream(sb.toString());
-            // Let the microcontroller rest for 1 milliseconds before next stream
+
+            log.debug(sb.toString());
             if (Constants.UDP_MICROCONTROLLER_REST_TIME > 0) {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
@@ -242,6 +277,66 @@ public class UdpClient {
      */
     public void close() {
         socket.close();
+    }
+
+    /**
+     * Builds a compact RLE (Run-Length Encoding) group map from the LED matrix for a given aspect ratio.
+     * The map is used by the ESP32 to expand compressed color streams.
+     * Format: "DPsoftwareGRP,<numLedsPhysical>,<numRleEntries>,<count1>x<size1>,..."
+     *
+     * @param config      the current configuration containing the LED matrix
+     * @param aspectRatio the aspect ratio key to use (e.g. "FullScreen")
+     * @return the RLE-encoded group map string ready to send via UDP
+     */
+    public String buildRleGroupMap(Configuration config, String aspectRatio) {
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = config.getLedMatrix().get(aspectRatio);
+        if (ledMatrix == null || ledMatrix.isEmpty()) {
+            return "";
+        }
+
+        // Step 1: build flat groupSize array (one entry per capogruppo)
+        List<Integer> groupSizes = new ArrayList<>();
+        int currentGroupSize = 0;
+        for (LEDCoordinate led : ledMatrix.values()) {
+            if (!led.isGroupedLed()) {
+                if (currentGroupSize > 0) {
+                    groupSizes.add(currentGroupSize);
+                }
+                currentGroupSize = 1;
+            } else {
+                currentGroupSize++;
+            }
+        }
+        if (currentGroupSize > 0) {
+            groupSizes.add(currentGroupSize);
+        }
+
+        // Step 2: RLE encode the flat array
+        List<int[]> rle = new ArrayList<>();
+        int i = 0;
+        while (i < groupSizes.size()) {
+            int size = groupSizes.get(i);
+            int count = 0;
+            while (i < groupSizes.size() && groupSizes.get(i) == size) {
+                count++;
+                i++;
+            }
+            rle.add(new int[]{count, size});
+        }
+
+        // Step 3: build the UDP payload string
+        int numLedsPhysical = ledMatrix.size();
+        StringBuilder sb = new StringBuilder();
+        sb.append("DPsoftwareGRP").append(",");
+        sb.append(numLedsPhysical).append(",");
+        sb.append(rle.size()).append(",");
+        for (int j = 0; j < rle.size(); j++) {
+            sb.append(rle.get(j)[0]).append("x").append(rle.get(j)[1]);
+            if (j < rle.size() - 1) sb.append(",");
+        }
+
+        log.debug("RLE Group Map: {}", sb);
+        return sb.toString();
     }
 
 }
