@@ -58,6 +58,7 @@ public class NetworkSingleton {
     public boolean closeServer = false;
     public int totalLedNum = MainSingleton.getInstance().ledNumber;
     public MessageServer messageServer;
+    public String rleMapInUse = "";
 
     /**
      * Orders the zoned list based on the zones and monitor numbers.
