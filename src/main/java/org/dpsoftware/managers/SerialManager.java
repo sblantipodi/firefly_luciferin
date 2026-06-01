@@ -27,6 +27,7 @@ import com.fazecast.jSerialComm.SerialPortEvent;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioSingleton;
@@ -40,9 +41,8 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -263,7 +263,7 @@ public class SerialManager {
      * @throws IOException can't write to serial
      */
     public void sendColorsViaUSB(Color[] leds) throws IOException {
-        // Effect is set via MQTT when using Full Firmware
+        // [Codice precedente di setup e calcolo parametri - Invariato]
         if (MainSingleton.getInstance().config.isFullFirmware()) {
             MainSingleton.getInstance().fireflyEffect = 100;
         } else {
@@ -273,19 +273,77 @@ public class SerialManager {
                 }
             }
         }
+
         if (!ManagerSingleton.getInstance().serialVersionOk) {
             UpgradeManager upgradeManager = new UpgradeManager();
-            // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if (firmwareMatchMinRequirements != null) {
-                if (firmwareMatchMinRequirements) {
-                    ManagerSingleton.getInstance().serialVersionOk = true;
-                }
+            if (firmwareMatchMinRequirements != null && firmwareMatchMinRequirements) {
+                ManagerSingleton.getInstance().serialVersionOk = true;
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(MainSingleton.getInstance().ledNumber * 3) + Constants.SERIAL_PARAMS];
-            // DPsoftware checksum
+
+            // --- INIZIO LOGICA DI COMPRESSIONE RLE ---
+            LinkedHashMap<Integer, LEDCoordinate> ledMatrix = MainSingleton.getInstance().config
+                    .getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
+
+            // 1. Estrazione capigruppo (Leader)
+            List<Color> leaderColors = new ArrayList<>();
+            int ledIndex = 0;
+            for (LEDCoordinate coord : ledMatrix.values()) {
+                if (!coord.isGroupedLed()) {
+                    leaderColors.add(leds[ledIndex]);
+                }
+                ledIndex++;
+            }
+
+            // 2. Calcolo dimensioni dei gruppi
+            List<Integer> groupSizes = new ArrayList<>();
+            int currentGroupSize = 0;
+            for (LEDCoordinate led : ledMatrix.values()) {
+                if (!led.isGroupedLed()) {
+                    if (currentGroupSize > 0) {
+                        groupSizes.add(currentGroupSize);
+                    }
+                    currentGroupSize = 1;
+                } else {
+                    currentGroupSize++;
+                }
+            }
+            if (currentGroupSize > 0) {
+                groupSizes.add(currentGroupSize);
+            }
+
+            // 3. Codifica RLE binaria (coppie count x size)
+            List<byte[]> rleEntries = new ArrayList<>();
+            int rleIdx = 0;
+            while (rleIdx < groupSizes.size()) {
+                int size = groupSizes.get(rleIdx);
+                int count = 0;
+                while (rleIdx < groupSizes.size() && groupSizes.get(rleIdx) == size) {
+                    count++;
+                    rleIdx++;
+                    if (count == 255) { // Salvaguardia per stare dentro 1 byte
+                        rleEntries.add(new byte[]{(byte) count, (byte) size});
+                        count = 0;
+                    }
+                }
+                if (count > 0) {
+                    rleEntries.add(new byte[]{(byte) count, (byte) size});
+                }
+            }
+
+            byte rleMode = 1; // Attiviamo la compressione RLE
+            byte numRleEntries = (byte) rleEntries.size();
+
+            // 4. Calcolo dinamico della dimensione del buffer
+            int rleHeaderBytes = (rleMode == 1) ? (2 + (numRleEntries * 2)) : 1;
+            int colorBytesCount = (rleMode == 1) ? (leaderColors.size() * 3) : (MainSingleton.getInstance().ledNumber * 3);
+
+            byte[] ledsArray = new byte[Constants.SERIAL_PARAMS + rleHeaderBytes + colorBytesCount];
+            // --- FINE LOGICA DI COMPRESSIONE RLE ---
+
+            // Parametri per checksum
             int ledsCountHi = ((MainSingleton.getInstance().ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (MainSingleton.getInstance().ledNumHighLowCount) & 0xff;
             int loSecondPart = (MainSingleton.getInstance().ledNumHighLowCountSecondPart) & 0xff;
@@ -301,12 +359,13 @@ public class SerialManager {
             int ldrActionToUse = (MainSingleton.getInstance().ldrAction) & 0xff;
             int colorModeToSend = (MainSingleton.getInstance().config.getColorMode()) & 0xff;
             int colorOrderToSend = (MainSingleton.getInstance().colorOrder) & 0xff;
-            // Pins is set to +10 because null values are zero, so GPIO 0 is 10, GPIO 1 is 11.
             int relayPinToSend = (MainSingleton.getInstance().relayPin >= 0 ? MainSingleton.getInstance().relayPin + 10 : 0) & 0xff;
             int relayInvToSend = (MainSingleton.getInstance().relayInv ? 11 : 10) & 0xff;
             int sbPinToSend = (MainSingleton.getInstance().sbPin >= 0 ? MainSingleton.getInstance().sbPin + 10 : 0) & 0xff;
             int ldrPinToSend = (MainSingleton.getInstance().ldrPin >= 0 ? MainSingleton.getInstance().ldrPin + 10 : 0) & 0xff;
             int gpioClockToSend = (MainSingleton.getInstance().gpioClockPin) & 0xff;
+
+            // Scrittura dei 27 byte standard
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
             ledsArray[++j] = (byte) ('s');
@@ -335,27 +394,50 @@ public class SerialManager {
             ledsArray[++j] = (byte) (gpioClockToSend);
             ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
                     ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend ^ relayPinToSend ^ relayInvToSend ^ sbPinToSend ^ ldrPinToSend ^ gpioClockToSend ^ 0x55));
+
             MainSingleton.getInstance().ldrAction = 1;
-            if (leds.length == 1) {
-                MainSingleton.getInstance().colorInUse = leds[0];
-                while (i < MainSingleton.getInstance().ledNumber) {
-                    ledsArray[++j] = (byte) leds[0].getRed();
-                    ledsArray[++j] = (byte) leds[0].getGreen();
-                    ledsArray[++j] = (byte) leds[0].getBlue();
-                    i++;
-                }
-                boolean toggleLed = (leds[0].getRed() != 0 || leds[0].getGreen() != 0 || leds[0].getBlue() != 0);
-                if (toggleLed != MainSingleton.getInstance().config.isToggleLed()) {
-                    MainSingleton.getInstance().config.setToggleLed(toggleLed);
-                }
-            } else {
-                while (i < MainSingleton.getInstance().ledNumber) {
-                    ledsArray[++j] = (byte) leds[i].getRed();
-                    ledsArray[++j] = (byte) leds[i].getGreen();
-                    ledsArray[++j] = (byte) leds[i].getBlue();
-                    i++;
+
+            // Scrittura dei byte RLE
+            ledsArray[++j] = rleMode;
+            if (rleMode == 1) {
+                ledsArray[++j] = numRleEntries;
+                for (byte[] entry : rleEntries) {
+                    ledsArray[++j] = entry[0]; // count
+                    ledsArray[++j] = entry[1]; // size
                 }
             }
+
+            // Scrittura dei colori
+            if (rleMode == 1) {
+                for (Color color : leaderColors) {
+                    ledsArray[++j] = (byte) color.getRed();
+                    ledsArray[++j] = (byte) color.getGreen();
+                    ledsArray[++j] = (byte) color.getBlue();
+                }
+            } else {
+                // Logica Fallback standard (1:1 o colore singolo)
+                if (leds.length == 1) {
+                    MainSingleton.getInstance().colorInUse = leds[0];
+                    while (i < MainSingleton.getInstance().ledNumber) {
+                        ledsArray[++j] = (byte) leds[0].getRed();
+                        ledsArray[++j] = (byte) leds[0].getGreen();
+                        ledsArray[++j] = (byte) leds[0].getBlue();
+                        i++;
+                    }
+                    boolean toggleLed = (leds[0].getRed() != 0 || leds[0].getGreen() != 0 || leds[0].getBlue() != 0);
+                    if (toggleLed != MainSingleton.getInstance().config.isToggleLed()) {
+                        MainSingleton.getInstance().config.setToggleLed(toggleLed);
+                    }
+                } else {
+                    while (i < MainSingleton.getInstance().ledNumber) {
+                        ledsArray[++j] = (byte) leds[i].getRed();
+                        ledsArray[++j] = (byte) leds[i].getGreen();
+                        ledsArray[++j] = (byte) leds[i].getBlue();
+                        i++;
+                    }
+                }
+            }
+
             if (MainSingleton.getInstance().output != null) {
                 MainSingleton.getInstance().output.write(ledsArray);
             }
