@@ -29,6 +29,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.managers.NetworkManager;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -237,7 +238,6 @@ public class UdpClient {
         String rleMap = buildRleGroupMap(MainSingleton.getInstance().config,
                 MainSingleton.getInstance().config.getDefaultLedMatrix());
         // Extract just the RLE entries part (after "DPsoftwareGRP,118,5,")
-        String rleEntries = rleMap.substring(rleMap.indexOf(',', rleMap.indexOf(',') + 1) + 1); // skip header and numLedsPhysical
         // Simpler: rebuild just the "numRleEntries,e1,e2,..." part
         String[] rleparts = rleMap.split(",", 4);
         String rleInline = rleparts[2] + "," + rleparts[3]; // "5,7x2,1x3,42x2,1x3,7x2"
@@ -265,7 +265,7 @@ public class UdpClient {
             }
             sendUdpStream(sb.toString());
 
-            log.debug(sb.toString());
+            log.trace(sb.toString());
             if (Constants.UDP_MICROCONTROLLER_REST_TIME > 0) {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
@@ -294,7 +294,7 @@ public class UdpClient {
             return "";
         }
 
-        // Step 1: build flat groupSize array (one entry per capogruppo)
+        // Step 1: build flat groupSize array (one entry per capogruppo/leaders)
         List<Integer> groupSizes = new ArrayList<>();
         int currentGroupSize = 0;
         for (LEDCoordinate led : ledMatrix.values()) {
@@ -334,8 +334,10 @@ public class UdpClient {
             sb.append(rle.get(j)[0]).append("x").append(rle.get(j)[1]);
             if (j < rle.size() - 1) sb.append(",");
         }
-
-        log.debug("RLE Group Map: {}", sb);
+        if (!NetworkSingleton.getInstance().getRleMapInUse().contentEquals(sb)) {
+            log.debug("RLE Group Map: {}", sb);
+            NetworkSingleton.getInstance().setRleMapInUse(sb.toString());
+        }
         return sb.toString();
     }
 
