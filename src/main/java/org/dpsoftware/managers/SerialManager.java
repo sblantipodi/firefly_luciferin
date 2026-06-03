@@ -33,6 +33,8 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -368,9 +370,10 @@ public class SerialManager {
             // End of the RLE compression logic
 
             // Checksunm params
-            int ledsCountHi = ((MainSingleton.getInstance().ledNumHighLowCount) >> 8) & 0xff;
-            int ledsCountLo = (MainSingleton.getInstance().ledNumHighLowCount) & 0xff;
-            int loSecondPart = (MainSingleton.getInstance().ledNumHighLowCountSecondPart) & 0xff;
+            int totalLeds = MainSingleton.getInstance().ledNumber; // Real numbers of LEDs
+            // Byte is limited to 255, use byte splitting via byte shifting
+            int ledsCountHi = (totalLeds >> 8) & 0xFF;             // Byte high
+            int ledsCountLo = totalLeds & 0xFF;                    // Byte low
             int brightnessToSend = (AudioSingleton.getInstance().AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioSingleton.getInstance().AUDIO_BRIGHTNESS) & 0xff;
             int gpioToSend = (MainSingleton.getInstance().gpio) & 0xff;
             int baudRateToSend = (MainSingleton.getInstance().baudRate) & 0xff;
@@ -389,7 +392,7 @@ public class SerialManager {
             int ldrPinToSend = (MainSingleton.getInstance().ldrPin >= 0 ? MainSingleton.getInstance().ldrPin + 10 : 0) & 0xff;
             int gpioClockToSend = (MainSingleton.getInstance().gpioClockPin) & 0xff;
 
-            // Write 27 bytes
+            // Write 26 bytes
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
             ledsArray[++j] = (byte) ('s');
@@ -398,7 +401,6 @@ public class SerialManager {
             ledsArray[++j] = (byte) ('t');
             ledsArray[++j] = (byte) (ledsCountHi);
             ledsArray[++j] = (byte) (ledsCountLo);
-            ledsArray[++j] = (byte) (loSecondPart);
             ledsArray[++j] = (byte) (brightnessToSend);
             ledsArray[++j] = (byte) (gpioToSend);
             ledsArray[++j] = (byte) (baudRateToSend);
@@ -416,29 +418,77 @@ public class SerialManager {
             ledsArray[++j] = (byte) (sbPinToSend);
             ledsArray[++j] = (byte) (ldrPinToSend);
             ledsArray[++j] = (byte) (gpioClockToSend);
-            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
-                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend ^ relayPinToSend ^ relayInvToSend ^ sbPinToSend ^ ldrPinToSend ^ gpioClockToSend ^ 0x55));
+            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
+                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend
+                    ^ relayPinToSend ^ relayInvToSend ^ sbPinToSend ^ ldrPinToSend ^ gpioClockToSend ^ 0x55));
 
             MainSingleton.getInstance().ldrAction = 1;
 
             // Write RLE bytes
             ledsArray[++j] = 1;
-                ledsArray[++j] = numRleEntries;
-                for (byte[] entry : rleEntries) {
-                    ledsArray[++j] = entry[0]; // count
-                    ledsArray[++j] = entry[1]; // size
-                }
-
-            // Write colors
-                for (Color color : leaderColors) {
-                    ledsArray[++j] = (byte) color.getRed();
-                    ledsArray[++j] = (byte) color.getGreen();
-                    ledsArray[++j] = (byte) color.getBlue();
-                }
-
-            if (MainSingleton.getInstance().output != null) {
-                MainSingleton.getInstance().output.write(ledsArray);
+            ledsArray[++j] = numRleEntries;
+            for (byte[] entry : rleEntries) {
+                ledsArray[++j] = entry[0]; // count
+                ledsArray[++j] = entry[1]; // size
             }
+
+            // Built led array, this will be written to Serial
+            for (Color color : leaderColors) {
+                ledsArray[++j] = (byte) color.getRed();
+                ledsArray[++j] = (byte) color.getGreen();
+                ledsArray[++j] = (byte) color.getBlue();
+            }
+
+            writeToSerialWithPacing(ledsArray);
+        }
+    }
+
+    /**
+     * Write to serial with pacing control to prevent overwhelming the microcontroller with too many frames in a short time,
+     * especially during the initial ramp-up phase of the flow.
+     *
+     * @param ledsArray array with colors
+     * @throws IOException can't write to serial
+     */
+    private void writeToSerialWithPacing(byte[] ledsArray) throws IOException {
+        if (MainSingleton.getInstance().output != null) {
+            long currentTime = System.currentTimeMillis();
+            // 1. Initialization on the very first frame
+            if (GrabberSingleton.getInstance().getFlowStartTime() == 0) {
+                GrabberSingleton.getInstance().setFlowStartTime(currentTime);
+                GrabberSingleton.getInstance().setLastSecondMark(currentTime);
+                GrabberSingleton.getInstance().setCurrentSecondToken(0);
+            }
+            // 2. Track the rollover of each 1-second window
+            if (currentTime - GrabberSingleton.getInstance().getLastSecondMark() >= 1000) {
+                // A full second has passed, reset the token counter for the new second window
+                GrabberSingleton.getInstance().setLastSecondMark(currentTime);
+                GrabberSingleton.getInstance().setCurrentSecondToken(0);
+            }
+            // 3. Calculate the frame limit for the current second (Exponential growth)
+            long elapsedSeconds = (currentTime - GrabberSingleton.getInstance().getFlowStartTime()) / 1000;
+            int targetFramerate = GStreamerGrabber.getTargetFramerateForDevice();
+            // Doubling formula: 1 frame at sec 0, 2 frames at sec 1, 4 at sec 2, 8 at sec 3...
+            // Math.min caps the exponential growth at the device's maximum target framerate
+            int maxFramesAllowedThisSecond = (int) Math.min(targetFramerate, Math.pow(2, elapsedSeconds));
+            // 4. Check if we have exceeded the frame allowance for this second
+            if (GrabberSingleton.getInstance().getCurrentSecondToken() >= maxFramesAllowedThisSecond) {
+                return; // DROP THE FRAME: we have already sent the maximum allowed data for this second
+            }
+            // 5. Anti-burst control (Minimum Pacing)
+            // Even if multiple tokens are available this second, prevent Java from firing them
+            // all at once within a few milliseconds. Enforce a proper minimum delay between frames.
+            long minDelayMs = 1000 / targetFramerate;
+            long timeSinceLastSend = currentTime - GrabberSingleton.getInstance().getLastActualSendTime();
+            if (timeSinceLastSend < minDelayMs) {
+                return; // DROP THE FRAME: it is arriving too rapidly compared to the previous one
+            }
+            // 6. ACTUAL DATA TRANSMISSION
+            MainSingleton.getInstance().output.write(ledsArray);
+            MainSingleton.getInstance().output.flush(); // Flush AFTER writing to push bytes over USB instantly
+            // Increment used tokens for this second and update the last successful send timestamp
+            GrabberSingleton.getInstance().setCurrentSecondToken(GrabberSingleton.getInstance().getCurrentSecondToken() + 1);
+            GrabberSingleton.getInstance().setLastActualSendTime(System.currentTimeMillis());
         }
     }
 
