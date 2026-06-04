@@ -348,6 +348,7 @@ public class TcInteractionHandler {
             int coordIdx = 0;
             for (LEDCoordinate coord : ledMatrix.values()) {
                 coordIdx++;
+                if (coord.isGroupedLed()) continue;
                 int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
                 int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
                 int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
@@ -1087,6 +1088,7 @@ public class TcInteractionHandler {
         tc.getGc().setStroke(Color.CYAN);
         int offsetFix = scaleDownResolution((int) tc.getCanvas().getWidth(), conf.getOsScaling()) == 2560 ? 4 : 3; // 2560 needs 4 pixels
         for (LEDCoordinate coord : selectedLeds) {
+            if (coord.isGroupedLed()) continue;
             double x = scaleDownResolution(coord.getX(), conf.getOsScaling());
             double y = scaleDownResolution(coord.getY(), conf.getOsScaling());
             double w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
