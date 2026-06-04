@@ -209,7 +209,7 @@ public class GStreamerGrabber extends JComponent {
 
     /**
      * Implement framerate logic
-     * @return gstreamer pipeline with
+     * @return target framerate for GStreamer
      */
     public static int getTargetFramerate() {
         String targetFramerate;
@@ -229,6 +229,21 @@ public class GStreamerGrabber extends JComponent {
             targetFramerate = String.valueOf(target);
         }
         return Integer.parseInt(targetFramerate);
+    }
+
+    /**
+     * Implement framerate logic
+     *
+     * @return target framerate for the Glow Worm Device
+     */
+    public static int getTargetFramerateForDevice() {
+        int targetFramerate;
+        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getSmoothingTargetFramerate() > 0) {
+            targetFramerate = MainSingleton.getInstance().config.getSmoothingTargetFramerate();
+        } else {
+            targetFramerate = Integer.parseInt(MainSingleton.getInstance().config.getDesiredFramerate());
+        }
+        return targetFramerate;
     }
 
     /**

@@ -47,6 +47,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.bindings.notify.LibNotify;
 import org.dpsoftware.gui.controllers.*;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
@@ -990,6 +991,7 @@ public class GuiManager {
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
+        if (GrabberSingleton.getInstance() != null) GrabberSingleton.getInstance().resetFlowRamp();
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = getStateDto();
             if (NativeExecutor.isLinux()) {
