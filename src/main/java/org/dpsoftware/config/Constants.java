@@ -53,8 +53,6 @@ public class Constants {
     public static final String CLEAN_EXIT = "CLEAN EXIT";
     public static final String FULL_FIRM = "full.firm";
     public static final String LIGHT_FIRM = "light.firm";
-    // This value must meet the one in Firefly Luciferin
-    public static final int SERIAL_CHUNK_SIZE = 250;
     public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
     public static final String SETTING_LED_SERIAL = "Setting LEDs";
     public static final int NUMBER_OF_BENCHMARK_ITERATION = 15;
@@ -334,7 +332,7 @@ public class Constants {
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
     public static final String ACTIVATE_EVENT = "activate";
-    public static final int SERIAL_PARAMS = 27;
+    public static final int SERIAL_PARAMS = 26;
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
     public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
     public static final String CUDA_ERROR_TITLE = "cuda.error.title";
