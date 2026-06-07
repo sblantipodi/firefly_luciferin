@@ -25,6 +25,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Enums;
@@ -34,6 +35,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -221,6 +223,68 @@ public class NetworkSingleton {
                     && messageServer.getMonitorConfig2().getRightLed() == 0;
         }
         return false;
+    }
+
+    /**
+     * Generates a new map with the updated groupedLed status based on color changes,
+     * leaving the original input map completely unaltered (Deep Copy).
+     *
+     * @param leds The current array of LED colors
+     * @return A new LinkedHashMap with the same keys and values as the original, but with the groupedLed status updated according to the color changes in the leds array.
+     */
+    @SuppressWarnings("all")
+    public static LinkedHashMap<Integer, LEDCoordinate> builtRleLeaders(Color[] leds) {
+        // Apply the dynamic color based grouping logic on the cloned matrix
+        Color tmpC = null;
+        LinkedHashMap<Integer, LEDCoordinate> clonedMatrix = new LinkedHashMap<>();
+        for (int i = 0; i < leds.length; i++) {
+            LEDCoordinate coord = new LEDCoordinate();
+            if (coord != null) { // Safe check in case the leds array is longer than the matrix
+                // If it's the very first LED or if its color is different from the previous one
+                if (MainSingleton.getInstance().config.getGroupBy() == 10 || tmpC == null || leds[i].getRGB() != tmpC.getRGB()) {
+                    // This LED becomes the new group leader
+                    tmpC = leds[i];
+                    coord.setGroupedLed(false); // It is not grouped, it's the leader
+                } else {
+                    // The color is IDENTICAL to the previous one, so it joins the current group
+                    coord.setGroupedLed(true); // It is grouped (follower)
+                }
+            }
+            clonedMatrix.put(i + 1, coord);
+        }
+        // Return the duplicated and modified map
+        return clonedMatrix;
+    }
+
+    /**
+     * Print RLE maps for debugging purposes, only if debug logging is enabled and the RLE map has changed since the last print to avoid log flooding.
+     *
+     * @param ledMatrixWithLeaders array of leaders
+     * @param length               total number of LEDs in the strip
+     */
+    public static void printVisualRleMap(LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
+        // Visual printing
+        StringBuilder visual = new StringBuilder();
+        int leadersCount = 0;
+        for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
+            if (!coord.isGroupedLed()) {
+                leadersCount++;
+                visual.append("█");
+            } else {
+                visual.append("░");
+            }
+        }
+        log.debug(visual.toString());
+        visual = new StringBuilder();
+        visual.append("[")
+                .append("LEDs: ")
+                .append(length)
+                .append(", Groups: ")
+                .append(MainSingleton.getInstance().config.getGroupBy())
+                .append(", Leaders: ")
+                .append(leadersCount)
+                .append("]");
+        log.trace(visual.toString());
     }
 
 }

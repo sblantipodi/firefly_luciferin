@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.managers.NetworkManager;
@@ -209,34 +208,72 @@ public class UdpClient {
     }
 
     /**
+     * Print RLE maps for debugging purposes, only if debug logging is enabled and the RLE map has changed since the last print to avoid log flooding.
+     *
+     * @param rleMap               array of rle gropup
+     * @param ledMatrixWithLeaders array of leaders
+     * @param length               total number of LEDs in the strip
+     */
+    private static void printRleMapForDebug(String rleMap, LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
+        if (!log.isDebugEnabled()) {
+            return;
+        }
+        String[] parts = rleMap.split(",", 4);
+        if (parts.length != 4) {
+            return;
+        }
+        // Group details
+        String rleInline = parts[3]; // "7x2,1x3,42x2,1x3,7x2"
+        if (NetworkSingleton.getInstance().getRleMapInUse().contentEquals(rleInline)) {
+            return;
+        }
+        NetworkSingleton.getInstance().setRleMapInUse(rleInline);
+        String[] entries = rleInline.split(",");
+        int total = entries.length;
+        StringBuilder formatted = new StringBuilder();
+        formatted.append("UDP RLE Entries Array [Total: ")
+                .append(total)
+                .append("] -> ");
+        for (int i = 0; i < total; i++) {
+            formatted.append("[")
+                    .append(entries[i])
+                    .append("]");
+            if (i < total - 1) {
+                formatted.append(",");
+            }
+        }
+        log.debug(formatted.toString());
+        NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, length);
+    }
+
+    /**
      * Organize led data and send it via UDP stream
      *
      * @param leds array containing color information
      */
     public void manageStream(Color[] leds) {
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = MainSingleton.getInstance().config
-                .getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
-
-        // Build compressed LED array (only capogruppo)
+        // Create new RLE leaders
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = NetworkSingleton.builtRleLeaders(leds);
+//        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
+        // Build compressed LED array (only leaders)
         List<Color> leaderColors = new ArrayList<>();
-        for (LEDCoordinate coord : ledMatrix.values()) {
+        for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
             if (!coord.isGroupedLed()) {
                 leaderColors.add(leds[leaderColors.size()]);
             }
         }
-        // Fix: iterate with index to map correctly
+        // Iterate with index to map correctly
         leaderColors.clear();
         int ledIndex = 0;
-        for (LEDCoordinate coord : ledMatrix.values()) {
+        for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
             if (!coord.isGroupedLed()) {
                 leaderColors.add(leds[ledIndex]);
             }
             ledIndex++;
         }
-
         Color[] compressedLeds = leaderColors.toArray(new Color[0]);
-        String rleMap = buildRleGroupMap(MainSingleton.getInstance().config,
-                MainSingleton.getInstance().config.getDefaultLedMatrix());
+        String rleMap = buildRleGroupMap(ledMatrixWithLeaders);
+        printRleMapForDebug(rleMap, ledMatrixWithLeaders, leds.length);
         // Extract just the RLE entries part (after "DPsoftwareGRP,118,5,")
         // Simpler: rebuild just the "numRleEntries,e1,e2,..." part
         String[] rleparts = rleMap.split(",", 4);
@@ -284,17 +321,14 @@ public class UdpClient {
      * The map is used by the ESP32 to expand compressed color streams.
      * Format: "DPsoftwareGRP,<numLedsPhysical>,<numRleEntries>,<count1>x<size1>,..."
      *
-     * @param config      the current configuration containing the LED matrix
-     * @param aspectRatio the aspect ratio key to use (e.g. "FullScreen")
+     * @param ledMatrix      the current configuration containing the LED matrix
      * @return the RLE-encoded group map string ready to send via UDP
      */
-    public String buildRleGroupMap(Configuration config, String aspectRatio) {
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = config.getLedMatrix().get(aspectRatio);
+    public String buildRleGroupMap(LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
         if (ledMatrix == null || ledMatrix.isEmpty()) {
             return "";
         }
-
-        // Step 1: build flat groupSize array (one entry per capogruppo/leaders)
+        // build flat groupSize array (one entry per leaders)
         List<Integer> groupSizes = new ArrayList<>();
         int currentGroupSize = 0;
         for (LEDCoordinate led : ledMatrix.values()) {
@@ -310,8 +344,7 @@ public class UdpClient {
         if (currentGroupSize > 0) {
             groupSizes.add(currentGroupSize);
         }
-
-        // Step 2: RLE encode the flat array
+        // RLE encode the flat array
         List<int[]> rle = new ArrayList<>();
         int i = 0;
         while (i < groupSizes.size()) {
@@ -323,8 +356,7 @@ public class UdpClient {
             }
             rle.add(new int[]{count, size});
         }
-
-        // Step 3: build the UDP payload string
+        // build the UDP payload string
         int numLedsPhysical = ledMatrix.size();
         StringBuilder sb = new StringBuilder();
         sb.append("DPsoftwareGRP").append(",");
@@ -333,10 +365,6 @@ public class UdpClient {
         for (int j = 0; j < rle.size(); j++) {
             sb.append(rle.get(j)[0]).append("x").append(rle.get(j)[1]);
             if (j < rle.size() - 1) sb.append(",");
-        }
-        if (!NetworkSingleton.getInstance().getRleMapInUse().contentEquals(sb)) {
-            log.debug("RLE Group Map: {}", sb);
-            NetworkSingleton.getInstance().setRleMapInUse(sb.toString());
         }
         return sb.toString();
     }
