@@ -236,7 +236,7 @@ public class GStreamerGrabber extends JComponent {
      *
      * @return target framerate for the Glow Worm Device
      */
-    public static int getTargetFramerateForDevice() {
+    public static long getTargetFramerateForDevice() {
         int targetFramerate;
         if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getSmoothingTargetFramerate() > 0) {
             targetFramerate = MainSingleton.getInstance().config.getSmoothingTargetFramerate();
