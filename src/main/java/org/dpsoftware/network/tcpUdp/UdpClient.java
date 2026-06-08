@@ -215,7 +215,7 @@ public class UdpClient {
      * @param length               total number of LEDs in the strip
      */
     private static void printRleMapForDebug(String rleMap, LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
-        if (!log.isDebugEnabled()) {
+        if (!log.isTraceEnabled()) {
             return;
         }
         String[] parts = rleMap.split(",", 4);
@@ -242,7 +242,7 @@ public class UdpClient {
                 formatted.append(",");
             }
         }
-        log.debug(formatted.toString());
+        log.trace(formatted.toString());
         NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, length);
     }
 
