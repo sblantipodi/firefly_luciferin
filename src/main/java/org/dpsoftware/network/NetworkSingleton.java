@@ -250,6 +250,9 @@ public class NetworkSingleton {
                     coord.setGroupedLed(true); // It is grouped (follower)
                 }
             }
+            if (i == 0) {
+                coord.setGroupedLed(false);
+            }
             clonedMatrix.put(i + 1, coord);
         }
         // Return the duplicated and modified map
@@ -274,7 +277,7 @@ public class NetworkSingleton {
                 visual.append("░");
             }
         }
-        log.debug(visual.toString());
+        log.trace(visual.toString());
         visual = new StringBuilder();
         visual.append("[")
                 .append("LEDs: ")
