@@ -231,19 +231,21 @@ public class UdpClient {
         String[] entries = rleInline.split(",");
         int total = entries.length;
         StringBuilder formatted = new StringBuilder();
+        StringBuilder groups = new StringBuilder();
         formatted.append("UDP RLE Entries Array [Total: ")
                 .append(total)
                 .append("] -> ");
         for (int i = 0; i < total; i++) {
-            formatted.append("[")
+            groups.append("[")
                     .append(entries[i])
                     .append("]");
             if (i < total - 1) {
-                formatted.append(",");
+                groups.append(",");
             }
         }
+        formatted.append(groups);
         log.trace(formatted.toString());
-        NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, length);
+        NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, groups, length);
     }
 
     /**

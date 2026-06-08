@@ -324,22 +324,24 @@ public class SerialManager {
         // Group details
         StringBuilder sbEntries = new StringBuilder();
         sbEntries.append("Serial RLE Entries Array [Total: ").append(numRleEntries & 0xFF).append("] -> ");
+        StringBuilder groups = new StringBuilder();
         for (int i = 0; i < rleEntries.size(); i++) {
             byte[] entry = rleEntries.get(i);
             int count = entry[0] & 0xFF;
             int size = entry[1] & 0xFF;
-            sbEntries.append(String.format("[%dx%d]", count, size));
+            groups.append(String.format("[%dx%d]", count, size));
             if (i < rleEntries.size() - 1) {
-                sbEntries.append(",");
+                groups.append(",");
             }
         }
         if (NetworkSingleton.getInstance().getRleMapInUse().contentEquals(sbEntries)) {
             return;
         }
+        sbEntries.append(groups);
         NetworkSingleton.getInstance().setRleMapInUse(sbEntries.toString());
         log.trace(sbEntries.toString());
         // Visual printing
-        NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, length);
+        NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, groups, length);
     }
 
     /**
@@ -423,6 +425,16 @@ public class SerialManager {
         }
     }
 
+    private static void rleBytePadding(List<byte[]> rleEntries, int count, int size) {
+        while (size > 255) {
+            rleEntries.add(new byte[]{(byte) count, (byte) 255});
+            size -= 255;
+        }
+        if (size > 0) {
+            rleEntries.add(new byte[]{(byte) count, (byte) size});
+        }
+    }
+
     /**
      * Implement RLE compression logic
      *
@@ -431,10 +443,19 @@ public class SerialManager {
      */
     private byte[] implementRleCompressionLogic(Color[] leds) {
         int j = -1;
+
+//        for (int i = 0; i< leds.length; i++) {
+//            leds[i] = new Color(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255));
+//        }
         // Create new RLE leaders
         LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = NetworkSingleton.builtRleLeaders(leds);
 //        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
         // Extraction of group leaders (Leaders)
+        try {
+
+        } catch (Exception e) {
+            log.error("Error occurred while implementing RLE compression logic", e);
+        }
         List<Color> leaderColors = new ArrayList<>();
         int ledIndex = 0;
         for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
@@ -451,17 +472,21 @@ public class SerialManager {
         while (rleIdx < groupSizes.size()) {
             int size = groupSizes.get(rleIdx);
             int count = 0;
+
+            // Contiamo quanti elementi consecutivi hanno la stessa dimensione
             while (rleIdx < groupSizes.size() && groupSizes.get(rleIdx) == size) {
                 count++;
                 rleIdx++;
-                // don't exceed the byte size but it can handle numbers greater than 255, ex: 540 -> 1x255,1x255,1x30,
+
+                // Se arrivi a 255 ripetizioni dello stesso elemento, spezzi qui
                 if (count == 255) {
-                    rleEntries.add(new byte[]{(byte) count, (byte) size});
+                    rleBytePadding(rleEntries, count, size);
                     count = 0;
                 }
             }
+
             if (count > 0) {
-                rleEntries.add(new byte[]{(byte) count, (byte) size});
+                rleBytePadding(rleEntries, count, size);
             }
         }
         byte numRleEntries = (byte) rleEntries.size();
