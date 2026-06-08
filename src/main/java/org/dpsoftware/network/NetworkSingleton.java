@@ -38,6 +38,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Network singleton used to share common data
@@ -237,21 +239,25 @@ public class NetworkSingleton {
         // Apply the dynamic color based grouping logic on the cloned matrix
         Color tmpC = null;
         LinkedHashMap<Integer, LEDCoordinate> clonedMatrix = new LinkedHashMap<>();
+        int consecutiveFollowers = 0;
         for (int i = 0; i < leds.length; i++) {
             LEDCoordinate coord = new LEDCoordinate();
             if (coord != null) { // Safe check in case the leds array is longer than the matrix
                 // If it's the very first LED or if its color is different from the previous one
-                if (MainSingleton.getInstance().config.getGroupBy() == 10 || tmpC == null || leds[i].getRGB() != tmpC.getRGB()) {
+                if (consecutiveFollowers == 254 || MainSingleton.getInstance().config.getGroupBy() == 10 || tmpC == null || leds[i].getRGB() != tmpC.getRGB()) {
                     // This LED becomes the new group leader
                     tmpC = leds[i];
                     coord.setGroupedLed(false); // It is not grouped, it's the leader
+                    consecutiveFollowers = 0;
                 } else {
                     // The color is IDENTICAL to the previous one, so it joins the current group
                     coord.setGroupedLed(true); // It is grouped (follower)
+                    consecutiveFollowers++;
                 }
             }
             if (i == 0) {
                 coord.setGroupedLed(false);
+                consecutiveFollowers = 0;
             }
             clonedMatrix.put(i + 1, coord);
         }
@@ -263,10 +269,10 @@ public class NetworkSingleton {
      * Print RLE maps for debugging purposes, only if debug logging is enabled and the RLE map has changed since the last print to avoid log flooding.
      *
      * @param ledMatrixWithLeaders array of leaders
+     * @param groups               string builder containing the RLE groups
      * @param length               total number of LEDs in the strip
      */
-    public static void printVisualRleMap(LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
-        // Visual printing
+    public static void printVisualRleMap(LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, StringBuilder groups, int length) {
         StringBuilder visual = new StringBuilder();
         int leadersCount = 0;
         for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
@@ -277,17 +283,63 @@ public class NetworkSingleton {
                 visual.append("░");
             }
         }
+        int groupsSum = 0;
+        Pattern pattern = Pattern.compile("(\\d+)x(\\d+)");
+        Matcher matcher = pattern.matcher(groups);
+        while (matcher.find()) {
+            int qty = Integer.parseInt(matcher.group(1));
+            int val = Integer.parseInt(matcher.group(2));
+            groupsSum += (qty * val);
+        }
         log.trace(visual.toString());
         visual = new StringBuilder();
         visual.append("[")
                 .append("LEDs: ")
                 .append(length)
-                .append(", Groups: ")
+                .append(", Total sum of groups: ")
+                .append(groupsSum)
+                .append(", Group by: ")
                 .append(MainSingleton.getInstance().config.getGroupBy())
                 .append(", Leaders: ")
                 .append(leadersCount)
                 .append("]");
         log.trace(visual.toString());
+
+        if (length != groupsSum) {
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
+            System.exit(0);
+        }
     }
 
 }
