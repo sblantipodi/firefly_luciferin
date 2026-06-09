@@ -318,6 +318,16 @@ public class UdpClient {
         socket.close();
     }
 
+    private static void rleBytePadding(List<int[]> rle, int count, int size) {
+        while (size > 255) {
+            rle.add(new int[]{count, 255});
+            size -= 255;
+        }
+        if (size > 0) {
+            rle.add(new int[]{count, size});
+        }
+    }
+
     /**
      * Builds a compact RLE (Run-Length Encoding) group map from the LED matrix for a given aspect ratio.
      * The map is used by the ESP32 to expand compressed color streams.
@@ -355,8 +365,14 @@ public class UdpClient {
             while (i < groupSizes.size() && groupSizes.get(i) == size) {
                 count++;
                 i++;
+                if (count == 255) {
+                    rleBytePadding(rle, count, size);
+                    count = 0;
+                }
             }
-            rle.add(new int[]{count, size});
+            if (count > 0) {
+                rleBytePadding(rle, count, size);
+            }
         }
         // build the UDP payload string
         int numLedsPhysical = ledMatrix.size();
