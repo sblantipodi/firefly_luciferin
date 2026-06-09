@@ -168,12 +168,6 @@ public final class NativeExecutor {
                 }
             }
             // We don't use NativeExecutor.exit() here because we need to avoid race conditions
-            log.info("Waiting for 20 Seconds so we see the output of the spawned instances before exiting");
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                log.error("Interrupted while waiting for 20 Seconds", e);
-            }
             System.exit(0);
         }
     }
