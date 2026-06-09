@@ -46,6 +46,12 @@ public class UdpClient {
     public final DatagramSocket socket;
     final int UDP_PORT = Constants.UDP_PORT;
     private final InetAddress address;
+    /**
+     * Rolling frame sequence counter (0-255). Incremented for every new captured frame.
+     * The firmware uses this to detect when chunks belong to different frames,
+     * allowing safe rejection of orphaned chunks without relying on a timing threshold.
+     */
+    private int frameNum = 0;
 
     /**
      * UDP constructor for the socket
@@ -254,18 +260,13 @@ public class UdpClient {
      * @param leds array containing color information
      */
     public void manageStream(Color[] leds) {
+        // Advance frame sequence counter (wraps 0-255)
+        frameNum = (frameNum + 1) & 0xFF;
         // Create new RLE leaders
         LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = NetworkSingleton.builtRleLeaders(leds);
 //        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
         // Build compressed LED array (only leaders)
         List<Color> leaderColors = new ArrayList<>();
-        for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
-            if (!coord.isGroupedLed()) {
-                leaderColors.add(leds[leaderColors.size()]);
-            }
-        }
-        // Iterate with index to map correctly
-        leaderColors.clear();
         int ledIndex = 0;
         for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
             if (!coord.isGroupedLed()) {
@@ -291,6 +292,7 @@ public class UdpClient {
             sb.append((AudioSingleton.getInstance().AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioSingleton.getInstance().AUDIO_BRIGHTNESS)).append(",");
             sb.append(chunkTotal).append(",");
             sb.append(chunkNum).append(",");
+            sb.append(frameNum).append(",");
             // RLE map only in first chunk
             if (chunkNum == 0) {
                 sb.append(rleInline).append(",");
