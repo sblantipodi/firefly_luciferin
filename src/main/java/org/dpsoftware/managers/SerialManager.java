@@ -491,7 +491,7 @@ public class SerialManager {
         }
         byte numRleEntries = (byte) rleEntries.size();
         // Dyanmic buffer size
-        int rleHeaderBytes = (2 + (numRleEntries * 2));
+        int rleHeaderBytes = (2 + (rleEntries.size() * 2));
         int colorBytesCount = (leaderColors.size() * 3);
         // Visual debug output
         printRleMaps(numRleEntries, rleEntries, ledMatrixWithLeaders, leds.length);
