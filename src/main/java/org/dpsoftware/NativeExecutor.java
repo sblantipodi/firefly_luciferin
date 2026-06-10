@@ -104,10 +104,6 @@ public final class NativeExecutor {
         try {
             log.trace("Executing cmd={}", Arrays.stream(cmdToRunUsingArgs).toList());
             ProcessBuilder processBuilder = new ProcessBuilder(cmdToRunUsingArgs);
-            if (waitForOutput == 0) {
-                processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
-                processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-            }
             Process process = processBuilder.start();
             if (waitForOutput > 0) {
                 if (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS)) {
