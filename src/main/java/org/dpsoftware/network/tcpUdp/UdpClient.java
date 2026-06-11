@@ -260,13 +260,9 @@ public class UdpClient {
      *
      * @param leds array containing color information
      */
-    /**
-     * Organize led data and send it via UDP stream
-     *
-     * @param leds array containing color information
-     */
     public void manageStream(Color[] leds) {
         // Advance frame sequence counter (wraps 0-255)
+        long startTime = System.nanoTime();
         frameNum = (frameNum + 1) & 0xFF;
         // Create new RLE leaders
         LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = NetworkSingleton.builtRleLeaders(leds);
@@ -282,14 +278,26 @@ public class UdpClient {
         Color[] compressedLeds = leaderColors.toArray(new Color[0]);
         String rleMap = buildRleGroupMap(ledMatrixWithLeaders);
         printRleMapForDebug(rleMap, ledMatrixWithLeaders, leds.length);
-
-        // Send the RLE group map as its own UDP packet, every frame.
-        // Keeping it separate from the color chunks avoids exceeding the MTU
-        // (and thus IP fragmentation) when the LED count/group count grows.
-        sendUdpStream(rleMap); // "DPsoftwareGRP,numLedsPhysical,numRleEntries,c1xs1,c2xs2,..."
+        String[] rleparts = rleMap.split(",", 4);
+        String rleInline = rleparts[2] + "," + rleparts[3]; // "numEntries,c1xs1,..."
 
         int numLedsPhysical = leds.length;
         int chunkTotal = (int) Math.ceil((double) compressedLeds.length / Constants.UDP_CHUNK_SIZE);
+
+        // Stima dimensione del chunk0 SE la RLE map viene inviata inline
+        Color[] firstChunk = Arrays.copyOfRange(compressedLeds, 0, (int) Math.min(Constants.UDP_CHUNK_SIZE, compressedLeds.length));
+        int colorsLen = 0;
+        for (Color c : firstChunk) colorsLen += String.valueOf(c.getRGB()).length() + 1; // +1 per la virgola
+        int headerLen = 40; // stima header fisso (DPsoftware,numLeds,brightness,chunkTot,chunkNum,frameNum,flag,)
+        int inlineChunk0Size = headerLen + rleInline.length() + colorsLen;
+
+        boolean rleInlineFits = inlineChunk0Size <= Constants.SAFE_PACKET_SIZE;
+
+        if (!rleInlineFits) {
+            // Troppo grande: manda la RLE map come packet separato, legata al frameNum corrente
+            sendUdpStream("DPsoftwareGRP," + rleparts[1] + "," + rleInline + "," + frameNum);
+            // formato: DPsoftwareGRP,numLedsPhysical,numEntries,c1xs1,...,frameNum
+        }
 
         for (int chunkNum = 0; chunkNum < chunkTotal; chunkNum++) {
             StringBuilder sb = new StringBuilder();
@@ -299,6 +307,11 @@ public class UdpClient {
             sb.append(chunkTotal).append(",");
             sb.append(chunkNum).append(",");
             sb.append(frameNum).append(",");
+            sb.append(rleInlineFits ? "1" : "0").append(","); // flag: 1=RLE inline in questo chunk0, 0=usa packet GRP separato
+
+            if (chunkNum == 0 && rleInlineFits) {
+                sb.append(rleInline).append(",");
+            }
 
             int chunkSizeInteger = (int) (Constants.UDP_CHUNK_SIZE * chunkNum);
             int nextChunk = (int) (chunkSizeInteger + Constants.UDP_CHUNK_SIZE);
@@ -313,6 +326,10 @@ public class UdpClient {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
         }
+        long endTime = System.nanoTime();
+        long durationMs = (endTime - startTime);
+        log.info(durationMs + "");
+
     }
 
     /**
