@@ -262,7 +262,6 @@ public class UdpClient {
      */
     public void manageStream(Color[] leds) {
         // Advance frame sequence counter (wraps 0-255)
-        long startTime = System.nanoTime();
         frameNum = (frameNum + 1) & 0xFF;
         // Create new RLE leaders
         LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = NetworkSingleton.builtRleLeaders(leds);
@@ -326,9 +325,6 @@ public class UdpClient {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
         }
-        long endTime = System.nanoTime();
-        long durationMs = (endTime - startTime);
-        log.info(durationMs + "");
 
     }
 
