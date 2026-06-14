@@ -296,6 +296,9 @@ public class UdpClient {
             // Troppo grande: manda la RLE map come packet separato, legata al frameNum corrente
             sendUdpStream("DPsoftwareGRP," + rleparts[1] + "," + rleInline + "," + frameNum);
             // formato: DPsoftwareGRP,numLedsPhysical,numEntries,c1xs1,...,frameNum
+            if (Constants.UDP_MICROCONTROLLER_REST_TIME > 0) {
+                CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
+            }
         }
 
         for (int chunkNum = 0; chunkNum < chunkTotal; chunkNum++) {
@@ -320,7 +323,6 @@ public class UdpClient {
                 if (i < ledChunk.length - 1) sb.append(",");
             }
             sendUdpStream(sb.toString());
-
             if (Constants.UDP_MICROCONTROLLER_REST_TIME > 0) {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
