@@ -284,7 +284,7 @@ public class UdpClient {
         int chunkTotal = (int) Math.ceil((double) compressedLeds.length / Constants.UDP_CHUNK_SIZE);
 
         // Stima dimensione del chunk0 SE la RLE map viene inviata inline
-        Color[] firstChunk = Arrays.copyOfRange(compressedLeds, 0, (int) Math.min(Constants.UDP_CHUNK_SIZE, compressedLeds.length));
+        Color[] firstChunk = Arrays.copyOfRange(compressedLeds, 0, Math.min(Constants.UDP_CHUNK_SIZE, compressedLeds.length));
         int colorsLen = 0;
         for (Color c : firstChunk) colorsLen += String.valueOf(c.getRGB()).length() + 1; // +1 per la virgola
         int headerLen = 40; // stima header fisso (DPsoftware,numLeds,brightness,chunkTot,chunkNum,frameNum,flag,)
@@ -312,8 +312,8 @@ public class UdpClient {
                 sb.append(rleInline).append(",");
             }
 
-            int chunkSizeInteger = (int) (Constants.UDP_CHUNK_SIZE * chunkNum);
-            int nextChunk = (int) (chunkSizeInteger + Constants.UDP_CHUNK_SIZE);
+            int chunkSizeInteger = Constants.UDP_CHUNK_SIZE * chunkNum;
+            int nextChunk = chunkSizeInteger + Constants.UDP_CHUNK_SIZE;
             Color[] ledChunk = Arrays.copyOfRange(compressedLeds, chunkSizeInteger, Math.min(nextChunk, compressedLeds.length));
             for (int i = 0; i < ledChunk.length; i++) {
                 sb.append(ledChunk[i].getRGB());
