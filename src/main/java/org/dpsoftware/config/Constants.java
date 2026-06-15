@@ -659,9 +659,9 @@ public class Constants {
     public static final String UDP_DEVICE_NAME_STATIC = "DNStatic";
     public static final String UDP_PONG = "PONG";
     public static final int DEFAULT_UDP_TRAFFIC_CLASS = 184;
-    public static final double UDP_CHUNK_SIZE = 140;
+    public static final int UDP_CHUNK_SIZE = 140;
     public static final int SAFE_PACKET_SIZE = 1400;
-    public static final int UDP_MAX_BUFFER_SIZE = 4096;
+    public static final int UDP_MAX_BUFFER_SIZE = 2048;
     public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
     // Audio
     public static final String WASAPI = "WASAPI";
