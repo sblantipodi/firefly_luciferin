@@ -32,7 +32,7 @@
         <jackson.version>2.22.0</jackson.version>
         <lombok.version>1.18.46</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <jna.version>5.19.0</jna.version>
+        <jna.version>5.19.1</jna.version>
         <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
         <logback.version>1.5.34</logback.version>
