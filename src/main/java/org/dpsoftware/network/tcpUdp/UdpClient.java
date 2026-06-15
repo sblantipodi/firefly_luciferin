@@ -189,7 +189,9 @@ public class UdpClient {
      */
     private void setTrafficClass() {
         try {
-            socket.setTrafficClass(MainSingleton.getInstance().config.getUdpTrafficClass());
+            if (MainSingleton.getInstance().config.getUdpTrafficClass() != 0) {
+                socket.setTrafficClass(MainSingleton.getInstance().config.getUdpTrafficClass());
+            }
         } catch (SocketException e) {
             log.warn("Cannot set UDP traffic class {}, (not supported on this OS/NIC): {}", MainSingleton.getInstance().config.getUdpTrafficClass(), e.getMessage());
         }
