@@ -238,7 +238,7 @@ public class GStreamerGrabber extends JComponent {
                 synchronized (SimdBenchmark.SIMD_STRATEGY_BENCH_LOCK) {
                     if (SimdBenchmark.simdBenchEndTime == -1) {
                         SimdBenchmark.simdBenchEndTime = System.currentTimeMillis() + Constants.SIMD_BENCHMARK_DURATION_MS;
-                        log.info("SIMD processing strategy: ({})", SimdBenchmark.describeSimdStrategySelection());
+                        log.debug("SIMD processing strategy: ({})", SimdBenchmark.describeSimdStrategySelection());
                     }
                 }
             }

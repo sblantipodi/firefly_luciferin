@@ -614,7 +614,7 @@ public class Constants {
     public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
-    public static final long SIMD_BENCHMARK_DURATION_MS = 20000;
+    public static final long SIMD_BENCHMARK_DURATION_MS = 15000;
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
@@ -662,9 +662,9 @@ public class Constants {
     public static final String UDP_DEVICE_NAME_STATIC = "DNStatic";
     public static final String UDP_PONG = "PONG";
     public static final int DEFAULT_UDP_TRAFFIC_CLASS = 160;
-    public static final int UDP_CHUNK_SIZE = 140;
+    public static final int UDP_CHUNK_SIZE = 140; // this value must match with the one in Glow Worm Luciferin firmware
     public static final int SAFE_PACKET_SIZE = UDP_CHUNK_SIZE * 10;
-    public static final int UDP_MAX_BUFFER_SIZE = SAFE_PACKET_SIZE + 50; // 50 bytes for checksum and config options
+    public static final int UDP_MAX_BUFFER_SIZE = SAFE_PACKET_SIZE + 50; // this value must match with the one in Glow Worm Luciferin firmware, less one
     public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
     // Audio
     public static final String WASAPI = "WASAPI";
