@@ -115,6 +115,7 @@ public class Constants {
     public static final String HOME_PATH = "user.home";
     public static final String LUCIFERIN_LOG_LEVEL = "LUCIFERIN_LOG_LEVEL";
     public static final String LUCIFERIN_LOSSLESS_COMPRESSION_LOG = "LUCIFERIN_LOSSLESS_COMPRESSION_LOG";
+    public static final String LUCIFERIN_SIMD_STRATEGY_OVERRIDE = "LUCIFERIN_SIMD_STRATEGY";
     public static final String XDG_HOME = "XDG_CONFIG_HOME";
     public static final String DOCUMENTS_FOLDER = "Documents";
     public static final String OPENJFX_PATH = ".openjfx";
@@ -613,6 +614,7 @@ public class Constants {
     public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
+    public static final long SIMD_BENCHMARK_DURATION_MS = 20000;
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
@@ -753,8 +755,6 @@ public class Constants {
     public static final String CSS_TRAY_SELECTIONBACKGROUND_KEY = "Menu.selectionBackground";
     public static final String CSS_TRAY_SELECTIONFOREGROUND = "tray_menu_selectionforeground";
     public static final String CSS_TRAY_SELECTIONFOREGROUND_KEY = "Menu.selectionForeground";
-
-
     public static final String CSS_COLOR_REGEX = "\\.([a-zA-Z0-9_-]+)\\s*\\{[^#]*#?([0-9a-fA-F]{6,8})[^}]*}";
     // Windows Registry and native commands
     public static final String NIGHT_LIGHT_KEY_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";

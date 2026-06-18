@@ -48,6 +48,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.grabber.SimdBenchmark;
 import org.dpsoftware.gui.bindings.notify.LibNotify;
 import org.dpsoftware.gui.controllers.*;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
@@ -1026,6 +1027,7 @@ public class GuiManager {
      * Start capturing threads
      */
     public void startCapturingThreads() {
+        SimdBenchmark.resetSimdBenchmark();
         if (!MainSingleton.getInstance().communicationError) {
             if (!MainSingleton.getInstance().RUNNING) {
                 trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
