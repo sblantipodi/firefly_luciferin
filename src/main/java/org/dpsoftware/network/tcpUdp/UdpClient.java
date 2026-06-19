@@ -27,6 +27,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
@@ -46,6 +47,7 @@ public class UdpClient {
     public final DatagramSocket socket;
     final int UDP_PORT = Constants.UDP_PORT;
     private final InetAddress address;
+
     /**
      * Rolling frame sequence counter (0-255). Incremented for every new captured frame.
      * The firmware uses this to detect when chunks belong to different frames,
@@ -206,9 +208,6 @@ public class UdpClient {
         byte[] buf = msg.getBytes();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, UDP_PORT);
         try {
-            log.trace("Sending UDP stream packet from localPort={} to targetIp={} targetPort={}",
-                    socket.getLocalPort(), address.getHostAddress(), UDP_PORT);
-            log.trace(msg);
             socket.send(packet);
         } catch (IOException e) {
             socket.close();
@@ -224,7 +223,7 @@ public class UdpClient {
      * @param length               total number of LEDs in the strip
      */
     private static void printRleMapForDebug(String rleMap, LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
-        if (!log.isTraceEnabled()) {
+        if (!GrabberSingleton.getInstance().isLosslessCompressionLog()) {
             return;
         }
         String[] parts = rleMap.split(",", 4);
@@ -253,7 +252,7 @@ public class UdpClient {
             }
         }
         formatted.append(groups);
-        log.trace(formatted.toString());
+        log.debug(formatted.toString());
         NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, groups, length);
     }
 
