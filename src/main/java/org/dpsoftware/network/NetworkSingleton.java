@@ -291,7 +291,7 @@ public class NetworkSingleton {
             int val = Integer.parseInt(matcher.group(2));
             groupsSum += (qty * val);
         }
-        log.trace(visual.toString());
+        log.info(visual.toString());
         visual = new StringBuilder();
         visual.append("[")
                 .append("LEDs: ")
@@ -303,43 +303,7 @@ public class NetworkSingleton {
                 .append(", Leaders: ")
                 .append(leadersCount)
                 .append("]");
-        log.trace(visual.toString());
-
-        if (length != groupsSum) {
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            log.error("AAAAAAAAAAAAAAAAAAAAAAAAAEERRR");
-            System.exit(0);
-        }
+        log.info(visual.toString());
     }
 
 }

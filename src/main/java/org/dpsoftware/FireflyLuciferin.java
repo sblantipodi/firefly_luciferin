@@ -242,7 +242,8 @@ public class FireflyLuciferin extends Application {
         }
         logEnvironment();
         String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
-        if (Constants.TRUE.equals(losslessCompressionLog)) GrabberSingleton.getInstance().losslessCompressionLog = true;
+        if (Constants.TRUE.equalsIgnoreCase(losslessCompressionLog))
+            GrabberSingleton.getInstance().losslessCompressionLog = true;
     }
 
     /**

@@ -252,7 +252,7 @@ public class UdpClient {
             }
         }
         formatted.append(groups);
-        log.debug(formatted.toString());
+        log.info(formatted.toString());
         NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, groups, length);
     }
 
@@ -284,19 +284,18 @@ public class UdpClient {
         int numLedsPhysical = leds.length;
         int chunkTotal = (int) Math.ceil((double) compressedLeds.length / Constants.UDP_CHUNK_SIZE);
 
-        // Stima dimensione del chunk0 SE la RLE map viene inviata inline
+        // How big is first chunk with and inline RLE map?
         Color[] firstChunk = Arrays.copyOfRange(compressedLeds, 0, Math.min(Constants.UDP_CHUNK_SIZE, compressedLeds.length));
         int colorsLen = 0;
-        for (Color c : firstChunk) colorsLen += String.valueOf(c.getRGB()).length() + 1; // +1 per la virgola
-        int headerLen = 40; // stima header fisso (DPsoftware,numLeds,brightness,chunkTot,chunkNum,frameNum,flag,)
+        for (Color c : firstChunk) colorsLen += String.valueOf(c.getRGB()).length() + 1;
+        int headerLen = 40; // header length estimation with a 40 bytes
         int inlineChunk0Size = headerLen + rleInline.length() + colorsLen;
 
         boolean rleInlineFits = inlineChunk0Size <= Constants.SAFE_PACKET_SIZE;
 
         if (!rleInlineFits) {
-            // Troppo grande: manda la RLE map come packet separato, legata al frameNum corrente
+            // This is too big send a separate RLE map
             sendUdpStream("DPsoftwareGRP," + rleparts[1] + "," + rleInline + "," + frameNum);
-            // formato: DPsoftwareGRP,numLedsPhysical,numEntries,c1xs1,...,frameNum
             if (Constants.UDP_MICROCONTROLLER_REST_TIME > 0) {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
@@ -310,7 +309,7 @@ public class UdpClient {
             sb.append(chunkTotal).append(",");
             sb.append(chunkNum).append(",");
             sb.append(frameNum).append(",");
-            sb.append(rleInlineFits ? "1" : "0").append(","); // flag: 1=RLE inline in questo chunk0, 0=usa packet GRP separato
+            sb.append(rleInlineFits ? "1" : "0").append(","); // flag: 1=RLE inline in chunk0, 0=separate packet GRP
 
             if (chunkNum == 0 && rleInlineFits) {
                 sb.append(rleInline).append(",");

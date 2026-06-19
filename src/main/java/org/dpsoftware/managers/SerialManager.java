@@ -443,19 +443,8 @@ public class SerialManager {
      */
     private byte[] implementRleCompressionLogic(Color[] leds) {
         int j = -1;
-
-//        for (int i = 0; i< leds.length; i++) {
-//            leds[i] = new Color(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255));
-//        }
         // Create new RLE leaders
         LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = NetworkSingleton.builtRleLeaders(leds);
-//        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
-        // Extraction of group leaders (Leaders)
-        try {
-
-        } catch (Exception e) {
-            log.error("Error occurred while implementing RLE compression logic", e);
-        }
         List<Color> leaderColors = new ArrayList<>();
         int ledIndex = 0;
         for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
@@ -472,19 +461,16 @@ public class SerialManager {
         while (rleIdx < groupSizes.size()) {
             int size = groupSizes.get(rleIdx);
             int count = 0;
-
-            // Contiamo quanti elementi consecutivi hanno la stessa dimensione
+            // How many elements with the same size
             while (rleIdx < groupSizes.size() && groupSizes.get(rleIdx) == size) {
                 count++;
                 rleIdx++;
-
-                // Se arrivi a 255 ripetizioni dello stesso elemento, spezzi qui
+                // Bytes can't exceed 255, create another group instead
                 if (count == 255) {
                     rleBytePadding(rleEntries, count, size);
                     count = 0;
                 }
             }
-
             if (count > 0) {
                 rleBytePadding(rleEntries, count, size);
             }
@@ -555,7 +541,7 @@ public class SerialManager {
         long minDelayMs = 1000 / currentMaxFramerate;
         // Apply a tolerance/slack to the minimum delay when at full regime, otherwise physiological thread jitter will cause spurious frame drops.
         if (progressFactor >= 1.0) {
-            minDelayMs = minDelayMs - 3; // Lowers the threshold at full regime to let framerate pass smoothly with jitter
+            minDelayMs = minDelayMs - 3; // Lowers the threshold at full regime to let framerate pass smoothly with 3ms jitter
         }
         long timeSinceLastSend = currentTime - grabber.getLastActualSendTime();
         if (timeSinceLastSend < minDelayMs) {
