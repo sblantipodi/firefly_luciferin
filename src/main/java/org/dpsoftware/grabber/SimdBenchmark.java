@@ -156,7 +156,7 @@ public class SimdBenchmark {
             String simdStrategy = System.getenv(Constants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
             if (simdStrategy != null && (simdStrategy.equals(SimdProcessingStrategy.DOUBLE_VECTOR.name())
                     || simdStrategy.equals(SimdProcessingStrategy.FULL_VECTOR.name()))) {
-                log.info("Cannot reset benchmark: an env override (-D{}) is currently active.", Constants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
+                log.debug("Cannot reset benchmark: an env override (-D{}) is currently active.", Constants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
                 return;
             }
             selectedSimdStrategy = null;
@@ -165,7 +165,7 @@ public class SimdBenchmark {
             simdStrategyFullVectorBenchNanos = 0;
             totalBenchmarkedFramesDoubleVector = 0;
             totalBenchmarkedFramesFullVector = 0;
-            log.info("SIMD benchmark reset at runtime");
+            log.debug("SIMD benchmark reset at runtime");
         }
     }
 
@@ -186,7 +186,7 @@ public class SimdBenchmark {
                     selectedSimdStrategy = resFullVector <= resDoubleVector
                             ? SimdProcessingStrategy.FULL_VECTOR
                             : SimdProcessingStrategy.DOUBLE_VECTOR;
-                    log.info("SIMD benchmark completed: selected={}, Double Vector Avg={}ns, Full Vector Avg={}ns",
+                    log.debug("SIMD benchmark completed: selected={}, Double Vector Avg={}ns, Full Vector Avg={}ns",
                             selectedSimdStrategy,
                             resDoubleVector,
                             resFullVector);
