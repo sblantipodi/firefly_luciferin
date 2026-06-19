@@ -41,7 +41,7 @@ public class SimdBenchmark {
     public static long simdStrategyFullVectorBenchNanos;
     public static long totalBenchmarkedFramesDoubleVector;
     public static long totalBenchmarkedFramesFullVector;
-    static volatile SimdProcessingStrategy selectedSimdStrategy = resolveInitialSimdProcessingStrategy();
+    public static volatile SimdProcessingStrategy selectedSimdStrategy = resolveInitialSimdProcessingStrategy();
     static long startSimdTime;
     static boolean usingSimd;
     static long simdBenchEndTime = -1;
@@ -198,7 +198,7 @@ public class SimdBenchmark {
         }
     }
 
-    enum SimdProcessingStrategy {
+    public enum SimdProcessingStrategy {
         DOUBLE_VECTOR,
         FULL_VECTOR
     }
