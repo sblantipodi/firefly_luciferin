@@ -114,6 +114,7 @@ public class Constants {
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
     public static final String HOME_PATH = "user.home";
     public static final String LUCIFERIN_LOG_LEVEL = "LUCIFERIN_LOG_LEVEL";
+    public static final String LUCIFERIN_LOSSLESS_COMPRESSION_LOG = "LUCIFERIN_LOSSLESS_COMPRESSION_LOG";
     public static final String XDG_HOME = "XDG_CONFIG_HOME";
     public static final String DOCUMENTS_FOLDER = "Documents";
     public static final String OPENJFX_PATH = ".openjfx";
