@@ -45,6 +45,8 @@ public class SimdBenchmark {
     static long startSimdTime;
     static boolean usingSimd;
     static long simdBenchEndTime = -1;
+    static long simdBenchStartTimeDv = -1;
+    static long simdBenchStartTimeFv = -1;
 
     /**
      * Determines the initial SIMD processing strategy based on an environment variable.

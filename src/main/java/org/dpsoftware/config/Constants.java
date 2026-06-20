@@ -614,7 +614,7 @@ public class Constants {
     public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
-    public static final long SIMD_BENCHMARK_DURATION_MS = 15000;
+    public static final long SIMD_BENCHMARK_DURATION_MS = 120_000;
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
