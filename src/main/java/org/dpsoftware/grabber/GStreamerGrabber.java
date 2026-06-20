@@ -377,15 +377,14 @@ public class GStreamerGrabber extends JComponent {
                                                           jdk.incubator.vector.VectorSpecies<Integer> species, int vectorLength,
                                                           int xCoordinate, int yCoordinate, int pixelInUseX, int pixelInUseY) {
             int r = 0, g = 0, b = 0, pickNumber = 0;
+            int maxValidX = Math.min(pixelInUseX, widthPlusStride - xCoordinate);
             for (int y = 0; y < pixelInUseY; y++) {
                 int offsetY = yCoordinate + y;
                 if (offsetY >= height) continue;
                 int baseBufferOffset = offsetY * widthPlusStride;
                 int x = 0;
-                for (; x + vectorLength <= pixelInUseX; x += vectorLength) {
+                for (; x + vectorLength <= maxValidX; x += vectorLength) {
                     int offsetX = xCoordinate + x;
-                    if (offsetX >= widthPlusStride) continue;
-                    if (offsetX + vectorLength > widthPlusStride) break;
                     IntVector rgbVector = IntVector.fromMemorySegment(
                             species, memorySegment,
                             (long) (offsetX + baseBufferOffset) * Integer.BYTES,
@@ -395,8 +394,8 @@ public class GStreamerGrabber extends JComponent {
                     b += rgbVector.and(0x0000FF).reduceLanes(VectorOperators.ADD);
                     pickNumber += vectorLength;
                 }
-                if (x < pixelInUseX) {
-                    VectorMask<Integer> mask = species.indexInRange(x, pixelInUseX);
+                if (x < maxValidX) {
+                    VectorMask<Integer> mask = species.indexInRange(x, maxValidX);
                     IntVector rgbVector = IntVector.fromMemorySegment(
                             species, memorySegment,
                             (long) (xCoordinate + x + baseBufferOffset) * Integer.BYTES,
