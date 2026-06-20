@@ -82,32 +82,33 @@ public class GStreamerGrabber extends JComponent {
      * Creates a new instance of GstVideoComponent
      */
     public GStreamerGrabber(AppSink appsink) {
+        MainSingleton main = MainSingleton.getInstance();
         this.videosink = appsink;
         videosink.set(Constants.EMIT_SIGNALS, true);
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
         String gstreamerPipeline;
-        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
-                || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
+        if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR
             String gstPipelineStr;
-            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
                 gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX11;
             } else {
                 gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX12;
             }
             gstreamerPipeline = gstPipelineStr.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor()))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor()));
+                            String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
         } else {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor()))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor()));
+                            String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
         }
         gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
-        if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
+        if (!(main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
             if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
                 caps.append(Constants.BYTE_ORDER_BGR);
             } else {
@@ -136,18 +137,19 @@ public class GStreamerGrabber extends JComponent {
      * @return target framerate for GStreamer
      */
     public static int getTargetFramerate() {
+        MainSingleton main = MainSingleton.getInstance();
         String targetFramerate;
-        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate()))) {
-            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate());
-            targetFramerate = framerateToSave != null ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate();
+        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, main.config.getDesiredFramerate()))) {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, main.config.getDesiredFramerate());
+            targetFramerate = framerateToSave != null ? framerateToSave.getBaseI18n() : main.config.getDesiredFramerate();
         } else {
             targetFramerate = Constants.FRAMERATE_CAP;
         }
-        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
-            int target = MainSingleton.getInstance().config.getFrameInsertionTarget();
-            if (MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
+        if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getFrameInsertionTarget() > 0) {
+            int target = main.config.getFrameInsertionTarget();
+            if (main.config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
                 target *= 2;
-            } else if (MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
+            } else if (main.config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
                 target /= 2;
             }
             targetFramerate = String.valueOf(target);
@@ -161,11 +163,12 @@ public class GStreamerGrabber extends JComponent {
      * @return target framerate for the Glow Worm Device
      */
     public static long getTargetFramerateForDevice() {
+        MainSingleton main = MainSingleton.getInstance();
         int targetFramerate;
-        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getSmoothingTargetFramerate() > 0) {
-            targetFramerate = MainSingleton.getInstance().config.getSmoothingTargetFramerate();
+        if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getSmoothingTargetFramerate() > 0) {
+            targetFramerate = main.config.getSmoothingTargetFramerate();
         } else {
-            targetFramerate = Integer.parseInt(MainSingleton.getInstance().config.getDesiredFramerate());
+            targetFramerate = Integer.parseInt(main.config.getDesiredFramerate());
         }
         return targetFramerate;
     }
@@ -185,9 +188,10 @@ public class GStreamerGrabber extends JComponent {
      * @param rgbBuffer rgb int buffer
      */
     private void intBufferRgbToImage(IntBuffer rgbBuffer) {
+        MainSingleton main = MainSingleton.getInstance();
         capturedFrames++;
-        BufferedImage img = new BufferedImage(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor(),
-                MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor(), 1);
+        BufferedImage img = new BufferedImage(main.config.getScreenResX() / main.config.getResamplingFactor(),
+                main.config.getScreenResY() / main.config.getResamplingFactor(), 1);
         int[] rgbArray = new int[rgbBuffer.capacity()];
         rgbBuffer.rewind();
         rgbBuffer.get(rgbArray);
@@ -224,12 +228,13 @@ public class GStreamerGrabber extends JComponent {
          */
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
             Color[] leds = new Color[ledMatrix.size()];
-            if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
+            MainSingleton main = MainSingleton.getInstance();
+            if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
                 SimdBenchmark.startSimdTime = System.nanoTime();
             }
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
 
-            jdk.incubator.vector.VectorSpecies<Integer> SPECIES = MainSingleton.getInstance().SPECIES;
+            jdk.incubator.vector.VectorSpecies<Integer> SPECIES = main.SPECIES;
             MemorySegment memorySegment = (SPECIES != null) ? MemorySegment.ofBuffer(rgbBuffer) : null;
             int vectorLength = (SPECIES != null) ? SPECIES.length() : 0;
 
@@ -248,13 +253,13 @@ public class GStreamerGrabber extends JComponent {
             ledMatrix.forEach((key, value) -> {
                 int r = 0, g = 0, b = 0;
                 int pickNumber = 0;
-                int xCoordinate = (value.getX() / MainSingleton.getInstance().config.getResamplingFactor());
-                int yCoordinate = (value.getY() / MainSingleton.getInstance().config.getResamplingFactor());
-                int pixelInUseX = value.getWidth() / MainSingleton.getInstance().config.getResamplingFactor();
-                int pixelInUseY = value.getHeight() / MainSingleton.getInstance().config.getResamplingFactor();
+                int xCoordinate = (value.getX() / main.config.getResamplingFactor());
+                int yCoordinate = (value.getY() / main.config.getResamplingFactor());
+                int pixelInUseX = value.getWidth() / main.config.getResamplingFactor();
+                int pixelInUseY = value.getHeight() / main.config.getResamplingFactor();
 
                 if (SPECIES != null && vectorLength > 0) {
-                    if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
+                    if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
                         SimdBenchmark.usingSimd = true;
                     }
 
@@ -293,7 +298,7 @@ public class GStreamerGrabber extends JComponent {
                     }
                 } else {
                     // Fallback NO SIMD
-                    if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
+                    if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
                         SimdBenchmark.usingSimd = false;
                     }
                     if (!value.isGroupedLed()) {
@@ -314,7 +319,7 @@ public class GStreamerGrabber extends JComponent {
                         leds[key - 1] = leds[key - 2];
                     }
                 }
-                if (log.isTraceEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
+                if (log.isTraceEnabled() || main.isCpuLatencyBenchRunning()) {
                     if (key == 1) SimdBenchmark.benchSimd(pickNumber);
                 }
             });
@@ -471,10 +476,11 @@ public class GStreamerGrabber extends JComponent {
          * @param rgbBuffer The buffer containing the captured RGB frame.
          */
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
+            MainSingleton main = MainSingleton.getInstance();
             if (!bufferLock.tryLock()) {
                 return;
             }
-            if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
+            if (main.config.isAutoDetectBlackBars()) {
                 if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
                     GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = false;
                     ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
@@ -489,9 +495,9 @@ public class GStreamerGrabber extends JComponent {
                 Color[] leds = processBufferUsingCpu(width, height, rgbBuffer);
                 ImageProcessor.averageOnAllLeds(leds);
                 // Put the image in the queue or send it via socket to the main instance server
-                if (!MainSingleton.getInstance().exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
-                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect())))) {
-                    if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
+                if (!main.exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
+                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, main.config.getEffect())))) {
+                    if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getFrameInsertionTarget() > 0) {
                         if (previousFrame != null) {
                             frameGeneration(leds);
                         }
@@ -499,7 +505,7 @@ public class GStreamerGrabber extends JComponent {
                         PipelineManager.offerToTheQueue(leds);
                     }
                     // Increase the FPS counter
-                    MainSingleton.getInstance().FPS_PRODUCER_COUNTER++;
+                    main.FPS_PRODUCER_COUNTER++;
                 }
             } finally {
                 bufferLock.unlock();
@@ -513,9 +519,10 @@ public class GStreamerGrabber extends JComponent {
          * @param leds array containing color information
          */
         void frameGeneration(Color[] leds) {
+            MainSingleton main = MainSingleton.getInstance();
             int skipFastFramesMs = 8;
-            int targetFramerate = MainSingleton.getInstance().config.getSmoothingTargetFramerate();
-            int gpuFramerateFps = MainSingleton.getInstance().config.getFrameInsertionTarget();
+            int targetFramerate = main.config.getSmoothingTargetFramerate();
+            int gpuFramerateFps = main.config.getFrameInsertionTarget();
             if (targetFramerate == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
                 skipFastFramesMs /= 2;
                 gpuFramerateFps *= 2;
