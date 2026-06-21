@@ -237,7 +237,9 @@ public class GStreamerGrabber extends JComponent {
             if (isBenchmarkingActive) {
                 synchronized (SimdBenchmark.SIMD_STRATEGY_BENCH_LOCK) {
                     if (SimdBenchmark.simdBenchEndTime == -1) {
-                        SimdBenchmark.simdBenchEndTime = System.currentTimeMillis() + Constants.SIMD_BENCHMARK_DURATION_MS;
+                        SimdBenchmark.simdBenchEndTime = System.currentTimeMillis() + (Constants.SIMD_BENCHMARK_DURATION_MS * 2);
+                        SimdBenchmark.simdBenchStartTimeDv = System.currentTimeMillis() + Constants.SIMD_BENCHMARK_DURATION_MS;
+                        SimdBenchmark.simdBenchStartTimeFv = System.currentTimeMillis() + Constants.SIMD_BENCHMARK_DURATION_MS + (Constants.SIMD_BENCHMARK_DURATION_MS / 2);
                         log.debug("SIMD processing strategy: ({})", SimdBenchmark.describeSimdStrategySelection());
                     }
                 }
@@ -259,18 +261,22 @@ public class GStreamerGrabber extends JComponent {
                     if (!value.isGroupedLed()) {
                         int[] rgbTotals;
                         if (isBenchmarkingActive) {
-                            if (SimdBenchmark.simdBenchEndTime < (System.currentTimeMillis() + (Constants.SIMD_BENCHMARK_DURATION_MS / 2))) {
+                            long currentMillis = System.currentTimeMillis();
+                            if (currentMillis >= SimdBenchmark.simdBenchStartTimeDv && currentMillis < SimdBenchmark.simdBenchStartTimeFv) {
                                 long startDoubleVector = System.nanoTime();
                                 rgbTotals = processLedWithDoubleVectorSimd(height, widthPlusStride, memorySegment, SPECIES,
                                         xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
                                 SimdBenchmark.simdStrategyDoubleVectorBenchNanos += (System.nanoTime() - startDoubleVector);
                                 SimdBenchmark.totalBenchmarkedFramesDoubleVector++;
-                            } else {
+                            } else if (currentMillis >= SimdBenchmark.simdBenchStartTimeFv) {
                                 long startFullVector = System.nanoTime();
                                 rgbTotals = processLedWithFullVectorSimd(height, widthPlusStride, memorySegment, SPECIES, vectorLength,
                                         xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
                                 SimdBenchmark.simdStrategyFullVectorBenchNanos += (System.nanoTime() - startFullVector);
                                 SimdBenchmark.totalBenchmarkedFramesFullVector++;
+                            } else {
+                                rgbTotals = processLedWithSelectedSimdStrategy(height, widthPlusStride, memorySegment, SPECIES, vectorLength,
+                                        xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
                             }
                         } else {
                             // Benchmark is finished, SIMD strategy has been selected
