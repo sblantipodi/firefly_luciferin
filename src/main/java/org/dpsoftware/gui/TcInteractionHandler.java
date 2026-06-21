@@ -142,6 +142,8 @@ public class TcInteractionHandler {
     private void equalizeTilesEdgeAware() {
         if (selectedLeds.size() < 2) return;
         List<LEDCoordinate> tiles = new ArrayList<>(selectedLeds);
+        tiles.removeIf(LEDCoordinate::isGroupedLed);
+        if (tiles.size() < 2) return;
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
         for (LEDCoordinate t : tiles) {
@@ -228,6 +230,8 @@ public class TcInteractionHandler {
     private void shrinkAndEqualizeTiles() {
         if (selectedLeds.size() < 2) return;
         List<LEDCoordinate> tiles = new ArrayList<>(selectedLeds);
+        tiles.removeIf(LEDCoordinate::isGroupedLed);
+        if (tiles.size() < 2) return;
         // Find the total bounding box
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
