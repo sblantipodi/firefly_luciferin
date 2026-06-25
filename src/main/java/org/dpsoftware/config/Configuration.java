@@ -164,6 +164,7 @@ public class Configuration implements Cloneable {
     private List<String> profileProcesses = new ArrayList<>();
     boolean checkFullScreen = false;
     int resamplingFactor = Constants.RESAMPLING_FACTOR;
+    boolean useLosslessCompression = Constants.USE_LOSSLESS_COMPRESSION;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
