@@ -216,13 +216,15 @@ public class UdpClient {
     }
 
     /**
-     * Print RLE maps for debugging purposes, only if debug logging is enabled and the RLE map has changed since the last print to avoid log flooding.
+     * Populate RLE map data in NetworkSingleton so the canvas overlay can render it.
+     * Logging is gated by LUCIFERIN_LOSSLESS_COMPRESSION_LOG; data population always happens.
      *
-     * @param rleMap               array of rle gropup
+     @param rleMap               array of rle gropup
      * @param ledMatrixWithLeaders array of leaders
      * @param length               total number of LEDs in the strip
      */
     private static void printRleMapForDebug(String rleMap, LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
+        // Log only if the lossless compression log flag is enabled
         if (!GrabberSingleton.getInstance().isLosslessCompressionLog()) {
             return;
         }
@@ -238,11 +240,7 @@ public class UdpClient {
         NetworkSingleton.getInstance().setRleMapInUse(rleInline);
         String[] entries = rleInline.split(",");
         int total = entries.length;
-        StringBuilder formatted = new StringBuilder();
         StringBuilder groups = new StringBuilder();
-        formatted.append("UDP RLE Entries Array [Total: ")
-                .append(total)
-                .append("] -> ");
         for (int i = 0; i < total; i++) {
             groups.append("[")
                     .append(entries[i])
@@ -251,9 +249,13 @@ public class UdpClient {
                 groups.append(",");
             }
         }
-        formatted.append(groups);
-        log.info(formatted.toString());
+        // Always populate visual RLE map for canvas overlay
         NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, groups, length);
+        String formatted = "UDP RLE Entries Array [Total: " +
+                total +
+                "] -> " +
+                groups;
+        log.debug(formatted);
     }
 
     /**
@@ -280,19 +282,15 @@ public class UdpClient {
         printRleMapForDebug(rleMap, ledMatrixWithLeaders, leds.length);
         String[] rleparts = rleMap.split(",", 4);
         String rleInline = rleparts[2] + "," + rleparts[3]; // "numEntries,c1xs1,..."
-
         int numLedsPhysical = leds.length;
         int chunkTotal = (int) Math.ceil((double) compressedLeds.length / Constants.UDP_CHUNK_SIZE);
-
         // How big is first chunk with and inline RLE map?
         Color[] firstChunk = Arrays.copyOfRange(compressedLeds, 0, Math.min(Constants.UDP_CHUNK_SIZE, compressedLeds.length));
         int colorsLen = 0;
         for (Color c : firstChunk) colorsLen += String.valueOf(c.getRGB()).length() + 1;
         int headerLen = 40; // header length estimation with a 40 bytes
         int inlineChunk0Size = headerLen + rleInline.length() + colorsLen;
-
         boolean rleInlineFits = inlineChunk0Size <= Constants.SAFE_PACKET_SIZE;
-
         if (!rleInlineFits) {
             // This is too big send a separate RLE map
             sendUdpStream("DPsoftwareGRP," + rleparts[1] + "," + rleInline + "," + frameNum);
@@ -300,7 +298,6 @@ public class UdpClient {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
         }
-
         for (int chunkNum = 0; chunkNum < chunkTotal; chunkNum++) {
             StringBuilder sb = new StringBuilder();
             sb.append("DPsoftware").append(",");
@@ -310,11 +307,9 @@ public class UdpClient {
             sb.append(chunkNum).append(",");
             sb.append(frameNum).append(",");
             sb.append(rleInlineFits ? "1" : "0").append(","); // flag: 1=RLE inline in chunk0, 0=separate packet GRP
-
             if (chunkNum == 0 && rleInlineFits) {
                 sb.append(rleInline).append(",");
             }
-
             int chunkSizeInteger = Constants.UDP_CHUNK_SIZE * chunkNum;
             int nextChunk = chunkSizeInteger + Constants.UDP_CHUNK_SIZE;
             Color[] ledChunk = Arrays.copyOfRange(compressedLeds, chunkSizeInteger, Math.min(nextChunk, compressedLeds.length));
@@ -327,7 +322,6 @@ public class UdpClient {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
         }
-
     }
 
     /**

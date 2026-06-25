@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.gui;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
@@ -58,6 +60,7 @@ import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.ColorRGBW;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -92,6 +95,9 @@ public class TestCanvas {
     private List<Configuration> configHistory;
     private int configHistoryIdx = 1;
     private int dialogY;
+    private boolean rleVisualMapVisible;
+    private boolean rleOverlayOnlyMode;
+    private Timeline rleOverlayAnimation;
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
@@ -242,14 +248,21 @@ public class TestCanvas {
     }
 
     /**
-     * Hide test image canvas
+     * Increases the brightness of the specified color by multiplying it by a given factor,
+     * clamping the resulting brightness to a maximum value of 1.0. The hue, saturation,
+     * and opacity remain unchanged.
+     *
+     * @param color  the original color to adjust
+     * @param factor the multiplier applied to the brightness component
+     * @return a new Color with the adjusted and clamped brightness
      */
-    public void hideCanvas() {
-        stage.setFullScreen(false);
-        stage.hide();
-        stage.setX(stageX);
-        stage.setY(stageY);
-        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+    public static Color overbrighten(Color color, double factor) {
+        return Color.hsb(
+                color.getHue(),
+                color.getSaturation(),
+                Math.min(1.0, color.getBrightness() * factor),  // clamp a 1.0
+                color.getOpacity()
+        );
     }
 
     /**
@@ -374,56 +387,15 @@ public class TestCanvas {
     }
 
     /**
-     * DisplayInfo a canvas, useful to test LED matrix
-     *
-     * @param conf       stored config
-     * @param saturation use full or half saturation, this is influenced by the combo box
+     * Hide test image canvas
      */
-    public void drawTestShapes(Configuration conf, int saturation) {
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-        float saturationToUse;
-        switch (saturation) {
-            case 1 -> saturationToUse = 0.75F;
-            case 2 -> saturationToUse = 0.50F;
-            case 3 -> saturationToUse = 0.25F;
-            case 4 -> saturationToUse = 0.15F;
-            case 5 -> saturationToUse = 0.99F;
-            default -> saturationToUse = 1.0F;
-        }
-        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        int scaleRatio = conf.getOsScaling();
-        // 50% opacity if dragging
-        if (interactionHandler.isCanvasClicked()) {
-            drawLogo(conf, scaleRatio);
-            gc.setFill(Color.BLACK);
-            gc.setFill(new Color(0, 0, 0, 0.5));
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        } else {
-            gc.setFill(Color.BLACK);
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            drawLogo(conf, scaleRatio);
-        }
-        drawFireflyText();
-        gc.setFill(Color.GREEN);
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(INITIAL_TILE_DISTANCE);
-        gc.stroke();
-        List<Integer> numbersList = new ArrayList<>();
-        ledMatrix.forEach((key, coordinate) -> {
-            if (!coordinate.isGroupedLed()) {
-                String ledNum = drawNumLabel(conf, key);
-                numbersList.add(Integer.parseInt(ledNum.replace("#", "")));
-            }
-        });
-        Collections.sort(numbersList);
-        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
-        interactionHandler.enableDragging(conf, ledMatrix, saturation);
-        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
-        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
-        if (tooltipVisible) {
-            drawTooltip(gc);
-        }
+    public void hideCanvas() {
+        stopOverlayOnlyMode();
+        stage.setFullScreen(false);
+        stage.hide();
+        stage.setX(stageX);
+        stage.setY(stageY);
+        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
     }
 
     /**
@@ -769,6 +741,276 @@ public class TestCanvas {
         }
         if (MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemsPositionY += rowHeight;
+        }
+    }
+
+    /**
+     * DisplayInfo a canvas, useful to test LED matrix
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    public void drawTestShapes(Configuration conf, int saturation) {
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+        float saturationToUse;
+        switch (saturation) {
+            case 1 -> saturationToUse = 0.75F;
+            case 2 -> saturationToUse = 0.50F;
+            case 3 -> saturationToUse = 0.25F;
+            case 4 -> saturationToUse = 0.15F;
+            case 5 -> saturationToUse = 0.99F;
+            default -> saturationToUse = 1.0F;
+        }
+        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        int scaleRatio = conf.getOsScaling();
+        // 50% opacity if dragging
+        if (interactionHandler.isCanvasClicked()) {
+            drawLogo(conf, scaleRatio);
+            gc.setFill(Color.BLACK);
+            gc.setFill(new Color(0, 0, 0, 0.5));
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        } else {
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawLogo(conf, scaleRatio);
+        }
+        drawFireflyText();
+        gc.setFill(Color.GREEN);
+        gc.setStroke(Color.BLUE);
+        gc.setLineWidth(INITIAL_TILE_DISTANCE);
+        gc.stroke();
+        List<Integer> numbersList = new ArrayList<>();
+        ledMatrix.forEach((key, coordinate) -> {
+            if (!coordinate.isGroupedLed()) {
+                String ledNum = drawNumLabel(conf, key);
+                numbersList.add(Integer.parseInt(ledNum.replace("#", "")));
+            }
+        });
+        Collections.sort(numbersList);
+        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
+        interactionHandler.enableDragging(conf, ledMatrix, saturation);
+        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
+        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
+        if (tooltipVisible) {
+            drawTooltip(gc);
+        }
+        if (rleVisualMapVisible) {
+            drawRleVisualMap();
+        }
+    }
+
+    /**
+     * Draw the RLE visual map on the canvas: layout calculation, background panel, and delegate content drawing.
+     */
+    private void drawRleVisualMap() {
+        if (NetworkSingleton.lastRleEntries.isEmpty()) {
+            return;
+        }
+        Font fpsFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 11);
+        double marginX = tileDistance;
+        double canvasWidth = canvas.getWidth();
+        double availWidth = canvasWidth - marginX * 2;
+        int cellSize;
+        int cellGap = 1;
+        // Measure the three rows (entries, visual pattern, stats)
+        Text tempText = new Text("[Entries: " + NetworkSingleton.lastRleEntries + "]");
+        tempText.setFont(fpsFont);
+        double entriesLineHeight = tempText.getLayoutBounds().getHeight();
+        int charCount = Math.max(1, NetworkSingleton.lastRleLedCount);
+        // Shrink cell size so the entire RLE bar fits within 75% of canvas width
+        double targetWidth = canvasWidth * 0.75;
+        cellSize = Math.max(1, (int) (targetWidth / charCount) - cellGap);
+        if (cellSize > 8) {
+            cellSize = 8;
+        }
+        double visualHeight = cellSize + 4;
+        String statsMain = "[LEDs: " + NetworkSingleton.lastRleLedCount
+                + ", Group sum: " + NetworkSingleton.lastRleGroupsSum
+                + ", Group count: " + NetworkSingleton.lastRleGroupCount
+                + ", Leaders: " + NetworkSingleton.lastRleLeaderCount + "]";
+        tempText = new Text(statsMain);
+        tempText.setFont(fpsFont);
+        double statsHeight = tempText.getLayoutBounds().getHeight();
+        // Position from bottom-up
+        double currentY = canvas.getHeight() - tileDistance;
+        currentY -= statsHeight + 2;
+        double statsLineY = currentY;
+        currentY -= visualHeight;
+        double visualCellWidth = (cellSize + cellGap) * charCount;
+        double visualXStart = marginX + (availWidth - visualCellWidth) / 2;
+        currentY -= entriesLineHeight + 2;
+        double entriesLineY = currentY;
+        double panelTopY = entriesLineY - fpsFont.getSize();
+        // Background panel
+        gc.save();
+        gc.setFill(new Color(0, 0, 0, 0.65));
+        gc.fillRoundRect(marginX - 4, panelTopY - 2, availWidth + 8, canvas.getHeight() - panelTopY - 8, 4, 4);
+        // Delegate content drawing (entries, visual pattern, stats, FPS)     
+        drawRleVisualMapContent(fpsFont, marginX, availWidth, cellSize, cellGap, visualHeight, visualXStart,
+                entriesLineY, statsLineY, statsMain);
+        gc.restore();
+    }
+
+    /**
+     * Draw the block-cell grid representing each LED position (colors or leaders).
+     * Accepts and returns the Y cursor so the caller can continue laying out subsequent rows.
+     */
+    private void drawRleBlockCells(double cursorY, double availWidth, int cellSize, int cellGap,
+                                   double visualHeight, double visualXStart) {
+        final char FULL_BLOCK = '█';
+        String visualPattern = NetworkSingleton.lastRleVisualBar;
+        int charsPerLine = (int) (availWidth / (cellSize + cellGap));
+        if (charsPerLine < 10) charsPerLine = 10;
+        double rowBaseY = cursorY;
+        for (int vi = 0; vi < visualPattern.length(); vi += charsPerLine) {
+            int endLimit = Math.min(vi + charsPerLine, visualPattern.length());
+            double lineCursorY = rowBaseY;
+            for (int ci = vi; ci < endLimit; ci++) {
+                char ch = visualPattern.charAt(ci);
+                boolean isLeader = ch == FULL_BLOCK || ch == '#';
+                double cellX = visualXStart + (ci - vi) * (cellSize + cellGap);
+                Color cellColor;
+                if (NetworkSingleton.lastRleLedsColors != null && ci < NetworkSingleton.lastRleLedsColors.length) {
+                    java.awt.Color ledColor = NetworkSingleton.lastRleLedsColors[ci];
+                    cellColor = new Color(ledColor.getRed() / 255.0, ledColor.getGreen() / 255.0,
+                            ledColor.getBlue() / 255.0, ledColor.getAlpha() / 255.0);
+                    cellColor = overbrighten(cellColor, 1.4);
+                    gc.setFill(isLeader ? new Color(0, 1, 0, 0.85) : new Color(0.25, 0.25, 0.25, 0.7));
+                    gc.fillRect(cellX, lineCursorY + visualHeight, cellSize, cellSize);
+                } else {
+                    cellColor = isLeader ? Color.WHITE : new Color(0.35, 0.35, 0.35, 1.0);
+                }
+                gc.setFill(cellColor);
+                gc.fillRect(cellX, lineCursorY, cellSize, cellSize);
+            }
+            rowBaseY += visualHeight;
+        }
+    }
+
+    /**
+     * Draw the content inside the RLE visual map panel: entries text, visual pattern cells, stats line, and FPS labels.
+     */
+    private void drawRleVisualMapContent(Font fpsFont, double marginX, double availWidth,
+                                         int cellSize, int cellGap, double visualHeight, double visualXStart,
+                                         double entriesLineY, double statsLineY, String statsMain) {
+        // Entries text wrap onto new lines when exceeding available width
+        Font currentFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, fpsFont.getSize() * 0.85);
+        Text tempText = new Text();
+        tempText.setFont(currentFont);
+        List<String> entryLines = wrapLongRleEntries(NetworkSingleton.lastRleEntries, availWidth, currentFont);
+        gc.setFill(new Color(0.9, 0.75, 0.3, 1));
+        double lineH = tempText.getLayoutBounds().getHeight();
+        int lineGap = entryLines.size() > 1 ? 0 : 1; // tighter spacing when wrapping
+        double cursorY = entriesLineY;
+        for (String line : entryLines) {
+            gc.setFont(currentFont);
+            gc.fillText(line, marginX, cursorY);
+            cursorY += lineH + lineGap;
+        }
+        // Visual pattern block cells — delegating to dedicated method
+        drawRleBlockCells(cursorY, availWidth, cellSize, cellGap, visualHeight, visualXStart);
+        // Stats line
+        gc.setFont(fpsFont);
+        gc.setFill(new Color(0.7, 1, 0.7, 1));
+        gc.fillText(statsMain, marginX, statsLineY);
+        // FPS labels right-aligned, stacked vertically above stats
+        String consumerFps = CommonUtility.getWord(Constants.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL;
+        String producerFps = CommonUtility.getWord(Constants.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL;
+        Text fpsMeasure = new Text();
+        fpsMeasure.setFont(fpsFont);
+        double fpsLineHeight;
+        double rightEdge = marginX + availWidth;
+        gc.setFill(new Color(1, 1, 1, 0.85));
+        gc.setFont(fpsFont);
+        double producerY = statsLineY - 2;
+        fpsMeasure.setText(producerFps);
+        fpsLineHeight = fpsMeasure.getLayoutBounds().getHeight();
+        gc.fillText(producerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), producerY);
+        double consumerY = producerY - fpsLineHeight - 2;
+        fpsMeasure.setText(consumerFps);
+        gc.fillText(consumerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), consumerY);
+    }
+
+    /**
+     * Wrap a comma-separated RLE entries string so that each line fits within {@code maxWidth}.
+     * Returns a list of lines. Breaks only at comma boundaries to keep individual groups intact.
+     */
+    private List<String> wrapLongRleEntries(String rleEntries, double maxWidth, Font font) {
+        Text measure = new Text();
+        measure.setFont(font);
+        String[] groups = rleEntries.split(",");
+        if (groups.length == 0 || (groups.length == 1 && groups[0].isEmpty())) {
+            return List.of("[Entries: " + rleEntries + "]");
+        }
+        double currentLineW = 0;
+        StringBuilder lineBuilder = new StringBuilder();
+        List<String> lines = new ArrayList<>();
+        for (String group : groups) {
+            String entry;
+            if (MainSingleton.getInstance().config.isFullFirmware() && MainSingleton.getInstance().config.isWirelessStream()) {
+                entry = "[" + group + "]";
+            } else {
+                entry = group;
+            }
+            measure.setText(entry);
+            double entryW = measure.getLayoutBounds().getWidth() + 2; // include separator
+            if (currentLineW + entryW > maxWidth && currentLineW > 0) {
+                lines.add(lineBuilder.toString());
+                lineBuilder.setLength(0);
+                currentLineW = 0;
+            }
+            if (!lineBuilder.isEmpty()) {
+                lineBuilder.append(", ");
+                currentLineW += 10; // space for separator in monospace
+            }
+            lineBuilder.append(entry);
+            currentLineW += entryW;
+        }
+        if (!lineBuilder.isEmpty()) {
+            lines.add(lineBuilder.toString());
+        }
+        return lines;
+    }
+
+    /**
+     * Clear canvas to black and draw only the RLE overlay. Used by the overlay-only animation loop.
+     */
+    public void drawOverlayOnly() {
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        if (rleVisualMapVisible || rleOverlayOnlyMode) {
+            drawRleVisualMap();
+        }
+    }
+
+    /**
+     * Enter overlay-only mode: a periodic animation redraws only the RLE overlay on a black background.
+     */
+    public void startOverlayOnlyMode() {
+        rleOverlayOnlyMode = true;
+        stage.setAlwaysOnTop(true);
+        if (rleOverlayAnimation != null) {
+            rleOverlayAnimation.stop();
+        }
+        drawOverlayOnly();
+        KeyFrame frame = new KeyFrame(javafx.util.Duration.millis(250), _ -> drawOverlayOnly());
+        rleOverlayAnimation = new Timeline(frame);
+        rleOverlayAnimation.setCycleCount(Integer.MAX_VALUE);
+        rleOverlayAnimation.playFromStart();
+    }
+
+    /**
+     * Exit overlay-only mode: stop the animation and restore normal rendering.
+     */
+    public void stopOverlayOnlyMode() {
+        rleOverlayOnlyMode = false;
+        stage.setAlwaysOnTop(false);
+        if (rleOverlayAnimation != null) {
+            rleOverlayAnimation.stop();
+            rleOverlayAnimation = null;
+        }
+        if (MainSingleton.getInstance().config != null) {
+            drawTestShapes(MainSingleton.getInstance().config, 0);
         }
     }
 
