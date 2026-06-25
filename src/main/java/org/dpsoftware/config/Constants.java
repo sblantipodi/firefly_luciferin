@@ -687,6 +687,7 @@ public class Constants {
     public static final float HSL_TOLERANCE = 20.0F;
     public static final float GREY_TOLERANCE = 0.05F;
     public static final float DEGREE_360 = 360.0F;
+    public static final boolean USE_LOSSLESS_COMPRESSION = true;
     // Info
     public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
     public static final String INFO_WIFI_STRENGTH = "fxml.info.signal.strenght";
