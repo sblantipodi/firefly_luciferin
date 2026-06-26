@@ -449,6 +449,8 @@ public class Constants {
     public static final String TOOLTIP_LATENCY_TEST = "tooltip.colorcorrection.latency.test";
     public static final String TOOLTIP_LATENCY_TEST_SPEED = "tooltip.colorcorrection.latency.test.speed";
     public static final String TOOLTIP_SETTINGS = "tooltip.colorcorrection.settings";
+    public static final String TOOLTIP_CD_INFO = "tooltip.colorcorrection.info";
+    public static final String TOOLTIP_OVERLAY = "tooltip.colorcorrection.overlay";
     public static final String TOOLTIP_GAMMA = "tooltip.gamma";
     public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";

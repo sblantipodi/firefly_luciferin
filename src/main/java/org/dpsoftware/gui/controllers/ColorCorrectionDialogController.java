@@ -39,6 +39,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.TestCanvas;
@@ -101,6 +102,8 @@ public class ColorCorrectionDialogController {
     public ComboBox<String> latencyTestSpeed;
     @FXML
     public Button settingsBtn;
+    @FXML
+    public Button overlayBtn;
     @FXML
     public Button tooltipBtn;
     TestCanvas testCanvas;
@@ -705,6 +708,31 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Show overlay
+     */
+    @FXML
+    public void showOverlay() {
+        Stage colorDialog = GuiSingleton.getInstance().getColorDialog();
+        if (testCanvas.isRleOverlayOnlyMode()) {
+            testCanvas.stopOverlayOnlyMode();
+            if (colorDialog != null) {
+                colorDialog.show();
+            }
+        } else {
+            GrabberSingleton.getInstance().losslessCompressionLog = !testCanvas.isRleVisualMapVisible();
+            testCanvas.setRleVisualMapVisible(!testCanvas.isRleVisualMapVisible());
+            testCanvas.drawTestShapes(MainSingleton.getInstance().config, 0);
+            if (colorDialog != null) {
+                colorDialog.hide();
+            }
+            if (testCanvas.getColorCorrectionDialogController() != null) {
+                testCanvas.getColorCorrectionDialogController().stopLatencyTest();
+            }
+            testCanvas.startOverlayOnlyMode();
+        }
+    }
+
+    /**
      * Show settings dialog
      */
     @FXML
@@ -763,7 +791,7 @@ public class ColorCorrectionDialogController {
     /**
      * Stop latency test executor
      */
-    void stopLatencyTest() {
+    public void stopLatencyTest() {
         if (animationTimer != null) {
             animationTimer.stop();
         }
@@ -910,6 +938,8 @@ public class ColorCorrectionDialogController {
         testCanvas.hideCanvas();
         Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
         settingsStage.setAlwaysOnTop(false);
+        String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
+        GrabberSingleton.getInstance().setLosslessCompressionLog(Constants.TRUE.equalsIgnoreCase(losslessCompressionLog));
         CommonUtility.closeCurrentStage(e);
     }
 
@@ -926,6 +956,8 @@ public class ColorCorrectionDialogController {
         GuiManager.createTooltip(Constants.TOOLTIP_LATENCY_TEST, latencyTestToggle);
         GuiManager.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED, latencyTestSpeed);
         GuiManager.createTooltip(Constants.TOOLTIP_SETTINGS, settingsBtn);
+        GuiManager.createTooltip(Constants.TOOLTIP_CD_INFO, tooltipBtn);
+        GuiManager.createTooltip(Constants.TOOLTIP_OVERLAY, overlayBtn);
     }
 
     /**
