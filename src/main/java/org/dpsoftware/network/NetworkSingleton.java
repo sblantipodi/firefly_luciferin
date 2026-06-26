@@ -248,13 +248,18 @@ public class NetworkSingleton {
      */
     @SuppressWarnings("all")
     public static LinkedHashMap<Integer, LEDCoordinate> builtRleLeaders(Color[] leds) {
+        Configuration config = MainSingleton.getInstance().config;
         if (GrabberSingleton.getInstance().isLosslessCompressionLog()) {
             lastRleLedsColors = leds.clone();
+        }
+        if (!config.isUseLosslessCompression()) {
+            return config.getLedMatrix().get(config.getDefaultLedMatrix());
         }
         // Apply the dynamic color based grouping logic on the cloned matrix
         Color tmpC = null;
         LinkedHashMap<Integer, LEDCoordinate> clonedMatrix = new LinkedHashMap<>();
         int consecutiveFollowers = 0;
+        int totalLeadersCounted = 0;
         for (int i = 0; i < leds.length; i++) {
             LEDCoordinate coord = new LEDCoordinate();
             if (coord != null) { // Safe check in case the leds array is longer than the matrix
@@ -264,6 +269,7 @@ public class NetworkSingleton {
                     tmpC = leds[i];
                     coord.setGroupedLed(false); // It is not grouped, it's the leader
                     consecutiveFollowers = 0;
+                    totalLeadersCounted++;
                 } else {
                     // The color is IDENTICAL to the previous one, so it joins the current group
                     coord.setGroupedLed(true); // It is grouped (follower)
@@ -275,6 +281,10 @@ public class NetworkSingleton {
                 consecutiveFollowers = 0;
             }
             clonedMatrix.put(i + 1, coord);
+        }
+        // If totalLeadersCounted > leds count, disable RLE compression to avoid unuseful overhead.
+        if (totalLeadersCounted > leds.length) {
+            return config.getLedMatrix().get(config.getDefaultLedMatrix());
         }
         // Return the duplicated and modified map
         return clonedMatrix;
