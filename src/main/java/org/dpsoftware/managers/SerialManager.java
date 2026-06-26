@@ -312,18 +312,16 @@ public class SerialManager {
     /**
      * Print RLE maps for debugging purposes, only if debug logging is enabled and the RLE map has changed since the last print to avoid log flooding.
      *
-     * @param numRleEntries        number of RLE entries
      * @param rleEntries           RLE entries
      * @param ledMatrixWithLeaders array of leaders
      * @param length               total number of LEDs in the strip
      */
-    private static void printRleMaps(byte numRleEntries, List<byte[]> rleEntries, LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
-        if (!log.isTraceEnabled()) {
+    private static void printRleMaps(List<byte[]> rleEntries, LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
+        if (!GrabberSingleton.getInstance().isLosslessCompressionLog()) {
             return;
         }
         // Group details
         StringBuilder sbEntries = new StringBuilder();
-        sbEntries.append("Serial RLE Entries Array [Total: ").append(numRleEntries & 0xFF).append("] -> ");
         StringBuilder groups = new StringBuilder();
         for (int i = 0; i < rleEntries.size(); i++) {
             byte[] entry = rleEntries.get(i);
@@ -334,12 +332,12 @@ public class SerialManager {
                 groups.append(",");
             }
         }
-        if (NetworkSingleton.getInstance().getRleMapInUse().contentEquals(sbEntries)) {
+        if (!sbEntries.isEmpty() && NetworkSingleton.getInstance().getRleMapInUse().contentEquals(sbEntries)) {
             return;
         }
         sbEntries.append(groups);
         NetworkSingleton.getInstance().setRleMapInUse(sbEntries.toString());
-        log.trace(sbEntries.toString());
+        log.debug(sbEntries.toString());
         // Visual printing
         NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, groups, length);
     }
@@ -480,7 +478,7 @@ public class SerialManager {
         int rleHeaderBytes = (2 + (rleEntries.size() * 2));
         int colorBytesCount = (leaderColors.size() * 3);
         // Visual debug output
-        printRleMaps(numRleEntries, rleEntries, ledMatrixWithLeaders, leds.length);
+        printRleMaps(rleEntries, ledMatrixWithLeaders, leds.length);
         byte[] ledsArray = new byte[Constants.SERIAL_PARAMS + rleHeaderBytes + colorBytesCount];
         // Checksum with data config
         j = computeChecksumAndData(ledsArray, j);

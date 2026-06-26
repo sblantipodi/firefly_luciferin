@@ -30,6 +30,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -63,6 +64,17 @@ public class NetworkSingleton {
     public int totalLedNum = MainSingleton.getInstance().ledNumber;
     public MessageServer messageServer;
     public String rleMapInUse = "";
+
+    /**
+     * Cached RLE debug data, populated by {@link #printVisualRleMap} so that the test canvas can render it live.
+     */
+    public static String lastRleEntries = "";
+    public static String lastRleVisualBar = "";
+    public static int lastRleLedCount = 0;
+    public static int lastRleGroupsSum = 0;
+    public static int lastRleGroupCount = 0;
+    public static int lastRleLeaderCount = 0;
+    public static Color[] lastRleLedsColors = null;
 
     /**
      * Orders the zoned list based on the zones and monitor numbers.
@@ -236,6 +248,9 @@ public class NetworkSingleton {
      */
     @SuppressWarnings("all")
     public static LinkedHashMap<Integer, LEDCoordinate> builtRleLeaders(Color[] leds) {
+        if (GrabberSingleton.getInstance().isLosslessCompressionLog()) {
+            lastRleLedsColors = leds.clone();
+        }
         // Apply the dynamic color based grouping logic on the cloned matrix
         Color tmpC = null;
         LinkedHashMap<Integer, LEDCoordinate> clonedMatrix = new LinkedHashMap<>();
@@ -244,7 +259,7 @@ public class NetworkSingleton {
             LEDCoordinate coord = new LEDCoordinate();
             if (coord != null) { // Safe check in case the leds array is longer than the matrix
                 // If it's the very first LED or if its color is different from the previous one
-                if (consecutiveFollowers == 254 || MainSingleton.getInstance().config.getGroupBy() == 10 || tmpC == null || leds[i].getRGB() != tmpC.getRGB()) {
+                if (consecutiveFollowers == 254 || tmpC == null || leds[i].getRGB() != tmpC.getRGB()) {
                     // This LED becomes the new group leader
                     tmpC = leds[i];
                     coord.setGroupedLed(false); // It is not grouped, it's the leader
@@ -283,6 +298,7 @@ public class NetworkSingleton {
                 visual.append("░");
             }
         }
+        String rleVisualBar = visual.toString(); // snapshot before StringBuilder is reused below
         int groupsSum = 0;
         Pattern pattern = Pattern.compile("(\\d+)x(\\d+)");
         Matcher matcher = pattern.matcher(groups);
@@ -291,19 +307,29 @@ public class NetworkSingleton {
             int val = Integer.parseInt(matcher.group(2));
             groupsSum += (qty * val);
         }
-        log.info(visual.toString());
-        visual = new StringBuilder();
-        visual.append("[")
-                .append("LEDs: ")
-                .append(length)
-                .append(", Total sum of groups: ")
-                .append(groupsSum)
-                .append(", Group by: ")
-                .append(MainSingleton.getInstance().config.getGroupBy())
-                .append(", Leaders: ")
-                .append(leadersCount)
-                .append("]");
-        log.info(visual.toString());
+        if (GrabberSingleton.getInstance().isLosslessCompressionLog()) {
+            log.debug(visual.toString());
+            visual = new StringBuilder();
+            visual.append("[")
+                    .append("LEDs: ")
+                    .append(length)
+                    .append(", Total sum of groups: ")
+                    .append(groupsSum)
+                    .append(", Group by: ")
+                    .append(MainSingleton.getInstance().config.getGroupBy())
+                    .append(", Leaders: ")
+                    .append(leadersCount)
+                    .append("]");
+            log.debug(visual.toString());
+        }
+
+        lastRleEntries = getInstance().getRleMapInUse();
+        lastRleVisualBar = rleVisualBar;
+        lastRleLedCount = length;
+        lastRleGroupsSum = groupsSum;
+        String groupsString = groups.toString();
+        lastRleGroupCount = groupsString.isEmpty() ? 0 : groupsString.split(",").length;
+        lastRleLeaderCount = leadersCount;
     }
 
 }
