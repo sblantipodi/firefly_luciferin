@@ -48,6 +48,8 @@ import java.util.ListIterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Convert screen capture into a "readable signal" for LED strip
@@ -64,6 +66,28 @@ public class ImageProcessor {
     WinDef.HWND hwnd;
     private static Enums.AspectRatio pendingAspectRatio = null;
     private static int consecutiveDetections = 0;
+    private static final AtomicLong currentGammaAtomic = new AtomicLong(
+            Double.doubleToLongBits(MainSingleton.getInstance().config.getGamma())
+    );
+    private static final AtomicLong currentAvgBrightnessAtomic = new AtomicLong(
+            Double.doubleToLongBits(0.0)
+    );
+
+
+    // TODO REMOVE
+    private static final AtomicBoolean useAdaptiveGamma = new AtomicBoolean(false);
+
+    static {
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
+                () -> useAdaptiveGamma.set(!useAdaptiveGamma.get()),
+                0, 2, TimeUnit.SECONDS
+        );
+    }
+
+
+
+
+
 
     /**
      * Constructor
@@ -108,7 +132,6 @@ public class ImageProcessor {
         } else {
             GrabberSingleton.getInstance().screen = image;
         }
-
         // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
         if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
             if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
@@ -117,10 +140,8 @@ public class ImageProcessor {
                 GrabberSingleton.getInstance().ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
             }
         }
-
         int osScaling = MainSingleton.getInstance().config.getOsScaling();
         Color[] leds = new Color[GrabberSingleton.getInstance().ledMatrix.size()];
-
         // We need an ordered collection so no parallelStream here
         GrabberSingleton.getInstance().ledMatrix.forEach((key, value) ->
                 leds[key - 1] = getAverageColor(value, osScaling)
@@ -135,6 +156,8 @@ public class ImageProcessor {
      * @param leds color array
      */
     public static void averageOnAllLeds(Color[] leds) {
+        ImageProcessor.updateAvgBrightness(leds);
+        ImageProcessor.updateGamma();
         if (Enums.Algo.AVG_ALL_COLOR.getBaseI18n().equals(MainSingleton.getInstance().config.getAlgo())) {
             Color avgColor = ImageProcessor.getAverageForAllZones(leds, 0, leds.length);
             Arrays.fill(leds, avgColor);
@@ -289,17 +312,85 @@ public class ImageProcessor {
     }
 
     /**
-     * Adjust gamma based on a given color
+     * Adjust gamma based on a given color using adaptive gamma correction.
+     * On dark scenes, gamma is reduced to prevent colors from being crushed to black.
+     * On bright scenes, the configured gamma is used as-is.
+     * The transition between the two is smooth using a smoothstep function.
      *
      * @param color the color to adjust
-     * @return the average color
+     * @return the gamma corrected color
      */
     public static Color gammaCorrection(Color color) {
+        Configuration config = MainSingleton.getInstance().config;
+        // TODO REMOVE
+//        double gamma = useAdaptiveGamma.get() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
+        double gamma = config.isDynamicGammaCorrection() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
         return new Color(
-                (int) (255.0 * Math.pow((color.getRed() / 255.0), MainSingleton.getInstance().config.getGamma())),
-                (int) (255.0 * Math.pow((color.getGreen() / 255.0), MainSingleton.getInstance().config.getGamma())),
-                (int) (255.0 * Math.pow((color.getBlue() / 255.0), MainSingleton.getInstance().config.getGamma()))
+                clamp((int) (255.0 * Math.pow(color.getRed() / 255.0, gamma))),
+                clamp((int) (255.0 * Math.pow(color.getGreen() / 255.0, gamma))),
+                clamp((int) (255.0 * Math.pow(color.getBlue() / 255.0, gamma)))
         );
+    }
+
+    /**
+     * Dynamically calculates and updates the display gamma value based on the current HDR/SDR status.
+     * ADAPTIVE_GAMMA_FLOOR:
+     * Defines how low the gamma is allowed to drop in dark scenes.
+     * It is expressed as a multiplier of the configured gamma.
+     * A lower value increases brightness and visibility in very dark content,
+     * while a higher value keeps the image closer to the original gamma curve.
+     * ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD:
+     * Brightness level below which the system applies the full adaptive gamma effect.
+     * When the average scene brightness is under this threshold, gamma is clamped
+     * to the minimum value (gamma floor), ensuring maximum enhancement in dark scenes.
+     * ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD:
+     * Brightness level above which adaptive gamma is fully disabled.
+     * When the scene is brighter than this threshold, gamma returns to the
+     * configured value, preserving color accuracy in well‑lit content.
+     * ADAPTIVE_GAMMA_DEAD_ZONE
+     * convergence speed: 0=no update, 1=instant
+     * ADAPTIVE_GAMMA_SMOOTHING_FACTOR
+     * minimum gamma delta to trigger an update
+     * The range between DARK_SCENE_THRESHOLD and BRIGHT_SCENE_THRESHOLD defines
+     * the smooth transition zone where gamma gradually shifts from the minimum
+     * adaptive value back to the normal configured gamma using a smoothstep curve.
+     */
+    public static void updateGamma() {
+        boolean hdr = MainSingleton.getInstance().isHdrActive();
+        double floor = hdr ? Constants.ADAPTIVE_GAMMA_FLOOR_HDR : Constants.ADAPTIVE_GAMMA_FLOOR;
+        double darkThreshold = hdr ? Constants.ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_HDR : Constants.ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD;
+        double brightThreshold = hdr ? Constants.ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_HDR : Constants.ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD;
+        double configGamma = MainSingleton.getInstance().config.getGamma();
+        double currentAvgBrightness = Double.longBitsToDouble(currentAvgBrightnessAtomic.get());
+        double dynamicFloor = floor + (1.0 - floor) * Math.clamp(currentAvgBrightness / brightThreshold, 0.0, 1.0);
+        double minGamma = configGamma * dynamicFloor;
+        double adaptiveGamma = minGamma + (configGamma - minGamma) * currentAvgBrightness;
+        double t = Math.clamp((currentAvgBrightness - darkThreshold) / (brightThreshold - darkThreshold), 0.0, 1.0);
+        t = t * t * (3 - 2 * t);
+        double targetGamma = adaptiveGamma + (configGamma - adaptiveGamma) * t;
+        double currentGamma = Double.longBitsToDouble(currentGammaAtomic.get());
+        double gammaDelta = Math.abs(targetGamma - currentGamma);
+        double gamma = gammaDelta < Constants.ADAPTIVE_GAMMA_DEAD_ZONE
+                ? currentGamma
+                : Constants.ADAPTIVE_GAMMA_SMOOTHING_FACTOR * targetGamma + (1.0 - Constants.ADAPTIVE_GAMMA_SMOOTHING_FACTOR) * currentGamma;
+        currentGammaAtomic.set(Double.doubleToLongBits(gamma));
+    }
+
+    /**
+     * Computes and updates the current average brightness across an array of LED colors.
+     * Brightness for each color is determined by averaging its normalized red, green, and blue components.
+     * The method then calculates the mean of these values to update the overall average brightness.
+     * Used to calculate the dynamic gamma when HDR is ON.
+     *
+     * @param leds An array of Color objects representing the current state of each LED
+     */
+    public static void updateAvgBrightness(Color[] leds) {
+        double sum = 0;
+        for (Color c : leds) {
+            sum += (c.getRed() + c.getGreen() + c.getBlue()) / (255.0 * 3);
+        }
+        double newBrightness = sum / leds.length;
+        currentAvgBrightnessAtomic.set(Double.doubleToLongBits(newBrightness));
     }
 
     /**
@@ -907,7 +998,7 @@ public class ImageProcessor {
      * @return clamped color
      */
     private static int clamp(float value) {
-        return Math.max(0, Math.min(255, Math.round(value)));
+        return Math.clamp(Math.round(value), 0, 255);
     }
 
     /**
