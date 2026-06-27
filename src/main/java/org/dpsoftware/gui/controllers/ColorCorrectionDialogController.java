@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -48,6 +49,7 @@ import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
+import java.lang.annotation.Native;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -156,6 +158,9 @@ public class ColorCorrectionDialogController {
     @FXML
     protected void initialize() {
         Platform.runLater(() -> {
+            if (NativeExecutor.isLinux()) {
+                overlayBtn.setText(Constants.SHARP);
+            }
             initListeners(redSaturation, yellowSaturation, greenSaturation, cyanSaturation, blueSaturation, magentaSaturation, saturation);
             initListeners(redLightness, yellowLightness, greenLightness, cyanLightness, blueLightness, magentaLightness, saturationLightness);
             initListeners(redHue, yellowHue, greenHue, cyanHue, blueHue, magentaHue, null);
