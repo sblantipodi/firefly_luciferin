@@ -617,6 +617,14 @@ public class Constants {
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
     public static final long SIMD_BENCHMARK_DURATION_MS = 120_000;
+    public static final double ADAPTIVE_GAMMA_FLOOR = 0.9;                    // minimum gamma multiplier on dark scenes
+    public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD = 0.05;    // below this brightness, full adaptive gamma
+    public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD = 0.15;  // above this brightness, classic gamma correction
+    public static final double ADAPTIVE_GAMMA_FLOOR_HDR = 0.6;
+    public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_HDR = 0.05;
+    public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_HDR = 0.15;
+    public static final double ADAPTIVE_GAMMA_SMOOTHING_FACTOR = 0.8;         // convergence speed: 0=no update, 1=instant
+    public static final double ADAPTIVE_GAMMA_DEAD_ZONE = 0.02;               // minimum gamma delta to trigger an update
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
@@ -688,6 +696,7 @@ public class Constants {
     public static final float GREY_TOLERANCE = 0.05F;
     public static final float DEGREE_360 = 360.0F;
     public static final boolean USE_LOSSLESS_COMPRESSION = true;
+    public static final boolean USE_DYNAMIC_GAMMA_CORRECTION = true;
     // Info
     public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
     public static final String INFO_WIFI_STRENGTH = "fxml.info.signal.strenght";
@@ -764,6 +773,8 @@ public class Constants {
     public static final String NIGHT_LIGHT_VALUE_NAME = "Data";
     public static final String CMD_POWERSHELL = "powershell.exe";
     public static final String CMD_SET_PRIORITY = "Get-WmiObject Win32_process -filter 'name = \\\"Firefly Luciferin.exe\\\"' | foreach-object { $_.SetPriority({0}) }";
+    public static final String REGISTRY_HDR_KEY_PATH = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\MonitorDataStore";
+    public static final String REGISTRY_HDR_VAL = "HDREnabled";
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
     public static final String REGISTRY_KEY_PATH_SCREEN_SAVER = "Control Panel\\Desktop";
     public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";

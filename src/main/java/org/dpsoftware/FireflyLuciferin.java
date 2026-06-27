@@ -276,7 +276,7 @@ public class FireflyLuciferin extends Application {
                 udpServer.receiveBroadcastUDPPacket();
             }
         }
-        grabberManager.getFPS();
+        grabberManager.createBackgroundTasks();
         grabberManager.pingDevice();
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single device, start message server before grabbers produce frames.

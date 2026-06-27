@@ -165,6 +165,7 @@ public class Configuration implements Cloneable {
     boolean checkFullScreen = false;
     int resamplingFactor = Constants.RESAMPLING_FACTOR;
     boolean useLosslessCompression = Constants.USE_LOSSLESS_COMPRESSION;
+    boolean dynamicGammaCorrection = Constants.USE_DYNAMIC_GAMMA_CORRECTION;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
