@@ -309,6 +309,7 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
             if (config.getUdpTrafficClass() != Constants.DEFAULT_UDP_TRAFFIC_CLASS) {
                 config.setUdpTrafficClass(Constants.DEFAULT_UDP_TRAFFIC_CLASS);
             }
+            config.setGamma(Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma()));
             writeToStorage = true;
         }
         return writeToStorage;
