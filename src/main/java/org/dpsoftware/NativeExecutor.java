@@ -481,19 +481,20 @@ public final class NativeExecutor {
      * Check if HDR is active
      */
     public static boolean isHdrActive() {
-        try {
-            String baseKey = Constants.REGISTRY_HDR_KEY_PATH;
-            String[] subKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, baseKey);
-            for (String monitorKey : subKeys) {
-                String fullKey = baseKey + "\\" + monitorKey;
-                if (Advapi32Util.registryValueExists(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL)) {
-                    int hdrEnabled = Advapi32Util.registryGetIntValue(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL);
-                    if (hdrEnabled == 1) {
-                        return true;
+        if (isWindows()) {
+            try {
+                String baseKey = Constants.REGISTRY_HDR_KEY_PATH;
+                String[] subKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, baseKey);
+                for (String monitorKey : subKeys) {
+                    String fullKey = baseKey + "\\" + monitorKey;
+                    if (Advapi32Util.registryValueExists(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL)) {
+                        int hdrEnabled = Advapi32Util.registryGetIntValue(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL);
+                        if (hdrEnabled == 1) {
+                            return true;
+                        }
                     }
                 }
-            }
-        } catch (Exception ignore) {
+            } catch (Exception ignore) {}
         }
         return false;
     }
