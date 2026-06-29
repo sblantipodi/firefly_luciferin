@@ -826,7 +826,7 @@ public class TestCanvas {
         }
         double visualHeight = cellSize + 4;
         String statsMain = "[LEDs: " + NetworkSingleton.lastRleLedCount
-                + ", Group sum: " + NetworkSingleton.lastRleGroupsSum
+                + ", Group by: " + MainSingleton.getInstance().config.getGroupBy()
                 + ", Group count: " + NetworkSingleton.lastRleGroupCount
                 + ", Leaders: " + NetworkSingleton.lastRleLeaderCount + "]";
         String statsGamma = "Dynamic Gamma: " + String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
