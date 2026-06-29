@@ -48,7 +48,6 @@ import java.util.ListIterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -66,28 +65,12 @@ public class ImageProcessor {
     WinDef.HWND hwnd;
     private static Enums.AspectRatio pendingAspectRatio = null;
     private static int consecutiveDetections = 0;
-    private static final AtomicLong currentGammaAtomic = new AtomicLong(
+    public static final AtomicLong currentGammaAtomic = new AtomicLong(
             Double.doubleToLongBits(MainSingleton.getInstance().config.getGamma())
     );
     private static final AtomicLong currentAvgBrightnessAtomic = new AtomicLong(
             Double.doubleToLongBits(0.0)
     );
-
-
-    // TODO REMOVE
-    private static final AtomicBoolean useAdaptiveGamma = new AtomicBoolean(false);
-
-    static {
-        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
-                () -> useAdaptiveGamma.set(!useAdaptiveGamma.get()),
-                0, 2, TimeUnit.SECONDS
-        );
-    }
-
-
-
-
-
 
     /**
      * Constructor
@@ -322,8 +305,6 @@ public class ImageProcessor {
      */
     public static Color gammaCorrection(Color color) {
         Configuration config = MainSingleton.getInstance().config;
-        // TODO REMOVE
-//        double gamma = useAdaptiveGamma.get() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
         double gamma = config.isDynamicGammaCorrection() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
         return new Color(
                 clamp((int) (255.0 * Math.pow(color.getRed() / 255.0, gamma))),
@@ -370,9 +351,15 @@ public class ImageProcessor {
         double targetGamma = adaptiveGamma + (configGamma - adaptiveGamma) * t;
         double currentGamma = Double.longBitsToDouble(currentGammaAtomic.get());
         double gammaDelta = Math.abs(targetGamma - currentGamma);
-        double gamma = gammaDelta < Constants.ADAPTIVE_GAMMA_DEAD_ZONE
-                ? currentGamma
-                : Constants.ADAPTIVE_GAMMA_SMOOTHING_FACTOR * targetGamma + (1.0 - Constants.ADAPTIVE_GAMMA_SMOOTHING_FACTOR) * currentGamma;
+        double gamma;
+        if (Math.abs(targetGamma - configGamma) < Constants.ADAPTIVE_GAMMA_DEAD_ZONE) {
+            // Bright scene, target is effectively configGamma, snap directly to avoid asymptotic trap.
+            gamma = configGamma;
+        } else if (gammaDelta < Constants.ADAPTIVE_GAMMA_DEAD_ZONE) {
+            gamma = currentGamma;
+        } else {
+            gamma = Constants.ADAPTIVE_GAMMA_SMOOTHING_FACTOR * targetGamma + (1.0 - Constants.ADAPTIVE_GAMMA_SMOOTHING_FACTOR) * currentGamma;
+        }
         currentGammaAtomic.set(Double.doubleToLongBits(gamma));
     }
 
