@@ -82,6 +82,7 @@ public class TestCanvas {
     private final int HISTORY_SIZE = 100;
     public Rectangle2D closeBtnBounds;
     public Rectangle2D rleOverlayXBounds;
+    public Rectangle2D rleOverlayPanelBounds;
     public boolean tooltipVisible;
     GraphicsContext gc;
     Canvas canvas;
@@ -98,6 +99,7 @@ public class TestCanvas {
     private int dialogY;
     private boolean rleVisualMapVisible;
     private boolean rleOverlayOnlyMode;
+    private double rleOverlayYOffset = 0;
     private Timeline rleOverlayAnimation;
 
     /**
@@ -820,7 +822,6 @@ public class TestCanvas {
             return;
         }
         Font fpsFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 11);
-        tileDistance = 30;
         double marginX = 10;
         double canvasWidth = canvas.getWidth();
         double availWidth = canvasWidth - marginX * 2;
@@ -846,8 +847,10 @@ public class TestCanvas {
         tempText = new Text(statsMain);
         tempText.setFont(fpsFont);
         double statsHeight = tempText.getLayoutBounds().getHeight();
+        // Anchor the panel to the bottom of the canvas by default, then apply the user-controlled vertical drag offset
+        double bottomAnchor = canvas.getHeight() - tileDistance + rleOverlayYOffset;
         // Position from bottom-up, then shift to center the stats line in the overlay panel
-        double currentY = canvas.getHeight() - tileDistance;
+        double currentY = bottomAnchor;
         currentY -= statsHeight + 4;
         double statsLineY = currentY;
         currentY -= visualHeight;
@@ -856,14 +859,32 @@ public class TestCanvas {
         currentY -= entriesLineHeight + 4;
         double entriesLineY = currentY;
         double panelTopY = entriesLineY - fpsFont.getSize();
+        double panelBottomY = bottomAnchor;
+        // Clamp the panel so dragging never pushes it outside the visible canvas area
+        double minPanelTopY = 4;
+        double maxPanelBottomY = canvas.getHeight() - 4;
+        double correction = 0;
+        if (panelTopY < minPanelTopY) {
+            correction = minPanelTopY - panelTopY;
+        } else if (panelBottomY > maxPanelBottomY) {
+            correction = maxPanelBottomY - panelBottomY;
+        }
+        if (correction != 0) {
+            rleOverlayYOffset += correction;
+            statsLineY += correction;
+            entriesLineY += correction;
+            panelTopY += correction;
+            panelBottomY += correction;
+        }
         // Center statsMain vertically in the overlay panel
-        double midPanelY = (panelTopY + canvas.getHeight() - tileDistance) / 2.0;
+        double midPanelY = (panelTopY + panelBottomY) / 2.0;
         double centerYOffset = midPanelY - statsLineY;
         statsLineY += centerYOffset;
         // Background panel
         gc.save();
         gc.setFill(new Color(0, 0, 0, 0.65));
-        gc.fillRoundRect(marginX - 4, panelTopY - 2, availWidth + 8, canvas.getHeight() - panelTopY - tileDistance, 4, 4);
+        gc.fillRoundRect(marginX - 4, panelTopY - 2, availWidth + 8, panelBottomY - panelTopY, 4, 4);
+        this.rleOverlayPanelBounds = new Rectangle2D(marginX - 4, panelTopY - 2, availWidth + 8, panelBottomY - panelTopY);
         // Draw X at absolute top-right of the overlay panel
         double rleCloseSize = 14;
         double rleCloseMargin = 6;
