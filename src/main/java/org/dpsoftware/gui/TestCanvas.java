@@ -829,26 +829,31 @@ public class TestCanvas {
                 + ", Group sum: " + NetworkSingleton.lastRleGroupsSum
                 + ", Group count: " + NetworkSingleton.lastRleGroupCount
                 + ", Leaders: " + NetworkSingleton.lastRleLeaderCount + "]";
+        String statsGamma = "Dynamic Gamma: " + String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
         tempText = new Text(statsMain);
         tempText.setFont(fpsFont);
         double statsHeight = tempText.getLayoutBounds().getHeight();
-        // Position from bottom-up
+        // Position from bottom-up, then shift to center the stats line in the overlay panel
         double currentY = canvas.getHeight() - tileDistance;
-        currentY -= statsHeight + 2;
+        currentY -= statsHeight + 4;
         double statsLineY = currentY;
         currentY -= visualHeight;
         double visualCellWidth = (cellSize + cellGap) * charCount;
         double visualXStart = marginX + (availWidth - visualCellWidth) / 2;
-        currentY -= entriesLineHeight + 2;
+        currentY -= entriesLineHeight + 4;
         double entriesLineY = currentY;
         double panelTopY = entriesLineY - fpsFont.getSize();
+        // Center statsMain vertically in the overlay panel
+        double midPanelY = (panelTopY + canvas.getHeight() - tileDistance) / 2.0;
+        double centerYOffset = midPanelY - statsLineY;
+        statsLineY += centerYOffset;
         // Background panel
         gc.save();
         gc.setFill(new Color(0, 0, 0, 0.65));
         gc.fillRoundRect(marginX - 4, panelTopY - 2, availWidth + 8, canvas.getHeight() - panelTopY - 8, 4, 4);
         // Delegate content drawing (entries, visual pattern, stats, FPS)     
         drawRleVisualMapContent(fpsFont, marginX, availWidth, cellSize, cellGap, visualHeight, visualXStart,
-                entriesLineY, statsLineY, statsMain);
+                entriesLineY, statsLineY, statsMain, statsGamma);
         gc.restore();
     }
 
@@ -893,7 +898,7 @@ public class TestCanvas {
      */
     private void drawRleVisualMapContent(Font fpsFont, double marginX, double availWidth,
                                          int cellSize, int cellGap, double visualHeight, double visualXStart,
-                                         double entriesLineY, double statsLineY, String statsMain) {
+                                         double entriesLineY, double statsLineY, String statsMain, String statsGamma) {
         // Entries text wrap onto new lines when exceeding available width
         Font currentFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, fpsFont.getSize() * 0.85);
         Text tempText = new Text();
@@ -914,6 +919,8 @@ public class TestCanvas {
         gc.setFont(fpsFont);
         gc.setFill(new Color(0.7, 1, 0.7, 1));
         gc.fillText(statsMain, marginX, statsLineY);
+        gc.setFill(new Color(1.0F, 0.5F, 0F, 1.0F));
+        gc.fillText(statsGamma, marginX + 2, statsLineY + 5 + fpsFont.getSize());
         // FPS labels right-aligned, stacked vertically above stats
         String consumerFps = CommonUtility.getWord(Constants.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL;
         String producerFps = CommonUtility.getWord(Constants.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL;
@@ -923,7 +930,7 @@ public class TestCanvas {
         double rightEdge = marginX + availWidth;
         gc.setFill(new Color(1, 1, 1, 0.85));
         gc.setFont(fpsFont);
-        double producerY = statsLineY - 2;
+        double producerY = statsLineY + fpsFont.getSize() - 2;
         fpsMeasure.setText(producerFps);
         fpsLineHeight = fpsMeasure.getLayoutBounds().getHeight();
         gc.fillText(producerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), producerY);
