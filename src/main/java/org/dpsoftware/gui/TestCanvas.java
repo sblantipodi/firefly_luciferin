@@ -552,6 +552,35 @@ public class TestCanvas {
     }
 
     /**
+     * Draw a circular close button with an "X" glyph, used both by the tooltip overlay
+     * and by the RLE visual map overlay so both share the exact same look and feel.
+     *
+     * @param x    top-left x position of the button
+     * @param y    top-left y position of the button
+     * @param size button width/height (square)
+     * @return the bounds of the drawn button, useful for hit-testing clicks
+     */
+    private Rectangle2D drawCloseButton(double x, double y, double size) {
+        LinearGradient closeBtnGradient = new LinearGradient(
+                0, y, 0, y + size, false, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.rgb(50, 50, 50)),
+                new Stop(1, Color.rgb(20, 20, 20))
+        );
+        gc.setFill(closeBtnGradient);
+        gc.fillRoundRect(x, y, size, size, 4, 4);
+        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
+        gc.setLineWidth(1);
+        gc.strokeRoundRect(x, y, size, size, 4, 4);
+        // Draw "X"
+        gc.setStroke(Color.rgb(255, 255, 255, 0.9));
+        gc.setLineWidth(2);
+        double margin = size * (4.0 / 18.0);
+        gc.strokeLine(x + margin, y + margin, x + size - margin, y + size - margin);
+        gc.strokeLine(x + margin, y + size - margin, x + size - margin, y + margin);
+        return new Rectangle2D(x, y, size, size);
+    }
+
+    /**
      * Draw tooltip
      *
      * @param gc gc
@@ -598,25 +627,7 @@ public class TestCanvas {
         double closeBtnSize = 18;
         double closeBtnX = x + boxWidth - closeBtnSize - 6;
         double closeBtnY = y + 6;
-        LinearGradient closeBtnGradient = new LinearGradient(
-                0, closeBtnY, 0, closeBtnY + closeBtnSize, false, CycleMethod.NO_CYCLE,
-                new Stop(0, Color.rgb(50, 50, 50)),
-                new Stop(1, Color.rgb(20, 20, 20))
-        );
-        gc.setFill(closeBtnGradient);
-        gc.fillRoundRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize, 4, 4);
-        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
-        gc.setLineWidth(1);
-        gc.strokeRoundRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize, 4, 4);
-        // Draw "X"
-        gc.setStroke(Color.rgb(255, 255, 255, 0.9));
-        gc.setLineWidth(2);
-        double margin = 4;
-        gc.strokeLine(closeBtnX + margin, closeBtnY + margin,
-                closeBtnX + closeBtnSize - margin, closeBtnY + closeBtnSize - margin);
-        gc.strokeLine(closeBtnX + margin, closeBtnY + closeBtnSize - margin,
-                closeBtnX + closeBtnSize - margin, closeBtnY + margin);
-        this.closeBtnBounds = new Rectangle2D(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize);
+        this.closeBtnBounds = drawCloseButton(closeBtnX, closeBtnY, closeBtnSize);
         double textY = y + padding + (boxHeight - 2 * padding - textHeight) / 2 + lineHeights[0] / 2;
         for (int i = 0; i < lines.length; i++) {
             gc.setFill(Color.WHITE);
@@ -853,40 +864,12 @@ public class TestCanvas {
         gc.save();
         gc.setFill(new Color(0, 0, 0, 0.65));
         gc.fillRoundRect(marginX - 4, panelTopY - 2, availWidth + 8, canvas.getHeight() - panelTopY - tileDistance, 4, 4);
-
         // Draw X at absolute top-right of the overlay panel
         double rleCloseSize = 14;
         double rleCloseMargin = 6;
         double rleCloseX = marginX + availWidth + 4 - rleCloseSize - rleCloseMargin;
         double rleCloseY = panelTopY - 2 + rleCloseMargin;
-        gc.setFill(Color.rgb(80, 80, 80, 0.6));
-        gc.beginPath();
-        gc.fillOval(rleCloseX, rleCloseY, rleCloseSize, rleCloseSize);
-        gc.closePath();
-
-        // Red gradient-filled frame around the X for emphasis
-        javafx.scene.paint.RadialGradient redGlow = new javafx.scene.paint.RadialGradient(
-                0, 0, 0.5, 0.5, 1.0, true, CycleMethod.NO_CYCLE,
-                new Stop(0, new Color(1, 0.2, 0.2, 0.85)),
-                new Stop(1, new Color(0.6, 0, 0, 0.95))
-        );
-        gc.setFill(redGlow);
-        double framePad = 2;
-        gc.fillRoundRect(rleCloseX - framePad, rleCloseY - framePad,
-                rleCloseSize + framePad * 2, rleCloseSize + framePad * 2,
-                framePad, framePad);
-
-        // Draw X on top of the red frame
-        double closeLineMargin = rleCloseSize * 0.3;
-        gc.setStroke(Color.WHITE);
-        gc.setLineWidth(1.5);
-        gc.strokeLine(rleCloseX + closeLineMargin, rleCloseY + closeLineMargin,
-                rleCloseX + rleCloseSize - closeLineMargin, rleCloseY + rleCloseSize - closeLineMargin);
-        gc.strokeLine(rleCloseX + closeLineMargin, rleCloseY + rleCloseSize - closeLineMargin,
-                rleCloseX + rleCloseSize - closeLineMargin, rleCloseY + closeLineMargin);
-
-        this.rleOverlayXBounds = new Rectangle2D(rleCloseX, rleCloseY, rleCloseSize, rleCloseSize);
-
+        this.rleOverlayXBounds = drawCloseButton(rleCloseX, rleCloseY, rleCloseSize);
         // Delegate content drawing (entries, visual pattern, stats, FPS)
         drawRleVisualMapContent(fpsFont, marginX, availWidth, cellSize, cellGap, visualHeight, visualXStart,
                 entriesLineY, statsLineY, statsMain, statsGamma);
