@@ -81,6 +81,7 @@ public class TestCanvas {
     private final int INITIAL_TILE_DISTANCE = 10;
     private final int HISTORY_SIZE = 100;
     public Rectangle2D closeBtnBounds;
+    public Rectangle2D rleOverlayXBounds;
     public boolean tooltipVisible;
     GraphicsContext gc;
     Canvas canvas;
@@ -808,7 +809,8 @@ public class TestCanvas {
             return;
         }
         Font fpsFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 11);
-        double marginX = tileDistance;
+        tileDistance = 30;
+        double marginX = 10;
         double canvasWidth = canvas.getWidth();
         double availWidth = canvasWidth - marginX * 2;
         int cellSize;
@@ -850,8 +852,42 @@ public class TestCanvas {
         // Background panel
         gc.save();
         gc.setFill(new Color(0, 0, 0, 0.65));
-        gc.fillRoundRect(marginX - 4, panelTopY - 2, availWidth + 8, canvas.getHeight() - panelTopY - 8, 4, 4);
-        // Delegate content drawing (entries, visual pattern, stats, FPS)     
+        gc.fillRoundRect(marginX - 4, panelTopY - 2, availWidth + 8, canvas.getHeight() - panelTopY - tileDistance, 4, 4);
+
+        // Draw X at absolute top-right of the overlay panel
+        double rleCloseSize = 14;
+        double rleCloseMargin = 6;
+        double rleCloseX = marginX + availWidth + 4 - rleCloseSize - rleCloseMargin;
+        double rleCloseY = panelTopY - 2 + rleCloseMargin;
+        gc.setFill(Color.rgb(80, 80, 80, 0.6));
+        gc.beginPath();
+        gc.fillOval(rleCloseX, rleCloseY, rleCloseSize, rleCloseSize);
+        gc.closePath();
+
+        // Red gradient-filled frame around the X for emphasis
+        javafx.scene.paint.RadialGradient redGlow = new javafx.scene.paint.RadialGradient(
+                0, 0, 0.5, 0.5, 1.0, true, CycleMethod.NO_CYCLE,
+                new Stop(0, new Color(1, 0.2, 0.2, 0.85)),
+                new Stop(1, new Color(0.6, 0, 0, 0.95))
+        );
+        gc.setFill(redGlow);
+        double framePad = 2;
+        gc.fillRoundRect(rleCloseX - framePad, rleCloseY - framePad,
+                rleCloseSize + framePad * 2, rleCloseSize + framePad * 2,
+                framePad, framePad);
+
+        // Draw X on top of the red frame
+        double closeLineMargin = rleCloseSize * 0.3;
+        gc.setStroke(Color.WHITE);
+        gc.setLineWidth(1.5);
+        gc.strokeLine(rleCloseX + closeLineMargin, rleCloseY + closeLineMargin,
+                rleCloseX + rleCloseSize - closeLineMargin, rleCloseY + rleCloseSize - closeLineMargin);
+        gc.strokeLine(rleCloseX + closeLineMargin, rleCloseY + rleCloseSize - closeLineMargin,
+                rleCloseX + rleCloseSize - closeLineMargin, rleCloseY + closeLineMargin);
+
+        this.rleOverlayXBounds = new Rectangle2D(rleCloseX, rleCloseY, rleCloseSize, rleCloseSize);
+
+        // Delegate content drawing (entries, visual pattern, stats, FPS)
         drawRleVisualMapContent(fpsFont, marginX, availWidth, cellSize, cellGap, visualHeight, visualXStart,
                 entriesLineY, statsLineY, statsMain, statsGamma);
         gc.restore();
@@ -930,7 +966,7 @@ public class TestCanvas {
         double rightEdge = marginX + availWidth;
         gc.setFill(new Color(1, 1, 1, 0.85));
         gc.setFont(fpsFont);
-        double producerY = statsLineY + fpsFont.getSize() - 2;
+        double producerY = statsLineY + (fpsFont.getSize() * 2) - 2;
         fpsMeasure.setText(producerFps);
         fpsLineHeight = fpsMeasure.getLayoutBounds().getHeight();
         gc.fillText(producerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), producerY);

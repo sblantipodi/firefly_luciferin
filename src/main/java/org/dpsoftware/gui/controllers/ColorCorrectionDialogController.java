@@ -49,7 +49,6 @@ import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
-import java.lang.annotation.Native;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -730,6 +729,7 @@ public class ColorCorrectionDialogController {
             if (colorDialog != null) {
                 colorDialog.hide();
             }
+            testCanvas.injectColorDialogController();
             if (testCanvas.getColorCorrectionDialogController() != null) {
                 testCanvas.getColorCorrectionDialogController().stopLatencyTest();
             }
