@@ -315,6 +315,7 @@ public class TcInteractionHandler {
      */
     private void onMouseClicked(Configuration conf, int saturation) {
         tc.getCanvas().setOnMouseClicked(e -> {
+            if (tc.isRleOverlayOnlyMode()) return;
             if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(e.getX(), e.getY())) {
                 tc.setTooltipVisible(false);
                 tc.drawTestShapes(conf, saturation);
@@ -331,21 +332,16 @@ public class TcInteractionHandler {
      * @param saturation use full or half saturation, this is influenced by the combo box
      */
     private void onMousePressed(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
-        tc.getCanvas().setOnMouseClicked(e -> {
-            if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(e.getX(), e.getY())) {
-                tc.setTooltipVisible(false);
-                tc.drawTestShapes(conf, saturation);
-                drawSelectionOverlay(conf);
-            }
-        });
         tc.getCanvas().setOnMousePressed(event -> {
-            if (tc.isRleOverlayOnlyMode()) {
+            if (tc.isRleOverlayOnlyMode() && tc.getRleOverlayXBounds() != null
+                    && tc.getRleOverlayXBounds().contains(event.getX(), event.getY())) {
                 tc.stopOverlayOnlyMode();
                 tc.stage.close();
                 String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
                 GrabberSingleton.getInstance().setLosslessCompressionLog(Constants.TRUE.equalsIgnoreCase(losslessCompressionLog));
                 return;
             }
+            if (tc.isRleOverlayOnlyMode()) return;
             tc.setTooltipVisible(tc.isTooltipVisible());
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
@@ -644,6 +640,7 @@ public class TcInteractionHandler {
     private void onMouseDragged(Configuration conf, int saturation) {
         final int SNAP_THRESHOLD = tc.getTileDistance();
         tc.getCanvas().setOnMouseDragged(event -> {
+            if (tc.isRleOverlayOnlyMode()) return;
             boolean snapEnabled = !event.isControlDown(); // disable snap when holding CTRL
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
@@ -821,6 +818,14 @@ public class TcInteractionHandler {
      */
     private void onMouseMoved(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
         tc.getCanvas().setOnMouseMoved(event -> {
+            if (tc.isRleOverlayOnlyMode()) {
+                if (tc.getRleOverlayXBounds() != null && tc.getRleOverlayXBounds().contains(event.getX(), event.getY())) {
+                    tc.getCanvas().setCursor(Cursor.HAND);
+                } else {
+                    tc.getCanvas().setCursor(Cursor.DEFAULT);
+                }
+            }
+            if (tc.isRleOverlayOnlyMode()) return;
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
             boolean overResize = false;
@@ -876,6 +881,7 @@ public class TcInteractionHandler {
      */
     private void onMouseReleased(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
         tc.getCanvas().setOnMouseReleased(event -> {
+            if (tc.isRleOverlayOnlyMode()) return;
             canvasClicked = false;
             draggingTile = false;
             if (selectionRectActive) {
