@@ -822,7 +822,7 @@ public class TestCanvas {
             return;
         }
         Font fpsFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 11);
-        double marginX = 10;
+        double marginX = LEDCoordinate.calculateTaleBorder(MainSingleton.getInstance().config.getScreenResX());
         double canvasWidth = canvas.getWidth();
         double availWidth = canvasWidth - marginX * 2;
         int cellSize;
