@@ -822,7 +822,7 @@ public class TestCanvas {
             return;
         }
         Font fpsFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 11);
-        double marginX = LEDCoordinate.calculateTaleBorder(MainSingleton.getInstance().config.getScreenResX());
+        double marginX = 10;
         double canvasWidth = canvas.getWidth();
         double availWidth = canvasWidth - marginX * 2;
         int cellSize;
@@ -848,7 +848,7 @@ public class TestCanvas {
         tempText.setFont(fpsFont);
         double statsHeight = tempText.getLayoutBounds().getHeight();
         // Anchor the panel to the bottom of the canvas by default, then apply the user-controlled vertical drag offset
-        double bottomAnchor = canvas.getHeight() - tileDistance + rleOverlayYOffset;
+        double bottomAnchor = canvas.getHeight() + rleOverlayYOffset;
         // Position from bottom-up, then shift to center the stats line in the overlay panel
         double currentY = bottomAnchor;
         currentY -= statsHeight + 4;
