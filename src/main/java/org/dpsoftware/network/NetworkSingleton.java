@@ -173,43 +173,21 @@ public class NetworkSingleton {
     }
 
     /**
-     * Orders the array of colors based on the zoned LED coordinates.
-     * This method will reorder the colors according to the zones and monitor numbers.
+     * Pads a group size that exceeds the single-byte (255) limit imposed by the firmware protocol,
+     * splitting it into multiple RLE entries sharing the same count.
      *
-     * @param colorArray Array of Color objects to be ordered. Anticlockwise order by default, reverse happens before sending.
+     * @param rle   the list of RLE entries being built, each entry is {count, size}
+     * @param count how many consecutive groups share the given size
+     * @param size  the LED group size shared by "count" consecutive groups
      */
-    public void orderArray(Color[] colorArray) {
-        Configuration config1 = NetworkSingleton.getInstance().messageServer.getMonitorConfig1();
-        Configuration config2 = NetworkSingleton.getInstance().messageServer.getMonitorConfig2();
-        Configuration config3 = NetworkSingleton.getInstance().messageServer.getMonitorConfig3();
-        List<ZonedLedCoordinate> zonedList = new ArrayList<>();
-        List<ZonedLedCoordinate> zonedList1 = new ArrayList<>();
-        List<ZonedLedCoordinate> zonedList2 = new ArrayList<>();
-        List<ZonedLedCoordinate> zonedList3 = new ArrayList<>();
-        List<Color> orderedList = new ArrayList<>();
-        AtomicInteger i = new AtomicInteger();
-        config1.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
-            if (CommonUtility.isCommonZone(value.getZone())) {
-                zonedList1.add(new ZonedLedCoordinate(1, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
-            }
-        });
-        config2.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
-            if (CommonUtility.isCommonZone(value.getZone())) {
-                zonedList2.add(new ZonedLedCoordinate(2, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
-            }
-        });
-        if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
-            config3.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
-                if (CommonUtility.isCommonZone(value.getZone())) {
-                zonedList3.add(new ZonedLedCoordinate(3, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
-                }
-            });
-            zonedList.addAll(zonedList3);
+    private static void rleBytePadding(List<int[]> rle, int count, int size) {
+        while (size > 255) {
+            rle.add(new int[]{count, 255});
+            size -= 255;
         }
-        zonedList.addAll(zonedList2);
-        zonedList.addAll(zonedList1);
-        orderZonedList(zonedList, config2, orderedList);
-        orderedList.toArray(colorArray);
+        if (size > 0) {
+            rle.add(new int[]{count, size});
+        }
     }
 
     /**
@@ -240,20 +218,94 @@ public class NetworkSingleton {
     }
 
     /**
+     * Computes RLE-encoded group entries from an LED matrix annotated with leader/follower flags.
+     * This is the single source of truth for RLE grouping: {@link #builtRleLeaders} uses it to
+     * decide whether RLE compression is worth it, and the caller reuses the same result to build
+     * the wire payload (see {@link org.dpsoftware.network.tcpUdp.UdpClient#buildRleGroupMap}), so
+     * the grouping/encoding pass never runs twice for the same matrix.
+     *
+     * @param ledMatrix LED matrix annotated with leader/follower flags
+     * @return list of RLE entries, each one is {count, size}
+     */
+    public static List<int[]> computeRleEntries(LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
+        if (ledMatrix == null || ledMatrix.isEmpty()) {
+            return new ArrayList<>();
+        }
+        // build flat groupSize array (one entry per leader)
+        List<Integer> groupSizes = new ArrayList<>();
+        int currentGroupSize = 0;
+        for (LEDCoordinate led : ledMatrix.values()) {
+            if (!led.isGroupedLed()) {
+                if (currentGroupSize > 0) {
+                    groupSizes.add(currentGroupSize);
+                }
+                currentGroupSize = 1;
+            } else {
+                currentGroupSize++;
+            }
+        }
+        if (currentGroupSize > 0) {
+            groupSizes.add(currentGroupSize);
+        }
+        // RLE encode the flat array
+        List<int[]> rle = new ArrayList<>();
+        int i = 0;
+        while (i < groupSizes.size()) {
+            int size = groupSizes.get(i);
+            int count = 0;
+            while (i < groupSizes.size() && groupSizes.get(i) == size) {
+                count++;
+                i++;
+                if (count == 255) {
+                    rleBytePadding(rle, count, size);
+                    count = 0;
+                }
+            }
+            if (count > 0) {
+                rleBytePadding(rle, count, size);
+            }
+        }
+        return rle;
+    }
+
+    /**
+     * Builds the RLE entries for an "all leaders" matrix (RLE disabled) without re-scanning the LED
+     * array: every LED is its own group of size 1, so the entries are a closed-form split into
+     * chunks of 255 (firmware single-byte count limit).
+     *
+     * @param totalLeds total number of physical LEDs
+     * @return list of RLE entries, each one is {count, size=1}
+     */
+    private static List<int[]> buildAllLeadersRleEntries(int totalLeds) {
+        List<int[]> rle = new ArrayList<>();
+        int remaining = totalLeds;
+        while (remaining > 255) {
+            rle.add(new int[]{255, 1});
+            remaining -= 255;
+        }
+        if (remaining > 0) {
+            rle.add(new int[]{remaining, 1});
+        }
+        return rle;
+    }
+
+    /**
      * Generates a new map with the updated groupedLed status based on color changes,
-     * leaving the original input map completely unaltered (Deep Copy).
+     * leaving the original input map completely unaltered (Deep Copy), together with the
+     * already-computed RLE entries for that map.
      *
      * @param leds The current array of LED colors
-     * @return A new LinkedHashMap with the same keys and values as the original, but with the groupedLed status updated according to the color changes in the leds array.
+     * @return an {@link RleLeadersResult} with the annotated LED matrix and its RLE entries.
      */
     @SuppressWarnings("all")
-    public static LinkedHashMap<Integer, LEDCoordinate> builtRleLeaders(Color[] leds) {
+    public static RleLeadersResult builtRleLeaders(Color[] leds) {
         Configuration config = MainSingleton.getInstance().config;
         if (GrabberSingleton.getInstance().isLosslessCompressionLog()) {
             lastRleLedsColors = leds.clone();
         }
         if (!config.isUseLosslessCompression()) {
-            return config.getLedMatrix().get(config.getDefaultLedMatrix());
+            LinkedHashMap<Integer, LEDCoordinate> defaultMatrix = config.getLedMatrix().get(config.getDefaultLedMatrix());
+            return new RleLeadersResult(defaultMatrix, computeRleEntries(defaultMatrix));
         }
         // Apply the dynamic color based grouping logic on the cloned matrix
         Color tmpC = null;
@@ -282,12 +334,79 @@ public class NetworkSingleton {
             }
             clonedMatrix.put(i + 1, coord);
         }
-        // If totalLeadersCounted > leds count, disable RLE compression to avoid unuseful overhead.
-        if (totalLeadersCounted > leds.length) {
-            return config.getLedMatrix().get(config.getDefaultLedMatrix());
+        // Compute the RLE entries ONCE here: this same result is returned to the caller and must be
+        // reused to build the wire payload, the grouping/encoding pass must never run a second time.
+        List<int[]> rleEntries = computeRleEntries(clonedMatrix);
+        // If leaders + RLE map entries overhead exceeds the physical LED count, RLE compression costs
+        // more than it saves: disable it by making every LED a leader (uncompressed, always correct).
+        boolean wirelessStream = MainSingleton.getInstance().config.isWirelessStream();
+        // we assume 9 byte for 1 led on UDP, 3 byte for Serial
+        int ledTot = leds.length * (wirelessStream ? 9 : 3);
+        int leadersTot = totalLeadersCounted * (wirelessStream ? 9 : 3);
+        int rleEntriesTot = rleEntries.size() * (wirelessStream ? 4 : 2); // rle map is a string when using UDP
+        if ((leadersTot + rleEntriesTot) > ledTot) {
+            LinkedHashMap<Integer, LEDCoordinate> allLeadersMatrix = new LinkedHashMap<>();
+            for (int i = 0; i < leds.length; i++) {
+                LEDCoordinate coord = new LEDCoordinate();
+                coord.setGroupedLed(false);
+                allLeadersMatrix.put(i + 1, coord);
+            }
+            return new RleLeadersResult(allLeadersMatrix, buildAllLeadersRleEntries(leds.length));
         }
-        // Return the duplicated and modified map
-        return clonedMatrix;
+        // Return the duplicated and modified map together with its already-computed RLE entries
+        return new RleLeadersResult(clonedMatrix, rleEntries);
+    }
+
+    /**
+     * Orders the array of colors based on the zoned LED coordinates.
+     * This method will reorder the colors according to the zones and monitor numbers.
+     *
+     * @param colorArray Array of Color objects to be ordered. Anticlockwise order by default, reverse happens before sending.
+     */
+    public void orderArray(Color[] colorArray) {
+        Configuration config1 = NetworkSingleton.getInstance().messageServer.getMonitorConfig1();
+        Configuration config2 = NetworkSingleton.getInstance().messageServer.getMonitorConfig2();
+        Configuration config3 = NetworkSingleton.getInstance().messageServer.getMonitorConfig3();
+        List<ZonedLedCoordinate> zonedList = new ArrayList<>();
+        List<ZonedLedCoordinate> zonedList1 = new ArrayList<>();
+        List<ZonedLedCoordinate> zonedList2 = new ArrayList<>();
+        List<ZonedLedCoordinate> zonedList3 = new ArrayList<>();
+        List<Color> orderedList = new ArrayList<>();
+        AtomicInteger i = new AtomicInteger();
+        config1.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
+            if (CommonUtility.isCommonZone(value.getZone())) {
+                zonedList1.add(new ZonedLedCoordinate(1, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
+            }
+        });
+        config2.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
+            if (CommonUtility.isCommonZone(value.getZone())) {
+                zonedList2.add(new ZonedLedCoordinate(2, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
+            }
+        });
+        if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
+            config3.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
+                if (CommonUtility.isCommonZone(value.getZone())) {
+                    zonedList3.add(new ZonedLedCoordinate(3, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
+                }
+            });
+            zonedList.addAll(zonedList3);
+        }
+        zonedList.addAll(zonedList2);
+        zonedList.addAll(zonedList1);
+        orderZonedList(zonedList, config2, orderedList);
+        orderedList.toArray(colorArray);
+    }
+
+    /**
+     * Result of the RLE leader computation: the LED matrix annotated with leader/follower flags,
+     * paired with the already-computed RLE group entries. Callers (e.g. {@link org.dpsoftware.network.tcpUdp.UdpClient})
+     * must reuse {@link #rleEntries()} to build the wire payload instead of recomputing the grouping,
+     * since the grouping/RLE-encoding pass already ran once inside {@link #builtRleLeaders}.
+     *
+     * @param ledMatrix  LED matrix annotated with leader/follower flags
+     * @param rleEntries pre-computed RLE entries, each one is {count, size}
+     */
+    public record RleLeadersResult(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, List<int[]> rleEntries) {
     }
 
     /**
