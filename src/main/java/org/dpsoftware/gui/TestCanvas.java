@@ -1040,7 +1040,7 @@ public class TestCanvas {
             rleOverlayAnimation.stop();
         }
         drawOverlayOnly();
-        KeyFrame frame = new KeyFrame(javafx.util.Duration.millis(250), _ -> drawOverlayOnly());
+        KeyFrame frame = new KeyFrame(javafx.util.Duration.millis(1000 / MainSingleton.getInstance().FPS_GW_CONSUMER), _ -> drawOverlayOnly());
         rleOverlayAnimation = new Timeline(frame);
         rleOverlayAnimation.setCycleCount(Integer.MAX_VALUE);
         rleOverlayAnimation.playFromStart();
