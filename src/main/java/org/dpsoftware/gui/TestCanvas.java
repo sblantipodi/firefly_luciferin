@@ -1034,13 +1034,15 @@ public class TestCanvas {
      * Enter overlay-only mode: a periodic animation redraws only the RLE overlay on a black background.
      */
     public void startOverlayOnlyMode() {
+        int minSpeed = Integer.parseInt(Constants.DEFAULT_FRAMERATE);
         rleOverlayOnlyMode = true;
         stage.setAlwaysOnTop(true);
         if (rleOverlayAnimation != null) {
             rleOverlayAnimation.stop();
         }
         drawOverlayOnly();
-        KeyFrame frame = new KeyFrame(javafx.util.Duration.millis(1000 / MainSingleton.getInstance().FPS_GW_CONSUMER), _ -> drawOverlayOnly());
+        double gwFps = MainSingleton.getInstance().FPS_GW_CONSUMER < minSpeed ? minSpeed : MainSingleton.getInstance().FPS_GW_CONSUMER;
+        KeyFrame frame = new KeyFrame(javafx.util.Duration.millis(1000 / gwFps), _ -> drawOverlayOnly());
         rleOverlayAnimation = new Timeline(frame);
         rleOverlayAnimation.setCycleCount(Integer.MAX_VALUE);
         rleOverlayAnimation.playFromStart();
