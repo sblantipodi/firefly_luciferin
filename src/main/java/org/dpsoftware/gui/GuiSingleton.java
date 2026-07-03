@@ -57,6 +57,7 @@ public class GuiSingleton {
     public ObservableList<Satellite> satellitesTableData = FXCollections.observableArrayList();
     public boolean firmTypeFull = false;
     public boolean upgrade = false;
+    public boolean rleVisualMapVisible;
     Stage colorDialog;
 
 }

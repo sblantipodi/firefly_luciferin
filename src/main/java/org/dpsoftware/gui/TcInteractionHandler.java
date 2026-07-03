@@ -318,7 +318,7 @@ public class TcInteractionHandler {
      */
     private void onMouseClicked(Configuration conf, int saturation) {
         tc.getCanvas().setOnMouseClicked(e -> {
-            if (tc.isRleOverlayOnlyMode()) return;
+            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(e.getX(), e.getY())) {
                 tc.setTooltipVisible(false);
                 tc.drawTestShapes(conf, saturation);
@@ -336,17 +336,18 @@ public class TcInteractionHandler {
      */
     private void onMousePressed(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
         tc.getCanvas().setOnMousePressed(event -> {
-            if (tc.isRleOverlayOnlyMode() && tc.getRleOverlayXBounds() != null
+            if (GuiSingleton.getInstance().rleVisualMapVisible && tc.getRleOverlayXBounds() != null
                     && tc.getRleOverlayXBounds().contains(event.getX(), event.getY())) {
                 tc.stopOverlayOnlyMode();
                 tc.stage.close();
+                GuiSingleton.getInstance().rleVisualMapVisible = false;
                 String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
                 GrabberSingleton.getInstance().setLosslessCompressionLog(Constants.TRUE.equalsIgnoreCase(losslessCompressionLog));
                 return;
             }
             // Start dragging the RLE overlay panel (works both in overlay-only mode and when shown on top of the test canvas),
             // but only if the click didn't land on the close button handled above.
-            if ((tc.isRleOverlayOnlyMode() || tc.isRleVisualMapVisible()) && tc.getRleOverlayPanelBounds() != null
+            if (GuiSingleton.getInstance().rleVisualMapVisible && tc.getRleOverlayPanelBounds() != null
                     && tc.getRleOverlayPanelBounds().contains(event.getX(), event.getY())) {
                 draggingRleOverlay = true;
                 rleOverlayDragStartY = event.getY();
@@ -354,7 +355,7 @@ public class TcInteractionHandler {
                 tc.getCanvas().setCursor(Cursor.V_RESIZE);
                 return;
             }
-            if (tc.isRleOverlayOnlyMode()) return;
+            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             tc.setTooltipVisible(tc.isTooltipVisible());
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
@@ -656,14 +657,14 @@ public class TcInteractionHandler {
             if (draggingRleOverlay) {
                 double delta = event.getY() - rleOverlayDragStartY;
                 tc.setRleOverlayYOffset(rleOverlayDragStartOffset + delta);
-                if (tc.isRleOverlayOnlyMode()) {
+                if (GuiSingleton.getInstance().rleVisualMapVisible) {
                     tc.drawOverlayOnly();
                 } else {
                     tc.drawTestShapes(conf, saturation);
                 }
                 return;
             }
-            if (tc.isRleOverlayOnlyMode()) return;
+            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             boolean snapEnabled = !event.isControlDown(); // disable snap when holding CTRL
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
@@ -841,7 +842,7 @@ public class TcInteractionHandler {
      */
     private void onMouseMoved(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
         tc.getCanvas().setOnMouseMoved(event -> {
-            if (tc.isRleOverlayOnlyMode()) {
+            if (GuiSingleton.getInstance().rleVisualMapVisible) {
                 if (tc.getRleOverlayXBounds() != null && tc.getRleOverlayXBounds().contains(event.getX(), event.getY())) {
                     tc.getCanvas().setCursor(Cursor.HAND);
                 } else if (tc.getRleOverlayPanelBounds() != null && tc.getRleOverlayPanelBounds().contains(event.getX(), event.getY())) {
@@ -850,7 +851,7 @@ public class TcInteractionHandler {
                     tc.getCanvas().setCursor(Cursor.DEFAULT);
                 }
             }
-            if (tc.isRleOverlayOnlyMode()) return;
+            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
             boolean overResize = false;
@@ -885,16 +886,16 @@ public class TcInteractionHandler {
                 tc.getCanvas().setCursor(Cursor.HAND);
             } else if (overShape) {
                 tc.getCanvas().setCursor(Cursor.OPEN_HAND);
-            } else if (tc.isRleVisualMapVisible() && tc.getRleOverlayPanelBounds() != null && tc.getRleOverlayPanelBounds().contains(mouseX, mouseY)) {
-                tc.getCanvas().setCursor(Cursor.V_RESIZE);
-            } else if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null) {
-                if (tc.getCloseBtnBounds().contains(mouseX, mouseY)) {
-                    tc.getCanvas().setCursor(Cursor.HAND);
+            } else {
+                if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null) {
+                    if (tc.getCloseBtnBounds().contains(mouseX, mouseY)) {
+                        tc.getCanvas().setCursor(Cursor.HAND);
+                    } else {
+                        tc.getCanvas().setCursor(Cursor.DEFAULT);
+                    }
                 } else {
                     tc.getCanvas().setCursor(Cursor.DEFAULT);
                 }
-            } else {
-                tc.getCanvas().setCursor(Cursor.DEFAULT);
             }
         });
     }
@@ -913,7 +914,7 @@ public class TcInteractionHandler {
                 tc.getCanvas().setCursor(Cursor.DEFAULT);
                 return;
             }
-            if (tc.isRleOverlayOnlyMode()) return;
+            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             canvasClicked = false;
             draggingTile = false;
             if (selectionRectActive) {
