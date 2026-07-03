@@ -717,23 +717,24 @@ public class ColorCorrectionDialogController {
     @FXML
     public void showOverlay() {
         Stage colorDialog = GuiSingleton.getInstance().getColorDialog();
-        if (testCanvas.isRleOverlayOnlyMode()) {
+        if (GuiSingleton.getInstance().rleVisualMapVisible) {
             testCanvas.stopOverlayOnlyMode();
             if (colorDialog != null) {
                 colorDialog.show();
             }
         } else {
-            GrabberSingleton.getInstance().losslessCompressionLog = !testCanvas.isRleVisualMapVisible();
-            testCanvas.setRleVisualMapVisible(!testCanvas.isRleVisualMapVisible());
-            testCanvas.drawTestShapes(MainSingleton.getInstance().config, 0);
-            if (colorDialog != null) {
-                colorDialog.hide();
-            }
+            GrabberSingleton.getInstance().losslessCompressionLog = true;
+            GuiSingleton.getInstance().rleVisualMapVisible = true;
+
             testCanvas.injectColorDialogController();
             if (testCanvas.getColorCorrectionDialogController() != null) {
                 testCanvas.getColorCorrectionDialogController().stopLatencyTest();
             }
             testCanvas.startOverlayOnlyMode();
+            testCanvas.drawTestShapes(MainSingleton.getInstance().config, 0);
+            if (colorDialog != null) {
+                colorDialog.hide();
+            }
         }
     }
 
@@ -943,8 +944,6 @@ public class ColorCorrectionDialogController {
         testCanvas.hideCanvas();
         Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
         settingsStage.setAlwaysOnTop(false);
-        String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
-        GrabberSingleton.getInstance().setLosslessCompressionLog(Constants.TRUE.equalsIgnoreCase(losslessCompressionLog));
         CommonUtility.closeCurrentStage(e);
     }
 

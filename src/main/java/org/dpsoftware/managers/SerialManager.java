@@ -285,31 +285,6 @@ public class SerialManager {
     }
 
     /**
-     * Calculate the dimension of RLE groups based on the LED matrix configuration
-     *
-     * @param ledMatrix led infos
-     * @return RLE group
-     */
-    private static List<Integer> getRleGroupDimension(LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
-        List<Integer> groupSizes = new ArrayList<>();
-        int currentGroupSize = 0;
-        for (LEDCoordinate led : ledMatrix.values()) {
-            if (!led.isGroupedLed()) {
-                if (currentGroupSize > 0) {
-                    groupSizes.add(currentGroupSize);
-                }
-                currentGroupSize = 1;
-            } else {
-                currentGroupSize++;
-            }
-        }
-        if (currentGroupSize > 0) {
-            groupSizes.add(currentGroupSize);
-        }
-        return groupSizes;
-    }
-
-    /**
      * Print RLE maps for debugging purposes, only if debug logging is enabled and the RLE map has changed since the last print to avoid log flooding.
      *
      * @param rleEntries           RLE entries
@@ -423,16 +398,6 @@ public class SerialManager {
         }
     }
 
-    private static void rleBytePadding(List<byte[]> rleEntries, int count, int size) {
-        while (size > 255) {
-            rleEntries.add(new byte[]{(byte) count, (byte) 255});
-            size -= 255;
-        }
-        if (size > 0) {
-            rleEntries.add(new byte[]{(byte) count, (byte) size});
-        }
-    }
-
     /**
      * Implement RLE compression logic
      *
@@ -441,8 +406,9 @@ public class SerialManager {
      */
     private byte[] implementRleCompressionLogic(Color[] leds) {
         int j = -1;
-        // Create new RLE leaders
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = NetworkSingleton.builtRleLeaders(leds);
+        // Create new RLE leaders (grouping + RLE entries are computed once inside builtRleLeaders)
+        NetworkSingleton.RleLeadersResult rleLeadersResult = NetworkSingleton.builtRleLeaders(leds);
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = rleLeadersResult.ledMatrix();
         List<Color> leaderColors = new ArrayList<>();
         int ledIndex = 0;
         for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
@@ -451,27 +417,12 @@ public class SerialManager {
             }
             ledIndex++;
         }
-        // Calculate groups dimension
-        List<Integer> groupSizes = getRleGroupDimension(ledMatrixWithLeaders);
-        // Binary RLE encoding (couple count x size)
-        List<byte[]> rleEntries = new ArrayList<>();
-        int rleIdx = 0;
-        while (rleIdx < groupSizes.size()) {
-            int size = groupSizes.get(rleIdx);
-            int count = 0;
-            // How many elements with the same size
-            while (rleIdx < groupSizes.size() && groupSizes.get(rleIdx) == size) {
-                count++;
-                rleIdx++;
-                // Bytes can't exceed 255, create another group instead
-                if (count == 255) {
-                    rleBytePadding(rleEntries, count, size);
-                    count = 0;
-                }
-            }
-            if (count > 0) {
-                rleBytePadding(rleEntries, count, size);
-            }
+        // Reuse the RLE entries already computed by builtRleLeaders, do not recompute the grouping here.
+        // Count and size are always <= 255 by construction (see NetworkSingleton#computeRleEntries),
+        // so narrowing to byte is safe.
+        List<byte[]> rleEntries = new ArrayList<>(rleLeadersResult.rleEntries().size());
+        for (int[] entry : rleLeadersResult.rleEntries()) {
+            rleEntries.add(new byte[]{(byte) entry[0], (byte) entry[1]});
         }
         byte numRleEntries = (byte) rleEntries.size();
         // Dyanmic buffer size

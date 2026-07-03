@@ -219,7 +219,7 @@ public class UdpClient {
      * Populate RLE map data in NetworkSingleton so the canvas overlay can render it.
      * Logging is gated by LUCIFERIN_LOSSLESS_COMPRESSION_LOG; data population always happens.
      *
-     @param rleMap               array of rle gropup
+     * @param rleMap               array of rle gropup
      * @param ledMatrixWithLeaders array of leaders
      * @param length               total number of LEDs in the strip
      */
@@ -266,8 +266,9 @@ public class UdpClient {
     public void manageStream(Color[] leds) {
         // Advance frame sequence counter (wraps 0-255)
         frameNum = (frameNum + 1) & 0xFF;
-        // Create new RLE leaders
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = NetworkSingleton.builtRleLeaders(leds);
+        // Create new RLE leaders (grouping + RLE entries are computed once inside builtRleLeaders)
+        NetworkSingleton.RleLeadersResult rleLeadersResult = NetworkSingleton.builtRleLeaders(leds);
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = rleLeadersResult.ledMatrix();
         // Build compressed LED array (only leaders)
         List<Color> leaderColors = new ArrayList<>();
         int ledIndex = 0;
@@ -278,7 +279,8 @@ public class UdpClient {
             ledIndex++;
         }
         Color[] compressedLeds = leaderColors.toArray(new Color[0]);
-        String rleMap = buildRleGroupMap(ledMatrixWithLeaders);
+        // Reuse the RLE entries already computed by builtRleLeaders, do not recompute the grouping here
+        String rleMap = buildRleGroupMap(ledMatrixWithLeaders.size(), rleLeadersResult.rleEntries());
         printRleMapForDebug(rleMap, ledMatrixWithLeaders, leds.length);
         String[] rleparts = rleMap.split(",", 4);
         String rleInline = rleparts[2] + "," + rleparts[3]; // "numEntries,c1xs1,..."
@@ -331,71 +333,28 @@ public class UdpClient {
         socket.close();
     }
 
-    private static void rleBytePadding(List<int[]> rle, int count, int size) {
-        while (size > 255) {
-            rle.add(new int[]{count, 255});
-            size -= 255;
-        }
-        if (size > 0) {
-            rle.add(new int[]{count, size});
-        }
-    }
-
     /**
-     * Builds a compact RLE (Run-Length Encoding) group map from the LED matrix for a given aspect ratio.
+     * Builds a compact RLE (Run-Length Encoding) group map string from already-computed RLE entries.
      * The map is used by the ESP32 to expand compressed color streams.
      * Format: "DPsoftwareGRP,<numLedsPhysical>,<numRleEntries>,<count1>x<size1>,..."
+     * The RLE entries must come from {@link NetworkSingleton#computeRleEntries} (via
+     * {@link NetworkSingleton#builtRleLeaders}), this method does not recompute the grouping.
      *
-     * @param ledMatrix      the current configuration containing the LED matrix
+     * @param numLedsPhysical total number of physical LEDs
+     * @param rleEntries      pre-computed RLE entries, each one is {count, size}
      * @return the RLE-encoded group map string ready to send via UDP
      */
-    public String buildRleGroupMap(LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
-        if (ledMatrix == null || ledMatrix.isEmpty()) {
+    public String buildRleGroupMap(int numLedsPhysical, List<int[]> rleEntries) {
+        if (rleEntries == null || rleEntries.isEmpty()) {
             return "";
         }
-        // build flat groupSize array (one entry per leaders)
-        List<Integer> groupSizes = new ArrayList<>();
-        int currentGroupSize = 0;
-        for (LEDCoordinate led : ledMatrix.values()) {
-            if (!led.isGroupedLed()) {
-                if (currentGroupSize > 0) {
-                    groupSizes.add(currentGroupSize);
-                }
-                currentGroupSize = 1;
-            } else {
-                currentGroupSize++;
-            }
-        }
-        if (currentGroupSize > 0) {
-            groupSizes.add(currentGroupSize);
-        }
-        // RLE encode the flat array
-        List<int[]> rle = new ArrayList<>();
-        int i = 0;
-        while (i < groupSizes.size()) {
-            int size = groupSizes.get(i);
-            int count = 0;
-            while (i < groupSizes.size() && groupSizes.get(i) == size) {
-                count++;
-                i++;
-                if (count == 255) {
-                    rleBytePadding(rle, count, size);
-                    count = 0;
-                }
-            }
-            if (count > 0) {
-                rleBytePadding(rle, count, size);
-            }
-        }
-        // build the UDP payload string
-        int numLedsPhysical = ledMatrix.size();
         StringBuilder sb = new StringBuilder();
         sb.append("DPsoftwareGRP").append(",");
         sb.append(numLedsPhysical).append(",");
-        sb.append(rle.size()).append(",");
-        for (int j = 0; j < rle.size(); j++) {
-            sb.append(rle.get(j)[0]).append("x").append(rle.get(j)[1]);
-            if (j < rle.size() - 1) sb.append(",");
+        sb.append(rleEntries.size()).append(",");
+        for (int j = 0; j < rleEntries.size(); j++) {
+            sb.append(rleEntries.get(j)[0]).append("x").append(rleEntries.get(j)[1]);
+            if (j < rleEntries.size() - 1) sb.append(",");
         }
         return sb.toString();
     }
