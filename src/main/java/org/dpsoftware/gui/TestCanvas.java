@@ -962,8 +962,8 @@ public class TestCanvas {
         gc.setFill(new Color(1.0F, 0.5F, 0F, 1.0F));
         gc.fillText(statsGamma, marginX + 2, statsLineY + 5 + fpsFont.getSize());
         // FPS labels right-aligned, stacked vertically above stats
-        String consumerFps = CommonUtility.getWord(Constants.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL;
         String producerFps = CommonUtility.getWord(Constants.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL;
+        String consumerFps = CommonUtility.getWord(Constants.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL;
         Text fpsMeasure = new Text();
         fpsMeasure.setFont(fpsFont);
         double fpsLineHeight;
@@ -971,12 +971,12 @@ public class TestCanvas {
         gc.setFill(new Color(1, 1, 1, 0.85));
         gc.setFont(fpsFont);
         double producerY = statsLineY + (fpsFont.getSize() * 2) - 2;
-        fpsMeasure.setText(producerFps);
-        fpsLineHeight = fpsMeasure.getLayoutBounds().getHeight();
-        gc.fillText(producerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), producerY);
-        double consumerY = producerY - fpsLineHeight - 2;
         fpsMeasure.setText(consumerFps);
-        gc.fillText(consumerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), consumerY);
+        fpsLineHeight = fpsMeasure.getLayoutBounds().getHeight();
+        gc.fillText(consumerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), producerY);
+        double consumerY = producerY - fpsLineHeight - 2;
+        fpsMeasure.setText(producerFps);
+        gc.fillText(producerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), consumerY);
     }
 
     /**
