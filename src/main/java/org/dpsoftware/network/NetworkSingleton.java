@@ -223,6 +223,8 @@ public class NetworkSingleton {
      * decide whether RLE compression is worth it, and the caller reuses the same result to build
      * the wire payload (see {@link org.dpsoftware.network.tcpUdp.UdpClient#buildRleGroupMap}), so
      * the grouping/encoding pass never runs twice for the same matrix.
+     * Example: [3x3],[1x8],[6x3] -> take the first 3 colors and expand each to 3 LEDs, then take 1 color and expand it to 8 LEDs,
+     * then take the last 6 colors and expand each to 3 LEDs
      *
      * @param ledMatrix LED matrix annotated with leader/follower flags
      * @return list of RLE entries, each one is {count, size}
