@@ -725,7 +725,6 @@ public class ColorCorrectionDialogController {
         } else {
             GrabberSingleton.getInstance().losslessCompressionLog = true;
             GuiSingleton.getInstance().rleVisualMapVisible = true;
-
             testCanvas.injectColorDialogController();
             if (testCanvas.getColorCorrectionDialogController() != null) {
                 testCanvas.getColorCorrectionDialogController().stopLatencyTest();
