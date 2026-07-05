@@ -217,8 +217,8 @@ public class TcInteractionHandler {
                     for (LEDCoordinate coord : selectedLeds) {
                         int newX = coord.getX() + dx;
                         int newY = coord.getY() + dy;
-                        coord.setX(Math.max(0, Math.min(newX, scaledCanvasWidth - coord.getWidth())));
-                        coord.setY(Math.max(0, Math.min(newY, scaledCanvasHeight - coord.getHeight())));
+                        coord.setX(Math.clamp(newX, 0, scaledCanvasWidth - coord.getWidth()));
+                        coord.setY(Math.clamp(newY, 0, scaledCanvasHeight - coord.getHeight()));
                     }
                     tc.drawTestShapes(conf, saturation);
                     drawSelectionOverlay(conf);
@@ -318,7 +318,6 @@ public class TcInteractionHandler {
      */
     private void onMouseClicked(Configuration conf, int saturation) {
         tc.getCanvas().setOnMouseClicked(e -> {
-            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(e.getX(), e.getY())) {
                 tc.setTooltipVisible(false);
                 tc.drawTestShapes(conf, saturation);
@@ -350,12 +349,11 @@ public class TcInteractionHandler {
             if (GuiSingleton.getInstance().rleVisualMapVisible && tc.getRleOverlayPanelBounds() != null
                     && tc.getRleOverlayPanelBounds().contains(event.getX(), event.getY())) {
                 draggingRleOverlay = true;
-                rleOverlayDragStartY = event.getY();
+                rleOverlayDragStartY = event.getScreenY();
                 rleOverlayDragStartOffset = tc.getRleOverlayYOffset();
                 tc.getCanvas().setCursor(Cursor.V_RESIZE);
                 return;
             }
-            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             tc.setTooltipVisible(tc.isTooltipVisible());
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
@@ -655,8 +653,11 @@ public class TcInteractionHandler {
         final int SNAP_THRESHOLD = tc.getTileDistance();
         tc.getCanvas().setOnMouseDragged(event -> {
             if (draggingRleOverlay) {
-                double delta = event.getY() - rleOverlayDragStartY;
+                double delta = event.getScreenY() - rleOverlayDragStartY;
                 tc.setRleOverlayYOffset(rleOverlayDragStartOffset + delta);
+                if (tc.isRleOverlayOnlyMode()) {
+                    tc.updateStageBounds();
+                }
                 if (GuiSingleton.getInstance().rleVisualMapVisible) {
                     tc.drawOverlayOnly();
                 } else {
@@ -664,7 +665,6 @@ public class TcInteractionHandler {
                 }
                 return;
             }
-            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             boolean snapEnabled = !event.isControlDown(); // disable snap when holding CTRL
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
@@ -710,8 +710,8 @@ public class TcInteractionHandler {
         Point2D mainOffset = dragOffsets.get(draggedLed);
         int cw = scaleDownResolution(draggedLed.getWidth(), conf.getOsScaling());
         int ch = scaleDownResolution(draggedLed.getHeight(), conf.getOsScaling());
-        int proposedX = clamp((int) (mouseX - (mainOffset != null ? mainOffset.getX() : 0)), canvasWidth - cw);
-        int proposedY = clamp((int) (mouseY - (mainOffset != null ? mainOffset.getY() : 0)), canvasHeight - ch);
+        int proposedX = Math.clamp((int) (mouseX - (mainOffset != null ? mainOffset.getX() : 0)), 0, canvasWidth - cw);
+        int proposedY = Math.clamp((int) (mouseY - (mainOffset != null ? mainOffset.getY() : 0)), 0, canvasHeight - ch);
         Point snapped = snapEnabled ? calculateSnappedPosition(conf, proposedX, proposedY, cw, ch, snapThreshold) : new Point(proposedX, proposedY);
         moveSelectedLeds(conf, snapped.x, snapped.y, canvasWidth, canvasHeight);
         tc.drawTestShapes(conf, saturation);
@@ -790,8 +790,8 @@ public class TcInteractionHandler {
             Point2D startPos = initialPositions.get(coord);
             int sX = startPos != null ? (int) startPos.getX() : scaleDownResolution(coord.getX(), conf.getOsScaling());
             int sY = startPos != null ? (int) startPos.getY() : scaleDownResolution(coord.getY(), conf.getOsScaling());
-            int newX = clamp(sX + deltaX, canvasWidth - scaleDownResolution(coord.getWidth(), conf.getOsScaling()));
-            int newY = clamp(sY + deltaY, canvasHeight - scaleDownResolution(coord.getHeight(), conf.getOsScaling()));
+            int newX = Math.clamp(sX + deltaX, 0, canvasWidth - scaleDownResolution(coord.getWidth(), conf.getOsScaling()));
+            int newY = Math.clamp(sY + deltaY, 0, canvasHeight - scaleDownResolution(coord.getHeight(), conf.getOsScaling()));
             coord.setX(scaleUpResolution(newX, conf.getOsScaling()));
             coord.setY(scaleUpResolution(newY, conf.getOsScaling()));
         }
@@ -824,17 +824,6 @@ public class TcInteractionHandler {
     }
 
     /**
-     * Clamps the given value between 0 and the specified maximum.
-     *
-     * @param val The value to clamp.
-     * @param max The maximum allowed value.
-     * @return The clamped value, guaranteed to be between 0 and max.
-     */
-    private int clamp(int val, int max) {
-        return Math.max(0, Math.min(val, max));
-    }
-
-    /**
      * On mouse moved
      *
      * @param conf      stored config
@@ -842,16 +831,6 @@ public class TcInteractionHandler {
      */
     private void onMouseMoved(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
         tc.getCanvas().setOnMouseMoved(event -> {
-            if (GuiSingleton.getInstance().rleVisualMapVisible) {
-                if (tc.getRleOverlayXBounds() != null && tc.getRleOverlayXBounds().contains(event.getX(), event.getY())) {
-                    tc.getCanvas().setCursor(Cursor.HAND);
-                } else if (tc.getRleOverlayPanelBounds() != null && tc.getRleOverlayPanelBounds().contains(event.getX(), event.getY())) {
-                    tc.getCanvas().setCursor(Cursor.V_RESIZE);
-                } else {
-                    tc.getCanvas().setCursor(Cursor.DEFAULT);
-                }
-            }
-            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
             boolean overResize = false;
@@ -878,26 +857,42 @@ public class TcInteractionHandler {
                     overLedNumArea = true;
                 }
             }
-            if (overTopRight) {
-                tc.getCanvas().setCursor(Cursor.HAND);
-            } else if (overResize) {
-                tc.getCanvas().setCursor(Cursor.SE_RESIZE);
-            } else if (overLedNumArea) {
-                tc.getCanvas().setCursor(Cursor.HAND);
-            } else if (overShape) {
-                tc.getCanvas().setCursor(Cursor.OPEN_HAND);
-            } else {
-                if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null) {
-                    if (tc.getCloseBtnBounds().contains(mouseX, mouseY)) {
-                        tc.getCanvas().setCursor(Cursor.HAND);
-                    } else {
-                        tc.getCanvas().setCursor(Cursor.DEFAULT);
-                    }
-                } else {
-                    tc.getCanvas().setCursor(Cursor.DEFAULT);
-                }
-            }
+            Cursor cursor = determineCursor(mouseX, mouseY, overTopRight, overResize, overLedNumArea, overShape);
+            tc.getCanvas().setCursor(cursor);
         });
+    }
+
+    /**
+     * Determine the correct cursor for the current mouse position.
+     * Priority: RLE overlay close button > RLE overlay panel > top-right corner / LED num area / resize handle / shape > tooltip close button > default.
+     *
+     * @param mouseX         mouse X coordinate
+     * @param mouseY         mouse Y coordinate
+     * @param overTopRight   true if hovering a top-right corner action area
+     * @param overResize     true if hovering a resize handle
+     * @param overLedNumArea true if hovering an LED number area
+     * @param overShape      true if hovering any shape
+     * @return the appropriate Cursor
+     */
+    private Cursor determineCursor(int mouseX, int mouseY, boolean overTopRight, boolean overResize, boolean overLedNumArea, boolean overShape) {
+        // Highest priority: RLE overlay controls
+        if (GuiSingleton.getInstance().rleVisualMapVisible) {
+            if (tc.getRleOverlayXBounds() != null && tc.getRleOverlayXBounds().contains(mouseX, mouseY)) {
+                return Cursor.HAND;
+            }
+            if (tc.getRleOverlayPanelBounds() != null && tc.getRleOverlayPanelBounds().contains(mouseX, mouseY)) {
+                return Cursor.V_RESIZE;
+            }
+        }
+        // Shape related cursors (priority order)
+        if (overTopRight || overLedNumArea) return Cursor.HAND;
+        if (overResize) return Cursor.SE_RESIZE;
+        if (overShape) return Cursor.OPEN_HAND;
+        // Tooltip close button
+        if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(mouseX, mouseY)) {
+            return Cursor.HAND;
+        }
+        return Cursor.DEFAULT;
     }
 
     /**
@@ -914,7 +909,6 @@ public class TcInteractionHandler {
                 tc.getCanvas().setCursor(Cursor.DEFAULT);
                 return;
             }
-            if (GuiSingleton.getInstance().rleVisualMapVisible) return;
             canvasClicked = false;
             draggingTile = false;
             if (selectionRectActive) {
