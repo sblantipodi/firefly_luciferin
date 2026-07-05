@@ -477,7 +477,7 @@ public class GuiManager {
      *
      * @param dialog in use
      */
-    void setDialogTheme(Dialog<String> dialog) {
+    public void setDialogTheme(Dialog<String> dialog) {
         setStylesheet(dialog.getDialogPane().getStylesheets(), null);
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
     }
