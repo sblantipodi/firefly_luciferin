@@ -916,6 +916,9 @@ public class TestCanvas {
                 boolean isLeader = ch == FULL_BLOCK || ch == '#';
                 double cellX = visualXStart + (ci - vi) * (cellSize + cellGap);
                 Color cellColor;
+                // Draw a contrasting background frame behind each cell so it stands out
+                gc.setFill(new Color(0.15, 0.15, 0.35, 1.0));
+                gc.fillRect(cellX - 1, lineCursorY - 1, cellSize + 2, cellSize + 2);
                 if (NetworkSingleton.lastRleLedsColors != null && ci < NetworkSingleton.lastRleLedsColors.length) {
                     java.awt.Color ledColor = NetworkSingleton.lastRleLedsColors[ci];
                     cellColor = new Color(ledColor.getRed() / 255.0, ledColor.getGreen() / 255.0,
