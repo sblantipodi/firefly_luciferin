@@ -273,24 +273,6 @@ public class TestCanvas {
     }
 
     /**
-     * Increases the brightness of the specified color by multiplying it by a given factor,
-     * clamping the resulting brightness to a maximum value of 1.0. The hue, saturation,
-     * and opacity remain unchanged.
-     *
-     * @param color  the original color to adjust
-     * @param factor the multiplier applied to the brightness component
-     * @return a new Color with the adjusted and clamped brightness
-     */
-    public static Color overbrighten(Color color, double factor) {
-        return Color.hsb(
-                color.getHue(),
-                color.getSaturation(),
-                Math.min(1.0, color.getBrightness() * factor),  // clamp a 1.0
-                color.getOpacity()
-        );
-    }
-
-    /**
      * Get hue
      *
      * @param numbersList      list of numbers
