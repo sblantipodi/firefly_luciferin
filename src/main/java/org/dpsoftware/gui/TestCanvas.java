@@ -55,6 +55,8 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.gui.tc.RleVisualMapHandler;
+import org.dpsoftware.gui.tc.TcInteractionHandler;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.ColorRGBW;
@@ -81,7 +83,7 @@ public class TestCanvas {
     public boolean tooltipVisible;
     GraphicsContext gc;
     Canvas canvas;
-    Stage stage;
+    public Stage stage;
     double stageX;
     double stageY;
     int imageHeight, itemsPositionY;
@@ -582,7 +584,7 @@ public class TestCanvas {
      * @param size button width/height (square)
      * @return the bounds of the drawn button, useful for hit-testing clicks
      */
-    Rectangle2D drawCloseButton(double x, double y, double size) {
+    public Rectangle2D drawCloseButton(double x, double y, double size) {
         LinearGradient closeBtnGradient = new LinearGradient(
                 0, y, 0, y + size, false, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(50, 50, 50)),
@@ -668,7 +670,7 @@ public class TestCanvas {
      * @param zoneName zone name
      * @return new led coordinate
      */
-    LEDCoordinate getLedCoordinate(LEDCoordinate c, String zoneName) {
+    public LEDCoordinate getLedCoordinate(LEDCoordinate c, String zoneName) {
         int canvasWidth = (int) canvas.getWidth();
         int canvasHeight = (int) canvas.getHeight();
         int newX;
