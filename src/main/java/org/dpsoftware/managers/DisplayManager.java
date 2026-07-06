@@ -128,8 +128,8 @@ public class DisplayManager {
     private List<DisplayInfo> getScreensWithJavaFX() {
         List<DisplayInfo> displayInfoList = new ArrayList<>();
         for (Screen screen : Screen.getScreens()) {
-            Rectangle2D visualBounds = screen.getBounds();
             Rectangle2D bounds = screen.getBounds();
+            Rectangle2D visualBounds = screen.getVisualBounds();
             DisplayInfo displayInfo = getDisplayInfo(screen, bounds, visualBounds);
             displayInfoList.add(displayInfo);
         }

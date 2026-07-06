@@ -137,7 +137,7 @@ public class TestCanvas {
         stage = new Stage();
         stage.initOwner(settingStage);
         stage.initStyle(StageStyle.TRANSPARENT);
-        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.initModality(Modality.NONE);
         stage.setAlwaysOnTop(false);
         interactionHandler = new TcInteractionHandler(this);
         interactionHandler.manageCanvasKeyPressed(0);
@@ -765,6 +765,10 @@ public class TestCanvas {
      * @param saturation use full or half saturation, this is influenced by the combo box
      */
     public void drawTestShapes(Configuration conf, int saturation) {
+        if (rleOverlayOnlyMode) {
+            drawOverlayOnly();
+            return;
+        }
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
         float saturationToUse;
         switch (saturation) {
@@ -815,85 +819,155 @@ public class TestCanvas {
     }
 
     /**
+     * Calculate layout coordinates and properties for the RLE visual map.
+     *
+     * @param virtualWidth  virtual width of the screen / monitor
+     * @param virtualHeight virtual height of the screen / monitor
+     * @return layout calculations container
+     */
+    private RleLayout calculateRleLayout(double virtualWidth, double virtualHeight) {
+        RleLayout layout = new RleLayout();
+        Font fpsFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 11);
+        layout.availWidth = virtualWidth * 0.80;
+        layout.leftMargin = (virtualWidth - layout.availWidth) / 2;
+        Text tempText = new Text("[Entries: " + NetworkSingleton.lastRleEntries + "]");
+        tempText.setFont(fpsFont);
+        double entriesLineHeight = tempText.getLayoutBounds().getHeight();
+        int charCount = Math.max(1, NetworkSingleton.lastRleLedCount);
+        double cellsTargetWidth = layout.availWidth * 0.75;
+        layout.cellGap = 1;
+        layout.cellSize = Math.max(1, (int) (cellsTargetWidth / charCount) - layout.cellGap);
+        if (layout.cellSize > 8) {
+            layout.cellSize = 8;
+        }
+        layout.visualHeight = layout.cellSize + 4;
+        layout.statsMain = "[LEDs: " + NetworkSingleton.lastRleLedCount
+                + ", Group by: " + MainSingleton.getInstance().config.getGroupBy()
+                + ", Group count: " + NetworkSingleton.lastRleGroupCount
+                + ", Leaders: " + NetworkSingleton.lastRleLeaderCount + "]";
+        layout.statsGamma = "Dynamic Gamma: " + String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
+        tempText = new Text(layout.statsMain);
+        tempText.setFont(fpsFont);
+        double statsHeight = tempText.getLayoutBounds().getHeight();
+        // On Windows: dynamic offset based on actual taskbar height via DisplayManager.
+        double baseOffset = 100;
+        if (NativeExecutor.isWindows()) {
+            DisplayInfo disp = new DisplayManager().getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber());
+            double fullHeight = disp.getHeight();
+            double visualExtent = disp.getMaxY() - disp.getMinY();
+            baseOffset = Math.max(0, fullHeight - visualExtent);
+        }
+        double bottomAnchor = virtualHeight - baseOffset + rleOverlayYOffset;
+        double currentY = bottomAnchor;
+        currentY -= statsHeight + 4;
+        layout.statsLineY = currentY;
+        currentY -= layout.visualHeight;
+        double visualCellWidth = (layout.cellSize + layout.cellGap) * charCount;
+        layout.visualXStart = layout.leftMargin + (layout.availWidth - visualCellWidth) / 2;
+        currentY -= entriesLineHeight + 4;
+        layout.entriesLineY = currentY;
+        layout.panelTopY = layout.entriesLineY - fpsFont.getSize();
+        layout.panelBottomY = bottomAnchor;
+        double minPanelTopY = 4;
+        double maxPanelBottomY = virtualHeight - 4;
+        double correction = 0;
+        if (layout.panelTopY < minPanelTopY) {
+            correction = minPanelTopY - layout.panelTopY;
+        } else if (layout.panelBottomY > maxPanelBottomY) {
+            correction = maxPanelBottomY - layout.panelBottomY;
+        }
+        if (correction != 0) {
+            rleOverlayYOffset += correction;
+            layout.statsLineY += correction;
+            layout.entriesLineY += correction;
+            layout.panelTopY += correction;
+            layout.panelBottomY += correction;
+        }
+        double midPanelY = (layout.panelTopY + layout.panelBottomY) / 2.0;
+        double centerYOffset = midPanelY - layout.statsLineY;
+        layout.statsLineY += centerYOffset;
+        return layout;
+    }
+
+    /**
+     * Update the stage and canvas bounds according to the active mode.
+     * Resizes and moves the stage to wrap only the RLE panel in overlay-only mode,
+     * or restores it to full monitor bounds in normal mode.
+     */
+    public void updateStageBounds() {
+        DisplayInfo displayInfo = new DisplayManager().getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber());
+        if (displayInfo == null) {
+            return;
+        }
+        double virtualWidth = displayInfo.getWidth();
+        double virtualHeight = displayInfo.getHeight();
+        if (rleOverlayOnlyMode) {
+            RleLayout layout = calculateRleLayout(virtualWidth, virtualHeight);
+            double panelX = layout.leftMargin - 4;
+            double panelY = layout.panelTopY - 2;
+            double panelW = layout.availWidth + 8;
+            double panelH = layout.panelBottomY - layout.panelTopY;
+            if (stage.isFullScreen()) {
+                stage.setFullScreen(false);
+            }
+            stage.setX(displayInfo.getMinX() + panelX);
+            stage.setY(displayInfo.getMinY() + panelY);
+            stage.setWidth(panelW);
+            stage.setHeight(panelH);
+            canvas.setWidth(panelW);
+            canvas.setHeight(panelH);
+        } else {
+            if (NativeExecutor.isLinux()) {
+                stage.setFullScreen(true);
+            } else {
+                stage.setX(displayInfo.getMinX());
+                stage.setY(displayInfo.getMinY());
+                stage.setWidth(virtualWidth);
+                stage.setHeight(virtualHeight);
+            }
+            canvas.setWidth(virtualWidth);
+            canvas.setHeight(virtualHeight);
+        }
+    }
+
+    /**
      * Draw the RLE visual map on the canvas: layout calculation, background panel, and delegate content drawing.
      */
     private void drawRleVisualMap() {
         if (NetworkSingleton.lastRleEntries.isEmpty()) {
             return;
         }
+        DisplayInfo displayInfo = new DisplayManager().getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber());
+        double virtualWidth = displayInfo != null ? displayInfo.getWidth() : canvas.getWidth();
+        double virtualHeight = displayInfo != null ? displayInfo.getHeight() : canvas.getHeight();
+        RleLayout layout = calculateRleLayout(virtualWidth, virtualHeight);
         Font fpsFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 11);
-        double marginX = 10;
-        double canvasWidth = canvas.getWidth();
-        double availWidth = canvasWidth - marginX * 2;
-        int cellSize;
-        int cellGap = 1;
-        // Measure the three rows (entries, visual pattern, stats)
-        Text tempText = new Text("[Entries: " + NetworkSingleton.lastRleEntries + "]");
-        tempText.setFont(fpsFont);
-        double entriesLineHeight = tempText.getLayoutBounds().getHeight();
-        int charCount = Math.max(1, NetworkSingleton.lastRleLedCount);
-        // Shrink cell size so the entire RLE bar fits within 75% of canvas width
-        double targetWidth = canvasWidth * 0.75;
-        cellSize = Math.max(1, (int) (targetWidth / charCount) - cellGap);
-        if (cellSize > 8) {
-            cellSize = 8;
-        }
-        double visualHeight = cellSize + 4;
-        String statsMain = "[LEDs: " + NetworkSingleton.lastRleLedCount
-                + ", Group by: " + MainSingleton.getInstance().config.getGroupBy()
-                + ", Group count: " + NetworkSingleton.lastRleGroupCount
-                + ", Leaders: " + NetworkSingleton.lastRleLeaderCount + "]";
-        String statsGamma = "Dynamic Gamma: " + String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
-        tempText = new Text(statsMain);
-        tempText.setFont(fpsFont);
-        double statsHeight = tempText.getLayoutBounds().getHeight();
-        // Anchor the panel to the bottom of the canvas by default, then apply the user-controlled vertical drag offset
-        double bottomAnchor = canvas.getHeight() + rleOverlayYOffset;
-        // Position from bottom-up, then shift to center the stats line in the overlay panel
-        double currentY = bottomAnchor;
-        currentY -= statsHeight + 4;
-        double statsLineY = currentY;
-        currentY -= visualHeight;
-        double visualCellWidth = (cellSize + cellGap) * charCount;
-        double visualXStart = marginX + (availWidth - visualCellWidth) / 2;
-        currentY -= entriesLineHeight + 4;
-        double entriesLineY = currentY;
-        double panelTopY = entriesLineY - fpsFont.getSize();
-        double panelBottomY = bottomAnchor;
-        // Clamp the panel so dragging never pushes it outside the visible canvas area
-        double minPanelTopY = 4;
-        double maxPanelBottomY = canvas.getHeight() - 4;
-        double correction = 0;
-        if (panelTopY < minPanelTopY) {
-            correction = minPanelTopY - panelTopY;
-        } else if (panelBottomY > maxPanelBottomY) {
-            correction = maxPanelBottomY - panelBottomY;
-        }
-        if (correction != 0) {
-            rleOverlayYOffset += correction;
-            statsLineY += correction;
-            entriesLineY += correction;
-            panelTopY += correction;
-            panelBottomY += correction;
-        }
-        // Center statsMain vertically in the overlay panel
-        double midPanelY = (panelTopY + panelBottomY) / 2.0;
-        double centerYOffset = midPanelY - statsLineY;
-        statsLineY += centerYOffset;
-        // Background panel
         gc.save();
+        if (rleOverlayOnlyMode) {
+            gc.translate(-(layout.leftMargin - 4), -(layout.panelTopY - 2));
+        }
         gc.setFill(new Color(0, 0, 0, 0.65));
-        gc.fillRoundRect(marginX - 4, panelTopY - 2, availWidth + 8, panelBottomY - panelTopY, 4, 4);
-        this.rleOverlayPanelBounds = new Rectangle2D(marginX - 4, panelTopY - 2, availWidth + 8, panelBottomY - panelTopY);
-        // Draw X at absolute top-right of the overlay panel
+        gc.fillRoundRect(layout.leftMargin - 4, layout.panelTopY - 2, layout.availWidth + 8, layout.panelBottomY - layout.panelTopY, 4, 4);
+        this.rleOverlayPanelBounds = new Rectangle2D(
+                rleOverlayOnlyMode ? 0 : layout.leftMargin - 4,
+                rleOverlayOnlyMode ? 0 : layout.panelTopY - 2,
+                layout.availWidth + 8,
+                layout.panelBottomY - layout.panelTopY
+        );
         double rleCloseSize = 14;
         double rleCloseMargin = 6;
-        double rleCloseX = marginX + availWidth + 4 - rleCloseSize - rleCloseMargin;
-        double rleCloseY = panelTopY - 2 + rleCloseMargin;
-        this.rleOverlayXBounds = drawCloseButton(rleCloseX, rleCloseY, rleCloseSize);
-        // Delegate content drawing (entries, visual pattern, stats, FPS)
-        drawRleVisualMapContent(fpsFont, marginX, availWidth, cellSize, cellGap, visualHeight, visualXStart,
-                entriesLineY, statsLineY, statsMain, statsGamma);
+        double rleCloseX = layout.leftMargin + layout.availWidth + 8 - rleCloseSize - rleCloseMargin;
+        double rleCloseY = layout.panelTopY - 2 + rleCloseMargin;
+        drawCloseButton(rleCloseX, rleCloseY, rleCloseSize);
+        this.rleOverlayXBounds = new Rectangle2D(
+                rleOverlayOnlyMode ? rleCloseX - (layout.leftMargin - 4) : rleCloseX,
+                rleOverlayOnlyMode ? rleCloseY - (layout.panelTopY - 2) : rleCloseY,
+                rleCloseSize,
+                rleCloseSize
+        );
+        drawRleVisualMapContent(fpsFont, layout.leftMargin, layout.availWidth, (int) layout.cellSize, (int) layout.cellGap,
+                layout.visualHeight, layout.visualXStart, layout.entriesLineY, layout.statsLineY,
+                layout.statsMain, layout.statsGamma);
         gc.restore();
     }
 
@@ -907,7 +981,7 @@ public class TestCanvas {
         String visualPattern = NetworkSingleton.lastRleVisualBar;
         int charsPerLine = (int) (availWidth / (cellSize + cellGap));
         if (charsPerLine < 10) charsPerLine = 10;
-        double rowBaseY = cursorY;
+        double rowBaseY = cellSize <= 6 ? cursorY + visualHeight : cursorY;
         for (int vi = 0; vi < visualPattern.length(); vi += charsPerLine) {
             int endLimit = Math.min(vi + charsPerLine, visualPattern.length());
             double lineCursorY = rowBaseY;
@@ -956,8 +1030,9 @@ public class TestCanvas {
             gc.fillText(line, marginX, cursorY);
             cursorY += lineH + lineGap;
         }
-        // Visual pattern block cells — delegating to dedicated method
-        drawRleBlockCells(cursorY, availWidth, cellSize, cellGap, visualHeight, visualXStart);
+        // Visual pattern block cells always anchored at the original entries line position
+        // so they don't shift when RLE entries wrap onto multiple lines
+        drawRleBlockCells(entriesLineY + lineH + lineGap, availWidth, cellSize, cellGap, visualHeight, visualXStart);
         // Stats line
         gc.setFont(fpsFont);
         gc.setFill(new Color(0.7, 1, 0.7, 1));
@@ -980,6 +1055,26 @@ public class TestCanvas {
         double consumerY = producerY - fpsLineHeight - 2;
         fpsMeasure.setText(producerFps);
         gc.fillText(producerFps, rightEdge - fpsMeasure.getLayoutBounds().getWidth(), consumerY);
+    }
+
+    /**
+     * Enter overlay-only mode: a periodic animation redraws only the RLE overlay on a black background.
+     */
+    public void startOverlayOnlyMode() {
+        int minSpeed = Integer.parseInt(Constants.DEFAULT_FRAMERATE);
+        rleOverlayOnlyMode = true;
+        updateStageBounds();
+        stage.setAlwaysOnTop(true);
+        stage.toFront();
+        if (rleOverlayAnimation != null) {
+            rleOverlayAnimation.stop();
+        }
+        drawOverlayOnly();
+        double gwFps = MainSingleton.getInstance().FPS_GW_CONSUMER < minSpeed ? minSpeed : MainSingleton.getInstance().FPS_GW_CONSUMER;
+        KeyFrame frame = new KeyFrame(javafx.util.Duration.millis(1000 / gwFps), _ -> drawOverlayOnly());
+        rleOverlayAnimation = new Timeline(frame);
+        rleOverlayAnimation.setCycleCount(Integer.MAX_VALUE);
+        rleOverlayAnimation.playFromStart();
     }
 
     /**
@@ -1034,28 +1129,11 @@ public class TestCanvas {
     }
 
     /**
-     * Enter overlay-only mode: a periodic animation redraws only the RLE overlay on a black background.
-     */
-    public void startOverlayOnlyMode() {
-        int minSpeed = Integer.parseInt(Constants.DEFAULT_FRAMERATE);
-        rleOverlayOnlyMode = true;
-        stage.setAlwaysOnTop(true);
-        if (rleOverlayAnimation != null) {
-            rleOverlayAnimation.stop();
-        }
-        drawOverlayOnly();
-        double gwFps = MainSingleton.getInstance().FPS_GW_CONSUMER < minSpeed ? minSpeed : MainSingleton.getInstance().FPS_GW_CONSUMER;
-        KeyFrame frame = new KeyFrame(javafx.util.Duration.millis(1000 / gwFps), _ -> drawOverlayOnly());
-        rleOverlayAnimation = new Timeline(frame);
-        rleOverlayAnimation.setCycleCount(Integer.MAX_VALUE);
-        rleOverlayAnimation.playFromStart();
-    }
-
-    /**
      * Exit overlay-only mode: stop the animation and restore normal rendering.
      */
     public void stopOverlayOnlyMode() {
         rleOverlayOnlyMode = false;
+        updateStageBounds();
         stage.setAlwaysOnTop(false);
         if (rleOverlayAnimation != null) {
             rleOverlayAnimation.stop();
@@ -1064,6 +1142,21 @@ public class TestCanvas {
         if (MainSingleton.getInstance().config != null) {
             drawTestShapes(MainSingleton.getInstance().config, 0);
         }
+    }
+
+    private static class RleLayout {
+        double leftMargin;
+        double panelTopY;
+        double panelBottomY;
+        double availWidth;
+        double entriesLineY;
+        double statsLineY;
+        double cellSize;
+        double cellGap;
+        double visualHeight;
+        double visualXStart;
+        String statsMain;
+        String statsGamma;
     }
 
 }
