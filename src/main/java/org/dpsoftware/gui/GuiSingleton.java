@@ -58,7 +58,7 @@ public class GuiSingleton {
     public boolean firmTypeFull = false;
     public boolean upgrade = false;
     public boolean rleVisualMapVisible;
-    Stage colorDialog;
+    public Stage colorDialog;
 
 }
 

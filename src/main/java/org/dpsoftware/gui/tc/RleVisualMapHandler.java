@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.gui.tc;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -36,6 +36,8 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.network.NetworkSingleton;
