@@ -190,6 +190,7 @@ public class Constants {
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
     public static final String FXML_PROFILE_DIALOG = "profileDialog";
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
+    public static final String FXML_GAMMA_DIALOG = "gammaDialog";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
     public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
@@ -452,6 +453,8 @@ public class Constants {
     public static final String TOOLTIP_CD_INFO = "tooltip.colorcorrection.info";
     public static final String TOOLTIP_OVERLAY = "tooltip.colorcorrection.overlay";
     public static final String TOOLTIP_GAMMA = "tooltip.gamma";
+    public static final String TOOLTIP_GAMMA_ENABLE_AUTO = "tooltip.gamma.enable.auto";
+    public static final String TOOLTIP_GAMMA_LEVEL = "tooltip.gamma.level";
     public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
     public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";
@@ -617,12 +620,14 @@ public class Constants {
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
     public static final long SIMD_BENCHMARK_DURATION_MS = 120_000;
-    public static final double ADAPTIVE_GAMMA_FLOOR = 0.6;                    // minimum gamma multiplier on dark scenes
-    public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD = 0.05;    // below this brightness, full adaptive gamma
-    public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD = 0.15;  // above this brightness, classic gamma correction
+    public static final double ADAPTIVE_GAMMA_FLOOR_SDR = 0.8;                    // minimum gamma multiplier on dark scenes
+    public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_SDR = 0.05;    // below this brightness, full adaptive gamma
+    public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_SDR = 0.15;  // above this brightness, classic gamma correction
+    public static final double ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_SDR = 0.05;
     public static final double ADAPTIVE_GAMMA_FLOOR_HDR = 0.6;
     public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_HDR = 0.05;
     public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_HDR = 0.15;
+    public static final double ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_HDR = 0.15;
     public static final double ADAPTIVE_GAMMA_SMOOTHING_FACTOR = 0.8;         // convergence speed: 0=no update, 1=instant
     public static final double ADAPTIVE_GAMMA_DEAD_ZONE = 0.02;               // minimum gamma delta to trigger an update
     // Canvas LED Coordinate
@@ -696,7 +701,6 @@ public class Constants {
     public static final float GREY_TOLERANCE = 0.05F;
     public static final float DEGREE_360 = 360.0F;
     public static final boolean USE_LOSSLESS_COMPRESSION = true;
-    public static final boolean USE_DYNAMIC_GAMMA_CORRECTION = true;
     // Info
     public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
     public static final String INFO_WIFI_STRENGTH = "fxml.info.signal.strenght";
