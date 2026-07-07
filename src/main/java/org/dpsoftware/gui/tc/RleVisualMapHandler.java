@@ -226,10 +226,9 @@ public class RleVisualMapHandler {
                 gc.setFill(new Color(0.15, 0.15, 0.35, 1.0));
                 gc.fillRect(cellX - 1, lineCursorY - 1, cellSize + 2, cellSize + 2);
                 if (NetworkSingleton.lastRleLedsColors != null && ci < NetworkSingleton.lastRleLedsColors.length) {
-                    java.awt.Color ledColor = NetworkSingleton.lastRleLedsColors[ci];
+                    java.awt.Color ledColor = ImageProcessor.inverseGammaCorrection(NetworkSingleton.lastRleLedsColors[ci]);
                     cellColor = new Color(ledColor.getRed() / 255.0, ledColor.getGreen() / 255.0,
                             ledColor.getBlue() / 255.0, ledColor.getAlpha() / 255.0);
-                    cellColor = TestCanvas.overbrighten(cellColor, 1.4);
                     gc.setFill(isLeader ? new Color(0, 1, 0, 0.85) : new Color(0.25, 0.25, 0.25, 0.7));
                     gc.fillRect(cellX, lineCursorY + visualHeight, cellSize, cellSize);
                 } else {
