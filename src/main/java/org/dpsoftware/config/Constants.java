@@ -617,7 +617,7 @@ public class Constants {
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
     public static final long SIMD_BENCHMARK_DURATION_MS = 120_000;
-    public static final double ADAPTIVE_GAMMA_FLOOR = 0.9;                    // minimum gamma multiplier on dark scenes
+    public static final double ADAPTIVE_GAMMA_FLOOR = 0.6;                    // minimum gamma multiplier on dark scenes
     public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD = 0.05;    // below this brightness, full adaptive gamma
     public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD = 0.15;  // above this brightness, classic gamma correction
     public static final double ADAPTIVE_GAMMA_FLOOR_HDR = 0.6;

@@ -314,6 +314,26 @@ public class ImageProcessor {
     }
 
     /**
+     * Reverses the gamma correction applied by Firefly Luciferin on LED color values.
+     * Before sending colors to the firmware, Firefly Luciferin applies a gamma correction curve to match the
+     * non-linear response of physical LEDs. When displaying those same colors back on screen, we apply the
+     * inverse gamma so the user perceives the original intent rather than the hardware-adjusted values.
+     *
+     * @param color the gamma-corrected LED color value to reverse
+     * @return the color with inverse gamma applied, ready for accurate screen display
+     */
+    public static Color inverseGammaCorrection(Color color) {
+        Configuration config = MainSingleton.getInstance().config;
+        double gamma = config.isDynamicGammaCorrection() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
+        double invGamma = 1.0 / gamma;
+        return new Color(
+                clamp((int) (255.0 * Math.pow(color.getRed() / 255.0, invGamma))),
+                clamp((int) (255.0 * Math.pow(color.getGreen() / 255.0, invGamma))),
+                clamp((int) (255.0 * Math.pow(color.getBlue() / 255.0, invGamma)))
+        );
+    }
+
+    /**
      * Dynamically calculates and updates the display gamma value based on the current HDR/SDR status.
      * ADAPTIVE_GAMMA_FLOOR:
      * Defines how low the gamma is allowed to drop in dark scenes.
