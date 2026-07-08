@@ -681,6 +681,14 @@ public class GuiManager {
             } else {
                 ((SmoothingDialogController) controller).initDefaultValues();
             }
+        }
+        if (classForCast == GammaDialogController.class) {
+            ((GammaDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((GammaDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((GammaDialogController) controller).initDefaultValues();
+            }
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
             ((SatellitesDialogController) controller).setTooltips();
@@ -770,6 +778,22 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SMOOTHING_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(SmoothingDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show gamma dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showGammaDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_GAMMA_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(GammaDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
