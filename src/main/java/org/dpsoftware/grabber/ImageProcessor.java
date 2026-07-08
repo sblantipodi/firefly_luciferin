@@ -305,7 +305,7 @@ public class ImageProcessor {
      */
     public static Color gammaCorrection(Color color) {
         Configuration config = MainSingleton.getInstance().config;
-        double gamma = config.isDynamicGammaCorrection() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
+        double gamma = config.isEnableAutomaticGamma() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
         return new Color(
                 clamp((int) (255.0 * Math.pow(color.getRed() / 255.0, gamma))),
                 clamp((int) (255.0 * Math.pow(color.getGreen() / 255.0, gamma))),
@@ -324,7 +324,7 @@ public class ImageProcessor {
      */
     public static Color inverseGammaCorrection(Color color) {
         Configuration config = MainSingleton.getInstance().config;
-        double gamma = config.isDynamicGammaCorrection() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
+        double gamma = config.isEnableAutomaticGamma() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
         double invGamma = 1.0 / gamma;
         return new Color(
                 clamp((int) (255.0 * Math.pow(color.getRed() / 255.0, invGamma))),
@@ -357,10 +357,16 @@ public class ImageProcessor {
      * adaptive value back to the normal configured gamma using a smoothstep curve.
      */
     public static void updateGamma() {
+        String level = MainSingleton.getInstance().config.getGammaLevel();
         boolean hdr = MainSingleton.getInstance().isHdrActive();
-        double floor = hdr ? Constants.ADAPTIVE_GAMMA_FLOOR_HDR : Constants.ADAPTIVE_GAMMA_FLOOR;
-        double darkThreshold = hdr ? Constants.ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_HDR : Constants.ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD;
-        double brightThreshold = hdr ? Constants.ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_HDR : Constants.ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD;
+        double floor = hdr ? Constants.ADAPTIVE_GAMMA_FLOOR_HDR : Constants.ADAPTIVE_GAMMA_FLOOR_SDR;
+        double floorDifference = hdr ? Constants.ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_HDR : Constants.ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_SDR;
+        if (Enums.GammaLevel.HIGH.getBaseI18n().equals(level))
+            floor = floor + (floorDifference * 2);
+        else if (Enums.GammaLevel.MEDIUM.getBaseI18n().equals(level))
+            floor = floor + floorDifference;
+        double darkThreshold = hdr ? Constants.ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_HDR : Constants.ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_SDR;
+        double brightThreshold = hdr ? Constants.ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_HDR : Constants.ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_SDR;
         double configGamma = MainSingleton.getInstance().config.getGamma();
         double currentAvgBrightness = Double.longBitsToDouble(currentAvgBrightnessAtomic.get());
         double dynamicFloor = floor + (1.0 - floor) * Math.clamp(currentAvgBrightness / brightThreshold, 0.0, 1.0);
@@ -372,7 +378,7 @@ public class ImageProcessor {
         double currentGamma = Double.longBitsToDouble(currentGammaAtomic.get());
         double gammaDelta = Math.abs(targetGamma - currentGamma);
         double gamma;
-        if (Math.abs(targetGamma - configGamma) < Constants.ADAPTIVE_GAMMA_DEAD_ZONE) {
+        if (!MainSingleton.getInstance().config.isEnableAutomaticGamma() || Math.abs(targetGamma - configGamma) < Constants.ADAPTIVE_GAMMA_DEAD_ZONE) {
             // Bright scene, target is effectively configGamma, snap directly to avoid asymptotic trap.
             gamma = configGamma;
         } else if (gammaDelta < Constants.ADAPTIVE_GAMMA_DEAD_ZONE) {

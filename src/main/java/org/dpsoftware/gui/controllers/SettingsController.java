@@ -112,6 +112,8 @@ public class SettingsController {
     @FXML
     private EyeCareDialogController eyeCareDialogController;
     @FXML
+    private GammaDialogController gammaDialogController;
+    @FXML
     private ImprovDialogController improvDialogController;
     @FXML
     private ProfileDialogController profileDialogController;
@@ -877,6 +879,9 @@ public class SettingsController {
             if (eyeCareDialogController != null) {
                 eyeCareDialogController.initDefaultValues();
             }
+            if (gammaDialogController != null) {
+                gammaDialogController.initDefaultValues();
+            }
             if (improvDialogController != null) {
                 improvDialogController.initDefaultValues();
             }
@@ -903,6 +908,9 @@ public class SettingsController {
         }
         if (eyeCareDialogController != null) {
             eyeCareDialogController.save(config);
+        }
+        if (gammaDialogController != null) {
+            gammaDialogController.save(config);
         }
         if (improvDialogController != null) {
             improvDialogController.save();
@@ -1096,6 +1104,15 @@ public class SettingsController {
      */
     public void injectEyeCareController(EyeCareDialogController eyeCareDialogController) {
         this.eyeCareDialogController = eyeCareDialogController;
+    }
+
+    /**
+     * Inject gamma dialogue controller into the main controller
+     *
+     * @param gammaDialogController dialog controller
+     */
+    public void injectGammaController(GammaDialogController gammaDialogController) {
+        this.gammaDialogController = gammaDialogController;
     }
 
     /**
