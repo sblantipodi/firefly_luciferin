@@ -316,7 +316,7 @@ public class RleVisualMapHandler {
                 + ", Group by: " + MainSingleton.getInstance().config.getGroupBy()
                 + ", Group count: " + NetworkSingleton.lastRleGroupCount
                 + ", Leaders: " + NetworkSingleton.lastRleLeaderCount + "]";
-        layout.statsGamma = "Dynamic Gamma: " + String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
+        layout.statsGamma = "Adaptive Gamma: " + String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
         tempText = new Text(layout.statsMain);
         tempText.setFont(fpsFont);
         double statsHeight = tempText.getLayoutBounds().getHeight();
