@@ -26,6 +26,9 @@ import javafx.animation.Timeline;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -161,6 +164,36 @@ public class RleVisualMapHandler {
     }
 
     /**
+     * Draw an "HDR" badge to the left of the close button when HDR processing is active.
+     * The label uses a horizontal red→orange→yellow→green gradient.
+     *
+     * @param rleCloseX X coordinate of the close button
+     * @param rleCloseY Y coordinate of the close button
+     * @param gc        graphics context for drawing
+     */
+    private static void drawHdrIndicator(double rleCloseX, double rleCloseY, GraphicsContext gc) {
+        if (MainSingleton.getInstance().hdrActive) {
+            Font hdrFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 13);
+            Text hdrText = new Text("HDR");
+            hdrText.setFont(hdrFont);
+            double hdrW = hdrText.getLayoutBounds().getWidth();
+            double hdrGap = 8;
+            double hdrX = rleCloseX - hdrW - hdrGap;
+            double hdrY = rleCloseY + hdrText.getLayoutBounds().getHeight() - 4;
+            LinearGradient hdrGradient = new LinearGradient(
+                    0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
+                    new Stop(0, Color.RED),
+                    new Stop(0.33, Color.ORANGE),
+                    new Stop(0.66, Color.YELLOW),
+                    new Stop(1, Color.GREEN)
+            );
+            gc.setFill(hdrGradient);
+            gc.setFont(hdrFont);
+            gc.fillText("HDR", hdrX, hdrY);
+        }
+    }
+
+    /**
      * Draw the RLE visual map on the canvas: layout calculation, background panel, and delegate content drawing.
      */
     public void drawRleVisualMap() {
@@ -190,6 +223,7 @@ public class RleVisualMapHandler {
         double rleCloseX = layout.leftMargin + layout.availWidth + 8 - rleCloseSize - rleCloseMargin;
         double rleCloseY = layout.panelTopY - 2 + rleCloseMargin;
         tc.drawCloseButton(rleCloseX, rleCloseY, rleCloseSize);
+        drawHdrIndicator(rleCloseX, rleCloseY, gc);
         this.rleOverlayXBounds = new Rectangle2D(
                 rleOverlayOnlyMode ? rleCloseX - (layout.leftMargin - 4) : rleCloseX,
                 rleOverlayOnlyMode ? rleCloseY - (layout.panelTopY - 2) : rleCloseY,
