@@ -173,7 +173,7 @@ public class RleVisualMapHandler {
      */
     private static void drawHdrSdrIndicator(double rleCloseX, double rleCloseY, GraphicsContext gc) {
         Font labelFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 13);
-        Text labelText = new Text(MainSingleton.getInstance().hdrActive ? "HDR" : "SDR");
+        Text labelText = new Text(MainSingleton.getInstance().hdrActive ? Constants.HDR : Constants.SDR);
         labelText.setFont(labelFont);
         double labelW = labelText.getLayoutBounds().getWidth();
         double hdrGap = 8;
@@ -189,11 +189,11 @@ public class RleVisualMapHandler {
             );
             gc.setFill(hdrGradient);
             gc.setFont(labelFont);
-            gc.fillText("HDR", labelX, labelY);
+            gc.fillText(Constants.HDR, labelX, labelY);
         } else {
             gc.setFill(new Color(0.55, 0.55, 0.55, 0.85));
             gc.setFont(labelFont);
-            gc.fillText("SDR", labelX, labelY);
+            gc.fillText(Constants.SDR, labelX, labelY);
         }
     }
 

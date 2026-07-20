@@ -1,5 +1,5 @@
 /*
-  SensorAspectRatioDiscovery.java
+  SensorGammaDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -31,24 +31,24 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorAspectRatioDiscovery extends DeviceDiscovery implements DiscoveryObject {
+public class SensorGammaDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("force_update")
-    boolean forceUpdate;
+    @JsonProperty("value_template")
+    String valueTemplate;
     String icon;
 
     @Override
     public String getDiscoveryTopic() {
-        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/sensor/" + getBaseGWDiscoveryTopic() + "/aspectratio/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/sensor/" + getBaseGWDiscoveryTopic() + "/adaptivegamma/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Aspect Ratio Sensor");
+        this.name = generateUniqueName("Adaptive Gamma");
         this.uniqueId = this.name.replace(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio";
-        this.forceUpdate = true;
-        this.icon = "mdi:aspect-ratio";
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
+        this.valueTemplate = "{{ value_json.adaptiveGamma }}";
+        this.icon = "mdi:brightness-6";
         return CommonUtility.toJsonString(this);
     }
 
