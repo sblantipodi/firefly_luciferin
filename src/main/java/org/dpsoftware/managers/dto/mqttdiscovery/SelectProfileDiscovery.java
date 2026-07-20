@@ -55,7 +55,7 @@ public class SelectProfileDiscovery extends DeviceDiscovery implements Discovery
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Profiles");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile/set";
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.profile | default('Default') }}";
