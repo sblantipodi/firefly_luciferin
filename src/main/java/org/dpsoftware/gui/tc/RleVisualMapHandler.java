@@ -164,22 +164,22 @@ public class RleVisualMapHandler {
     }
 
     /**
-     * Draw an "HDR" badge to the left of the close button when HDR processing is active.
-     * The label uses a horizontal red→orange→yellow→green gradient.
+     * Draw an "HDR" badge (colored gradient) or "SDR" label (gray) to the left of the close button.
+     * The HDR label uses a horizontal red→orange→yellow→green gradient; SDR is rendered in gray.
      *
      * @param rleCloseX X coordinate of the close button
      * @param rleCloseY Y coordinate of the close button
      * @param gc        graphics context for drawing
      */
-    private static void drawHdrIndicator(double rleCloseX, double rleCloseY, GraphicsContext gc) {
+    private static void drawHdrSdrIndicator(double rleCloseX, double rleCloseY, GraphicsContext gc) {
+        Font labelFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 13);
+        Text labelText = new Text(MainSingleton.getInstance().hdrActive ? "HDR" : "SDR");
+        labelText.setFont(labelFont);
+        double labelW = labelText.getLayoutBounds().getWidth();
+        double hdrGap = 8;
+        double labelX = rleCloseX - labelW - hdrGap;
+        double labelY = rleCloseY + labelText.getLayoutBounds().getHeight() - 4;
         if (MainSingleton.getInstance().hdrActive) {
-            Font hdrFont = Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, 13);
-            Text hdrText = new Text("HDR");
-            hdrText.setFont(hdrFont);
-            double hdrW = hdrText.getLayoutBounds().getWidth();
-            double hdrGap = 8;
-            double hdrX = rleCloseX - hdrW - hdrGap;
-            double hdrY = rleCloseY + hdrText.getLayoutBounds().getHeight() - 4;
             LinearGradient hdrGradient = new LinearGradient(
                     0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
                     new Stop(0, Color.RED),
@@ -188,8 +188,12 @@ public class RleVisualMapHandler {
                     new Stop(1, Color.GREEN)
             );
             gc.setFill(hdrGradient);
-            gc.setFont(hdrFont);
-            gc.fillText("HDR", hdrX, hdrY);
+            gc.setFont(labelFont);
+            gc.fillText("HDR", labelX, labelY);
+        } else {
+            gc.setFill(new Color(0.55, 0.55, 0.55, 0.85));
+            gc.setFont(labelFont);
+            gc.fillText("SDR", labelX, labelY);
         }
     }
 
@@ -223,7 +227,7 @@ public class RleVisualMapHandler {
         double rleCloseX = layout.leftMargin + layout.availWidth + 8 - rleCloseSize - rleCloseMargin;
         double rleCloseY = layout.panelTopY - 2 + rleCloseMargin;
         tc.drawCloseButton(rleCloseX, rleCloseY, rleCloseSize);
-        drawHdrIndicator(rleCloseX, rleCloseY, gc);
+        if (NativeExecutor.isWindows()) drawHdrSdrIndicator(rleCloseX, rleCloseY, gc);
         this.rleOverlayXBounds = new Rectangle2D(
                 rleOverlayOnlyMode ? rleCloseX - (layout.leftMargin - 4) : rleCloseX,
                 rleOverlayOnlyMode ? rleCloseY - (layout.panelTopY - 2) : rleCloseY,
