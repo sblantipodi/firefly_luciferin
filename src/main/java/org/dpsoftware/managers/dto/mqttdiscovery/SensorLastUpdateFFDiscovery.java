@@ -45,7 +45,7 @@ public class SensorLastUpdateFFDiscovery extends DeviceDiscovery implements Disc
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Last Update (Firefly)");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ as_timestamp(now()) | timestamp_custom(\"%Y-%m-%d ~ %H:%M:%S\") }}";
         this.icon = "mdi:update";
