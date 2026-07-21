@@ -55,7 +55,7 @@ public class SelectColorModeDiscovery extends DeviceDiscovery implements Discove
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
-        this.uniqueId = this.name.replaceAll(" ", "_") + CommonUtility.getDeviceToUse().getMac().replace(":", "");
+        this.uniqueId = this.name.replace(" ", "_") + CommonUtility.getDeviceToUse().getMac().replace(":", "");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.colorMode | default('" + Enums.ColorMode.RGB_MODE.getBaseI18n() + "') }}";
         this.options = new ArrayList<>();

@@ -620,6 +620,8 @@ public class Constants {
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
     public static final long SIMD_BENCHMARK_DURATION_MS = 120_000;
+    public static final String HDR = "HDR";
+    public static final String SDR = "SDR";
     public static final double ADAPTIVE_GAMMA_FLOOR_SDR = 0.8;                    // minimum gamma multiplier on dark scenes
     public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_SDR = 0.05;    // below this brightness, full adaptive gamma
     public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_SDR = 0.15;  // above this brightness, classic gamma correction

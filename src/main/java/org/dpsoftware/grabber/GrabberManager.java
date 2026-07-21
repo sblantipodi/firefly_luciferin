@@ -261,6 +261,10 @@ public class GrabberManager {
                     mqttFramerateDto.setAspectRatio(MainSingleton.getInstance().config.isAutoDetectBlackBars() ?
                             CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS) : MainSingleton.getInstance().config.getDefaultLedMatrix());
                     mqttFramerateDto.setGamma(String.valueOf(MainSingleton.getInstance().config.getGamma()));
+                    String adaptiveGamma = String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
+                    if (NativeExecutor.isWindows())
+                        adaptiveGamma += " (" + (MainSingleton.getInstance().hdrActive ? Constants.HDR : Constants.SDR) + ")";
+                    mqttFramerateDto.setAdaptiveGamma(adaptiveGamma);
                     mqttFramerateDto.setSmoothingLvl((Enums.Ema.findByValue(MainSingleton.getInstance().config.getEmaAlpha()).getBaseI18n()));
                     mqttFramerateDto.setFrameGen((Enums.FrameGeneration.findByValue(MainSingleton.getInstance().config.getFrameInsertionTarget()).getBaseI18n()));
                     mqttFramerateDto.setProfile(Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg) ?

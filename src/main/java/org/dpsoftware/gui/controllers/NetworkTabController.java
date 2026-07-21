@@ -104,6 +104,7 @@ public class NetworkTabController {
         publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorGpioDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorWiFiDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorGammaDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorLdrDiscovery(), createEntity);
     }
 

@@ -57,7 +57,7 @@ public class LightDiscovery extends DeviceDiscovery implements DiscoveryObject {
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Switch");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.schema = "json";
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";
