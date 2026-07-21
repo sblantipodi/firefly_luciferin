@@ -240,12 +240,18 @@ public class PipelineManager {
 
     /**
      * Message offered to the queue is sent to the LED strip, if multi screen single instance, is sent via TCP Socket to the main instance
+     * EMA and white balance run on full-precision values, converting to 8-bit only before serialization or offering to the queue.
      *
-     * @param leds colors to be sent to the LED strip
+     * @param ledsFloat color floats [0..255] to be sent to the LED strip
      */
-    public static void offerToTheQueue(Color[] leds) {
-        ImageProcessor.exponentialMovingAverage(leds);
-        ImageProcessor.adjustStripWhiteBalance(leds);
+    public static void offerToTheQueue(org.dpsoftware.grabber.ColorFloat[] ledsFloat) {
+        ImageProcessor.exponentialMovingAverage(ledsFloat);
+        ImageProcessor.adjustStripWhiteBalance(ledsFloat);
+        // Convert to 8-bit only here, final quantization point
+        Color[] leds = new Color[ledsFloat.length];
+        for (int i = 0; i < ledsFloat.length; i++) {
+            leds[i] = ledsFloat[i].toColor();
+        }
         if (CommonUtility.isSingleDeviceMultiScreen()) {
             if (NetworkSingleton.getInstance().msgClient == null) {
                 NetworkSingleton.getInstance().msgClient = new MessageClient();
