@@ -112,6 +112,7 @@ public class ColorUtilities {
 
     /**
      * Returns the RGB equivalent of a given HSL (Hue/Saturation/Luminance) color.
+     * Delegates to {@link #HSLtoRGBFloat(float, float, float)} and converts to 8-bit at the end.
      *
      * @param h the hue component, between 0.0 and 1.0
      * @param s the saturation component, between 0.0 and 1.0
@@ -119,35 +120,33 @@ public class ColorUtilities {
      * @return a new Color object equivalent to the HSL components
      */
     public static Color HSLtoRGB(float h, float s, float l) {
-        int[] rgb = HSLtoRGB(h, s, l, null);
-        return new Color(rgb[0], rgb[1], rgb[2]);
+        float[] rgb = HSLtoRGBFloat(h, s, l);
+        return new Color(Math.clamp(Math.round(rgb[0]), 0, 255),
+                Math.clamp(Math.round(rgb[1]), 0, 255),
+                Math.clamp(Math.round(rgb[2]), 0, 255));
     }
 
     /**
-     * Returns the RGB equivalent of a given HSL (Hue/Saturation/Luminance) color.
-     * All three RGB components are integers between 0 and 255.
+     * Returns the RGB equivalent as floats [0..255].
+     * Avoids integer quantization for intermediate color pipelines.
      *
-     * @param h   the hue component, between 0.0 and 1.0
-     * @param s   the saturation component, between 0.0 and 1.0
-     * @param l   the luminance component, between 0.0 and 1.0
-     * @param rgb a pre-allocated array of ints; can be null
-     * @return rgb if non-null, a new array of 3 ints otherwise
+     * @param h the hue component, between 0.0 and 1.0
+     * @param s the saturation component, between 0.0 and 1.0
+     * @param l the luminance component, between 0.0 and 1.0
+     * @return array of 3 floats representing R, G, B in [0..255]
      */
-    public static int[] HSLtoRGB(float h, float s, float l, int[] rgb) {
-        if (rgb == null) {
-            rgb = new int[3];
-        }
-        if (h < 0) h = 0.0f;
+    public static float[] HSLtoRGBFloat(float h, float s, float l) {
+        if (h < 0f) h = 0.0f;
         else if (h > 1.0f) h = 1.0f;
-        if (s < 0) s = 0.0f;
+        if (s < 0f) s = 0.0f;
         else if (s > 1.0f) s = 1.0f;
-        if (l < 0) l = 0.0f;
+        if (l < 0f) l = 0.0f;
         else if (l > 1.0f) l = 1.0f;
-        int R, G, B;
+        float R, G, B;
         if (s - 0.01f <= 0.0f) {
-            R = (int) (l * 255.0f);
-            G = (int) (l * 255.0f);
-            B = (int) (l * 255.0f);
+            R = l * 255.0f;
+            G = l * 255.0f;
+            B = l * 255.0f;
         } else {
             float var_1, var_2;
             if (l < 0.5f) {
@@ -156,14 +155,175 @@ public class ColorUtilities {
                 var_2 = (l + s) - (s * l);
             }
             var_1 = 2 * l - var_2;
-            R = (int) (255.0f * hue2RGB(var_1, var_2, h + (1.0f / 3.0f)));
-            G = (int) (255.0f * hue2RGB(var_1, var_2, h));
-            B = (int) (255.0f * hue2RGB(var_1, var_2, h - (1.0f / 3.0f)));
+            R = 255.0f * hue2RGB(var_1, var_2, h + (1.0f / 3.0f));
+            G = 255.0f * hue2RGB(var_1, var_2, h);
+            B = 255.0f * hue2RGB(var_1, var_2, h - (1.0f / 3.0f));
         }
-        rgb[0] = R;
-        rgb[1] = G;
-        rgb[2] = B;
-        return rgb;
+        return new float[]{R, G, B};
+    }
+
+    /**
+     * Convert RGB floats [0..255] to HSL, preserving precision.
+     *
+     * @param r red   component [0..255]
+     * @param g green component [0..255]
+     * @param b blue  component [0..255]
+     * @return array of 3 floats: H, S, L each in [0..1]
+     */
+    public static float[] RGBtoHSLFloat(float r, float g, float b) {
+        float var_R = Math.clamp(r, 0f, 255f) / 255f;
+        float var_G = Math.clamp(g, 0f, 255f) / 255f;
+        float var_B = Math.clamp(b, 0f, 255f) / 255f;
+        float var_Min, var_Max, del_Max;
+
+        if (var_R > var_G) {
+            var_Min = var_G;
+            var_Max = var_R;
+        } else {
+            var_Min = var_R;
+            var_Max = var_G;
+        }
+        if (var_B > var_Max) var_Max = var_B;
+        if (var_B < var_Min) var_Min = var_B;
+
+        del_Max = var_Max - var_Min;
+        float L = (var_Max + var_Min) / 2f;
+        float H, S;
+
+        if (del_Max - 0.01f <= 0.0f) {
+            H = 0;
+            S = 0;
+        } else {
+            S = L < 0.5f ? del_Max / (var_Max + var_Min) : del_Max / (2 - var_Max - var_Min);
+            float delR = ((var_Max - var_R) / 6f + del_Max / 2f) / del_Max;
+            float delG = ((var_Max - var_G) / 6f + del_Max / 2f) / del_Max;
+            float delB = ((var_Max - var_B) / 6f + del_Max / 2f) / del_Max;
+
+            if (var_R == var_Max) H = delB - delG;
+            else if (var_G == var_Max) H = (1f / 3f) + delR - delB;
+            else H = (2f / 3f) + delG - delR;
+
+            if (H < 0f) H += 1f;
+            if (H > 1f) H -= 1f;
+        }
+        return new float[]{H, S, L};
+    }
+
+    /**
+     * Convert RGB floats [0..255] to HSB (the Java AWT version of HSV), preserving precision.
+     * Unlike {@link java.awt.Color#RGBtoHSB(int, int, int, float[])} this avoids the rounding
+     * to int that happens inside the AWT implementation.
+     *
+     * @param r red   component [0..255]
+     * @param g green component [0..255]
+     * @param b blue  component [0..255]
+     * @return array of 3 floats: H, S, B each in [0..1]
+     */
+    public static float[] RGBtoHSBFloat(float r, float g, float b) {
+        float var_R = Math.clamp(r, 0f, 255f) / 255f;
+        float var_G = Math.clamp(g, 0f, 255f) / 255f;
+        float var_B = Math.clamp(b, 0f, 255f) / 255f;
+        float var_Min, var_Max, del_Max;
+
+        if (var_R > var_G) {
+            var_Min = var_G;
+            var_Max = var_R;
+        } else {
+            var_Min = var_R;
+            var_Max = var_G;
+        }
+        if (var_B > var_Max) var_Max = var_B;
+        if (var_B < var_Min) var_Min = var_B;
+
+        del_Max = var_Max - var_Min;
+        float B = var_Max;
+        float H, S;
+
+        if (B - 0.01f <= 0f) {
+            H = 0f;
+            S = 0f;
+        } else {
+            S = del_Max / B;
+            float delR = ((var_Max - var_R) / 6f + del_Max / 2f) / del_Max;
+            float delG = ((var_Max - var_G) / 6f + del_Max / 2f) / del_Max;
+            float delB = ((var_Max - var_B) / 6f + del_Max / 2f) / del_Max;
+
+            if (var_R == var_Max) H = delB - delG;
+            else if (var_G == var_Max) H = (1f / 3f) + delR - delB;
+            else H = (2f / 3f) + delG - delR;
+
+            if (H < 0f) H += 1f;
+            if (H > 1f) H -= 1f;
+        }
+        return new float[]{H, S, B};
+    }
+
+    /**
+     * Convert HSB floats to RGB floats [0..255], preserving precision.
+     * Analogous to {@link java.awt.Color#getHSBColor(float, float, float)} but without integer rounding.
+     *
+     * @param h hue   [0..1]
+     * @param s saturation [0..1]
+     * @param b brightness [0..1]
+     * @return array of 3 floats representing R, G, B in [0..255]
+     */
+    public static float[] HSBtoRGBFloat(float h, float s, float b) {
+        if (h < 0f) h = 0f;
+        else if (h > 1f) h = 1f;
+        if (s < 0f) s = 0f;
+        else if (s > 1f) s = 1f;
+        if (b < 0f) b = 0f;
+        else if (b > 1f) b = 1f;
+
+        float R, G, B;
+        if (s - 0.01f <= 0f) {
+            R = b * 255f;
+            G = b * 255f;
+            B = b * 255f;
+        } else {
+            float H = h * 360f;
+            while (H >= 360f) H -= 360f;
+            while (H < 0f) H += 360f;
+            int Hi = (int) H / 60;
+            float f = H / 60f - Hi;
+            float p = b * (1f - s);
+            float q = b * (1f - s * f);
+            float t = b * (1f - s * (1f - f));
+
+            switch (Hi) {
+                case 0 -> {
+                    R = b;
+                    G = t;
+                    B = p;
+                }
+                case 1 -> {
+                    R = q;
+                    G = b;
+                    B = p;
+                }
+                case 2 -> {
+                    R = p;
+                    G = b;
+                    B = t;
+                }
+                case 3 -> {
+                    R = p;
+                    G = q;
+                    B = b;
+                }
+                case 4 -> {
+                    R = t;
+                    G = p;
+                    B = b;
+                }
+                default -> {
+                    R = b;
+                    G = p;
+                    B = q;
+                }
+            }
+        }
+        return new float[]{R * 255f, G * 255f, B * 255f};
     }
 
     /**
@@ -247,9 +407,9 @@ public class ColorUtilities {
             g = Math.round(288.1221695283 * Math.pow((temp - 60), -0.0755148492));
             b = 255;
         }
-        rgb[0] = (int) Math.max(0, Math.min(r, 255));
-        rgb[1] = (int) Math.max(0, Math.min(g, 255));
-        rgb[2] = (int) Math.max(0, Math.min(b, 255));
+        rgb[0] = (int) Math.clamp(r, 0f, 255f);
+        rgb[1] = (int) Math.clamp(g, 0f, 255f);
+        rgb[2] = (int) Math.clamp(b, 0f, 255f);
     }
 
     /**
