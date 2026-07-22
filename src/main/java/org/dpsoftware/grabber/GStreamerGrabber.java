@@ -66,7 +66,7 @@ public class GStreamerGrabber extends JComponent {
     boolean writeToFile = false;
     int capturedFrames = 0;
     long start;
-    private Color[] previousFrame;
+    private ColorFloat[] previousFrame;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -74,8 +74,8 @@ public class GStreamerGrabber extends JComponent {
     public GStreamerGrabber() {
         this(new AppSink("GstVideoComponent"));
         ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
-        previousFrame = new Color[ledMatrix.size()];
-        Arrays.fill(previousFrame, new Color(0, 0, 0));
+        previousFrame = new ColorFloat[ledMatrix.size()];
+        Arrays.fill(previousFrame, ColorFloat.BLACK);
     }
 
     /**
@@ -224,10 +224,10 @@ public class GStreamerGrabber extends JComponent {
          * @param width     captured image width
          * @param height    captured image height
          * @param rgbBuffer the buffer that bake the captured screen image
-         * @return an array that contains the average color for each zones
+         * @return an array that contains the average color for each zones as ColorFloat (full precision 32 bit)
          */
-        private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
-            Color[] leds = new Color[ledMatrix.size()];
+        private static ColorFloat[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
+            ColorFloat[] leds = new ColorFloat[ledMatrix.size()];
             MainSingleton main = MainSingleton.getInstance();
             if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
                 SimdBenchmark.startSimdTime = System.nanoTime();
@@ -492,7 +492,7 @@ public class GStreamerGrabber extends JComponent {
                     intBufferRgbToImage(intBufferClone);
                 }
                 // Process zones and calculate avg colors
-                Color[] leds = processBufferUsingCpu(width, height, rgbBuffer);
+                ColorFloat[] leds = processBufferUsingCpu(width, height, rgbBuffer);
                 ImageProcessor.averageOnAllLeds(leds);
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!main.exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
@@ -516,9 +516,9 @@ public class GStreamerGrabber extends JComponent {
          * Generate frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
          * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
          *
-         * @param leds array containing color information
+         * @param leds array containing color information as ColorFloat (full precision 32 bit)
          */
-        void frameGeneration(Color[] leds) {
+        void frameGeneration(ColorFloat[] leds) {
             MainSingleton main = MainSingleton.getInstance();
             int skipFastFramesMs = 8;
             int targetFramerate = main.config.getSmoothingTargetFramerate();
@@ -530,7 +530,7 @@ public class GStreamerGrabber extends JComponent {
                 skipFastFramesMs *= 2;
                 gpuFramerateFps /= 2;
             }
-            Color[] frameGeneration = new Color[ledMatrix.size()];
+            ColorFloat[] frameGeneration = new ColorFloat[ledMatrix.size()];
             int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
             // Total number of frames to compute.
@@ -546,15 +546,14 @@ public class GStreamerGrabber extends JComponent {
             // Skip frame if GPU is late and tries to catch up by capturing frames too fast.
             for (int i = 0; i < frameToRender; i++) {
                 for (int j = 0; j < leds.length; j++) {
-                    final int dRed = leds[j].getRed() - previousFrame[j].getRed();
-                    final int dGreen = leds[j].getGreen() - previousFrame[j].getGreen();
-                    final int dBlue = leds[j].getBlue() - previousFrame[j].getBlue();
-                    Color c = new Color(
-                            previousFrame[j].getRed() + (dRed * i) / frameToCompute,
-                            previousFrame[j].getGreen() + (dGreen * i) / frameToCompute,
-                            previousFrame[j].getBlue() + (dBlue * i) / frameToCompute
+                    final float dRed = leds[j].r() - previousFrame[j].r();
+                    final float dGreen = leds[j].g() - previousFrame[j].g();
+                    final float dBlue = leds[j].b() - previousFrame[j].b();
+                    frameGeneration[j] = new ColorFloat(
+                            previousFrame[j].r() + (dRed * i) / frameToCompute,
+                            previousFrame[j].g() + (dGreen * i) / frameToCompute,
+                            previousFrame[j].b() + (dBlue * i) / frameToCompute
                     );
-                    frameGeneration[j] = c;
                 }
                 long finish = System.currentTimeMillis();
                 if (frameGeneration.length == leds.length) {
