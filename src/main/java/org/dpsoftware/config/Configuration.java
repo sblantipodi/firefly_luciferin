@@ -90,6 +90,8 @@ public class Configuration implements Cloneable {
     private boolean fullFirmware = false;
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma;
+    private String gammaLevel = Enums.GammaLevel.LOW.getBaseI18n();
+    private boolean enableAutomaticGamma = true;
     private String gapTypeSide = Constants.GAP_TYPE_DEFAULT_SIDE;
     private String gapTypeTopBottom = Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM;
     private String grabberAreaTopBottom = Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT;
@@ -164,6 +166,7 @@ public class Configuration implements Cloneable {
     private List<String> profileProcesses = new ArrayList<>();
     boolean checkFullScreen = false;
     int resamplingFactor = Constants.RESAMPLING_FACTOR;
+    boolean useLosslessCompression = Constants.USE_LOSSLESS_COMPRESSION;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

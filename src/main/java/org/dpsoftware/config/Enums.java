@@ -613,6 +613,27 @@ public class Enums {
         }
     }
 
+    public enum GammaLevel implements LocalizedEnum {
+        LOW("enum.gamma.level.low"),
+        MEDIUM("enum.gamma.level.medium"),
+        HIGH("enum.gamma.level.high");
+
+        private final String gammaLevel;
+
+        GammaLevel(String gammaLevel) {
+            this.gammaLevel = gammaLevel;
+        }
+
+        public static GammaLevel findByValue(final String valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getBaseI18n().equals(valToSearch)).findFirst().orElse(null);
+        }
+
+        @Override
+        public String getValue() {
+            return gammaLevel;
+        }
+    }
+
     @Getter
     public enum StreamType {
         UDP("UDP stream"),

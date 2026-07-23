@@ -48,6 +48,7 @@ import java.util.ListIterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Convert screen capture into a "readable signal" for LED strip
@@ -64,6 +65,12 @@ public class ImageProcessor {
     WinDef.HWND hwnd;
     private static Enums.AspectRatio pendingAspectRatio = null;
     private static int consecutiveDetections = 0;
+    public static final AtomicLong currentGammaAtomic = new AtomicLong(
+            Double.doubleToLongBits(MainSingleton.getInstance().config.getGamma())
+    );
+    private static final AtomicLong currentAvgBrightnessAtomic = new AtomicLong(
+            Double.doubleToLongBits(0.0)
+    );
 
     /**
      * Constructor
@@ -96,7 +103,7 @@ public class ImageProcessor {
      * @param image screenshot image
      * @return array of LEDs containing the avg color to be displayed on the LED strip
      */
-    public static Color[] getColors(Robot robot, BufferedImage image) {
+    public static ColorFloat[] getColors(Robot robot, BufferedImage image) {
         // Choose between CPU and GPU acceleration
         if (image == null) {
             if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) {
@@ -108,7 +115,6 @@ public class ImageProcessor {
         } else {
             GrabberSingleton.getInstance().screen = image;
         }
-
         // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
         if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
             if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
@@ -117,51 +123,327 @@ public class ImageProcessor {
                 GrabberSingleton.getInstance().ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
             }
         }
-
         int osScaling = MainSingleton.getInstance().config.getOsScaling();
-        Color[] leds = new Color[GrabberSingleton.getInstance().ledMatrix.size()];
-
+        ColorFloat[] ledsFloat = new ColorFloat[GrabberSingleton.getInstance().ledMatrix.size()];
         // We need an ordered collection so no parallelStream here
         GrabberSingleton.getInstance().ledMatrix.forEach((key, value) ->
-                leds[key - 1] = getAverageColor(value, osScaling)
+                ledsFloat[key - 1] = getAverageColor(value, osScaling)
         );
-        averageOnAllLeds(leds);
-        return leds;
+        averageOnAllLeds(ledsFloat);
+        return ledsFloat;
     }
 
     /**
-     * Set the average color on all leds
+     * Reverses the gamma correction applied by Firefly Luciferin on LED color values.
+     * Before sending colors to the firmware, Firefly Luciferin applies a gamma correction curve to match the
+     * non-linear response of physical LEDs. When displaying those same colors back on screen, we apply the
+     * inverse gamma so the user perceives the original intent rather than the hardware-adjusted values.
      *
-     * @param leds color array
+     * @param color the gamma-corrected LED color value to reverse
+     * @return the color with inverse gamma applied, ready for accurate screen display
      */
-    public static void averageOnAllLeds(Color[] leds) {
-        if (Enums.Algo.AVG_ALL_COLOR.getBaseI18n().equals(MainSingleton.getInstance().config.getAlgo())) {
-            Color avgColor = ImageProcessor.getAverageForAllZones(leds, 0, leds.length);
-            Arrays.fill(leds, avgColor);
-        }
+    public static Color inverseGammaCorrection(Color color) {
+        Configuration config = MainSingleton.getInstance().config;
+        double gamma = config.isEnableAutomaticGamma() ? Double.longBitsToDouble(currentGammaAtomic.get()) : MainSingleton.getInstance().config.getGamma();
+        double invGamma = 1.0 / gamma;
+        return new Color(
+                clamp((int) (255.0 * Math.pow(color.getRed() / 255.0, invGamma))),
+                clamp((int) (255.0 * Math.pow(color.getGreen() / 255.0, invGamma))),
+                clamp((int) (255.0 * Math.pow(color.getBlue() / 255.0, invGamma)))
+        );
     }
 
     /**
-     * Get the average color from the screen buffer section
+     * Float-based color correction pipeline that avoids intermediate quantization.
+     * Computes the average from raw channel sums, applies HSL corrections, gamma, luminosity threshold,
+     * night light, and brightness limiter all in floating-point. Converts to 8-bit only at the end.
+     *
+     * @param r          sum of red channel values
+     * @param g          sum of green channel values
+     * @param b          sum of blue channel values
+     * @param pickNumber number of pixels summed
+     * @param active     if LED is active (inactive LEDs are forced to black)
+     * @return corrected color in floating point, ready for further float based processing
+     */
+    public static ColorFloat correctColors(int r, int g, int b, int pickNumber, boolean active) {
+        // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
+        ColorFloat adjusted = new ColorFloat(
+                (float) r / pickNumber,
+                (float) g / pickNumber,
+                (float) b / pickNumber
+        );
+        // Saturate colors and shift bits if needed, apply HSL correcction
+        adjusted = manageColorsFloat(adjusted);
+        // Apply gamma correction
+        adjusted = gammaCorrection(adjusted);
+        if (MainSingleton.getInstance().config.getLuminosityThreshold() != 0) {
+            adjusted = adjustLuminosityThreshold(adjusted, MainSingleton.getInstance().config.getLuminosityThreshold() / 100.0f);
+        }
+        if (GrabberSingleton.getInstance().isNightLightAuto() || MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.ENABLED.getBaseI18n())) {
+            adjusted = switch (MainSingleton.getInstance().config.getNightLightLvl()) {
+                case 10 -> removeBlueAndMakeItWarm(adjusted, 1.0f, 1.0f, 0.7f);
+                case 9 -> removeBlueAndMakeItWarm(adjusted, 0.95f, 0.95f, 0.6f);
+                case 8 -> removeBlueAndMakeItWarm(adjusted, 0.85f, 0.90f, 0.5f);
+                case 7 -> removeBlueAndMakeItWarm(adjusted, 0.75f, 0.90f, 0.4f);
+                case 6 -> removeBlueAndMakeItWarm(adjusted, 0.65f, 0.85f, 0.3f);
+                case 5 -> removeBlueAndMakeItWarm(adjusted, 0.55f, 0.75f, 0.2f);
+                case 4 -> removeBlueAndMakeItWarm(adjusted, 0.45f, 0.65f, 0.1f);
+                case 3 -> removeBlueAndMakeItWarm(adjusted, 0.35f, 0.55f, 0.1f);
+                case 2 -> removeBlueAndMakeItWarm(adjusted, 0.25f, 0.45f, 0.0f);
+                case 1 -> removeBlueAndMakeItWarm(adjusted, 0.15f, 0.35f, 0.0f);
+                default -> adjusted;
+            };
+        }
+        // Brightness limiter to limit strobo effect
+        if (MainSingleton.getInstance().config.getBrightnessLimiter() != 1.0F) {
+            float[] hsl = ColorUtilities.RGBtoHSLFloat(adjusted.r(), adjusted.g(), adjusted.b());
+            if (hsl[2] >= MainSingleton.getInstance().config.getBrightnessLimiter()) {
+                hsl[2] = MainSingleton.getInstance().config.getBrightnessLimiter();
+            }
+            float[] rgb = ColorUtilities.HSLtoRGBFloat(hsl[0], hsl[1], hsl[2]);
+            adjusted = new ColorFloat(rgb[0], rgb[1], rgb[2]);
+        }
+        if (!active) adjusted = ColorFloat.BLACK;
+        return adjusted;
+    }
+
+    /**
+     * Adjust gamma based on a given color using adaptive gamma correction.
+     * On dark scenes, gamma is reduced to prevent colors from being crushed to black.
+     * On bright scenes, the configured gamma is used as-is.
+     * The transition between the two is smooth using a smoothstep function.
+     *
+     * @param color the color to adjust
+     * @return the gamma corrected color
+     */
+    static ColorFloat gammaCorrection(ColorFloat color) {
+        Configuration config = MainSingleton.getInstance().config;
+        double gamma = config.isEnableAutomaticGamma()
+                ? Double.longBitsToDouble(currentGammaAtomic.get())
+                : MainSingleton.getInstance().config.getGamma();
+        return new ColorFloat(
+                (float) (255.0 * Math.pow(color.r() / 255.0, gamma)),
+                (float) (255.0 * Math.pow(color.g() / 255.0, gamma)),
+                (float) (255.0 * Math.pow(color.b() / 255.0, gamma))
+        ).clamp();
+    }
+
+    /**
+     * If the color is too dark, increase its brightness.
+     * Uses RGB-to-HSB float conversion to avoid intermediate integer rounding.
+     *
+     * @param color         RGB color in floats [0..255]
+     * @param minBrightness minimum brightness in [0..1]
+     * @return adjusted color
+     */
+    static ColorFloat adjustLuminosityThreshold(ColorFloat color, float minBrightness) {
+        float[] hsb = ColorUtilities.RGBtoHSBFloat(color.r(), color.g(), color.b());
+        if (hsb[2] < minBrightness) {
+            hsb[2] = minBrightness;
+        }
+        float[] rgb = ColorUtilities.HSBtoRGBFloat(hsb[0], hsb[1], hsb[2]);
+        return new ColorFloat(rgb[0], rgb[1], rgb[2]);
+    }
+
+    /**
+     * Float-based night light correction.
+     *
+     * @param color          RGB color in floats [0..255]
+     * @param blueReduction  blue reduction factor [0..1]
+     * @param redBoost       red boost amount [0..1]
+     * @param greenReduction green reduction amount [0..1]
+     * @return warmed color
+     */
+    static ColorFloat removeBlueAndMakeItWarm(ColorFloat color, float blueReduction, float redBoost, float greenReduction) {
+        // Get normalized RGB components (0-1)
+        double r = color.r() / 255.0;
+        double g = color.g() / 255.0;
+        double b = color.b() / 255.0;
+        // Remove almost all blue
+        b *= (1 - blueReduction);
+        // If the color is bright, make it much warmer
+        double brightness = (r + g + b) / 3.0; // Average RGB brightness
+        if (brightness > 0.5) { // If the color is bright
+            r = Math.min(1.0, r + redBoost); // Strong red boost
+            g = Math.max(0.0, g - greenReduction); // Reduce green to prevent greenish tint
+        }
+        // Convert back to 0-255 values
+        return new ColorFloat(
+                (float) (r * 255),
+                (float) (g * 255),
+                (float) (b * 255)
+        );
+    }
+
+    /**
+     * Hue/Saturation/Lightness management operating on floats.
+     * Applies per-channel HSL corrections and neighboring color interpolation,
+     * returning a ColorFloat to avoid intermediate quantization.
+     *
+     * @param color the color to adjust (components in 0..255 float range)
+     * @return corrected color as ColorFloat
+     */
+    static ColorFloat manageColorsFloat(ColorFloat color) {
+        float[] hsl = ColorUtilities.RGBtoHSLFloat(color.r(), color.g(), color.b());
+        HSLColor hslColor = new HSLColor();
+        hslColor.setHue(hsl[0]);
+        hslColor.setSaturation(hsl[1]);
+        hslColor.setLightness(hsl[2]);
+        HSLColor hslCorrectedColor = new HSLColor();
+        hslCorrectedColor.setHue(0.0F);
+        hslCorrectedColor.setSaturation(null);
+        hslCorrectedColor.setLightness(null);
+        float hsvDegree = hslColor.getHue() * Constants.DEGREE_360;
+        if (MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).getSaturation() != 0.0F
+                || MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).getLightness() != 0.0F) {
+            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).getSaturation());
+            hslColor.setSaturation(hslCorrectedColor.getSaturation());
+            hslCorrectedColor.setLightness((float) hslColor.getLightness() + MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).getLightness());
+            hslColor.setLightness(hslCorrectedColor.getLightness());
+        }
+        boolean greyDetected = (hslColor.getSaturation() <= Constants.GREY_TOLERANCE);
+        if (greyDetected) {
+            if (MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() != 0.0F) {
+                correctGreyColors(hslColor, hslCorrectedColor);
+            }
+        } else if (hsvDegree >= Enums.ColorEnum.RED.getMin() || hsvDegree <= Enums.ColorEnum.RED.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.RED);
+        } else if (hsvDegree >= Enums.ColorEnum.YELLOW.getMin() && hsvDegree <= Enums.ColorEnum.YELLOW.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.YELLOW);
+        } else if (hsvDegree >= Enums.ColorEnum.GREEN.getMin() && hsvDegree <= Enums.ColorEnum.GREEN.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.GREEN);
+        } else if (hsvDegree >= Enums.ColorEnum.CYAN.getMin() && hsvDegree <= Enums.ColorEnum.CYAN.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.CYAN);
+        } else if (hsvDegree >= Enums.ColorEnum.BLUE.getMin() && hsvDegree <= Enums.ColorEnum.BLUE.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.BLUE);
+        } else if (hsvDegree >= Enums.ColorEnum.MAGENTA.getMin() && hsvDegree <= Enums.ColorEnum.MAGENTA.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.MAGENTA);
+        } else {
+            log.error("HSV color out of range, this may cause flickering.");
+        }
+        if (hslCorrectedColor.getSaturation() != null || hslCorrectedColor.getLightness() != null || hslCorrectedColor.getHue() != 0) {
+            float hueToUse = hslColor.getHue() + hslCorrectedColor.getHue();
+            if (hueToUse < 0.0F) {
+                hueToUse = 1.0F + hueToUse;
+            }
+            float[] result = ColorUtilities.HSLtoRGBFloat(
+                    hueToUse,
+                    hslCorrectedColor.getSaturation() != null ? hslCorrectedColor.getSaturation() : hslColor.getSaturation(),
+                    hslCorrectedColor.getLightness() != null ? hslCorrectedColor.getLightness() : hslColor.getLightness()
+            );
+            return new ColorFloat(result[0], result[1], result[2]);
+        }
+        return color;
+    }
+
+    /**
+     * Dynamically calculates and updates the display gamma value based on the current HDR/SDR status.
+     * ADAPTIVE_GAMMA_FLOOR:
+     * Defines how low the gamma is allowed to drop in dark scenes.
+     * It is expressed as a multiplier of the configured gamma.
+     * A lower value increases brightness and visibility in very dark content,
+     * while a higher value keeps the image closer to the original gamma curve.
+     * ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD:
+     * Brightness level below which the system applies the full adaptive gamma effect.
+     * When the average scene brightness is under this threshold, gamma is clamped
+     * to the minimum value (gamma floor), ensuring maximum enhancement in dark scenes.
+     * ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD:
+     * Brightness level above which adaptive gamma is fully disabled.
+     * When the scene is brighter than this threshold, gamma returns to the
+     * configured value, preserving color accuracy in well‑lit content.
+     * ADAPTIVE_GAMMA_DEAD_ZONE
+     * convergence speed: 0=no update, 1=instant
+     * ADAPTIVE_GAMMA_SMOOTHING_FACTOR
+     * minimum gamma delta to trigger an update
+     * The range between DARK_SCENE_THRESHOLD and BRIGHT_SCENE_THRESHOLD defines
+     * the smooth transition zone where gamma gradually shifts from the minimum
+     * adaptive value back to the normal configured gamma using a smoothstep curve.
+     */
+    public static void updateGamma() {
+        String level = MainSingleton.getInstance().config.getGammaLevel();
+        boolean hdr = MainSingleton.getInstance().isHdrActive();
+        double floor = hdr ? Constants.ADAPTIVE_GAMMA_FLOOR_HDR : Constants.ADAPTIVE_GAMMA_FLOOR_SDR;
+        double floorDifference = hdr ? Constants.ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_HDR : Constants.ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_SDR;
+        if (Enums.GammaLevel.HIGH.getBaseI18n().equals(level))
+            floor = floor + (floorDifference * 2);
+        else if (Enums.GammaLevel.MEDIUM.getBaseI18n().equals(level))
+            floor = floor + floorDifference;
+        double darkThreshold = hdr ? Constants.ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_HDR : Constants.ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_SDR;
+        double brightThreshold = hdr ? Constants.ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_HDR : Constants.ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_SDR;
+        double configGamma = MainSingleton.getInstance().config.getGamma();
+        double currentAvgBrightness = Double.longBitsToDouble(currentAvgBrightnessAtomic.get());
+        double dynamicFloor = floor + (1.0 - floor) * Math.clamp(currentAvgBrightness / brightThreshold, 0.0, 1.0);
+        double minGamma = configGamma * dynamicFloor;
+        double adaptiveGamma = minGamma + (configGamma - minGamma) * currentAvgBrightness;
+        double t = Math.clamp((currentAvgBrightness - darkThreshold) / (brightThreshold - darkThreshold), 0.0, 1.0);
+        t = t * t * (3 - 2 * t);
+        double targetGamma = adaptiveGamma + (configGamma - adaptiveGamma) * t;
+        double currentGamma = Double.longBitsToDouble(currentGammaAtomic.get());
+        double gamma = getGamma(targetGamma, currentGamma, configGamma);
+        currentGammaAtomic.set(Double.doubleToLongBits(gamma));
+    }
+
+    /**
+     * Calculates the gamma value based on the target gamma, current gamma, and config gamma,
+     * applying adaptive smoothing if necessary and honoring certain configuration parameters.
+     *
+     * @param targetGamma  the desired target gamma value
+     * @param currentGamma the current gamma value
+     * @param configGamma  the configuration-defined gamma value
+     * @return the calculated gamma value after applying adaptive smoothing and respecting configuration settings
+     */
+    private static double getGamma(double targetGamma, double currentGamma, double configGamma) {
+        double gammaDelta = Math.abs(targetGamma - currentGamma);
+        double gamma;
+        if (!MainSingleton.getInstance().config.isEnableAutomaticGamma() || Math.abs(targetGamma - configGamma) < Constants.ADAPTIVE_GAMMA_DEAD_ZONE) {
+            // Bright scene, target is effectively configGamma, snap directly to avoid asymptotic trap.
+            gamma = configGamma;
+        } else if (gammaDelta < Constants.ADAPTIVE_GAMMA_DEAD_ZONE) {
+            gamma = currentGamma;
+        } else {
+            gamma = Constants.ADAPTIVE_GAMMA_SMOOTHING_FACTOR * targetGamma + (1.0 - Constants.ADAPTIVE_GAMMA_SMOOTHING_FACTOR) * currentGamma;
+        }
+        return gamma;
+    }
+
+    /**
+     * Computes and updates the current average brightness across an array of LED colors.
+     * Brightness for each color is determined by averaging its normalized red, green, and blue components.
+     * The method then calculates the mean of these values to update the overall average brightness.
+     * Used to calculate the dynamic gamma when HDR is ON.
+     *
+     * @param leds An array of Color objects representing the current state of each LED
+     */
+    static void updateAvgBrightness(ColorFloat[] leds) {
+        double sum = 0;
+        for (ColorFloat c : leds) {
+            sum += (c.r() + c.g() + c.b()) / (255.0 * 3);
+        }
+        double newBrightness = sum / leds.length;
+        currentAvgBrightnessAtomic.set(Double.doubleToLongBits(newBrightness));
+    }
+
+    /**
+     * Get the average color from the screen buffer section as a ColorFloat,
+     * preserving floating-point precision for downstream corrections.
      *
      * @param ledCoordinate led X,Y coordinates
      * @param osScaling     OS scaling percentage
-     * @return the average color
+     * @return the average color as ColorFloat
      */
-    public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
+    static ColorFloat getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
         return getAverageColor(ledCoordinate, osScaling, false);
     }
 
     /**
-     * Get the average color from the screen buffer section
-     * captured by a screenshot
+     * Get the average color from the screen buffer section captured by a screenshot as ColorFloat.
      *
      * @param ledCoordinate        led X,Y coordinates
      * @param osScaling            OS scaling percentage
      * @param getAverageScreenshot if the buffer comes from a screenshot, apply os scaling
-     * @return the average color
+     * @return the average color as ColorFloat
      */
-    public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, boolean getAverageScreenshot) {
+    public static ColorFloat getAverageColor(LEDCoordinate ledCoordinate, int osScaling, boolean getAverageScreenshot) {
         int r = 0, g = 0, b = 0;
         int pickNumber = 0;
         int width = GrabberSingleton.getInstance().screen.getWidth() - 1;
@@ -181,10 +463,9 @@ public class ImageProcessor {
                 int offsetX = (xCoordinate + x);
                 int offsetY = (yCoordinate + y);
                 int rgb = GrabberSingleton.getInstance().screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
-                Color color = new Color(rgb);
-                r += color.getRed();
-                g += color.getGreen();
-                b += color.getBlue();
+                r += (rgb >> 16) & 0xFF;
+                g += (rgb >> 8) & 0xFF;
+                b += rgb & 0xFF;
                 pickNumber++;
             }
         }
@@ -192,114 +473,68 @@ public class ImageProcessor {
     }
 
     /**
-     * Correct colors using various techniques.
-     * - AVG colors, no need for the square root here since we calculate the gamma later
-     * - Gamma correction
-     * - HSL correction
-     * - Don't turn LED off (eye care)
-     * - Brightness limiter to limit strobo effect
-     *
-     * @param r          avg red channel
-     * @param g          avg green channel
-     * @param b          avg blue channel
-     * @param pickNumber number of computed pixel, used to get the avg
-     * @param active     if led is active
-     * @return corrected color
+     * Set the average color on all LEDs
      */
-    public static Color correctColors(int r, int g, int b, int pickNumber, boolean active) {
-        // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
-        Color adjusted = new Color(r / pickNumber, g / pickNumber, b / pickNumber);
-        // Saturate colors and shift bits if needed, apply HSL correcction
-        adjusted = manageColors(adjusted);
-        // Apply gamma correction
-        adjusted = gammaCorrection(adjusted);
-        if (MainSingleton.getInstance().config.getLuminosityThreshold() != 0) {
-            adjusted = adjustLuminosityThreshold(adjusted, MainSingleton.getInstance().config.getLuminosityThreshold() / 100.0f);
+    static void averageOnAllLeds(ColorFloat[] leds) {
+        ImageProcessor.updateAvgBrightness(leds);
+        ImageProcessor.updateGamma();
+        if (Enums.Algo.AVG_ALL_COLOR.getBaseI18n().equals(MainSingleton.getInstance().config.getAlgo())) {
+            ColorFloat avgColor = ImageProcessor.getAverageForAllZones(leds);
+            Arrays.fill(leds, avgColor);
         }
-        if (GrabberSingleton.getInstance().isNightLightAuto() || MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.ENABLED.getBaseI18n())) {
-            adjusted = switch (MainSingleton.getInstance().config.getNightLightLvl()) {
-                case 10 -> removeBlueAndMakeItWarm(adjusted, 1.0, 1.0, 0.7);
-                case 9 -> removeBlueAndMakeItWarm(adjusted, 0.95, 0.95, 0.6);
-                case 8 -> removeBlueAndMakeItWarm(adjusted, 0.85, 0.90, 0.5);
-                case 7 -> removeBlueAndMakeItWarm(adjusted, 0.75, 0.90, 0.4);
-                case 6 -> removeBlueAndMakeItWarm(adjusted, 0.65, 0.85, 0.3);
-                case 5 -> removeBlueAndMakeItWarm(adjusted, 0.55, 0.75, 0.2);
-                case 4 -> removeBlueAndMakeItWarm(adjusted, 0.45, 0.65, 0.1);
-                case 3 -> removeBlueAndMakeItWarm(adjusted, 0.35, 0.55, 0.1);
-                case 2 -> removeBlueAndMakeItWarm(adjusted, 0.25, 0.45, 0.0);
-                case 1 -> removeBlueAndMakeItWarm(adjusted, 0.15, 0.35, 0.0);
-                default -> adjusted;
-            };
-        }
-        // Brightness limiter to limit strobo effect
-        if (MainSingleton.getInstance().config.getBrightnessLimiter() != 1.0F) {
-            float[] brightnessLimitedRGB = ColorUtilities.RGBtoHSL(adjusted, null);
-            if (brightnessLimitedRGB[2] >= MainSingleton.getInstance().config.getBrightnessLimiter()) {
-                brightnessLimitedRGB[2] = MainSingleton.getInstance().config.getBrightnessLimiter();
+    }
+
+    /**
+     * Adjust white balance via Firefly Luciferin. This method kicks in when screen capture is active.
+     * When screen capture is not active white balance is done via the Glow Worm Luciferin firmware.
+     *
+     * @param leds to adjust
+     */
+    public static void adjustStripWhiteBalance(ColorFloat[] leds) {
+        int tempOffset = MainSingleton.getInstance().config.getWhiteTemperature();
+        if (tempOffset != 65) {
+            if (tempOffset < 65) {
+                tempOffset = 65 - tempOffset;
+            } else {
+                tempOffset = -(tempOffset - 65);
             }
-            return ColorUtilities.HSLtoRGB(brightnessLimitedRGB[0], brightnessLimitedRGB[1], brightnessLimitedRGB[2]);
+            tempOffset = tempOffset * 20;
+            for (int i = 0; i < leds.length; i++) {
+                leds[i] = adjustWhiteBalance(leds[i], tempOffset);
+            }
         }
-        if (!active) adjusted = new Color(0, 0, 0);
-        return adjusted;
     }
 
     /**
-     * Night light correction
+     * Adjust white balance for a single color — float-based version.
      *
-     * @param color          RGB color
-     * @param blueReduction  blue reduction
-     * @param redBoost       red boost
-     * @param greenReduction green reduction
-     * @return color
+     * @param color       to adjust
+     * @param temperature to adjust
+     * @return adjusted color as ColorFloat
      */
-    public static Color removeBlueAndMakeItWarm(Color color, double blueReduction, double redBoost, double greenReduction) {
-        // Get normalized RGB components (0-1)
-        double r = color.getRed() / 255.0;
-        double g = color.getGreen() / 255.0;
-        double b = color.getBlue() / 255.0;
-        // Remove almost all blue
-        b *= (1 - blueReduction);
-        // If the color is bright, make it much warmer
-        double brightness = (r + g + b) / 3.0; // Average RGB brightness
-        if (brightness > 0.5) { // If the color is bright
-            r = Math.min(1.0, r + redBoost);  // Strong red boost
-            g = Math.max(0.0, g - greenReduction); // Reduce green to prevent greenish tint
+    static ColorFloat adjustWhiteBalance(ColorFloat color, int temperature) {
+        float factor = temperature / 100.0f;
+        float r = color.r();
+        float g = color.g();
+        float b = color.b();
+        // Get original luminance value
+        float originalLuminance = (r * 0.299f + g * 0.587f + b * 0.114f) / 255.0f;
+        if (temperature > 0) { // warmer
+            r *= (float) (1.0 + factor * 0.2);
+            g *= (float) (1.0 + factor * 0.03);
+            b *= (float) (1.0 - factor * 0.1);
+        } else { // colder
+            r *= (float) (1.0 + factor * 0.1);
+            g *= (float) (1.0 + factor * 0.03);
+            b *= (float) (1.0 - factor * 0.2);
         }
-        // Convert back to 0-255 values
-        return new Color(
-                (int) (r * 255),
-                (int) (g * 255),
-                (int) (b * 255)
-        );
-    }
-
-    /**
-     * If the color is too dark, increase its brightness
-     *
-     * @param color         RGB color
-     * @param minBrightness minimum brightness
-     * @return color
-     */
-    public static Color adjustLuminosityThreshold(Color color, float minBrightness) {
-        float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-        if (hsb[2] < minBrightness) {
-            hsb[2] = minBrightness;
-        }
-        return Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
-    }
-
-    /**
-     * Adjust gamma based on a given color
-     *
-     * @param color the color to adjust
-     * @return the average color
-     */
-    public static Color gammaCorrection(Color color) {
-        return new Color(
-                (int) (255.0 * Math.pow((color.getRed() / 255.0), MainSingleton.getInstance().config.getGamma())),
-                (int) (255.0 * Math.pow((color.getGreen() / 255.0), MainSingleton.getInstance().config.getGamma())),
-                (int) (255.0 * Math.pow((color.getBlue() / 255.0), MainSingleton.getInstance().config.getGamma()))
-        );
+        // Color normalization without loss of luminosity
+        float newLuminance = (r * 0.299f + g * 0.587f + b * 0.114f) / 255.0f;
+        float scale = originalLuminance / (newLuminance + 0.001f);
+        r *= scale;
+        g *= scale;
+        b *= scale;
+        return new ColorFloat(r, g, b).clamp();
     }
 
     /**
@@ -707,7 +942,7 @@ public class ImageProcessor {
     }
 
     /**
-     * Returns an array of colors containing the average for all zones
+     * Returns an array of colors containing the average for all zones.
      *
      * @param leds      original array of colors
      * @param zoneStart captured zone, start
@@ -730,6 +965,19 @@ public class ImageProcessor {
     }
 
     /**
+     * Compute the average color across all LED coordinates — float-based version.
+     */
+    static ColorFloat getAverageForAllZones(ColorFloat[] leds) {
+        float rSum = 0, gSum = 0, bSum = 0;
+        for (ColorFloat led : leds) {
+            rSum += led.r();
+            gSum += led.g();
+            bSum += led.b();
+        }
+        return new ColorFloat(rSum / leds.length, gSum / leds.length, bSum / leds.length);
+    }
+
+    /**
      * The Exponential Moving Average (EMA) is a type of moving average that assigns more weight to recent data points,
      * making it more responsive to changes compared to the Simple Moving Average (SMA).
      * Unlike SMA, which gives equal weight to all past values, EMA prioritizes recent values,
@@ -748,48 +996,30 @@ public class ImageProcessor {
      *
      * @param leds leds array that will be sent to the strip
      */
-    public static void exponentialMovingAverage(Color[] leds) {
+    public static void exponentialMovingAverage(ColorFloat[] leds) {
         if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n())) {
             float alpha = MainSingleton.getInstance().config.getEmaAlpha();
-            if (alpha <= 0f || alpha >= 1f) {
-                return;
-            }
+            if (alpha <= 0f || alpha >= 1f) return;
             int numLeds = leds.length;
             if (previousColorFloat == null || previousColorFloat.length != numLeds) {
                 previousColorFloat = new float[numLeds][3];
                 for (int i = 0; i < numLeds; i++) {
-                    previousColorFloat[i][0] = leds[i].getRed();
-                    previousColorFloat[i][1] = leds[i].getGreen();
-                    previousColorFloat[i][2] = leds[i].getBlue();
+                    previousColorFloat[i][0] = leds[i].r();
+                    previousColorFloat[i][1] = leds[i].g();
+                    previousColorFloat[i][2] = leds[i].b();
                 }
             }
             for (int i = 0; i < numLeds; i++) {
-                float currR = leds[i].getRed();
-                float currG = leds[i].getGreen();
-                float currB = leds[i].getBlue();
-                previousColorFloat[i][0] = alpha * currR + (1f - alpha) * previousColorFloat[i][0];
-                previousColorFloat[i][1] = alpha * currG + (1f - alpha) * previousColorFloat[i][1];
-                previousColorFloat[i][2] = alpha * currB + (1f - alpha) * previousColorFloat[i][2];
-                int r = Math.round(previousColorFloat[i][0]);
-                int g = Math.round(previousColorFloat[i][1]);
-                int b = Math.round(previousColorFloat[i][2]);
-                leds[i] = new Color(r, g, b);
+                previousColorFloat[i][0] = alpha * leds[i].r() + (1f - alpha) * previousColorFloat[i][0];
+                previousColorFloat[i][1] = alpha * leds[i].g() + (1f - alpha) * previousColorFloat[i][1];
+                previousColorFloat[i][2] = alpha * leds[i].b() + (1f - alpha) * previousColorFloat[i][2];
+                leds[i] = new ColorFloat(
+                        Math.clamp(previousColorFloat[i][0], 0f, 255f),
+                        Math.clamp(previousColorFloat[i][1], 0f, 255f),
+                        Math.clamp(previousColorFloat[i][2], 0f, 255f)
+                );
             }
         }
-    }
-
-    /**
-     * Round to the nearest number
-     *
-     * @param nearestNumberToUse if 10, it rounds to the nearest 10, if 5, it rounds to the nearest five
-     *                           example: 6 = 10, 4 = 0, 234 = 230
-     * @param numberToRound      number to round
-     * @return rounded number, 255 is rounded to 260 so it retuns max 255 for RGB
-     */
-    @SuppressWarnings("unused")
-    public static int roundToTheNearestNumber(int nearestNumberToUse, int numberToRound) {
-        int roundedNum = (int) (Math.round(numberToRound / (double) nearestNumberToUse) * nearestNumberToUse);
-        return Math.min(roundedNum, 255);
     }
 
     /**
@@ -825,89 +1055,13 @@ public class ImageProcessor {
     }
 
     /**
-     * Find the distance between two colors
-     *
-     * @param r1 rgb channel
-     * @param g1 rgb channel
-     * @param b1 rgb channel
-     * @param r2 rgb channel
-     * @param g2 rgb channel
-     * @param b2 rgb channel
-     * @return distance
-     */
-    @SuppressWarnings("unused")
-    public static double colorDistance(int r1, int g1, int b1, int r2, int g2, int b2) {
-        double rmean = (double) (r1 + r2) / 2;
-        int r = r1 - r2;
-        int g = g1 - g2;
-        int b = b1 - b2;
-        double weightR = 2 + rmean / 256;
-        double weightG = 4.0;
-        double weightB = 2 + (255 - rmean) / 256;
-        return Math.sqrt(weightR * r * r + weightG * g * g + weightB * b * b);
-    }
-
-    /**
-     * Adjust white balance via Firefly Luciferin. This method kicks in when screen capture is active.
-     * When screen capture is not active white balance is done via the Glow Worm Luciferin firmware.
-     *
-     * @param leds to adjust
-     */
-    public static void adjustStripWhiteBalance(Color[] leds) {
-        int tempOffset = MainSingleton.getInstance().config.getWhiteTemperature();
-        if (tempOffset != 65) {
-            if (tempOffset < 65) {
-                tempOffset = 65 - tempOffset;
-            } else {
-                tempOffset = -(tempOffset - 65);
-            }
-            tempOffset = tempOffset * 20;
-            for (int i = 0; i < leds.length; i++) {
-                leds[i] = adjustWhiteBalance(leds[i], tempOffset);
-            }
-        }
-    }
-
-    /**
-     * Adjust white balance for a single color
-     *
-     * @param color       to adjust
-     * @param temperature to adjust
-     * @return adjusted color
-     */
-    public static Color adjustWhiteBalance(Color color, int temperature) {
-        float factor = temperature / 100.0f; // Normalizzazione
-        float r = color.getRed();
-        float g = color.getGreen();
-        float b = color.getBlue();
-        // Get original luminance value
-        float originalLuminance = (r * 0.299f + g * 0.587f + b * 0.114f) / 255.0f;
-        if (temperature > 0) { // warmer
-            r *= (float) (1.0 + factor * 0.2);
-            g *= (float) (1.0 + factor * 0.03);
-            b *= (float) (1.0 - factor * 0.1);
-        } else { // colder
-            r *= (float) (1.0 + factor * 0.1);
-            g *= (float) (1.0 + factor * 0.03);
-            b *= (float) (1.0 - factor * 0.2);
-        }
-        // Color normalization without loss of luminosity
-        float newLuminance = (r * 0.299f + g * 0.587f + b * 0.114f) / 255.0f;
-        float scale = originalLuminance / (newLuminance + 0.001f);
-        r *= scale;
-        g *= scale;
-        b *= scale;
-        return new Color(clamp(r), clamp(g), clamp(b));
-    }
-
-    /**
      * Clamp colors to 0-255
      *
      * @param value color to clamp
      * @return clamped color
      */
     private static int clamp(float value) {
-        return Math.max(0, Math.min(255, Math.round(value)));
+        return Math.clamp(Math.round(value), 0, 255);
     }
 
     /**

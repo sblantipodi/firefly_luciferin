@@ -47,10 +47,8 @@ import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -63,16 +61,12 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GStreamerGrabber extends JComponent {
 
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-    static long startSimdTime;
-    static boolean usingSimd;
-    static int lastRgbValue;
-    final int oneSecondMillis = 1000;
     private final Lock bufferLock = new ReentrantLock();
     public AppSink videosink;
     boolean writeToFile = false;
     int capturedFrames = 0;
     long start;
-    private Color[] previousFrame;
+    private ColorFloat[] previousFrame;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -80,40 +74,41 @@ public class GStreamerGrabber extends JComponent {
     public GStreamerGrabber() {
         this(new AppSink("GstVideoComponent"));
         ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
-        previousFrame = new Color[ledMatrix.size()];
-        Arrays.fill(previousFrame, new Color(0, 0, 0));
+        previousFrame = new ColorFloat[ledMatrix.size()];
+        Arrays.fill(previousFrame, ColorFloat.BLACK);
     }
 
     /**
      * Creates a new instance of GstVideoComponent
      */
     public GStreamerGrabber(AppSink appsink) {
+        MainSingleton main = MainSingleton.getInstance();
         this.videosink = appsink;
         videosink.set(Constants.EMIT_SIGNALS, true);
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
         String gstreamerPipeline;
-        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
-                || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
+        if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR
             String gstPipelineStr;
-            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
                 gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX11;
             } else {
                 gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX12;
             }
             gstreamerPipeline = gstPipelineStr.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor()))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor()));
+                            String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
         } else {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor()))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor()));
+                            String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
         }
         gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
-        if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
+        if (!(main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
             if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
                 caps.append(Constants.BYTE_ORDER_BGR);
             } else {
@@ -124,76 +119,6 @@ public class GStreamerGrabber extends JComponent {
         setLayout(null);
         setOpaque(true);
         setBackground(Color.BLACK);
-    }
-
-    /**
-     * Bench SIMD vs Scalar CPU computations
-     *
-     * @param leds       array that is offered to the queue
-     * @param pickNumber LED to analuze (first one=
-     * @param r          red channel
-     * @param g          green channel
-     * @param b          blu channel
-     */
-    private static void benchSimd(Color[] leds, int pickNumber, int r, int g, int b) {
-        int key = 1;
-        long finish = System.nanoTime();
-        long timeElapsed = finish - startSimdTime;
-        if (pickNumber == 0) {
-            int simdScalarBenchIterations = (int) (MainSingleton.getInstance().FPS_PRODUCER * Constants.SIMD_SCALAR_BENCH_ITERATIONS);
-            if (GrabberSingleton.getInstance().getNanoSimd().size() < simdScalarBenchIterations) {
-                if (usingSimd) GrabberSingleton.getInstance().getNanoSimd().add(timeElapsed);
-            } else {
-                printSimdBenchResult();
-            }
-            if (GrabberSingleton.getInstance().getNanoScalar().size() < simdScalarBenchIterations) {
-                if (!usingSimd) GrabberSingleton.getInstance().getNanoScalar().add(timeElapsed);
-            } else {
-                printSimdBenchResult();
-            }
-        } else {
-            int rgbValueSum = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
-            if (lastRgbValue != rgbValueSum) {
-                lastRgbValue = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
-                if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
-                    log.trace("SIMD: {}, R: {}, G: {}, B: {}, pickNumber: {}, R_AVG: {}, G_AVG: {}, B_AVG: {}",
-                            Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n(),
-                            r, g, b, pickNumber, leds[key - 1].getRed(), leds[key - 1].getGreen(), leds[key - 1].getBlue());
-                }
-            }
-        }
-    }
-
-    /**
-     * Print Bench results for SIMD vs Scalar CPU computations
-     */
-    private static void printSimdBenchResult() {
-        long avgSimdTime = 0;
-        long avgScalarTime = 0;
-        if (!GrabberSingleton.getInstance().getNanoSimd().isEmpty()) {
-            avgSimdTime = (long) GrabberSingleton.getInstance().getNanoSimd().stream()
-                    .mapToLong(l -> l)
-                    .average()
-                    .orElse(0.0);
-        }
-        if (!GrabberSingleton.getInstance().getNanoScalar().isEmpty()) {
-            avgScalarTime = (long) GrabberSingleton.getInstance().getNanoScalar().stream()
-                    .mapToLong(l -> l)
-                    .average()
-                    .orElse(0.0);
-        }
-        List<Long> unifiedList = new ArrayList<>(GrabberSingleton.getInstance().getNanoSimd());
-        unifiedList.addAll(GrabberSingleton.getInstance().getNanoScalar());
-        long averageTime = (long) unifiedList.stream()
-                .mapToLong(l -> l)
-                .average()
-                .orElse(0.0);
-        if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
-            log.trace("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
-        }
-        MainSingleton.getInstance().setCpuLatencyBench((int) averageTime);
-        GrabberSingleton.getInstance().getNanoSimd().clear();
-        GrabberSingleton.getInstance().getNanoScalar().clear();
     }
 
     /**
@@ -209,26 +134,43 @@ public class GStreamerGrabber extends JComponent {
 
     /**
      * Implement framerate logic
-     * @return gstreamer pipeline with
+     * @return target framerate for GStreamer
      */
     public static int getTargetFramerate() {
+        MainSingleton main = MainSingleton.getInstance();
         String targetFramerate;
-        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate()))) {
-            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate());
-            targetFramerate = framerateToSave != null ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate();
+        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, main.config.getDesiredFramerate()))) {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, main.config.getDesiredFramerate());
+            targetFramerate = framerateToSave != null ? framerateToSave.getBaseI18n() : main.config.getDesiredFramerate();
         } else {
             targetFramerate = Constants.FRAMERATE_CAP;
         }
-        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
-            int target = MainSingleton.getInstance().config.getFrameInsertionTarget();
-            if (MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
+        if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getFrameInsertionTarget() > 0) {
+            int target = main.config.getFrameInsertionTarget();
+            if (main.config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
                 target *= 2;
-            } else if (MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
+            } else if (main.config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
                 target /= 2;
             }
             targetFramerate = String.valueOf(target);
         }
         return Integer.parseInt(targetFramerate);
+    }
+
+    /**
+     * Implement framerate logic
+     *
+     * @return target framerate for the Glow Worm Device
+     */
+    public static long getTargetFramerateForDevice() {
+        MainSingleton main = MainSingleton.getInstance();
+        int targetFramerate;
+        if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getSmoothingTargetFramerate() > 0) {
+            targetFramerate = main.config.getSmoothingTargetFramerate();
+        } else {
+            targetFramerate = Integer.parseInt(main.config.getDesiredFramerate());
+        }
+        return targetFramerate;
     }
 
     /**
@@ -246,9 +188,10 @@ public class GStreamerGrabber extends JComponent {
      * @param rgbBuffer rgb int buffer
      */
     private void intBufferRgbToImage(IntBuffer rgbBuffer) {
+        MainSingleton main = MainSingleton.getInstance();
         capturedFrames++;
-        BufferedImage img = new BufferedImage(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor(),
-                MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor(), 1);
+        BufferedImage img = new BufferedImage(main.config.getScreenResX() / main.config.getResamplingFactor(),
+                main.config.getScreenResY() / main.config.getResamplingFactor(), 1);
         int[] rgbArray = new int[rgbBuffer.capacity()];
         rgbBuffer.rewind();
         rgbBuffer.get(rgbArray);
@@ -281,66 +224,82 @@ public class GStreamerGrabber extends JComponent {
          * @param width     captured image width
          * @param height    captured image height
          * @param rgbBuffer the buffer that bake the captured screen image
-         * @return an array that contains the average color for each zones
+         * @return an array that contains the average color for each zones as ColorFloat (full precision 32 bit)
          */
-        private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
-            Color[] leds = new Color[ledMatrix.size()];
-            if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
-                startSimdTime = System.nanoTime();
+        private static ColorFloat[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
+            ColorFloat[] leds = new ColorFloat[ledMatrix.size()];
+            MainSingleton main = MainSingleton.getInstance();
+            if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
+                SimdBenchmark.startSimdTime = System.nanoTime();
             }
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
-            // We need an ordered collection, parallelStream does not help here
-            var SPECIES = MainSingleton.getInstance().SPECIES;
-            MemorySegment memorySegment;
-            if (SPECIES != null) {
-                memorySegment = MemorySegment.ofBuffer(rgbBuffer);
-            } else {
-                memorySegment = null;
+
+            jdk.incubator.vector.VectorSpecies<Integer> SPECIES = main.SPECIES;
+            MemorySegment memorySegment = (SPECIES != null) ? MemorySegment.ofBuffer(rgbBuffer) : null;
+            int vectorLength = (SPECIES != null) ? SPECIES.length() : 0;
+
+            boolean isBenchmarkingActive = (SPECIES != null && vectorLength > 0 && SimdBenchmark.selectedSimdStrategy == null);
+            if (isBenchmarkingActive) {
+                synchronized (SimdBenchmark.SIMD_STRATEGY_BENCH_LOCK) {
+                    if (SimdBenchmark.simdBenchEndTime == -1) {
+                        SimdBenchmark.simdBenchEndTime = System.currentTimeMillis() + (Constants.SIMD_BENCHMARK_DURATION_MS * 2);
+                        SimdBenchmark.simdBenchStartTimeDv = System.currentTimeMillis() + Constants.SIMD_BENCHMARK_DURATION_MS;
+                        SimdBenchmark.simdBenchStartTimeFv = System.currentTimeMillis() + Constants.SIMD_BENCHMARK_DURATION_MS + (Constants.SIMD_BENCHMARK_DURATION_MS / 2);
+                        log.debug("SIMD processing strategy: ({})", SimdBenchmark.describeSimdStrategySelection());
+                    }
+                }
             }
+
             ledMatrix.forEach((key, value) -> {
                 int r = 0, g = 0, b = 0;
                 int pickNumber = 0;
-                int xCoordinate = (value.getX() / MainSingleton.getInstance().config.getResamplingFactor());
-                int yCoordinate = (value.getY() / MainSingleton.getInstance().config.getResamplingFactor());
-                int pixelInUseX = value.getWidth() / MainSingleton.getInstance().config.getResamplingFactor();
-                int pixelInUseY = value.getHeight() / MainSingleton.getInstance().config.getResamplingFactor();
-                if (SPECIES != null) {
-                    if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
-                        usingSimd = true;
+                int xCoordinate = (value.getX() / main.config.getResamplingFactor());
+                int yCoordinate = (value.getY() / main.config.getResamplingFactor());
+                int pixelInUseX = value.getWidth() / main.config.getResamplingFactor();
+                int pixelInUseY = value.getHeight() / main.config.getResamplingFactor();
+
+                if (SPECIES != null && vectorLength > 0) {
+                    if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
+                        SimdBenchmark.usingSimd = true;
                     }
+
                     if (!value.isGroupedLed()) {
-                        for (int y = 0; y < pixelInUseY; y++) {
-                            int offsetY = yCoordinate + y;
-                            if (offsetY >= height) continue;
-                            int baseBufferOffset = offsetY * widthPlusStride;
-                            for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 2) {
-                                int offsetX = xCoordinate + x;
-                                if (offsetX >= widthPlusStride) continue;
-                                VectorMask<Integer> mask1 = SPECIES.indexInRange(x, pixelInUseX);
-                                VectorMask<Integer> mask2 = SPECIES.indexInRange(x + SPECIES.length(), pixelInUseX);
-                                IntVector rgbVector1 = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) (offsetX + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
-                                IntVector rgbVector2 = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
-                                r += rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
-                                        .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
-                                        .reduceLanes(VectorOperators.ADD);
-                                g += rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
-                                        .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
-                                        .reduceLanes(VectorOperators.ADD);
-                                b += rgbVector1.and(0x0000FF)
-                                        .add(rgbVector2.and(0x0000FF))
-                                        .reduceLanes(VectorOperators.ADD);
-                                pickNumber += mask1.trueCount() + mask2.trueCount();
+                        int[] rgbTotals;
+                        if (isBenchmarkingActive) {
+                            long currentMillis = System.currentTimeMillis();
+                            if (currentMillis >= SimdBenchmark.simdBenchStartTimeDv && currentMillis < SimdBenchmark.simdBenchStartTimeFv) {
+                                long startDoubleVector = System.nanoTime();
+                                rgbTotals = processLedWithDoubleVectorSimd(height, widthPlusStride, memorySegment, SPECIES,
+                                        xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
+                                SimdBenchmark.simdStrategyDoubleVectorBenchNanos += (System.nanoTime() - startDoubleVector);
+                                SimdBenchmark.totalBenchmarkedFramesDoubleVector++;
+                            } else if (currentMillis >= SimdBenchmark.simdBenchStartTimeFv) {
+                                long startFullVector = System.nanoTime();
+                                rgbTotals = processLedWithFullVectorSimd(height, widthPlusStride, memorySegment, SPECIES, vectorLength,
+                                        xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
+                                SimdBenchmark.simdStrategyFullVectorBenchNanos += (System.nanoTime() - startFullVector);
+                                SimdBenchmark.totalBenchmarkedFramesFullVector++;
+                            } else {
+                                rgbTotals = processLedWithSelectedSimdStrategy(height, widthPlusStride, memorySegment, SPECIES, vectorLength,
+                                        xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
                             }
+                        } else {
+                            // Benchmark is finished, SIMD strategy has been selected
+                            rgbTotals = processLedWithSelectedSimdStrategy(height, widthPlusStride, memorySegment, SPECIES, vectorLength,
+                                    xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
                         }
+                        r = rgbTotals[0];
+                        g = rgbTotals[1];
+                        b = rgbTotals[2];
+                        pickNumber = rgbTotals[3];
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive());
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
                 } else {
-                    if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
-                        usingSimd = false;
+                    // Fallback NO SIMD
+                    if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
+                        SimdBenchmark.usingSimd = false;
                     }
                     if (!value.isGroupedLed()) {
                         for (int y = 0; y < pixelInUseY; y++) {
@@ -360,32 +319,168 @@ public class GStreamerGrabber extends JComponent {
                         leds[key - 1] = leds[key - 2];
                     }
                 }
-                if (log.isTraceEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
-                    if (key == 1) benchSimd(leds, pickNumber, r, g, b);
+                if (log.isTraceEnabled() || main.isCpuLatencyBenchRunning()) {
+                    if (key == 1) SimdBenchmark.benchSimd(pickNumber);
                 }
             });
-            if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
-                benchSimd(leds, 0, 0, 0, 0);
-            }
+            SimdBenchmark.evaluateSimdPerformance(isBenchmarkingActive);
             return leds;
         }
 
         /**
-         * Method that receives the initial buffers and applies all the various corrections on that buffer.
-         * After all the computations, the results are offered to the queue that contains the avg colors to be
-         * sent to the LED strip.
+         * Processes a specified section of an image using the selected SIMD (Single Instruction, Multiple Data) strategy
+         * (either fast SIMD or doubleVector SIMD) to calculate aggregated RGB values and pixel count for the region. The strategy to be used is determined at runtime.
          *
-         * @param width     captured image width
-         * @param height    captured image height
-         * @param rgbBuffer the buffer that bake the captured screen image
+         * @param height          The height of the image being processed.
+         * @param widthPlusStride The effective width of the image, including padding (stride).
+         * @param memorySegment   The memory segment containing the image data to be processed.
+         * @param species         The vector species defining the type and size of SIMD vectors used
+         *                        during processing.
+         * @param vectorLength    The length of the SIMD vector to be used during operations.
+         * @param xCoordinate     The x-coordinate of the top-left corner of the region to process.
+         * @param yCoordinate     The y-coordinate of the top-left corner of the region to process.
+         * @param pixelInUseX     The number of pixels along the x-axis to process in the specified region.
+         * @param pixelInUseY     The number of pixels along the y-axis to process in the specified region.
+         * @return An integer array containing four elements:
+         *         [0] - Total sum of red values,
+         *         [1] - Total sum of green values,
+         *         [2] - Total sum of blue values,
+         *         [3] - Total number of pixels processed.
+         */
+        private static int[] processLedWithSelectedSimdStrategy(int height, int widthPlusStride, MemorySegment memorySegment,
+                                                                jdk.incubator.vector.VectorSpecies<Integer> species, int vectorLength,
+                                                                int xCoordinate, int yCoordinate, int pixelInUseX, int pixelInUseY) {
+            if (SimdBenchmark.selectedSimdStrategy == SimdBenchmark.SimdProcessingStrategy.FULL_VECTOR) {
+                return processLedWithFullVectorSimd(height, widthPlusStride, memorySegment, species, vectorLength,
+                        xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
+            }
+            return processLedWithDoubleVectorSimd(height, widthPlusStride, memorySegment, species,
+                    xCoordinate, yCoordinate, pixelInUseX, pixelInUseY);
+        }
+
+        /**
+         * Processes a specific region of an image using fast SIMD (Single Instruction, Multiple Data) techniques to
+         * compute the aggregated RGB values and the total pixel count for the defined area. This method
+         * leverages vectorized operations for optimized performance on the CPU.
+         *
+         * @param height          The height of the image to be processed.
+         * @param widthPlusStride The effective width of the image, including any additional padding (stride).
+         * @param memorySegment   The memory segment containing image data to be processed.
+         * @param species         The vector species defining the type and size of SIMD vectors used during processing.
+         * @param vectorLength    The length of the SIMD vector to be used during operations.
+         * @param xCoordinate     The x-coordinate of the top-left corner of the region to be processed.
+         * @param yCoordinate     The y-coordinate of the top-left corner of the region to be processed.
+         * @param pixelInUseX     The number of pixels along the x-axis to process in the specified region.
+         * @param pixelInUseY     The number of pixels along the y-axis to process in the specified region.
+         * @return An integer array containing four elements:
+         *         [0] - The total sum of red values,
+         *         [1] - The total sum of green values,
+         *         [2] - The total sum of blue values,
+         *         [3] - The total number of pixels processed.
+         */
+        private static int[] processLedWithFullVectorSimd(int height, int widthPlusStride, MemorySegment memorySegment,
+                                                          jdk.incubator.vector.VectorSpecies<Integer> species, int vectorLength,
+                                                          int xCoordinate, int yCoordinate, int pixelInUseX, int pixelInUseY) {
+            int r = 0, g = 0, b = 0, pickNumber = 0;
+            int maxValidX = Math.min(pixelInUseX, widthPlusStride - xCoordinate);
+            for (int y = 0; y < pixelInUseY; y++) {
+                int offsetY = yCoordinate + y;
+                if (offsetY >= height) continue;
+                int baseBufferOffset = offsetY * widthPlusStride;
+                int x = 0;
+                for (; x + vectorLength <= maxValidX; x += vectorLength) {
+                    int offsetX = xCoordinate + x;
+                    IntVector rgbVector = IntVector.fromMemorySegment(
+                            species, memorySegment,
+                            (long) (offsetX + baseBufferOffset) * Integer.BYTES,
+                            ByteOrder.nativeOrder());
+                    r += rgbVector.and(0xFF0000).lanewise(VectorOperators.LSHR, 16).reduceLanes(VectorOperators.ADD);
+                    g += rgbVector.and(0x00FF00).lanewise(VectorOperators.LSHR, 8).reduceLanes(VectorOperators.ADD);
+                    b += rgbVector.and(0x0000FF).reduceLanes(VectorOperators.ADD);
+                    pickNumber += vectorLength;
+                }
+                if (x < maxValidX) {
+                    VectorMask<Integer> mask = species.indexInRange(x, maxValidX);
+                    IntVector rgbVector = IntVector.fromMemorySegment(
+                            species, memorySegment,
+                            (long) (xCoordinate + x + baseBufferOffset) * Integer.BYTES,
+                            ByteOrder.nativeOrder(), mask);
+                    r += rgbVector.and(0xFF0000).lanewise(VectorOperators.LSHR, 16).reduceLanes(VectorOperators.ADD, mask);
+                    g += rgbVector.and(0x00FF00).lanewise(VectorOperators.LSHR, 8).reduceLanes(VectorOperators.ADD, mask);
+                    b += rgbVector.and(0x0000FF).reduceLanes(VectorOperators.ADD, mask);
+                    pickNumber += mask.trueCount();
+                }
+            }
+            return new int[]{r, g, b, pickNumber};
+        }
+
+        /**
+         * Processes a specified section of an image using doubleVector SIMD (Single Instruction, Multiple Data) techniques
+         * to calculate the aggregated RGB values and pixel count for the targeted area.
+         * This method is designed for performance optimization on the CPU using vectorized operations.
+         *
+         * @param height          The height of the image being processed.
+         * @param widthPlusStride The effective width of the image, including padding (stride).
+         * @param memorySegment   The memory segment containing the image data to be processed.
+         * @param species         The vector species defining the type and size of SIMD vectors used for processing.
+         * @param xCoordinate     The x-coordinate of the top-left corner of the area to be processed.
+         * @param yCoordinate     The y-coordinate of the top-left corner of the area to be processed.
+         * @param pixelInUseX     The number of pixels in the x direction to process within the specified area.
+         * @param pixelInUseY     The number of pixels in the y direction to process within the specified area.
+         * @return An integer array containing four elements:
+         * [0] - Total sum of red values,
+         * [1] - Total sum of green values,
+         * [2] - Total sum of blue values,
+         * [3] - Total number of pixels processed.
+         */
+        private static int[] processLedWithDoubleVectorSimd(int height, int widthPlusStride, MemorySegment memorySegment,
+                                                            jdk.incubator.vector.VectorSpecies<Integer> species,
+                                                            int xCoordinate, int yCoordinate, int pixelInUseX, int pixelInUseY) {
+            int r = 0, g = 0, b = 0, pickNumber = 0;
+            for (int y = 0; y < pixelInUseY; y++) {
+                int offsetY = yCoordinate + y;
+                if (offsetY >= height) continue;
+                int baseBufferOffset = offsetY * widthPlusStride;
+                for (int x = 0; x < pixelInUseX; x += species.length() * 2) {
+                    int offsetX = xCoordinate + x;
+                    if (offsetX >= widthPlusStride) continue;
+                    VectorMask<Integer> mask1 = species.indexInRange(x, pixelInUseX);
+                    VectorMask<Integer> mask2 = species.indexInRange(x + species.length(), pixelInUseX);
+                    IntVector rgbVector1 = IntVector.fromMemorySegment(species, memorySegment,
+                            (long) (offsetX + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
+                    IntVector rgbVector2 = IntVector.fromMemorySegment(species, memorySegment,
+                            (long) (Math.min(offsetX + species.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES,
+                            ByteOrder.nativeOrder(), mask2);
+                    r += rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
+                            .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
+                            .reduceLanes(VectorOperators.ADD);
+                    g += rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
+                            .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
+                            .reduceLanes(VectorOperators.ADD);
+                    b += rgbVector1.and(0x0000FF)
+                            .add(rgbVector2.and(0x0000FF))
+                            .reduceLanes(VectorOperators.ADD);
+                    pickNumber += mask1.trueCount() + mask2.trueCount();
+                }
+            }
+            return new int[]{r, g, b, pickNumber};
+        }
+
+        /**
+         * Processes an RGB frame captured from the screen and calculates the average colors
+         * for configured zones using the CPU. Also manages frame generation, smoothing,
+         * and queueing the processed data for further use.
+         *
+         * @param width     The width of the captured image.
+         * @param height    The height of the captured image.
+         * @param rgbBuffer The buffer containing the captured RGB frame.
          */
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
-            // If the EDT is still copying data from the buffer, just drop this frame
+            MainSingleton main = MainSingleton.getInstance();
             if (!bufferLock.tryLock()) {
                 return;
             }
-            // CHECK_ASPECT_RATIO is true 4 times per second, if true and black bars auto detection is on, auto detect black bars
-            if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
+            if (main.config.isAutoDetectBlackBars()) {
                 if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
                     GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = false;
                     ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
@@ -397,12 +492,12 @@ public class GStreamerGrabber extends JComponent {
                     intBufferRgbToImage(intBufferClone);
                 }
                 // Process zones and calculate avg colors
-                Color[] leds = processBufferUsingCpu(width, height, rgbBuffer);
+                ColorFloat[] leds = processBufferUsingCpu(width, height, rgbBuffer);
                 ImageProcessor.averageOnAllLeds(leds);
                 // Put the image in the queue or send it via socket to the main instance server
-                if (!MainSingleton.getInstance().exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
-                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect())))) {
-                    if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
+                if (!main.exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
+                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, main.config.getEffect())))) {
+                    if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getFrameInsertionTarget() > 0) {
                         if (previousFrame != null) {
                             frameGeneration(leds);
                         }
@@ -410,7 +505,7 @@ public class GStreamerGrabber extends JComponent {
                         PipelineManager.offerToTheQueue(leds);
                     }
                     // Increase the FPS counter
-                    MainSingleton.getInstance().FPS_PRODUCER_COUNTER++;
+                    main.FPS_PRODUCER_COUNTER++;
                 }
             } finally {
                 bufferLock.unlock();
@@ -421,12 +516,13 @@ public class GStreamerGrabber extends JComponent {
          * Generate frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
          * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
          *
-         * @param leds array containing color information
+         * @param leds array containing color information as ColorFloat (full precision 32 bit)
          */
-        void frameGeneration(Color[] leds) {
+        void frameGeneration(ColorFloat[] leds) {
+            MainSingleton main = MainSingleton.getInstance();
             int skipFastFramesMs = 8;
-            int targetFramerate = MainSingleton.getInstance().config.getSmoothingTargetFramerate();
-            int gpuFramerateFps = MainSingleton.getInstance().config.getFrameInsertionTarget();
+            int targetFramerate = main.config.getSmoothingTargetFramerate();
+            int gpuFramerateFps = main.config.getFrameInsertionTarget();
             if (targetFramerate == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
                 skipFastFramesMs /= 2;
                 gpuFramerateFps *= 2;
@@ -434,7 +530,7 @@ public class GStreamerGrabber extends JComponent {
                 skipFastFramesMs *= 2;
                 gpuFramerateFps /= 2;
             }
-            Color[] frameGeneration = new Color[ledMatrix.size()];
+            ColorFloat[] frameGeneration = new ColorFloat[ledMatrix.size()];
             int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
             // Total number of frames to compute.
@@ -444,28 +540,28 @@ public class GStreamerGrabber extends JComponent {
             // Total number of frames to render, contains computed framse + GPU frame.
             int frameToRender = frameToCompute + 1;
             // GPU frame time (milliseconds) between one GPU frame and the other.
-            int gpuFrameTimeMs = oneSecondMillis / gpuFramerateFps;
+            int gpuFrameTimeMs = 1000 / gpuFramerateFps;
             // Milliseconds available to compute and show a frame, remove some milliseconds to the equation for protocol headroom. frameToCompute + 1 frame computed by the GPU.
             double frameDistanceMs = ((double) gpuFrameTimeMs / (frameToCompute + 1));
             // Skip frame if GPU is late and tries to catch up by capturing frames too fast.
             for (int i = 0; i < frameToRender; i++) {
                 for (int j = 0; j < leds.length; j++) {
-                    final int dRed = leds[j].getRed() - previousFrame[j].getRed();
-                    final int dGreen = leds[j].getGreen() - previousFrame[j].getGreen();
-                    final int dBlue = leds[j].getBlue() - previousFrame[j].getBlue();
-                    Color c = new Color(
-                            previousFrame[j].getRed() + (dRed * i) / frameToCompute,
-                            previousFrame[j].getGreen() + (dGreen * i) / frameToCompute,
-                            previousFrame[j].getBlue() + (dBlue * i) / frameToCompute
+                    final float dRed = leds[j].r() - previousFrame[j].r();
+                    final float dGreen = leds[j].g() - previousFrame[j].g();
+                    final float dBlue = leds[j].b() - previousFrame[j].b();
+                    frameGeneration[j] = new ColorFloat(
+                            previousFrame[j].r() + (dRed * i) / frameToCompute,
+                            previousFrame[j].g() + (dGreen * i) / frameToCompute,
+                            previousFrame[j].b() + (dBlue * i) / frameToCompute
                     );
-                    frameGeneration[j] = c;
                 }
                 long finish = System.currentTimeMillis();
                 if (frameGeneration.length == leds.length) {
                     long timeElapsed = finish - start;
                     totalElapsed += (int) timeElapsed;
                     if (i != 0 && timeElapsed <= skipFastFramesMs) {
-                        log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}, TotaleTimeElapsed={}, SkipFastFrames={}", i, timeElapsed, totalElapsed, skipFastFramesMs);
+                        log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}, TotaleTimeElapsed={}, SkipFastFrames={}",
+                                i, timeElapsed, totalElapsed, skipFastFramesMs);
                         CommonUtility.sleepMilliseconds(skipFastFramesMs);
                     }
                     PipelineManager.offerToTheQueue(frameGeneration);
@@ -478,7 +574,8 @@ public class GStreamerGrabber extends JComponent {
                     double maxElasped = (frameDistanceMs * frameToRender);
                     if (totalElapsed > maxElasped) {
                         // If GPU is late skip waiting.
-                        log.debug("GPU is late, skip wait on frame #{}, Elapsed={}, TotaleTimeElapsed={}, MaxElasped={}, SkipFastFrames={}, FrameDistanceMs={}", i, timeElapsed, totalElapsed, maxElasped, skipFastFramesMs, frameDistanceMs);
+                        log.debug("GPU is late, skip wait on frame #{}, Elapsed={}, TotaleTimeElapsed={}, MaxElasped={}, SkipFastFrames={}, FrameDistanceMs={}",
+                                i, timeElapsed, totalElapsed, maxElasped, skipFastFramesMs, frameDistanceMs);
                         previousFrame = leds.clone();
                         start = System.currentTimeMillis();
                         break;

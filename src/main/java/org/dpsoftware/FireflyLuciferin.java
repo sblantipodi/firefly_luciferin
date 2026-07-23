@@ -154,15 +154,6 @@ public class FireflyLuciferin extends Application {
      */
     public static void setLedNumber(String ledMatrixInUse) {
         MainSingleton.getInstance().ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? NetworkSingleton.getInstance().totalLedNum : MainSingleton.getInstance().config.getLedMatrixInUse(ledMatrixInUse).size();
-        int multiplier = (int) Math.floor((double) MainSingleton.getInstance().ledNumber / Constants.SERIAL_CHUNK_SIZE);
-        int lastPart = MainSingleton.getInstance().ledNumber - (Constants.SERIAL_CHUNK_SIZE * multiplier);
-        if (lastPart < 1) {
-            multiplier--;
-            MainSingleton.getInstance().ledNumHighLowCount = Constants.SERIAL_CHUNK_SIZE - 1;
-        } else {
-            MainSingleton.getInstance().ledNumHighLowCount = MainSingleton.getInstance().ledNumber > Constants.SERIAL_CHUNK_SIZE ? lastPart - 1 : MainSingleton.getInstance().ledNumber - 1;
-        }
-        MainSingleton.getInstance().ledNumHighLowCountSecondPart = MainSingleton.getInstance().ledNumber > Constants.SERIAL_CHUNK_SIZE ? multiplier : 0;
     }
 
     /**
@@ -250,6 +241,9 @@ public class FireflyLuciferin extends Application {
             log.info("Starting default instance");
         }
         logEnvironment();
+        String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
+        if (Constants.TRUE.equalsIgnoreCase(losslessCompressionLog))
+            GrabberSingleton.getInstance().losslessCompressionLog = true;
     }
 
     /**
@@ -282,7 +276,7 @@ public class FireflyLuciferin extends Application {
                 udpServer.receiveBroadcastUDPPacket();
             }
         }
-        grabberManager.getFPS();
+        grabberManager.createBackgroundTasks();
         grabberManager.pingDevice();
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single device, start message server before grabbers produce frames.

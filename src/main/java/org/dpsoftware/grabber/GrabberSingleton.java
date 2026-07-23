@@ -85,6 +85,18 @@ public class GrabberSingleton {
         GrabberSingleton.getInstance().setNightLightAuto(NativeExecutor.isNightLight());
         log.trace("Night Light Auto: " + GrabberSingleton.getInstance().isNightLightAuto());
     };
+    public boolean losslessCompressionLog = false;
+    // Variables used for Serial write peacing
+    long flowStartTime = 0;         // Stream start timestamp
+    int currentSecondToken = 0;     // Number of frames already sent within the current second window
+    long lastSecondMark = 0;        // Timestamp marking when the last 1-second block started
+    long lastActualSendTime = 0;    // Timestamp of the last actual send operation
+
+    public void resetFlowRamp() {
+        flowStartTime = 0;
+        currentSecondToken = 0;
+        lastSecondMark = 0;
+    }
 
 }
 
