@@ -28,9 +28,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.network.mcp.tools.GetDeviceTool;
 import org.dpsoftware.network.mcp.McpTool;
+import org.dpsoftware.network.mcp.tools.GetDeviceTool;
+import org.dpsoftware.network.mcp.tools.GetInfoTool;
 import org.dpsoftware.network.mcp.tools.SetEffectTool;
 
 import java.io.IOException;
@@ -50,17 +52,12 @@ import java.util.stream.Stream;
 @Slf4j
 public class McpServer {
 
-    private static final String MCP_ENDPOINT = "/mcp";
-    private static final String MCP_JSONRPC_KEY = "jsonrpc";
-    private static final String MCP_JSONRPC_VERSION = "2.0";
-    private static final String MCP_PROTOCOL_VERSION = "2025-06-18";
-    private static final int MCP_DEFAULT_PORT = 33555;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, McpTool> tools = Stream.<McpTool>of(
             new GetDeviceTool(objectMapper),
-            new SetEffectTool(objectMapper)
-    ).collect(Collectors.toMap(McpTool::getName, Function.identity()));
+                    new GetInfoTool(objectMapper),
+                    new SetEffectTool(objectMapper))
+            .collect(Collectors.toMap(McpTool::getName, Function.identity()));
     private HttpServer httpServer;
 
     /**
@@ -71,8 +68,8 @@ public class McpServer {
             return;
         }
         try {
-            httpServer = HttpServer.create(new InetSocketAddress(Constants.MSG_SERVER_HOST, MCP_DEFAULT_PORT), 0);
-            httpServer.createContext(MCP_ENDPOINT, this::handleMcpRequest);
+            httpServer = HttpServer.create(new InetSocketAddress(Constants.MSG_SERVER_HOST, Constants.MCP_DEFAULT_PORT), 0);
+            httpServer.createContext(Constants.MCP_ENDPOINT, this::handleMcpRequest);
             httpServer.setExecutor(Executors.newCachedThreadPool(runnable -> {
                 Thread thread = new Thread(runnable, "firefly-mcp-server");
                 thread.setDaemon(true);
@@ -80,7 +77,7 @@ public class McpServer {
             }));
             httpServer.start();
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-mcp-shutdown"));
-            log.info("MCP server listening on http://{}:{}{}", Constants.MSG_SERVER_HOST, MCP_DEFAULT_PORT, MCP_ENDPOINT);
+            log.info("MCP server listening on http://{}:{}{}", Constants.MSG_SERVER_HOST, Constants.MCP_DEFAULT_PORT, Constants.MCP_ENDPOINT);
         } catch (IOException e) {
             log.warn("Unable to start MCP server: {}", e.getMessage());
         }
@@ -96,6 +93,13 @@ public class McpServer {
         }
     }
 
+    /**
+     * Route an incoming HTTP request to the appropriate MCP handler.
+     * Handles OPTIONS preflight, rejects non-POST methods, parses JSON, and dispatches by method name.
+     *
+     * @param exchange the HTTP exchange containing request and response
+     * @throws IOException when the body or response cannot be read/written
+     */
     private void handleMcpRequest(HttpExchange exchange) throws IOException {
         addCorsHeaders(exchange);
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
@@ -106,7 +110,6 @@ public class McpServer {
             sendError(exchange, null, -32600, "Only POST is supported");
             return;
         }
-
         JsonNode request;
         try (InputStream body = exchange.getRequestBody()) {
             request = objectMapper.readTree(body);
@@ -114,20 +117,20 @@ public class McpServer {
             sendError(exchange, null, -32700, "Parse error");
             return;
         }
-
         JsonNode id = request.get("id");
         String method = request.path("method").asText();
         if (id == null || id.isNull()) {
             handleNotification(exchange);
             return;
         }
-
         try {
             switch (method) {
                 case "initialize" -> sendJson(exchange, HttpURLConnection.HTTP_OK, createInitializeResponse(id));
                 case "tools/list" -> sendJson(exchange, HttpURLConnection.HTTP_OK, createToolsListResponse(id));
-                case "tools/call" -> sendJson(exchange, HttpURLConnection.HTTP_OK, createToolCallResponse(id, request.path("params")));
-                case "ping" -> sendJson(exchange, HttpURLConnection.HTTP_OK, createResultResponse(id, objectMapper.createObjectNode()));
+                case "tools/call" ->
+                        sendJson(exchange, HttpURLConnection.HTTP_OK, createToolCallResponse(id, request.path("params")));
+                case "ping" ->
+                        sendJson(exchange, HttpURLConnection.HTTP_OK, createResultResponse(id, objectMapper.createObjectNode()));
                 default -> sendError(exchange, id, -32601, "Method not found");
             }
         } catch (Exception e) {
@@ -136,24 +139,45 @@ public class McpServer {
         }
     }
 
+    /**
+     * Build the response body for an {@code initialize} request.
+     *
+     * @param id the JSON-RPC request id
+     * @return a JSON object containing protocol version, capabilities, and server info
+     */
     private ObjectNode createInitializeResponse(JsonNode id) {
         ObjectNode result = objectMapper.createObjectNode();
-        result.put("protocolVersion", MCP_PROTOCOL_VERSION);
+        result.put("protocolVersion", Constants.MCP_PROTOCOL_VERSION);
         ObjectNode capabilities = result.putObject("capabilities");
         capabilities.putObject("tools").put("listChanged", false);
         ObjectNode serverInfo = result.putObject("serverInfo");
         serverInfo.put("name", Constants.SOFTWARE_NAME);
-        serverInfo.put("version", "1.0.0");
+        serverInfo.put("version", MainSingleton.getInstance().version);
         return createResultResponse(id, result);
     }
 
+    /**
+     * Build the response body for a {@code tools/list} request.
+     *
+     * @param id the JSON-RPC request id
+     * @return a JSON object containing the registered tools array
+     */
     private ObjectNode createToolsListResponse(JsonNode id) {
+
         ObjectNode result = objectMapper.createObjectNode();
         ArrayNode toolList = result.putArray("tools");
         tools.values().forEach(tool -> toolList.add(tool.getDefinition()));
         return createResultResponse(id, result);
     }
 
+    /**
+     * Build the response body for a {@code tools/call} request.
+     *
+     * @param id     the JSON-RPC request id
+     * @param params the JSON node containing tool name and arguments
+     * @return a JSON object with the tool execution result or an error payload
+     * @throws Exception when the tool throws during execution
+     */
     private ObjectNode createToolCallResponse(JsonNode id, JsonNode params) throws Exception {
         String toolName = params.path("name").asText();
         McpTool tool = tools.get(toolName);
@@ -163,6 +187,12 @@ public class McpServer {
         return createResultResponse(id, tool.execute(params.path("arguments")));
     }
 
+    /**
+     * Build an error result payload for a tool call.
+     *
+     * @param message the error description text
+     * @return a JSON object marked as {@code isError} with the message in its content array
+     */
     private ObjectNode createToolErrorResponse(String message) {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("isError", true);
@@ -173,17 +203,33 @@ public class McpServer {
         return result;
     }
 
+    /**
+     * Wrap a result payload into a successful JSON-RPC response envelope.
+     *
+     * @param id     the JSON-RPC request id to echo back
+     * @param result the result content (e.g. tool output or init data)
+     * @return a complete JSON-RPC success response node
+     */
     private ObjectNode createResultResponse(JsonNode id, JsonNode result) {
         ObjectNode response = objectMapper.createObjectNode();
-        response.put(MCP_JSONRPC_KEY, MCP_JSONRPC_VERSION);
+        response.put(Constants.MCP_JSONRPC_KEY, Constants.MCP_JSONRPC_VERSION);
         response.set("id", id);
         response.set("result", result);
         return response;
     }
 
+    /**
+     * Send a JSON-RPC error response over the HTTP exchange.
+     *
+     * @param exchange the HTTP exchange to write the response on
+     * @param id       the JSON-RPC request id (may be {@code null} for notifications)
+     * @param code     the JSON-RPC error code
+     * @param message  the human-readable error description
+     * @throws IOException when writing the response fails
+     */
     private void sendError(HttpExchange exchange, JsonNode id, int code, String message) throws IOException {
         ObjectNode response = objectMapper.createObjectNode();
-        response.put(MCP_JSONRPC_KEY, MCP_JSONRPC_VERSION);
+        response.put(Constants.MCP_JSONRPC_KEY, Constants.MCP_JSONRPC_VERSION);
         if (id == null || id.isNull()) {
             response.putNull("id");
         } else {
@@ -195,16 +241,35 @@ public class McpServer {
         sendJson(exchange, HttpURLConnection.HTTP_OK, response);
     }
 
+    /**
+     * Handle an MCP notification (request without an id) by returning HTTP 202.
+     *
+     * @param exchange the HTTP exchange to reply on
+     * @throws IOException when sending the response fails
+     */
     private void handleNotification(HttpExchange exchange) throws IOException {
         sendEmpty(exchange, HttpURLConnection.HTTP_ACCEPTED);
     }
 
+    /**
+     * Inject CORS headers allowing requests from localhost with POST and OPTIONS.
+     *
+     * @param exchange the HTTP exchange whose response headers should be decorated
+     */
     private void addCorsHeaders(HttpExchange exchange) {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, MCP-Protocol-Version");
     }
 
+    /**
+     * Serialize a JSON node to bytes and write it as the HTTP response body.
+     *
+     * @param exchange   the HTTP exchange to send the response on
+     * @param statusCode the HTTP status code to return
+     * @param response   the JSON payload to serialize and write
+     * @throws IOException when the response cannot be sent
+     */
     private void sendJson(HttpExchange exchange, int statusCode, JsonNode response) throws IOException {
         byte[] responseBytes = objectMapper.writeValueAsBytes(response);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
@@ -214,6 +279,13 @@ public class McpServer {
         }
     }
 
+    /**
+     * Send an empty HTTP response and close the exchange.
+     *
+     * @param exchange   the HTTP exchange to reply on
+     * @param statusCode the HTTP status code to return
+     * @throws IOException when sending the response headers fails
+     */
     private void sendEmpty(HttpExchange exchange, int statusCode) throws IOException {
         exchange.sendResponseHeaders(statusCode, -1);
         exchange.close();
