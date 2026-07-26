@@ -27,35 +27,36 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.gui.GuiSingleton;
-import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.network.mcp.GetDeviceTool;
+import org.dpsoftware.network.mcp.McpTool;
+import org.dpsoftware.network.mcp.SetEffectTool;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- * Minimal MCP Streamable HTTP server backed by the JDK HTTP server.
+ * Model Context Protocol. Minimal MCP Streamable HTTP server backed by the JDK HTTP server.
  */
 @Slf4j
 public class McpServer {
 
     private static final String MCP_ENDPOINT = "/mcp";
     private static final String MCP_PROTOCOL_VERSION = "2025-06-18";
-    private static final String TOOL_GET_DEVICE = "getDevice";
     private static final int DEFAULT_PORT = 33555;
-    private static final int DEVICE_SNAPSHOT_TIMEOUT_SECONDS = 3;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Map<String, McpTool> tools = List.<McpTool>of(
+            new GetDeviceTool(objectMapper),
+            new SetEffectTool(objectMapper)
+    ).stream().collect(Collectors.toMap(McpTool::getName, Function.identity()));
     private HttpServer httpServer;
 
     /**
@@ -121,8 +122,7 @@ public class McpServer {
             switch (method) {
                 case "initialize" -> sendJson(exchange, 200, createInitializeResponse(id));
                 case "tools/list" -> sendJson(exchange, 200, createToolsListResponse(id));
-                case "tools/call" ->
-                        sendJson(exchange, 200, createToolCallResponse(id, request.path("params").path("name").asText()));
+                case "tools/call" -> sendJson(exchange, 200, createToolCallResponse(id, request.path("params")));
                 case "ping" -> sendJson(exchange, 200, createResultResponse(id, objectMapper.createObjectNode()));
                 default -> sendError(exchange, id, -32601, "Method not found");
             }
@@ -145,74 +145,28 @@ public class McpServer {
 
     private ObjectNode createToolsListResponse(JsonNode id) {
         ObjectNode result = objectMapper.createObjectNode();
-        ArrayNode tools = result.putArray("tools");
-        ObjectNode tool = tools.addObject();
-        tool.put("name", TOOL_GET_DEVICE);
-        tool.put("description", "List Glow Worm device names currently detected by Firefly Luciferin.");
-        ObjectNode inputSchema = tool.putObject("inputSchema");
-        inputSchema.put("type", "object");
-        inputSchema.putObject("properties");
-        inputSchema.putArray("required");
+        ArrayNode toolList = result.putArray("tools");
+        tools.values().forEach(tool -> toolList.add(tool.getDefinition()));
         return createResultResponse(id, result);
     }
 
-    private ObjectNode createToolCallResponse(JsonNode id, String toolName) throws Exception {
-        if (!TOOL_GET_DEVICE.equals(toolName)) {
-            return createToolErrorResponse(id, "Unknown tool: " + toolName);
+    private ObjectNode createToolCallResponse(JsonNode id, JsonNode params) throws Exception {
+        String toolName = params.path("name").asText();
+        McpTool tool = tools.get(toolName);
+        if (tool == null) {
+            return createResultResponse(id, createToolErrorResponse("Unknown tool: " + toolName));
         }
-
-        ObjectNode result = objectMapper.createObjectNode();
-        ArrayNode content = result.putArray("content");
-        ObjectNode textContent = content.addObject();
-        textContent.put("type", "text");
-        textContent.put("text", objectMapper.writeValueAsString(getDeviceNames()));
-        return createResultResponse(id, result);
+        return createResultResponse(id, tool.execute(params.path("arguments")));
     }
 
-    private ObjectNode createToolErrorResponse(JsonNode id, String message) {
+    private ObjectNode createToolErrorResponse(String message) {
         ObjectNode result = objectMapper.createObjectNode();
         result.put("isError", true);
         ArrayNode content = result.putArray("content");
         ObjectNode textContent = content.addObject();
         textContent.put("type", "text");
         textContent.put("text", message);
-        return createResultResponse(id, result);
-    }
-
-    private List<String> getDeviceNames() throws Exception {
-        if (Platform.isFxApplicationThread()) {
-            return snapshotDeviceNames();
-        }
-
-        CompletableFuture<List<String>> future = new CompletableFuture<>();
-        Platform.runLater(() -> {
-            try {
-                future.complete(snapshotDeviceNames());
-            } catch (Exception e) {
-                future.completeExceptionally(e);
-            }
-        });
-
-        try {
-            return future.get(DEVICE_SNAPSHOT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            log.warn("MCP device snapshot timed out");
-            return List.of();
-        }
-    }
-
-    private List<String> snapshotDeviceNames() {
-        if (GuiSingleton.getInstance().deviceTableData == null) {
-            return List.of();
-        }
-
-        List<String> deviceNames = new ArrayList<>();
-        for (GlowWormDevice device : GuiSingleton.getInstance().deviceTableData) {
-            if (device != null && device.getDeviceName() != null && !device.getDeviceName().isBlank()) {
-                deviceNames.add(device.getDeviceName());
-            }
-        }
-        return deviceNames;
+        return result;
     }
 
     private ObjectNode createResultResponse(JsonNode id, JsonNode result) {
