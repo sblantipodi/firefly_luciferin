@@ -14,6 +14,7 @@ module org.dpsoftware {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;
     requires java.net.http;
+    requires jdk.httpserver;
     requires ch.qos.logback.classic;
     requires org.freedesktop.dbus;
     requires jdk.incubator.vector;
