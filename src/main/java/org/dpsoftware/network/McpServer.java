@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © HttpURLConnection.HTTP_ACCEPTED0 - HttpURLConnection.HTTP_ACCEPTED6  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,19 +28,21 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.network.mcp.GetDeviceTool;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.network.mcp.tools.GetDeviceTool;
 import org.dpsoftware.network.mcp.McpTool;
-import org.dpsoftware.network.mcp.SetEffectTool;
+import org.dpsoftware.network.mcp.tools.SetEffectTool;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Model Context Protocol. Minimal MCP Streamable HTTP server backed by the JDK HTTP server.
@@ -49,14 +51,16 @@ import java.util.stream.Collectors;
 public class McpServer {
 
     private static final String MCP_ENDPOINT = "/mcp";
+    private static final String MCP_JSONRPC_KEY = "jsonrpc";
+    private static final String MCP_JSONRPC_VERSION = "2.0";
     private static final String MCP_PROTOCOL_VERSION = "2025-06-18";
-    private static final int DEFAULT_PORT = 33555;
+    private static final int MCP_DEFAULT_PORT = 33555;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final Map<String, McpTool> tools = List.<McpTool>of(
+    private final Map<String, McpTool> tools = Stream.<McpTool>of(
             new GetDeviceTool(objectMapper),
             new SetEffectTool(objectMapper)
-    ).stream().collect(Collectors.toMap(McpTool::getName, Function.identity()));
+    ).collect(Collectors.toMap(McpTool::getName, Function.identity()));
     private HttpServer httpServer;
 
     /**
@@ -67,7 +71,7 @@ public class McpServer {
             return;
         }
         try {
-            httpServer = HttpServer.create(new InetSocketAddress("127.0.0.1", DEFAULT_PORT), 0);
+            httpServer = HttpServer.create(new InetSocketAddress(Constants.MSG_SERVER_HOST, MCP_DEFAULT_PORT), 0);
             httpServer.createContext(MCP_ENDPOINT, this::handleMcpRequest);
             httpServer.setExecutor(Executors.newCachedThreadPool(runnable -> {
                 Thread thread = new Thread(runnable, "firefly-mcp-server");
@@ -76,7 +80,7 @@ public class McpServer {
             }));
             httpServer.start();
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-mcp-shutdown"));
-            log.info("MCP server listening on http://127.0.0.1:{}{}", DEFAULT_PORT, MCP_ENDPOINT);
+            log.info("MCP server listening on http://{}:{}{}", Constants.MSG_SERVER_HOST, MCP_DEFAULT_PORT, MCP_ENDPOINT);
         } catch (IOException e) {
             log.warn("Unable to start MCP server: {}", e.getMessage());
         }
@@ -95,7 +99,7 @@ public class McpServer {
     private void handleMcpRequest(HttpExchange exchange) throws IOException {
         addCorsHeaders(exchange);
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-            sendEmpty(exchange, 204);
+            sendEmpty(exchange, HttpURLConnection.HTTP_NO_CONTENT);
             return;
         }
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
@@ -120,10 +124,10 @@ public class McpServer {
 
         try {
             switch (method) {
-                case "initialize" -> sendJson(exchange, 200, createInitializeResponse(id));
-                case "tools/list" -> sendJson(exchange, 200, createToolsListResponse(id));
-                case "tools/call" -> sendJson(exchange, 200, createToolCallResponse(id, request.path("params")));
-                case "ping" -> sendJson(exchange, 200, createResultResponse(id, objectMapper.createObjectNode()));
+                case "initialize" -> sendJson(exchange, HttpURLConnection.HTTP_OK, createInitializeResponse(id));
+                case "tools/list" -> sendJson(exchange, HttpURLConnection.HTTP_OK, createToolsListResponse(id));
+                case "tools/call" -> sendJson(exchange, HttpURLConnection.HTTP_OK, createToolCallResponse(id, request.path("params")));
+                case "ping" -> sendJson(exchange, HttpURLConnection.HTTP_OK, createResultResponse(id, objectMapper.createObjectNode()));
                 default -> sendError(exchange, id, -32601, "Method not found");
             }
         } catch (Exception e) {
@@ -138,7 +142,7 @@ public class McpServer {
         ObjectNode capabilities = result.putObject("capabilities");
         capabilities.putObject("tools").put("listChanged", false);
         ObjectNode serverInfo = result.putObject("serverInfo");
-        serverInfo.put("name", "firefly-luciferin");
+        serverInfo.put("name", Constants.SOFTWARE_NAME);
         serverInfo.put("version", "1.0.0");
         return createResultResponse(id, result);
     }
@@ -171,7 +175,7 @@ public class McpServer {
 
     private ObjectNode createResultResponse(JsonNode id, JsonNode result) {
         ObjectNode response = objectMapper.createObjectNode();
-        response.put("jsonrpc", "2.0");
+        response.put(MCP_JSONRPC_KEY, MCP_JSONRPC_VERSION);
         response.set("id", id);
         response.set("result", result);
         return response;
@@ -179,7 +183,7 @@ public class McpServer {
 
     private void sendError(HttpExchange exchange, JsonNode id, int code, String message) throws IOException {
         ObjectNode response = objectMapper.createObjectNode();
-        response.put("jsonrpc", "2.0");
+        response.put(MCP_JSONRPC_KEY, MCP_JSONRPC_VERSION);
         if (id == null || id.isNull()) {
             response.putNull("id");
         } else {
@@ -188,11 +192,11 @@ public class McpServer {
         ObjectNode error = response.putObject("error");
         error.put("code", code);
         error.put("message", message);
-        sendJson(exchange, 200, response);
+        sendJson(exchange, HttpURLConnection.HTTP_OK, response);
     }
 
     private void handleNotification(HttpExchange exchange) throws IOException {
-        sendEmpty(exchange, 202);
+        sendEmpty(exchange, HttpURLConnection.HTTP_ACCEPTED);
     }
 
     private void addCorsHeaders(HttpExchange exchange) {
