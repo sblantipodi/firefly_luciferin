@@ -808,6 +808,12 @@ public class Constants {
     public static String USB_NOT_AVAILABLE_HEADER = "usb.not.available.header";
     public static String USB_NOT_AVAILABLE_CONTENT = "usb.not.available.content";
     public static String USB_NOT_AVAILABLE_CONTENT_SNAP = "usb.not.available.content.snap";
+    // MCP
+    public static final String MCP_ENDPOINT = "/mcp";
+    public static final String MCP_JSONRPC_KEY = "jsonrpc";
+    public static final String MCP_JSONRPC_VERSION = "2.0";
+    public static final String MCP_PROTOCOL_VERSION = "2025-06-18";
+    public static final int MCP_DEFAULT_PORT = 33555;
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};

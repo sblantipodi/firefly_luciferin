@@ -1,5 +1,5 @@
 /*
-  GetDeviceTool.java
+  GetInfoTool.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -24,28 +24,26 @@ package org.dpsoftware.network.mcp.tools;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.dpsoftware.gui.GuiSingleton;
-import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.network.mcp.AbstractMcpTool;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * MCP tool that returns the detected Glow Worm device names.
+ * MCP tool that returns runtime statistics: LED layout, gamma, FPS, and pipeline state.
  */
-public class GetDeviceTool extends AbstractMcpTool {
+public class GetInfoTool extends AbstractMcpTool {
 
-    public static final String TOOL_NAME = "getDevice";
+    public static final String TOOL_NAME = "getInfo";
 
-    public GetDeviceTool(ObjectMapper objectMapper) {
+    public GetInfoTool(ObjectMapper objectMapper) {
         super(objectMapper);
     }
 
     /**
      * Return the MCP tool name.
      *
-     * @return {@code "getDevice"}
+     * @return {@code "getInfo"}
      */
     @Override
     public String getName() {
@@ -61,7 +59,7 @@ public class GetDeviceTool extends AbstractMcpTool {
     public ObjectNode getDefinition() {
         ObjectNode tool = objectMapper.createObjectNode();
         tool.put("name", TOOL_NAME);
-        tool.put("description", "List Glow Worm device names currently detected by Firefly Luciferin.");
+        tool.put("description", "Return runtime statistics: LED layout, adaptive gamma, FPS, and capture pipeline state.");
         ObjectNode annotations = tool.putObject("annotations");
         annotations.put("readOnlyHint", true);
         ObjectNode inputSchema = tool.putObject("inputSchema");
@@ -72,33 +70,45 @@ public class GetDeviceTool extends AbstractMcpTool {
     }
 
     /**
-     * Execute the tool by collecting device names from the GUI table on the FX thread.
+     * Execute the tool by snapshotting the current runtime statistics on the FX thread.
      *
      * @param arguments unused, retained for interface compatibility
-     * @return a text result containing the JSON array of detected device names
+     * @return a text result containing the JSON representation of runtime statistics
      * @throws Exception if execution on the FX thread fails
      */
     @Override
     public ObjectNode execute(JsonNode arguments) throws Exception {
-        return createTextResult(objectMapper.writeValueAsString(runOnFxThread(this::snapshotDeviceNames)));
+        ObjectNode info = runOnFxThread(this::snapshotInfo);
+        return createTextResult(objectMapper.writeValueAsString(info));
     }
 
     /**
-     * Collect the non-blank device names from the GUI device table.
+     * Collect the current runtime statistics into a structured JSON object.
      *
-     * @return a list of device name strings currently registered in the GUI
+     * @return an ObjectNode with led, gamma, fps, and running sections
      */
-    private List<String> snapshotDeviceNames() {
-        if (GuiSingleton.getInstance().deviceTableData == null) {
-            return List.of();
-        }
-        List<String> deviceNames = new ArrayList<>();
-        for (GlowWormDevice device : GuiSingleton.getInstance().deviceTableData) {
-            if (device != null && device.getDeviceName() != null && !device.getDeviceName().isBlank()) {
-                deviceNames.add(device.getDeviceName());
-            }
-        }
-        return deviceNames;
+    private ObjectNode snapshotInfo() {
+        ObjectNode result = objectMapper.createObjectNode();
+
+        // LED layout section
+        ObjectNode led = result.putObject("led");
+        led.put("count", NetworkSingleton.getInstance().totalLedNum);
+        led.put("groupBy", MainSingleton.getInstance().config.getGroupBy());
+
+        // Gamma section
+        ObjectNode gamma = result.putObject("gamma");
+        double gammaValue = Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get());
+        gamma.put("adaptive", Math.round(gammaValue * 1000.0) / 1000.0);
+
+        // FPS section
+        ObjectNode fps = result.putObject("fps");
+        fps.put("producer", MainSingleton.getInstance().FPS_PRODUCER);
+        fps.put("consumer", MainSingleton.getInstance().FPS_GW_CONSUMER);
+
+        // Pipeline state
+        result.put("running", MainSingleton.getInstance().RUNNING);
+
+        return result;
     }
 
 }

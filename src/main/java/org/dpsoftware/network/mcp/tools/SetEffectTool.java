@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.network.mcp;
+package org.dpsoftware.network.mcp.tools;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.network.mcp.AbstractMcpTool;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.Arrays;
@@ -42,38 +43,56 @@ public class SetEffectTool extends AbstractMcpTool {
 
     public static final String TOOL_NAME = "setEffect";
     private static final String EFFECT_DESCRIPTION = """
-            Effect to use. Accepts enum names and natural aliases.
-            Common choices:
-            - ambilight, bias light -> BIAS_LIGHT
-            - solid, fixed color -> SOLID
-            - rainbow, rainbow effect, arcobaleno -> RAINBOW
-            NOTE: 
-              LEDs and Lights are synonyms. If you are asked to toggle light, you can toggle LEDs.
-              Do not start or stop the capture if not asked.              
-              When you are asked to set an effect, set the effect, then turn on the LEDs.
-              When you are asked to change the brightness, change the brightness, then turn on the LEDs.
-              When you are asked to change the light color, change the color (r, g, b), then turn on the LEDs.
-              To set a solid color, set the effect to SOLID and provide r, g, b values.
+                Effect description:
+                Accepts enum names or natural-language aliases, even in different languages.
+                The agent should interpret the user request and select the enum that best matches the intended effect.
+                    ambilight, bias light → BIAS_LIGHT
+                    solid, fixed color → SOLID
+                    rainbow, arcobaleno → RAINBOW
+                Rules:
+                    LEDs and Lights are synonyms.
+                    Do not start or stop capture unless explicitly requested.
+                    When setting an effect, set the effect first, then turn on the LEDs.
+                    When changing brightness, update the value, then turn on the LEDs.
+                    When changing color (r, g, b), update the color, then turn on the LEDs.
+                    For a solid color: effect = SOLID + (r, g, b) values.
             """;
 
     public SetEffectTool(ObjectMapper objectMapper) {
         super(objectMapper);
     }
 
+    /**
+     * Format the list of available effect enum names as a readable string.
+     *
+     * @return a comma-separated string of effect names
+     */
     private static String availableEffectNames() {
         return Arrays.toString(Arrays.stream(Enums.Effect.values()).map(Enum::name).toArray(String[]::new));
     }
 
+    /**
+     * Return the MCP tool name.
+     *
+     * @return {@code "setEffect"}
+     */
     @Override
     public String getName() {
         return TOOL_NAME;
     }
 
+    /**
+     * Build the MCP tool definition JSON with schema for effect, LED toggle, brightness, capture state, and color.
+     *
+     * @return an ObjectNode describing the tool name, description, and input schema
+     */
     @Override
     public ObjectNode getDefinition() {
         ObjectNode tool = objectMapper.createObjectNode();
         tool.put("name", TOOL_NAME);
         tool.put("description", "Set Firefly Luciferin effect, LED power state, brightness, and capture pipeline state.");
+        ObjectNode annotations = tool.putObject("annotations");
+        annotations.put("idempotentHint", true);
         ObjectNode inputSchema = tool.putObject("inputSchema");
         inputSchema.put("type", "object");
         ObjectNode properties = inputSchema.putObject("properties");
@@ -124,6 +143,13 @@ public class SetEffectTool extends AbstractMcpTool {
         return tool;
     }
 
+    /**
+     * Parse the incoming arguments, validate fields, and delegate to {@link #applySetEffect(SetEffectRequest)}.
+     *
+     * @param arguments the JSON node containing tool parameters
+     * @return a text result with the updated device state as JSON string
+     * @throws Exception if execution on the FX thread fails
+     */
     @Override
     public ObjectNode execute(JsonNode arguments) throws Exception {
         SetEffectRequest request = parseRequest(arguments);
@@ -134,13 +160,17 @@ public class SetEffectTool extends AbstractMcpTool {
         return createTextResult(objectMapper.writeValueAsString(state));
     }
 
+    /**
+     * Parse and validate the tool arguments into a typed request object.
+     *
+     * @param arguments the raw JSON arguments from the MCP call
+     * @return a SetEffectRequest populated with validated values or an error message
+     */
     private SetEffectRequest parseRequest(JsonNode arguments) {
         SetEffectRequest request = new SetEffectRequest();
-
         if (arguments == null || arguments.isMissingNode() || arguments.isNull()) {
             return request;
         }
-
         JsonNode effect = arguments.get("effect");
         if (effect != null && !effect.isNull()) {
             if (!effect.isTextual()) {
@@ -154,7 +184,6 @@ public class SetEffectTool extends AbstractMcpTool {
             }
             request.effect = resolvedEffect;
         }
-
         JsonNode brightness = arguments.get("brightness");
         if (brightness != null && !brightness.isNull()) {
             if (!brightness.isIntegralNumber() || !brightness.canConvertToInt() || brightness.asInt() < 0 || brightness.asInt() > 255) {
@@ -163,7 +192,6 @@ public class SetEffectTool extends AbstractMcpTool {
             }
             request.brightness = brightness.asInt();
         }
-
         JsonNode toggleLed = arguments.get("toggleLed");
         if (toggleLed != null && !toggleLed.isNull()) {
             if (!toggleLed.isBoolean()) {
@@ -172,7 +200,6 @@ public class SetEffectTool extends AbstractMcpTool {
             }
             request.toggleLed = toggleLed.asBoolean();
         }
-
         JsonNode running = arguments.get("running");
         if (running != null && !running.isNull()) {
             if (!running.isBoolean()) {
@@ -181,7 +208,6 @@ public class SetEffectTool extends AbstractMcpTool {
             }
             request.running = running.asBoolean();
         }
-
         JsonNode colorR = arguments.get("r");
         JsonNode colorG = arguments.get("g");
         JsonNode colorB = arguments.get("b");
@@ -193,9 +219,7 @@ public class SetEffectTool extends AbstractMcpTool {
                 request.errorMessage = "r, g, and b must all be provided together";
                 return request;
             }
-            if (!colorR.isIntegralNumber() || colorR.asInt() < 0 || colorR.asInt() > 255
-                    || !colorG.isIntegralNumber() || colorG.asInt() < 0 || colorG.asInt() > 255
-                    || !colorB.isIntegralNumber() || colorB.asInt() < 0 || colorB.asInt() > 255) {
+            if (!colorR.isIntegralNumber() || colorR.asInt() < 0 || colorR.asInt() > 255 || !colorG.isIntegralNumber() || colorG.asInt() < 0 || colorG.asInt() > 255 || !colorB.isIntegralNumber() || colorB.asInt() < 0 || colorB.asInt() > 255) {
                 request.errorMessage = "r, g, b must be integers between 0 and 255";
                 return request;
             }
@@ -203,10 +227,15 @@ public class SetEffectTool extends AbstractMcpTool {
             request.colorG = colorG.asInt();
             request.colorB = colorB.asInt();
         }
-
         return request;
     }
 
+    /**
+     * Apply the validated request to the running configuration on the FX thread.
+     *
+     * @param request the parsed and validated set-effect request
+     * @return a JSON object reflecting the current device state after applying changes
+     */
     private ObjectNode applySetEffect(SetEffectRequest request) {
         if (MainSingleton.getInstance().config == null) {
             throw new IllegalStateException("Configuration is not available");
@@ -214,10 +243,12 @@ public class SetEffectTool extends AbstractMcpTool {
 
         if (request.effect != null) {
             MainSingleton.getInstance().config.setEffect(request.effect.getBaseI18n());
+            CommonUtility.turnOnLEDs();
             log.info("MCP effect set to {}", request.effect.getBaseI18n());
         }
         if (request.brightness != null) {
             MainSingleton.getInstance().config.setBrightness(request.brightness);
+            CommonUtility.turnOnLEDs();
             log.info("MCP brightness set to {}", request.brightness);
         }
         if (request.toggleLed != null) {
@@ -239,16 +270,10 @@ public class SetEffectTool extends AbstractMcpTool {
         }
         if (request.colorR != null) {
             int brightness = MainSingleton.getInstance().config.getBrightness();
-            MainSingleton.getInstance().config.setColorChooser(
-                    request.colorR + "," + request.colorG + "," + request.colorB + "," + brightness);
-
-            MainSingleton.getInstance().config.setColorChooser(
-                    request.colorR + "," + request.colorG + "," + request.colorB + "," + brightness);
-            log.info("MCP color set to r={} g={} b={}", request.colorR, request.colorG, request.colorB);
+            MainSingleton.getInstance().config.setColorChooser(request.colorR + "," + request.colorG + "," + request.colorB + "," + brightness);
             CommonUtility.turnOnLEDs();
-
+            log.info("MCP color set to r={} g={} b={}", request.colorR, request.colorG, request.colorB);
         }
-
         ObjectNode state = objectMapper.createObjectNode();
         state.put("effect", MainSingleton.getInstance().config.getEffect());
         state.put("brightness", MainSingleton.getInstance().config.getBrightness());
@@ -258,26 +283,29 @@ public class SetEffectTool extends AbstractMcpTool {
         return state;
     }
 
+    /**
+     * Resolve a user-supplied effect name to an {@link Enums.Effect} enum value.
+     * Checks aliases, localized strings, and normalized enum names in order.
+     *
+     * @param effectName the raw effect name from the request
+     * @return the resolved enum value, or {@code null} if no match is found
+     */
     private Enums.Effect resolveEffect(String effectName) {
         if (effectName == null || effectName.isBlank()) {
             return null;
         }
-
         Enums.Effect aliasEffect = resolveEffectAlias(effectName);
         if (aliasEffect != null) {
             return aliasEffect;
         }
-
         Enums.Effect effect = LocalizedEnum.fromBaseStr(Enums.Effect.class, effectName);
         if (effect != null) {
             return effect;
         }
-
         effect = LocalizedEnum.fromStr(Enums.Effect.class, effectName);
         if (effect != null) {
             return effect;
         }
-
         String normalizedEffectName = effectName.trim().replace('-', '_').replace(' ', '_').toUpperCase(Locale.ROOT);
         try {
             return Enums.Effect.valueOf(normalizedEffectName);
@@ -286,31 +314,18 @@ public class SetEffectTool extends AbstractMcpTool {
         }
     }
 
+    /**
+     * Map a normalized alias string to an {@link Enums.Effect}. Just a few example for the SLM/LLM.
+     *
+     * @param effectName the raw effect name to look up by alias
+     * @return the resolved enum value, or {@code null} if no alias matches
+     */
     private Enums.Effect resolveEffectAlias(String effectName) {
         String normalizedAlias = effectName.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
         return switch (normalizedAlias) {
             case "ambilight", "bias", "biaslight", "illuminazionebias" -> Enums.Effect.BIAS_LIGHT;
-            case "solid", "fixed", "fixedcolor", "solido", "colorefisso" -> Enums.Effect.SOLID;
-            case "rainbow", "rainboweffect", "arcobaleno", "effettoarcobaleno" -> Enums.Effect.RAINBOW;
-            case "slowrainbow", "superslowrainbow", "arcobalenolento" -> Enums.Effect.SUPER_SLOW_RAINBOW;
-            case "chaserainbow", "rainbowchase", "arcobalenoinseguimento" -> Enums.Effect.CHASE_RAINBOW;
-            case "solidrainbow", "arcobalenosolido" -> Enums.Effect.SOLID_RAINBOW;
-            case "randomcolors", "coloricasuali" -> Enums.Effect.RANDOM_COLORS;
-            case "rainbowcolors", "colorirainbow", "coloriarcobaleno", "coloridellarcobaleno" ->
-                    Enums.Effect.RAINBOW_COLORS;
-            case "pulsingrainbow", "rain1", "arcobalenopulsante" -> Enums.Effect.RAIN1;
-            case "randommarquee", "marqueecasuale" -> Enums.Effect.RANDOM_MARQUEE;
-            case "rainbowmarquee", "marqueearcobaleno" -> Enums.Effect.RAINBOW_MARQUEE;
-            case "fire", "fuoco" -> Enums.Effect.FIRE;
-            case "twinkle", "scintillio" -> Enums.Effect.TWINKLE;
-            case "bpm" -> Enums.Effect.BPM;
-            case "meteor", "meteora" -> Enums.Effect.METEOR;
-            case "waterfall", "colorwaterfall", "cascata", "cascatacolore" -> Enums.Effect.COLOR_WATERFALL;
-            case "christmas", "natale" -> Enums.Effect.CHRISTMAS;
-            case "musicvumeter", "vumeter", "musicmodevumeter" -> Enums.Effect.MUSIC_MODE_VU_METER;
-            case "dualvumeter", "musicdualvumeter", "musicmodevumeterdual" -> Enums.Effect.MUSIC_MODE_VU_METER_DUAL;
-            case "musicbright", "musicscreencapture", "musicmodebright" -> Enums.Effect.MUSIC_MODE_BRIGHT;
-            case "musicrainbow", "musicmoderainbow" -> Enums.Effect.MUSIC_MODE_RAINBOW;
+            case "solid", "fixed", "fixedcolor" -> Enums.Effect.SOLID;
+            case "rainbow", "rainboweffect" -> Enums.Effect.RAINBOW;
             default -> null;
         };
     }

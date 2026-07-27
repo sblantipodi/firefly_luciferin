@@ -36,7 +36,7 @@ import java.util.concurrent.TimeoutException;
  * Shared helpers for MCP tools.
  */
 @Slf4j
-abstract class AbstractMcpTool implements McpTool {
+public abstract class AbstractMcpTool implements McpTool {
 
     private static final int FX_OPERATION_TIMEOUT_SECONDS = 3;
 
@@ -46,6 +46,12 @@ abstract class AbstractMcpTool implements McpTool {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Construct a success text result node.
+     *
+     * @param text the plain-text payload
+     * @return a JSON object with a single {@code text} entry in its content array
+     */
     protected ObjectNode createTextResult(String text) {
         ObjectNode result = objectMapper.createObjectNode();
         ArrayNode content = result.putArray("content");
@@ -55,17 +61,30 @@ abstract class AbstractMcpTool implements McpTool {
         return result;
     }
 
+    /**
+     * Construct an error result node with the given message.
+     *
+     * @param message the error description text
+     * @return a JSON object marked as {@code isError} containing the message
+     */
     protected ObjectNode createToolErrorResult(String message) {
         ObjectNode result = createTextResult(message);
         result.put("isError", true);
         return result;
     }
 
+    /**
+     * Execute a callable on the JavaFX application thread, waiting up to 3 seconds for completion.
+     *
+     * @param <T>      the return type of the callable
+     * @param callable the code to run on the FX thread
+     * @return the result returned by the callable
+     * @throws Exception if the callable throws or if the operation times out
+     */
     protected <T> T runOnFxThread(Callable<T> callable) throws Exception {
         if (Platform.isFxApplicationThread()) {
             return callable.call();
         }
-
         CompletableFuture<T> future = new CompletableFuture<>();
         Platform.runLater(() -> {
             try {
@@ -74,7 +93,6 @@ abstract class AbstractMcpTool implements McpTool {
                 future.completeExceptionally(e);
             }
         });
-
         try {
             return future.get(FX_OPERATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
