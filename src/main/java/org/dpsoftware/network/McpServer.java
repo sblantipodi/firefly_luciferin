@@ -270,6 +270,7 @@ public class McpServer {
      * @param response   the JSON payload to serialize and write
      * @throws IOException when the response cannot be sent
      */
+    @SuppressWarnings("all")
     private void sendJson(HttpExchange exchange, int statusCode, JsonNode response) throws IOException {
         byte[] responseBytes = objectMapper.writeValueAsBytes(response);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
