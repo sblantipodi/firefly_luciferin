@@ -204,14 +204,18 @@ public class PipelineManager {
      * @return params for Linux Pipeline
      */
     public static String getLinuxPipelineParams() {
+        MainSingleton main = MainSingleton.getInstance();
         String gstreamerPipeline;
         String pipeline;
-        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
-                || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
-            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())) {
-                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG;
-            } else {
+        if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
+            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
                 pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA;
+            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
+                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL;
+            } else {
+                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG;
             }
             XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
             assert xdgStreamDetails != null;
@@ -220,14 +224,14 @@ public class PipelineManager {
                     .replace("{2}", xdgStreamDetails.streamId.toString());
         } else {
             // startx{0}, endx{1}, starty{2}, endy{3}
-            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
+            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
                 pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC;
             } else {
                 pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA;
             }
             DisplayManager displayManager = new DisplayManager();
             List<DisplayInfo> displayList = displayManager.getDisplayList();
-            DisplayInfo monitorInfo = displayList.get(MainSingleton.getInstance().config.getMonitorNumber());
+            DisplayInfo monitorInfo = displayList.get(main.config.getMonitorNumber());
             gstreamerPipeline = pipeline
                     .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
                     .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))

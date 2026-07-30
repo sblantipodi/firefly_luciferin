@@ -236,6 +236,7 @@ public class Configuration implements Cloneable {
         XIMAGESRC_NVIDIA("XIMAGESRC (NVIDIA)"),
         PIPEWIREXDG("PIPEWIREXDG"),
         PIPEWIREXDG_NVIDIA("PIPEWIREXDG (NVIDIA)"),
+        PIPEWIREXDG_AMD_INTEL("PIPEWIREXDG (AMD/INTEL)"),
         AVFVIDEOSRC("AVFVIDEOSRC");
         private final String captureMethod;
 
