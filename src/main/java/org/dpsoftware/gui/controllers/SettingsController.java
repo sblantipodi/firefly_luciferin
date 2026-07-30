@@ -520,6 +520,8 @@ public class SettingsController {
                 config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG.name());
             } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA) {
                 config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL) {
+                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name());
             }
         }
     }
@@ -777,7 +779,7 @@ public class SettingsController {
                 modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {
                 modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
-                        Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
+                        Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA, Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL);
             }
         }
         if (MainSingleton.getInstance().config != null) {
