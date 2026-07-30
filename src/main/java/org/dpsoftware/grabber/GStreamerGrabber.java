@@ -101,7 +101,12 @@ public class GStreamerGrabber extends JComponent {
                             String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
         } else {
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE.replace(Constants.INTERNAL_SCALING_X,
+            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
+                gstreamerPipeline = Constants.GSTREAMER_PIPELINE_CUDA;
+            } else {
+                gstreamerPipeline = Constants.GSTREAMER_PIPELINE;
+            }
+            gstreamerPipeline = gstreamerPipeline.replace(Constants.INTERNAL_SCALING_X,
                             String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
         }
