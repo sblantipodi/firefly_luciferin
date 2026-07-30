@@ -597,7 +597,7 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! videoscale ! videoconvert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! cudaupload ! cudascale ! cudaconvert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
-    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! vapostproc ! videorate drop-only=true";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     public static final String GSTREAMER_DDUPL = "DDUPL";
     // public static final String GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
