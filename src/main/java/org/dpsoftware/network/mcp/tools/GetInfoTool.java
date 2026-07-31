@@ -24,6 +24,7 @@ package org.dpsoftware.network.mcp.tools;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.network.NetworkSingleton;
@@ -32,6 +33,7 @@ import org.dpsoftware.network.mcp.AbstractMcpTool;
 /**
  * MCP tool that returns runtime statistics: LED layout, gamma, FPS, and pipeline state.
  */
+@Slf4j
 public class GetInfoTool extends AbstractMcpTool {
 
     public static final String TOOL_NAME = "getInfo";
@@ -79,6 +81,7 @@ public class GetInfoTool extends AbstractMcpTool {
     @Override
     public ObjectNode execute(JsonNode arguments) throws Exception {
         ObjectNode info = runOnFxThread(this::snapshotInfo);
+        log.debug("MCP getInfo: {}", objectMapper.writeValueAsString(info));
         return createTextResult(objectMapper.writeValueAsString(info));
     }
 
