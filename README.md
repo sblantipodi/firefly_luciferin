@@ -48,6 +48,8 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 - **Made from a gamer, for gamers**. No added lag, stutter free.
 - Multi platform, [**Windows**](https://github.com/sblantipodi/firefly_luciferin/wiki/Installers-and-binaries) and [**Linux**](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support) ready. macOS is coming when it's ready.
 - If you don't want to design your own PCB and you have a soldering iron, there is [**Luciferin's official PCB**](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB).
+- Luciferin can be controlled by your preferred [**AI agent using MCP (Model Context
+  Protocol)**](https://github.com/sblantipodi/firefly_luciferin/wiki/MCP-and-AI-Agents) using natural language.
 - Have a question? [**Get answered on the community**](https://discord.gg/aXf9jeN).
 
 ## Quick start

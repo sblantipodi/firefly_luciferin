@@ -154,9 +154,11 @@ public class SetEffectTool extends AbstractMcpTool {
     public ObjectNode execute(JsonNode arguments) throws Exception {
         SetEffectRequest request = parseRequest(arguments);
         if (request.errorMessage != null) {
+            log.debug("MCP setEffect validation error: {}", request.errorMessage);
             return createToolErrorResult(request.errorMessage);
         }
         ObjectNode state = runOnFxThread(() -> applySetEffect(request));
+        log.debug("MCP setEffect result: {}", objectMapper.writeValueAsString(state));
         return createTextResult(objectMapper.writeValueAsString(state));
     }
 
@@ -167,6 +169,7 @@ public class SetEffectTool extends AbstractMcpTool {
      * @return a SetEffectRequest populated with validated values or an error message
      */
     private SetEffectRequest parseRequest(JsonNode arguments) {
+        log.debug("MCP setEffect parsing arguments: {}", arguments);
         SetEffectRequest request = new SetEffectRequest();
         if (arguments == null || arguments.isMissingNode() || arguments.isNull()) {
             return request;
