@@ -119,6 +119,7 @@ public class McpServer {
         }
         JsonNode id = request.get("id");
         String method = request.path("method").asText();
+        log.debug("MCP request: method={}, id={}", method, id);
         if (id == null || id.isNull()) {
             handleNotification(exchange);
             return;
@@ -184,7 +185,10 @@ public class McpServer {
         if (tool == null) {
             return createResultResponse(id, createToolErrorResponse("Unknown tool: " + toolName));
         }
-        return createResultResponse(id, tool.execute(params.path("arguments")));
+        log.debug("MCP calling tool={}, arguments={}", toolName, params.path("arguments"));
+        ObjectNode result = tool.execute(params.path("arguments"));
+        log.debug("MCP tool response: {}", result);
+        return createResultResponse(id, result);
     }
 
     /**

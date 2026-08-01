@@ -24,6 +24,7 @@ package org.dpsoftware.network.mcp.tools;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.network.mcp.AbstractMcpTool;
@@ -34,6 +35,7 @@ import java.util.List;
 /**
  * MCP tool that returns the detected Glow Worm device names.
  */
+@Slf4j
 public class GetDeviceTool extends AbstractMcpTool {
 
     public static final String TOOL_NAME = "getDevice";
@@ -80,7 +82,9 @@ public class GetDeviceTool extends AbstractMcpTool {
      */
     @Override
     public ObjectNode execute(JsonNode arguments) throws Exception {
-        return createTextResult(objectMapper.writeValueAsString(runOnFxThread(this::snapshotDeviceNames)));
+        List<String> deviceNames = runOnFxThread(this::snapshotDeviceNames);
+        log.debug("MCP getDevice: {}", deviceNames);
+        return createTextResult(objectMapper.writeValueAsString(deviceNames));
     }
 
     /**
