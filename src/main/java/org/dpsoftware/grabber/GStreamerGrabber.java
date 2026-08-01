@@ -93,20 +93,20 @@ public class GStreamerGrabber extends JComponent {
             // Scale image inside the GPU by RESAMPLING_FACTOR
             String gstPipelineStr;
             if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
-                gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX11;
+                gstPipelineStr = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_DDUPL_DX11);
             } else {
-                gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX12;
+                gstPipelineStr = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_DDUPL_DX12);
             }
             gstreamerPipeline = gstPipelineStr.replace(Constants.INTERNAL_SCALING_X,
                             String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
         } else {
             if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
-                gstreamerPipeline = Constants.GSTREAMER_PIPELINE_CUDA;
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_CUDA);
             } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
-                gstreamerPipeline = Constants.GSTREAMER_PIPELINE_AMD_INTEL;
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_AMD_INTEL);
             } else {
-                gstreamerPipeline = Constants.GSTREAMER_PIPELINE;
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE);
             }
             gstreamerPipeline = gstreamerPipeline.replace(Constants.INTERNAL_SCALING_X,
                             String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
@@ -117,9 +117,9 @@ public class GStreamerGrabber extends JComponent {
         // JNA creates ByteBuffer using native byte order, set masks according to that.
         if (!(main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
             if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-                caps.append(Constants.BYTE_ORDER_BGR);
+                caps.append(PipelineManager.getBo(Constants.BYTE_ORDER_BGR));
             } else {
-                caps.append(Constants.BYTE_ORDER_RGB);
+                caps.append(PipelineManager.getBo(Constants.BYTE_ORDER_RGB));
             }
         }
         videosink.setCaps(new Caps(caps.toString()));
