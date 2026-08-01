@@ -132,9 +132,9 @@ public class GrabberManager {
                             DisplayManager displayManager = new DisplayManager();
                             String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
                             if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11.replace("{0}", monitorNativePeer), true);
+                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11).replace("{0}", monitorNativePeer), true);
                             } else {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12.replace("{0}", monitorNativePeer), true);
+                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12).replace("{0}", monitorNativePeer), true);
                             }
                         } else if (NativeExecutor.isLinux()) {
                             int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
@@ -143,7 +143,7 @@ public class GrabberManager {
                                     .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
                             bin = Gst.parseBinFromDescription(runtimeParams, true);
                         } else {
-                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
+                            bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_MAC), true);
                         }
                     }
                     vc = new GStreamerGrabber();
