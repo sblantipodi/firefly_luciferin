@@ -591,6 +591,9 @@ public class Constants {
     // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
     // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
+    public static final String CUSTOM_GSTREAMER_PIPELINE = System.getenv("CUSTOM_GSTREAMER_PIPELINE");
+    public static final String CUSTOM_GSTREAMER_CAPS = System.getenv("CUSTOM_GSTREAMER_CAPS");
+    public static final String CUSTOM_GSTREAMER_BO = System.getenv("CUSTOM_GSTREAMER_BO");
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11 = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! queue ! videoscale ! queue ! videoconvert";

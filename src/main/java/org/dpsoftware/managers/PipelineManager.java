@@ -211,11 +211,11 @@ public class PipelineManager {
                 || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
                 || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
             if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
-                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA;
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA);
             } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
-                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL;
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL);
             } else {
-                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG;
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG);
             }
             XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
             assert xdgStreamDetails != null;
@@ -225,9 +225,9 @@ public class PipelineManager {
         } else {
             // startx{0}, endx{1}, starty{2}, endy{3}
             if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
-                pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC;
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC);
             } else {
-                pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA;
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA);
             }
             DisplayManager displayManager = new DisplayManager();
             List<DisplayInfo> displayList = displayManager.getDisplayList();
@@ -607,6 +607,21 @@ public class PipelineManager {
         }
         AudioSingleton.getInstance().AUDIO_BRIGHTNESS = 255;
         MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
+    }
+
+    // Returns GSTREAMER_CUSTOM_PIPELINE env var if set, otherwise the default.
+    public static String getPipeline(final String defaultPipeline) {
+        return Constants.CUSTOM_GSTREAMER_PIPELINE != null ? Constants.CUSTOM_GSTREAMER_PIPELINE : defaultPipeline;
+    }
+
+    // Returns CUSTOM_GSTREAMER_CAPS env var if set, otherwise the default.
+    public static String getCap(final String defaultCap) {
+        return Constants.CUSTOM_GSTREAMER_CAPS != null ? Constants.CUSTOM_GSTREAMER_CAPS : defaultCap;
+    }
+
+    // Returns CUSTOM_GSTREAMER_BO env var if set, otherwise the default.
+    public static String getBo(final String defaultBo) {
+        return Constants.CUSTOM_GSTREAMER_BO != null ? Constants.CUSTOM_GSTREAMER_BO : defaultBo;
     }
 
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
