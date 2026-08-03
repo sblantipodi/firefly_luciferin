@@ -56,6 +56,9 @@ public class SetEffectTool extends AbstractMcpTool {
                     When changing brightness, update the value, then turn on the LEDs.
                     When changing color (r, g, b), update the color, then turn on the LEDs.
                     For a solid color: effect = SOLID + (r, g, b) values.
+                    To STOP the capture pipeline: use parameter "running" with boolean value false, e.g. {"running": false}.
+                    To START the capture pipeline: use parameter "running" with boolean value true, e.g. {"running": true}.
+                    The parameter name is "running" (boolean)".
             """;
 
     public SetEffectTool(ObjectMapper objectMapper) {
