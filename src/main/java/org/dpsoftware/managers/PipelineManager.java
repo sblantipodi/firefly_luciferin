@@ -238,7 +238,7 @@ public class PipelineManager {
                     .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
                     .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
         }
-        log.info(gstreamerPipeline);
+        log.debug("Pipeline: {}", gstreamerPipeline);
         return gstreamerPipeline;
     }
 
