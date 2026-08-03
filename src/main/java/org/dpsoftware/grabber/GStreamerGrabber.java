@@ -116,10 +116,11 @@ public class GStreamerGrabber extends JComponent {
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
         if (!(main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
+            boolean isAmdIntel = main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name());
             if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-                caps.append(PipelineManager.getBo(Constants.BYTE_ORDER_BGR));
+                caps.append(PipelineManager.getBo(isAmdIntel ? Constants.BYTE_ORDER_BGRA : Constants.BYTE_ORDER_BGR));
             } else {
-                caps.append(PipelineManager.getBo(Constants.BYTE_ORDER_RGB));
+                caps.append(PipelineManager.getBo(isAmdIntel ? Constants.BYTE_ORDER_ARGB : Constants.BYTE_ORDER_RGB));
             }
         }
         videosink.setCaps(new Caps(caps.toString()));
