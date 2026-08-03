@@ -123,6 +123,7 @@ public class GStreamerGrabber extends JComponent {
                 caps.append(PipelineManager.getBo(isAmdIntel ? Constants.BYTE_ORDER_ARGB : Constants.BYTE_ORDER_RGB));
             }
         }
+        log.debug("Caps: {}", caps);
         videosink.setCaps(new Caps(caps.toString()));
         setLayout(null);
         setOpaque(true);
