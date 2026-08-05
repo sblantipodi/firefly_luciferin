@@ -820,7 +820,7 @@ public class Constants {
     public static final String MCP_ENDPOINT = "/mcp";
     public static final String MCP_JSONRPC_KEY = "jsonrpc";
     public static final String MCP_JSONRPC_VERSION = "2.0";
-    public static final String MCP_PROTOCOL_VERSION = "2025-06-18";
+    public static final String MCP_PROTOCOL_VERSION = "2025-11-25";
     public static final int MCP_DEFAULT_PORT = 33555;
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
