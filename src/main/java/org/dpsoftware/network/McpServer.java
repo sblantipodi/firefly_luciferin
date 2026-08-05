@@ -108,6 +108,13 @@ public class McpServer {
             sendEmpty(exchange, HttpURLConnection.HTTP_NO_CONTENT);
             return;
         }
+        String origin = exchange.getRequestHeaders().getFirst("Origin");
+        if (origin != null && !isAllowedOrigin(origin)) {
+            log.warn("MCP rejected invalid Origin: {}", origin);
+            exchange.sendResponseHeaders(HttpURLConnection.HTTP_FORBIDDEN, -1);
+            exchange.close();
+            return;
+        }
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendError(exchange, null, -32600, "Only POST is supported");
             return;
@@ -156,6 +163,7 @@ public class McpServer {
         ObjectNode serverInfo = result.putObject("serverInfo");
         serverInfo.put("name", Constants.SOFTWARE_NAME);
         serverInfo.put("version", MainSingleton.getInstance().version);
+        serverInfo.put("description", "Firefly Luciferin - Screen capture for Glow Worm LED matrices");
         return createResultResponse(id, result);
     }
 
@@ -266,6 +274,19 @@ public class McpServer {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, MCP-Protocol-Version");
+    }
+
+    /**
+     * Check whether the given Origin header value is allowed.
+     *
+     * @param origin the Origin header value
+     * @return {@code true} if the origin is localhost-based
+     */
+    private boolean isAllowedOrigin(String origin) {
+        return origin.equalsIgnoreCase("http://localhost") ||
+                origin.startsWith("http://localhost:") ||
+                origin.equalsIgnoreCase("http://127.0.0.1") ||
+                origin.startsWith("http://127.0.0.1:");
     }
 
     /**
