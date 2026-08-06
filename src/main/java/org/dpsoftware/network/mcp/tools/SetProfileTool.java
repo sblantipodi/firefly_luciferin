@@ -65,9 +65,11 @@ public class SetProfileTool extends AbstractMcpTool {
         ObjectNode tool = objectMapper.createObjectNode();
         tool.put("name", TOOL_NAME);
         tool.put("description", "List available profiles or apply a profile. If no argument is provided, returns the list of available profiles. If profileName is provided, applies that profile.");
+        tool.put("icon", "profile");
         ObjectNode annotations = tool.putObject("annotations");
         annotations.put("idempotentHint", true);
         ObjectNode inputSchema = tool.putObject("inputSchema");
+        inputSchema.put("$schema", "https://json-schema.org/draft/2020-12/schema");
         inputSchema.put("type", "object");
         ObjectNode properties = inputSchema.putObject("properties");
 
