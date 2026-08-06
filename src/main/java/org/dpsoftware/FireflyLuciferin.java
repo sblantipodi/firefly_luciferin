@@ -261,7 +261,9 @@ public class FireflyLuciferin extends Application {
         StorageManager storageManager = new StorageManager();
         storageManager.updateConfigFile(MainSingleton.getInstance().config);
         setRuntimeLogLevel();
-        mcpServer.start();
+        if (MainSingleton.getInstance().whoAmI == 1) {
+            mcpServer.start();
+        }
         // Manage tray icon and framerate dialog
         MainSingleton.getInstance().guiManager = new GuiManager(true);
         MainSingleton.getInstance().guiManager.trayIconManager.initTray();

@@ -94,9 +94,11 @@ public class SetEffectTool extends AbstractMcpTool {
         ObjectNode tool = objectMapper.createObjectNode();
         tool.put("name", TOOL_NAME);
         tool.put("description", "Set Firefly Luciferin effect, LED power state, brightness, and capture pipeline state.");
+        tool.put("icon", "effect");
         ObjectNode annotations = tool.putObject("annotations");
         annotations.put("idempotentHint", true);
         ObjectNode inputSchema = tool.putObject("inputSchema");
+        inputSchema.put("$schema", "https://json-schema.org/draft/2020-12/schema");
         inputSchema.put("type", "object");
         ObjectNode properties = inputSchema.putObject("properties");
 

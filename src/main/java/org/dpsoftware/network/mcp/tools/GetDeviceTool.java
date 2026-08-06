@@ -64,9 +64,11 @@ public class GetDeviceTool extends AbstractMcpTool {
         ObjectNode tool = objectMapper.createObjectNode();
         tool.put("name", TOOL_NAME);
         tool.put("description", "List Glow Worm device names currently detected by Firefly Luciferin.");
+        tool.put("icon", "device");
         ObjectNode annotations = tool.putObject("annotations");
         annotations.put("readOnlyHint", true);
         ObjectNode inputSchema = tool.putObject("inputSchema");
+        inputSchema.put("$schema", "https://json-schema.org/draft/2020-12/schema");
         inputSchema.put("type", "object");
         inputSchema.putObject("properties");
         inputSchema.putArray("required");
