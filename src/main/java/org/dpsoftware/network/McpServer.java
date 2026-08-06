@@ -34,6 +34,7 @@ import org.dpsoftware.network.mcp.McpTool;
 import org.dpsoftware.network.mcp.tools.GetDeviceTool;
 import org.dpsoftware.network.mcp.tools.GetInfoTool;
 import org.dpsoftware.network.mcp.tools.SetEffectTool;
+import org.dpsoftware.network.mcp.tools.SetProfileTool;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,7 +57,8 @@ public class McpServer {
     private final Map<String, McpTool> tools = Stream.<McpTool>of(
             new GetDeviceTool(objectMapper),
                     new GetInfoTool(objectMapper),
-                    new SetEffectTool(objectMapper))
+                    new SetEffectTool(objectMapper),
+                    new SetProfileTool(objectMapper))
             .collect(Collectors.toMap(McpTool::getName, Function.identity()));
     private HttpServer httpServer;
 
