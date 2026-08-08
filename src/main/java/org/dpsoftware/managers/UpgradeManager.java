@@ -22,7 +22,6 @@
 package org.dpsoftware.managers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -168,19 +167,19 @@ public class UpgradeManager {
                 long numericVerion = versionNumberToNumber(currentVersion);
                 URL url = new URI(Constants.GITHUB_POM_URL).toURL();
                 URLConnection urlConnection = url.openConnection();
-                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    if (inputLine.contains(Constants.POM_PRJ_VERSION)) {
-                        latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
-                                .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
-                        long latestRelease = versionNumberToNumber(latestReleaseStr);
-                        if (numericVerion < latestRelease) {
-                            return true;
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        if (inputLine.contains(Constants.POM_PRJ_VERSION)) {
+                            latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
+                                    .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
+                            long latestRelease = versionNumberToNumber(latestReleaseStr);
+                            if (numericVerion < latestRelease) {
+                                return true;
+                            }
                         }
                     }
                 }
-                in.close();
             } else {
                 return false;
             }
@@ -202,21 +201,20 @@ public class UpgradeManager {
         try {
             if (currentVersion != null && !currentVersion.equals(Constants.LIGHT_FIRMWARE_DUMMY_VERSION) && !currentVersion.equals(Constants.DASH)) {
                 long numericVerion = versionNumberToNumber(currentVersion);
-                BufferedReader in = getBufferedReader(useAlphaFirmware);
-                String inputLine;
                 StringBuilder jsonStr = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    jsonStr.append(inputLine);
+                try (BufferedReader in = getBufferedReader(useAlphaFirmware)) {
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        jsonStr.append(inputLine);
+                    }
                 }
-                ObjectMapper jsonMapper = new ObjectMapper();
-                JsonNode jsonObj = jsonMapper.readTree(jsonStr.toString());
+                JsonNode jsonObj = CommonUtility.JSON_MAPPER.readTree(jsonStr.toString());
                 if (jsonObj.get(Constants.PROP_VERSION) != null) {
                     long latestRelease = versionNumberToNumber(jsonObj.get(Constants.PROP_VERSION).asText());
                     if (numericVerion < latestRelease) {
                         return true;
                     }
                 }
-                in.close();
             } else {
                 return false;
             }
@@ -250,7 +248,6 @@ public class UpgradeManager {
         progressBar.progressProperty().unbind();
         progressBar.progressProperty().bind(copyWorker.progressProperty());
         copyWorker.messageProperty().addListener((_, _, newValue) -> {
-            System.out.println(newValue);
             label.setText(newValue);
         });
 
@@ -290,22 +287,22 @@ public class UpgradeManager {
                     }
                     URL website = new URI(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename).toURL();
                     URLConnection connection = website.openConnection();
-                    ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-                    String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
-                    downloadPath += filename;
-                    FileOutputStream fos = new FileOutputStream(downloadPath);
                     long expectedSize = connection.getContentLength();
                     log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
-                    long transferedSize = 0L;
-                    long percentage;
-                    while (transferedSize < expectedSize) {
-                        transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
-                        percentage = ((transferedSize * 100) / expectedSize);
-                        updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
-                        updateProgress(percentage, 100);
+                    String downloadPath = InstanceConfigurer.getConfigPath() + File.separator + filename;
+                    try (InputStream is = connection.getInputStream();
+                         FileOutputStream fos = new FileOutputStream(downloadPath)) {
+                        ReadableByteChannel rbc = Channels.newChannel(is);
+                        long transferedSize = 0L;
+                        long percentage;
+                        while (transferedSize < expectedSize) {
+                            transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
+                            percentage = ((transferedSize * 100) / expectedSize);
+                            updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
+                            updateProgress(percentage, 100);
+                        }
+                        log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
                     }
-                    log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
-                    fos.close();
                     Thread.sleep(1000);
                     if (NativeExecutor.isWindows()) {
                         List<String> execCommand = new ArrayList<>();
@@ -479,9 +476,10 @@ public class UpgradeManager {
             }
         } catch (IOException e) {
             responseCode = http.getResponseCode();
-            InputStream errorStream = http.getErrorStream();
-            if (errorStream != null) {
-                responseBody = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
+            try (InputStream errorStream = http.getErrorStream()) {
+                if (errorStream != null) {
+                    responseBody = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
+                }
             }
             log.warn("HTTP error during OTA upload: code={}, body={}", responseCode, responseBody, e);
         }
@@ -502,18 +500,18 @@ public class UpgradeManager {
         downloadUrl += ("/" + filename);
         URL website = new URI(downloadUrl).toURL();
         URLConnection connection = website.openConnection();
-        ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-        String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
-        downloadPath += filename;
-        FileOutputStream fos = new FileOutputStream(downloadPath);
         long expectedSize = connection.getContentLength();
         log.info("{}{}", CommonUtility.getWord(Constants.EXPECTED_SIZE), expectedSize);
-        long transferedSize = 0L;
-        while (transferedSize < expectedSize) {
-            transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
+        String downloadPath = InstanceConfigurer.getConfigPath() + File.separator + filename;
+        try (InputStream is = connection.getInputStream();
+             FileOutputStream fos = new FileOutputStream(downloadPath)) {
+            ReadableByteChannel rbc = Channels.newChannel(is);
+            long transferedSize = 0L;
+            while (transferedSize < expectedSize) {
+                transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
+            }
+            log.info("{} {}", transferedSize, CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
         }
-        log.info("{} {}", transferedSize, CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
-        fos.close();
     }
 
     /**
