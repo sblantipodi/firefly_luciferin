@@ -247,9 +247,7 @@ public class UpgradeManager {
         Task copyWorker = createWorker();
         progressBar.progressProperty().unbind();
         progressBar.progressProperty().bind(copyWorker.progressProperty());
-        copyWorker.messageProperty().addListener((_, _, newValue) -> {
-            label.setText(newValue);
-        });
+        copyWorker.messageProperty().addListener((_, _, newValue) -> label.setText(newValue));
 
         final HBox hb = new HBox();
         hb.setSpacing(5);
