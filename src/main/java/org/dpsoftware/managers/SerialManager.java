@@ -481,7 +481,7 @@ public class SerialManager {
         // Cubic curve to ensure a stable 1 FPS at the beginning (as seen in logs)
         double curvedProgress = Math.pow(progressFactor, 3);
         // The framerate limit for this specific second
-        int currentMaxFramerate = (int) Math.max(1, Math.min(targetFramerate, targetFramerate * curvedProgress));
+        int currentMaxFramerate = (int) Math.clamp(targetFramerate * curvedProgress, 1, targetFramerate);
         //  Hard Limit check on current second tokens (Simplified Token Bucket)
         if (grabber.getCurrentSecondToken() >= currentMaxFramerate) {
             return; // Framerate drop: we have exhausted the allowed frames for this second of the ramp
