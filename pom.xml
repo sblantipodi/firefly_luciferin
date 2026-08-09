@@ -21,7 +21,7 @@
         <project.version>2.28.4</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.fx.version>26.0.1</java.fx.version>
+        <java.fx.version>26.0.2</java.fx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
@@ -35,7 +35,7 @@
         <jna.version>5.19.1</jna.version>
         <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.38</logback.version>
+        <logback.version>1.6.1</logback.version>
         <slf4j.version>2.0.18</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.2.0</dbus.java.version>
