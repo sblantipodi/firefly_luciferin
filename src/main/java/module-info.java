@@ -21,7 +21,6 @@ module org.dpsoftware {
     requires java.management;
     requires jdk.management;
     requires jdk.compiler;
-    requires org.mapstruct.processor;
     requires javafx.graphics;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
