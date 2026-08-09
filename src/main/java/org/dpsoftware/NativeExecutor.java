@@ -541,25 +541,37 @@ public final class NativeExecutor {
                 nightLightEnabled = true;
             }
         } else if (NativeExecutor.isLinux()) {
+            DBusConnection connection = null;
             try {
-                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-                Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
-                if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
-                    nightLightEnabled = true;
+                connection = DBusConnectionBuilder.forSessionBus().build();
+                try {
+                    Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
+                    if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
+                        nightLightEnabled = true;
+                    }
+                } catch (Exception e) {
+                    log.debug("KDE nightlight DBus check failed", e);
                 }
-                connection.close();
-            } catch (Exception e) {
-                log.debug("KDE nightlight DBus check failed", e);
-            }
-            try {
-                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-                Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
-                if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
-                    nightLightEnabled = true;
+                if (!nightLightEnabled) {
+                    try {
+                        Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
+                        if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
+                            nightLightEnabled = true;
+                        }
+                    } catch (Exception e) {
+                        log.debug("GNOME nightlight DBus check failed", e);
+                    }
                 }
-                connection.close();
             } catch (Exception e) {
-                log.debug("GNOME nightlight DBus check failed", e);
+                log.debug("DBus session bus connection failed", e);
+            } finally {
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (Exception e) {
+                        log.debug("Failed to close DBus connection", e);
+                    }
+                }
             }
         }
         return nightLightEnabled;
