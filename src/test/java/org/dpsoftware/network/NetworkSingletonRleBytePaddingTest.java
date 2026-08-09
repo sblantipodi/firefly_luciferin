@@ -40,7 +40,7 @@ class NetworkSingletonRleBytePaddingTest {
         NetworkSingleton.rleBytePadding(rle, 3, 120);
 
         assertEquals(1, rle.size());
-        assertArrayEquals(new int[]{3, 120}, rle.get(0));
+        assertArrayEquals(new int[]{3, 120}, rle.getFirst());
     }
 
     @Test
@@ -49,7 +49,7 @@ class NetworkSingletonRleBytePaddingTest {
         NetworkSingleton.rleBytePadding(rle, 1, 255);
 
         assertEquals(1, rle.size());
-        assertArrayEquals(new int[]{1, 255}, rle.get(0));
+        assertArrayEquals(new int[]{1, 255}, rle.getFirst());
     }
 
     @Test
