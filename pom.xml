@@ -31,7 +31,6 @@
         <jserialcomm.version>2.11.4</jserialcomm.version>
         <jackson.version>2.22.1</jackson.version>
         <lombok.version>1.18.46</lombok.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
         <jna.version>5.19.1</jna.version>
         <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
@@ -116,12 +115,6 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>${mapstruct.version}</version>
         </dependency>
 
         <dependency>
