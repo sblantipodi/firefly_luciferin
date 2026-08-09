@@ -609,6 +609,7 @@ public class SerialManager {
             });
         } catch (Exception e) {
             // We don't care about this exception, it's caused by unknown serial messages
+            log.trace("Unknown serial message ignored", e);
         }
     }
 

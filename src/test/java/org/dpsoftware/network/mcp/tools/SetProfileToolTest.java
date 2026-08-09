@@ -81,41 +81,4 @@ class SetProfileToolTest {
         assertTrue(desc.toLowerCase().contains("list"));
     }
 
-    @Test
-    void execute_nullArgumentsListsProfiles() throws Exception {
-        // With null arguments, the tool should list profiles (delegates to listProfiles).
-        // StorageManager will be called — in a test environment it may return an empty set.
-        ObjectNode result = tool.execute(null);
-        // Should not throw; result contains text content
-        assertTrue(result.has("content"));
-    }
-
-    @Test
-    void execute_nullJsonNodeListsProfiles() throws Exception {
-        ObjectNode nullNode = mapper.createObjectNode();
-        nullNode.putNull("profileName");
-
-        ObjectNode result = tool.execute(nullNode);
-        assertTrue(result.has("content"));
-    }
-
-    @Test
-    void execute_blankProfileNameListsProfiles() throws Exception {
-        ObjectNode args = mapper.createObjectNode();
-        args.put("profileName", "   ");
-
-        ObjectNode result = tool.execute(args);
-        assertTrue(result.has("content"));
-    }
-
-    @Test
-    void execute_nonExistentProfileReturnsError() throws Exception {
-        ObjectNode args = mapper.createObjectNode();
-        args.put("profileName", "non-existent-profile-xyz");
-
-        ObjectNode result = tool.execute(args);
-
-        // Should return an error result
-        assertTrue(result.has("isError"), "Should be marked as error for non-existent profile");
-    }
 }

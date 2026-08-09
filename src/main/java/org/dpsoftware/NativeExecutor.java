@@ -494,7 +494,9 @@ public final class NativeExecutor {
                         }
                     }
                 }
-            } catch (Exception ignore) {}
+            } catch (Exception e) {
+                log.debug("HDR registry check failed", e);
+            }
         }
         return false;
     }
@@ -546,7 +548,8 @@ public final class NativeExecutor {
                     nightLightEnabled = true;
                 }
                 connection.close();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.debug("KDE nightlight DBus check failed", e);
             }
             try {
                 DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
@@ -555,7 +558,8 @@ public final class NativeExecutor {
                     nightLightEnabled = true;
                 }
                 connection.close();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.debug("GNOME nightlight DBus check failed", e);
             }
         }
         return nightLightEnabled;
