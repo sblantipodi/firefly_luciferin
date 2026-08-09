@@ -61,7 +61,7 @@ jobs:
       - name: Detect language
         id: detect_lang
         if: steps.prepare.outputs.should_continue == 'true'
-        uses: actions/ai-inference@v2
+        uses: actions/ai-inference@v2.1.1
         with:
           model: openai/gpt-4o-mini
           system-prompt: |
@@ -85,7 +85,7 @@ jobs:
       - name: Detect strong abuse
         id: detect_abuse
         if: steps.prepare.outputs.should_continue == 'true'
-        uses: actions/ai-inference@v2
+        uses: actions/ai-inference@v2.1.1
         with:
           model: openai/gpt-4o-mini
           system-prompt: |
