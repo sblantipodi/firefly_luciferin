@@ -229,7 +229,8 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
                 config.setLuminosityThreshold((Boolean) data.get("eyeCare") ? 1 : 0);
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.debug("Legacy config migration block failed, ignoring", e);
             }
         }
         return writeToStorage;
