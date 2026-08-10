@@ -44,7 +44,7 @@ class NetworkSingletonBuildAllLeadersRleEntriesTest {
         List<int[]> result = NetworkSingleton.buildAllLeadersRleEntries(1);
 
         assertEquals(1, result.size());
-        assertArrayEquals(new int[]{1, 1}, result.get(0));
+        assertArrayEquals(new int[]{1, 1}, result.getFirst());
     }
 
     @Test
@@ -52,7 +52,7 @@ class NetworkSingletonBuildAllLeadersRleEntriesTest {
         List<int[]> result = NetworkSingleton.buildAllLeadersRleEntries(50);
 
         assertEquals(1, result.size());
-        assertArrayEquals(new int[]{50, 1}, result.get(0));
+        assertArrayEquals(new int[]{50, 1}, result.getFirst());
     }
 
     @Test
@@ -60,7 +60,7 @@ class NetworkSingletonBuildAllLeadersRleEntriesTest {
         List<int[]> result = NetworkSingleton.buildAllLeadersRleEntries(255);
 
         assertEquals(1, result.size());
-        assertArrayEquals(new int[]{255, 1}, result.get(0));
+        assertArrayEquals(new int[]{255, 1}, result.getFirst());
     }
 
     @Test
