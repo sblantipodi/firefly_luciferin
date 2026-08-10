@@ -541,9 +541,7 @@ public final class NativeExecutor {
                 nightLightEnabled = true;
             }
         } else if (NativeExecutor.isLinux()) {
-            DBusConnection connection = null;
-            try {
-                connection = DBusConnectionBuilder.forSessionBus().build();
+            try (DBusConnection connection = DBusConnectionBuilder.forSessionBus().build()) {
                 try {
                     Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
                     if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
@@ -564,14 +562,6 @@ public final class NativeExecutor {
                 }
             } catch (Exception e) {
                 log.debug("DBus session bus connection failed", e);
-            } finally {
-                if (connection != null) {
-                    try {
-                        connection.close();
-                    } catch (Exception e) {
-                        log.debug("Failed to close DBus connection", e);
-                    }
-                }
             }
         }
         return nightLightEnabled;
