@@ -180,7 +180,7 @@ public class NetworkSingleton {
      * @param count how many consecutive groups share the given size
      * @param size  the LED group size shared by "count" consecutive groups
      */
-    private static void rleBytePadding(List<int[]> rle, int count, int size) {
+    static void rleBytePadding(List<int[]> rle, int count, int size) {
         while (size > 255) {
             rle.add(new int[]{count, 255});
             size -= 255;
@@ -278,7 +278,7 @@ public class NetworkSingleton {
      * @param totalLeds total number of physical LEDs
      * @return list of RLE entries, each one is {count, size=1}
      */
-    private static List<int[]> buildAllLeadersRleEntries(int totalLeds) {
+    static List<int[]> buildAllLeadersRleEntries(int totalLeds) {
         List<int[]> rle = new ArrayList<>();
         int remaining = totalLeds;
         while (remaining > 255) {
