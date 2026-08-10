@@ -22,7 +22,6 @@
 package org.dpsoftware.network;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
@@ -35,6 +34,7 @@ import org.dpsoftware.network.mcp.tools.GetDeviceTool;
 import org.dpsoftware.network.mcp.tools.GetInfoTool;
 import org.dpsoftware.network.mcp.tools.SetEffectTool;
 import org.dpsoftware.network.mcp.tools.SetProfileTool;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,12 +53,11 @@ import java.util.stream.Stream;
 @Slf4j
 public class McpServer {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, McpTool> tools = Stream.<McpTool>of(
-            new GetDeviceTool(objectMapper),
-                    new GetInfoTool(objectMapper),
-                    new SetEffectTool(objectMapper),
-                    new SetProfileTool(objectMapper))
+                    new GetDeviceTool(CommonUtility.JSON_MAPPER),
+                    new GetInfoTool(CommonUtility.JSON_MAPPER),
+                    new SetEffectTool(CommonUtility.JSON_MAPPER),
+                    new SetProfileTool(CommonUtility.JSON_MAPPER))
             .collect(Collectors.toMap(McpTool::getName, Function.identity()));
     private HttpServer httpServer;
 
@@ -121,7 +120,7 @@ public class McpServer {
         }
         JsonNode request;
         try (InputStream body = exchange.getRequestBody()) {
-            request = objectMapper.readTree(body);
+            request = CommonUtility.JSON_MAPPER.readTree(body);
         } catch (Exception e) {
             sendError(exchange, null, -32700, "Parse error");
             return;
@@ -140,7 +139,7 @@ public class McpServer {
                 case "tools/call" ->
                         sendJson(exchange, HttpURLConnection.HTTP_OK, createToolCallResponse(id, request.path("params")));
                 case "ping" ->
-                        sendJson(exchange, HttpURLConnection.HTTP_OK, createResultResponse(id, objectMapper.createObjectNode()));
+                        sendJson(exchange, HttpURLConnection.HTTP_OK, createResultResponse(id, CommonUtility.JSON_MAPPER.createObjectNode()));
                 default -> sendError(exchange, id, -32601, "Method not found");
             }
         } catch (Exception e) {
@@ -156,7 +155,7 @@ public class McpServer {
      * @return a JSON object containing protocol version, capabilities, and server info
      */
     private ObjectNode createInitializeResponse(JsonNode id) {
-        ObjectNode result = objectMapper.createObjectNode();
+        ObjectNode result = CommonUtility.JSON_MAPPER.createObjectNode();
         result.put("protocolVersion", Constants.MCP_PROTOCOL_VERSION);
         ObjectNode capabilities = result.putObject("capabilities");
         capabilities.putObject("tools").put("listChanged", false);
@@ -175,7 +174,7 @@ public class McpServer {
      */
     private ObjectNode createToolsListResponse(JsonNode id) {
 
-        ObjectNode result = objectMapper.createObjectNode();
+        ObjectNode result = CommonUtility.JSON_MAPPER.createObjectNode();
         ArrayNode toolList = result.putArray("tools");
         tools.values().forEach(tool -> toolList.add(tool.getDefinition()));
         return createResultResponse(id, result);
@@ -208,7 +207,7 @@ public class McpServer {
      * @return a JSON object marked as {@code isError} with the message in its content array
      */
     private ObjectNode createToolErrorResponse(String message) {
-        ObjectNode result = objectMapper.createObjectNode();
+        ObjectNode result = CommonUtility.JSON_MAPPER.createObjectNode();
         result.put("isError", true);
         ArrayNode content = result.putArray("content");
         ObjectNode textContent = content.addObject();
@@ -225,7 +224,7 @@ public class McpServer {
      * @return a complete JSON-RPC success response node
      */
     private ObjectNode createResultResponse(JsonNode id, JsonNode result) {
-        ObjectNode response = objectMapper.createObjectNode();
+        ObjectNode response = CommonUtility.JSON_MAPPER.createObjectNode();
         response.put(Constants.MCP_JSONRPC_KEY, Constants.MCP_JSONRPC_VERSION);
         response.set("id", id);
         response.set("result", result);
@@ -242,7 +241,7 @@ public class McpServer {
      * @throws IOException when writing the response fails
      */
     private void sendError(HttpExchange exchange, JsonNode id, int code, String message) throws IOException {
-        ObjectNode response = objectMapper.createObjectNode();
+        ObjectNode response = CommonUtility.JSON_MAPPER.createObjectNode();
         response.put(Constants.MCP_JSONRPC_KEY, Constants.MCP_JSONRPC_VERSION);
         if (id == null || id.isNull()) {
             response.putNull("id");
@@ -299,7 +298,7 @@ public class McpServer {
      */
     @SuppressWarnings("all")
     private void sendJson(HttpExchange exchange, int statusCode, JsonNode response) throws IOException {
-        byte[] responseBytes = objectMapper.writeValueAsBytes(response);
+        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(response);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(statusCode, responseBytes.length);
         try (OutputStream responseBody = exchange.getResponseBody()) {
