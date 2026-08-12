@@ -7,32 +7,7 @@ on:
 
 jobs:
 
-  disable_alpha_download:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
-      - name: Disable gw.alpha.download for build
-        run: |
-          PROPS="src/main/resources/project.properties"
-          if grep -q '^gw\.alpha\.download=true' "$PROPS"; then
-            sed -i 's/^gw\.alpha\.download=true$/gw.alpha.download=false/' "$PROPS"
-            git config --global user.email "perini.davide@dpsoftware.org"
-            git config --global user.name "Davide Perini"
-            git add "$PROPS"
-            git commit -m "Disable gw.alpha.download for build"
-            git push
-            echo "gw.alpha.download set to false and committed."
-          else
-            echo "gw.alpha.download is already false, no change needed."
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   windows_build_parallel:
-    needs: [ disable_alpha_download ]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -95,7 +70,6 @@ jobs:
           path: FireflyLuciferinSetup.exe
 
   linux_build_parallel:
-    needs: [ disable_alpha_download ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
