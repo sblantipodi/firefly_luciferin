@@ -150,8 +150,10 @@ public class GrabberManager {
                     GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
                     Pipeline.linkMany(bin, vc.getElement());
                     JFrame f = new JFrame(Constants.SCREEN_GRABBER);
-                    f.add(vc);
-                    vc.setPreferredSize(new Dimension(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getScreenResY()));
+                    JPanel panel = new JPanel();
+                    panel.setPreferredSize(new Dimension(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getScreenResY()));
+                    panel.setBackground(Color.BLACK);
+                    f.add(panel);
                     f.pack();
                     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     GrabberSingleton.getInstance().pipe.play();
