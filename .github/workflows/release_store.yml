@@ -62,7 +62,7 @@ jobs:
 
           sed -i "s/version: '[0-9]\+\.[0-9]\+\.[0-9]\+'/version: '${VERSION}'/" "$file_to_edit"
 
-          sed -i "s#\(wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v\)[0-9]\+\.[0-9]\+\.[0-9]\+\(/FireflyLuciferinLinux.deb\)#\1${VERSION}\2#" "$file_to_edit"
+          sed -i "s#/releases/download/v[0-9]\+\.[0-9]\+\.[0-9]\+/#/releases/download/v${VERSION}/#g" "$file_to_edit"
 
       - name: Sync root snapcraft.yaml
         run: |
@@ -108,8 +108,11 @@ jobs:
       - name: Download .deb and compute SHA256
         run: |
           wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux.deb -P tmp
-          SHA256=$(sha256sum tmp/FireflyLuciferinLinux.deb | awk '{print $1}')
-          echo "SHA256=$SHA256" >> $GITHUB_ENV
+          wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux_arm64.deb -P tmp
+          SHA256_X86=$(sha256sum tmp/FireflyLuciferinLinux.deb | awk '{print $1}')
+          SHA256_ARM64=$(sha256sum tmp/FireflyLuciferinLinux_arm64.deb | awk '{print $1}')
+          echo "SHA256_X86=$SHA256_X86" >> $GITHUB_ENV
+          echo "SHA256_ARM64=$SHA256_ARM64" >> $GITHUB_ENV
 
       - name: Clone Flathub repo
         run: |
@@ -127,9 +130,11 @@ jobs:
 
           cp $GITHUB_WORKSPACE/build_tools/flatpak/org.dpsoftware.FireflyLuciferin.json .
 
-          jq --arg sha256 "$SHA256" \
-             --arg url "https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux.deb" \
-             '(.modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0]) |= (.sha256 = $sha256 | .url = $url)' \
+          jq --arg sha_x86 "$SHA256_X86" \
+             --arg url_x86 "https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux.deb" \
+             --arg sha_arm64 "$SHA256_ARM64" \
+             --arg url_arm64 "https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux_arm64.deb" \
+             '(.modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources) |= map(if .["only-arches"] == ["aarch64"] then .sha256 = $sha_arm64 | .url = $url_arm64 elif .["only-arches"] == ["x86_64"] then .sha256 = $sha_x86 | .url = $url_x86 else . end)' \
              org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json
 
           git add org.dpsoftware.FireflyLuciferin.json
