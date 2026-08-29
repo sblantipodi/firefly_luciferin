@@ -548,11 +548,11 @@ public class ImageProcessor {
         int intBufferSize = (width * height) - 1;
         int[][] blackPixelMatrix;
         blackPixelMatrix = calculateBlackPixels(Enums.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
-        boolean letterbox = switchAspectRatio(Enums.AspectRatio.LETTERBOX, blackPixelMatrix);
+        boolean letterbox = hasBlackBars(blackPixelMatrix);
         blackPixelMatrix = calculateBlackPixels(Enums.AspectRatio.PILLARBOX, width, height, intBufferSize, rgbBuffer);
         boolean pillarbox = false;
         if (!letterbox) {
-            pillarbox = switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix);
+            pillarbox = hasBlackBars(blackPixelMatrix);
         }
         Enums.AspectRatio detected;
         if (letterbox) {
@@ -660,50 +660,21 @@ public class ImageProcessor {
     }
 
     /**
-     * Switch to the new aspect ratio based on black bars
+     * Check if black bars are detected based on black pixel matrix
      *
-     * @param aspectRatio      Letterbox or Pillarbox
      * @param blackPixelMatrix contains black and non black pixels
-     * @return boolean if aspect ratio is changed
+     * @return boolean if black bars are present
      */
-    static boolean switchAspectRatio(Enums.AspectRatio aspectRatio, int[][] blackPixelMatrix) {
-        boolean isPillarboxLetterbox;
+    static boolean hasBlackBars(int[][] blackPixelMatrix) {
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
         int bottomMatrix = Arrays.stream(blackPixelMatrix[2]).sum();
-        // To swìtch to another aspect ratio some center pixels should not be black. Don't switch if the screen is too black.
-        int whitePixelPercentage = (Constants.NUMBER_OF_AREA_TO_CHECK * Constants.MINIMUM_WHITE_PIXELS_PCT) / 100;
-        boolean enoughWhitePixelForTheChange = centerMatrix < (Constants.NUMBER_OF_AREA_TO_CHECK - whitePixelPercentage);
         // Black borders must be almost (not necessarily fully) black: allow a few dirty areas to avoid false switches to fullscreen caused by noise inside the black bars
         int blackBorderMinimum = (Constants.NUMBER_OF_AREA_TO_CHECK * Constants.BLACK_BAR_MINIMUM_PCT) / 100;
         boolean topBlack = topMatrix >= blackBorderMinimum;
         boolean bottomBlack = bottomMatrix >= blackBorderMinimum;
-        if (topBlack && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomBlack) {
-            if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
-                if (enoughWhitePixelForTheChange) {
-                    MainSingleton.getInstance().config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
-                    GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(aspectRatio.getBaseI18n());
-                    log.info("Switching to {} aspect ratio.", aspectRatio.getBaseI18n());
-                    if (MainSingleton.getInstance().config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), aspectRatio.getBaseI18n());
-                    }
-                }
-            }
-            isPillarboxLetterbox = true;
-        } else {
-            if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
-                if (enoughWhitePixelForTheChange) {
-                    MainSingleton.getInstance().config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    log.info("Switching to {} aspect ratio.", Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    if (MainSingleton.getInstance().config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    }
-                }
-            }
-            isPillarboxLetterbox = false;
-        }
-        return isPillarboxLetterbox;
+        // Only report a detection if the center row is not fully black (a fully black screen is not letterbox/pillarbox).
+        return topBlack && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomBlack;
     }
 
     /**
