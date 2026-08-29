@@ -674,8 +674,11 @@ public class ImageProcessor {
         // To swìtch to another aspect ratio some center pixels should not be black. Don't switch if the screen is too black.
         int whitePixelPercentage = (Constants.NUMBER_OF_AREA_TO_CHECK * Constants.MINIMUM_WHITE_PIXELS_PCT) / 100;
         boolean enoughWhitePixelForTheChange = centerMatrix < (Constants.NUMBER_OF_AREA_TO_CHECK - whitePixelPercentage);
-        // NUMBER_OF_AREA_TO_CHECK must be black on botton/top left/right, center pixels must be less than NUMBER_OF_AREA_TO_CHECK (at least on NON black pixel in the center)
-        if (topMatrix == Constants.NUMBER_OF_AREA_TO_CHECK && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomMatrix == Constants.NUMBER_OF_AREA_TO_CHECK) {
+        // Black borders must be almost (not necessarily fully) black: allow a few dirty areas to avoid false switches to fullscreen caused by noise inside the black bars
+        int blackBorderMinimum = (Constants.NUMBER_OF_AREA_TO_CHECK * Constants.BLACK_BAR_MINIMUM_PCT) / 100;
+        boolean topBlack = topMatrix >= blackBorderMinimum;
+        boolean bottomBlack = bottomMatrix >= blackBorderMinimum;
+        if (topBlack && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomBlack) {
             if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
                 if (enoughWhitePixelForTheChange) {
                     MainSingleton.getInstance().config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
