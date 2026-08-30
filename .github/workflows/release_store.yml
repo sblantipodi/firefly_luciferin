@@ -9,6 +9,16 @@ on:
         description: 'Version to release (example: v2.17.1)'
         required: false
         default: ''   # if empty, use tag from release
+      target:
+        description: 'Release target (empty = all, snap, flatpak, or winget)'
+        required: false
+        default: ''
+        type: choice
+        options:
+          - ''
+          - snap
+          - flatpak
+          - winget
 
 jobs:
   setup:
@@ -30,10 +40,12 @@ jobs:
             echo "Error: no version specified"
             exit 1
           fi
+          
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION"
 
   snap:
+    if: ${{ github.event_name == 'release' || github.event.inputs.target == '' || github.event.inputs.target == 'snap' }}
     runs-on: ubuntu-latest
     needs: setup
     env:
@@ -53,21 +65,21 @@ jobs:
 
       - name: Configure Git user
         run: |
-          git config --global user.email "perini.davide@dpsoftware.org";
-          git config --global user.name "Davide Perini";
+          git config --global user.email "perini.davide@dpsoftware.org"
+          git config --global user.name "Davide Perini"
 
       - name: Update snapcraft file
         run: |
           file_to_edit="build_tools/snapcraft/snap/snapcraft.remote.yaml"
-
+          
           sed -i "s/version: '[0-9]\+\.[0-9]\+\.[0-9]\+'/version: '${VERSION}'/" "$file_to_edit"
-
+          
           sed -i "s#/releases/download/v[0-9]\+\.[0-9]\+\.[0-9]\+/#/releases/download/v${VERSION}/#g" "$file_to_edit"
 
       - name: Sync root snapcraft.yaml
         run: |
           cp build_tools/snapcraft/snap/snapcraft.remote.yaml snapcraft.yaml
-
+          
           git add snapcraft.yaml
           git commit -m "snap release ${VERSION}" || echo "No changes"
           git push
@@ -78,9 +90,10 @@ jobs:
           echo "### ✅ Snap release completed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "👉 [Open Snap builds](https://snapcraft.io/fireflyluciferin/builds)" >> $GITHUB_STEP_SUMMARY
-
+  
 
   flathub:
+    if: ${{ github.event_name == 'release' || github.event.inputs.target == '' || github.event.inputs.target == 'flatpak' }}
     runs-on: ubuntu-latest
     needs: setup
     env:
@@ -109,8 +122,10 @@ jobs:
         run: |
           wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux.deb -P tmp
           wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux_arm64.deb -P tmp
+          
           SHA256_X86=$(sha256sum tmp/FireflyLuciferinLinux.deb | awk '{print $1}')
           SHA256_ARM64=$(sha256sum tmp/FireflyLuciferinLinux_arm64.deb | awk '{print $1}')
+          
           echo "SHA256_X86=$SHA256_X86" >> $GITHUB_ENV
           echo "SHA256_ARM64=$SHA256_ARM64" >> $GITHUB_ENV
 
@@ -121,22 +136,24 @@ jobs:
       - name: Create release branch and update manifest
         run: |
           cd tmp/org.dpsoftware.FireflyLuciferin
-          git config --global user.email "perini.davide@dpsoftware.org";
-          git config --global user.name "Davide Perini";
+          
+          git config --global user.email "perini.davide@dpsoftware.org"
+          git config --global user.name "Davide Perini"
+          
           git fetch origin master
           git checkout master
           git pull origin master
           git checkout -b release-${VERSION}
-
+          
           cp $GITHUB_WORKSPACE/build_tools/flatpak/org.dpsoftware.FireflyLuciferin.json .
-
+          
           jq --arg sha_x86 "$SHA256_X86" \
              --arg url_x86 "https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux.deb" \
              --arg sha_arm64 "$SHA256_ARM64" \
              --arg url_arm64 "https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinLinux_arm64.deb" \
              '(.modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources) |= map(if .["only-arches"] == ["aarch64"] then .sha256 = $sha_arm64 | .url = $url_arm64 elif .["only-arches"] == ["x86_64"] then .sha256 = $sha_x86 | .url = $url_x86 else . end)' \
              org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json
-
+          
           git add org.dpsoftware.FireflyLuciferin.json
           git commit -m "Bot: release ${VERSION}"
 
@@ -148,22 +165,27 @@ jobs:
       - name: Create Pull Request
         run: |
           cd tmp/org.dpsoftware.FireflyLuciferin
+          
           PR_URL=$(gh pr create \
             --title "DPsoftware Gentle Bot release ${VERSION}" \
             --body "Automated release from DPsoftware Gentle Bot" \
             --base master \
             --head release-${VERSION}
           )
+          
           echo "### ✅ Flathub release completed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "👉 [Open Flathub PR]($PR_URL)" >> $GITHUB_STEP_SUMMARY
+
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Done
         run: echo "Flathub PR created successfully"
 
+
   winget:
+    if: ${{ github.event_name == 'release' || github.event.inputs.target == '' || github.event.inputs.target == 'winget' }}
     runs-on: ubuntu-latest
     needs: setup
     env:
@@ -187,6 +209,7 @@ jobs:
         run: |
           mkdir "tmp/winget-pkgs/manifests/d/DpSoftware/FireflyLuciferin/${VERSION}"
           cd "tmp/winget-pkgs/manifests/d/DpSoftware/FireflyLuciferin/${VERSION}"
+          
           wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.yaml
           wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.installer.yaml
           wget https://raw.githubusercontent.com/sblantipodi/build_tools/master/winget/DpSoftware.FireflyLuciferin.locale.en-US.yaml
@@ -204,14 +227,16 @@ jobs:
           
           wget -q https://github.com/sblantipodi/firefly_luciferin/releases/download/v${VERSION}/FireflyLuciferinSetup.exe -O temp.exe
           SHA256=$(sha256sum temp.exe | awk '{print $1}')
+          
           sed -i "s/InstallerSha256: .*/InstallerSha256: ${SHA256}/" DpSoftware.FireflyLuciferin.installer.yaml
+          
           rm temp.exe
 
       - name: Configure Git user
         run: |
           cd tmp/winget-pkgs
-          git config --global user.email "perini.davide@dpsoftware.org";
-          git config --global user.name "Davide Perini";
+          git config --global user.email "perini.davide@dpsoftware.org"
+          git config --global user.name "Davide Perini"
 
       - name: Commit and push
         run: |
@@ -223,6 +248,7 @@ jobs:
       - name: Create Pull Request
         run: |
           cd tmp/winget-pkgs
+          
           PR_URL=$(gh pr create \
             --repo microsoft/winget-pkgs \
             --title "New version: DpSoftware.FireflyLuciferin version ${VERSION}" \
@@ -230,9 +256,11 @@ jobs:
             --base master \
             --head sblantipodi:DpSoftware.FireflyLuciferin.release-${VERSION}
           )
+          
           echo "### ✅ Winget release completed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "👉 [Open Winget PR]($PR_URL)" >> $GITHUB_STEP_SUMMARY
+
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
