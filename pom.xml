@@ -68,6 +68,30 @@
             </properties>
         </profile>
         <profile>
+            <id>platform-linux-aarch64</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>linux-aarch64</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>platform-linux-arm64</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                    <arch>arm64</arch>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>linux-aarch64</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
             <id>platform-mac</id>
             <activation>
                 <os>
