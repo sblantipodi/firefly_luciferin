@@ -19,6 +19,7 @@ grade: stable
 confinement: strict
 platforms:
   amd64:
+  arm64:
 
 
 parts:
@@ -79,7 +80,12 @@ parts:
       - libasound2-plugins
     override-build: |
       snapcraftctl build
-      wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.28.4/FireflyLuciferinLinux.deb
+      TARGET_ARCH="${CRAFT_ARCH_BUILD_FOR:-$SNAPCRAFT_ARCH_BUILD_FOR}"
+      if [ "$TARGET_ARCH" = "arm64" ]; then
+        wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.28.4/FireflyLuciferinLinux_arm64.deb -O FireflyLuciferinLinux.deb
+      else
+        wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.28.4/FireflyLuciferinLinux.deb -O FireflyLuciferinLinux.deb
+      fi
       ls -la
       ar x FireflyLuciferinLinux.deb
       tar xvf data.tar.zst
@@ -101,9 +107,8 @@ parts:
       rm -rf $SNAPCRAFT_PRIME/lib/app/fireflyluciferin*.jar
       rm -rf $SNAPCRAFT_PRIME/lib/app/classes/gstreamer
       rm -rf $SNAPCRAFT_PRIME/usr/include/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/pkgconfig/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/pkgconfig/gstreamer*
+      rm -rf $SNAPCRAFT_PRIME/usr/lib/*-linux-gnu/gstreamer*
+      rm -rf $SNAPCRAFT_PRIME/usr/lib/*-linux-gnu/pkgconfig/gstreamer*
       rm -rf $SNAPCRAFT_PRIME/usr/share/doc/gstreamer*
       rm -rf $SNAPCRAFT_PRIME/usr/share/gstreamer*
       rm -rf $SNAPCRAFT_PRIME/usr/share/icons/Humanity/apps/22/gstreamer-properties.svg
