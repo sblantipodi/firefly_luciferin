@@ -34,7 +34,7 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 
 ## Key features
 
-- **Best in class performance** combined with ultra low CPU/GPU usage.
+- **Best in class performance** combined with **ultra low CPU/GPU usage**.
 - Advanced algorithms for [**smooth colors transitions**](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions) and [**color correction**](https://github.com/sblantipodi/firefly_luciferin/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)). Seeing is believing.
 - [**Adaptive
   gamma**](https://github.com/sblantipodi/firefly_luciferin/wiki/Color-Temperature-and-White-Balance#adaptive-gamma-correction)
@@ -50,7 +50,9 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 - [**Automatic black bar detection**](https://github.com/sblantipodi/firefly_luciferin/wiki/Aspect-ratio) and aspect
   ratio adjustment for video content.
 - **Made from a gamer, for gamers**. No added lag, stutter free.
-- Multi platform, [**Windows**](https://github.com/sblantipodi/firefly_luciferin/wiki/Installers-and-binaries) and [**Linux**](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support) ready. macOS is coming when it's ready.
+- Multi platform, [**Windows**](https://github.com/sblantipodi/firefly_luciferin/wiki/Installers-and-binaries) and [
+  **Linux**](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support) ready, supporting **x86 and ARM**
+  architectures. macOS is coming when it's ready.
 - If you don't want to design your own PCB and you have a soldering iron, there is [**Luciferin's official PCB**](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB).
 - Luciferin can be controlled by your preferred [**AI agent using MCP (Model Context
   Protocol)**](https://github.com/sblantipodi/firefly_luciferin/wiki/MCP-and-AI-Agents) using natural language.
