@@ -38,7 +38,7 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 - Advanced algorithms for [**smooth colors transitions**](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions) and [**color correction**](https://github.com/sblantipodi/firefly_luciferin/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)). Seeing is believing.
 - [**Adaptive
   gamma**](https://github.com/sblantipodi/firefly_luciferin/wiki/Color-Temperature-and-White-Balance#adaptive-gamma-correction)
-  provides significantly improved color accuracy on both SDR and HDR content.
+  provides significantly improved color accuracy on both **SDR** and **HDR** content.
 - [**Wireless or cabled, local or remote**](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access)? Choose your flavour with **MQTT** support and  [**Home Assistant integration**](https://github.com/sblantipodi/firefly_luciferin/wiki/Home-Automation-configs).
 - [**Multi monitor**](https://github.com/sblantipodi/firefly_luciferin/wiki/Multi-monitor-support) support with **single or multiple instances**.
 - [**Surround lighting**](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites) with
@@ -47,7 +47,8 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 - [**Programmable firmware**](https://github.com/sblantipodi/firefly_luciferin/wiki/Supported-GPIO-and-Baud-Rate), change your microcontroller's settings on the fly.
 - [**One click updates**](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) for both
   the PC software and firmware, keeping your entire setup up to date effortlessly.
-- Automatic [**switching between aspect ratios**](https://github.com/sblantipodi/firefly_luciferin/wiki/Aspect-ratio) based on your video content.
+- [**Automatic black bar detection**](https://github.com/sblantipodi/firefly_luciferin/wiki/Aspect-ratio) and aspect
+  ratio adjustment for video content.
 - **Made from a gamer, for gamers**. No added lag, stutter free.
 - Multi platform, [**Windows**](https://github.com/sblantipodi/firefly_luciferin/wiki/Installers-and-binaries) and [**Linux**](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support) ready. macOS is coming when it's ready.
 - If you don't want to design your own PCB and you have a soldering iron, there is [**Luciferin's official PCB**](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB).
