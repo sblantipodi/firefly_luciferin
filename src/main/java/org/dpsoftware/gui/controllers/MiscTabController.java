@@ -339,6 +339,7 @@ public class MiscTabController {
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
+                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())));
         gamma.setValue(String.valueOf(MainSingleton.getInstance().config.getGamma()));
         colorMode.setValue(Enums.ColorMode.values()[MainSingleton.getInstance().config.getColorMode() - 1].getI18n());

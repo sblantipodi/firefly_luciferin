@@ -209,11 +209,14 @@ public class PipelineManager {
         String pipeline;
         if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
                 || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
-                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
             if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA);
             } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL);
+            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL);
             } else {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG);
             }
@@ -593,6 +596,7 @@ public class PipelineManager {
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
             GrabberSingleton.getInstance().pipe.stop();
         }

@@ -102,6 +102,8 @@ public class GStreamerGrabber {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_CUDA);
             } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_AMD_INTEL);
+            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_OPENGL);
             } else {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE);
             }
