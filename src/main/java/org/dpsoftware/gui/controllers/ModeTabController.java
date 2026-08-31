@@ -153,6 +153,7 @@ public class ModeTabController {
                     case PIPEWIREXDG -> Configuration.CaptureMethod.PIPEWIREXDG.name();
                     case PIPEWIREXDG_NVIDIA -> Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.getCaptureMethod();
                     case PIPEWIREXDG_AMD_INTEL -> Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.getCaptureMethod();
+                    case PIPEWIREXDG_OPENGL -> Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.getCaptureMethod();
                     default -> null;
                 };
             }
@@ -319,7 +320,8 @@ public class ModeTabController {
         language.setValue(LocalizedEnum.fromBaseStr(Enums.Language.class, currentConfig.getLanguage() == null ? MainSingleton.getInstance().config.getLanguage() : currentConfig.getLanguage()).getI18n());
         resetButton.setVisible(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG)
                 || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA)
-                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL));
+                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL)
+                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL));
         simdOption.setValue(Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getI18n());
         evalutateSimdCpuThreadCombo();
     }
