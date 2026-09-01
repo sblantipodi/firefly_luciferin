@@ -354,16 +354,35 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                     } else if (displayManager.getFirstInstanceDisplay() != null) {
                         mainScreenOsScaling = (int) (displayManager.getFirstInstanceDisplay().scaleX * 100);
                     }
+                    int screenWidth = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
                     int screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
                     Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
+                    Rectangle bounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().getBounds();
+                    int popupMenuWidth = (int) GuiSingleton.getInstance().popupMenu.getPreferredSize().getWidth();
+                    int popupMenuPositionX = scaleDownResolution(e.getX(), mainScreenOsScaling);
                     int popupMenuPositionY = scaleDownResolution(e.getY(), mainScreenOsScaling);
-                    // if taskbar is at the bottom position, put the popup menu on top of the taskbar
-                    if (e.getY() > screenHeight / 2) {
-                        int taskbarHeight = screenInsets.bottom;
-                        popupMenuPositionY = screenHeight - popupMenuHeight - taskbarHeight;
+                    // if the taskbar is at the bottom, put the popup menu on top of the taskbar
+                    if (screenInsets.bottom > 0) {
+                        popupMenuPositionY = screenHeight - screenInsets.bottom - popupMenuHeight;
+                    } else if (screenInsets.top > 0) {
+                        // if the taskbar is at the top, put the popup menu below the taskbar
+                        popupMenuPositionY = screenInsets.top;
                     }
+                    // if the taskbar is on the left, put the popup menu on the right of the taskbar
+                    if (screenInsets.left > 0) {
+                        popupMenuPositionX = screenInsets.left;
+                    } else if (screenInsets.right > 0) {
+                        // if the taskbar is on the right, put the popup menu on the left of the taskbar
+                        popupMenuPositionX = screenWidth - screenInsets.right - popupMenuWidth;
+                    }
+                    // clamp the popup inside the primary monitor bounds, in case the click coords are unreliable
+                    popupMenuPositionX = Math.clamp(popupMenuPositionX, bounds.x, (int) bounds.getMaxX() - popupMenuWidth);
+                    popupMenuPositionY = Math.clamp(popupMenuPositionY, bounds.y, (int) bounds.getMaxY() - popupMenuHeight);
+                    log.trace("Tray popup at ({},{}) | taskbar insets t={} b={} l={} r={} | screen {}x{} | bounds {}",
+                            popupMenuPositionX, popupMenuPositionY, screenInsets.top, screenInsets.bottom, screenInsets.left, screenInsets.right,
+                            screenWidth, screenHeight, bounds);
                     populateTrayWithItems();
-                    GuiSingleton.getInstance().popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), popupMenuPositionY);
+                    GuiSingleton.getInstance().popupMenu.setLocation(popupMenuPositionX, popupMenuPositionY);
                     hiddenDialog.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), scaleDownResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     GuiSingleton.getInstance().popupMenu.setInvoker(hiddenDialog);
