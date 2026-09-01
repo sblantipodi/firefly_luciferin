@@ -103,6 +103,8 @@ public class MiscTabController {
     @FXML
     public Button eyeCareBtn;
     @FXML
+    public Button enableAutomaticGamma;
+    @FXML
     public Button smoothingBtn;
     @FXML
     public ComboBox<String> profiles;
@@ -336,6 +338,8 @@ public class MiscTabController {
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
+                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
+                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())));
         gamma.setValue(String.valueOf(MainSingleton.getInstance().config.getGamma()));
         colorMode.setValue(Enums.ColorMode.values()[MainSingleton.getInstance().config.getColorMode() - 1].getI18n());
@@ -404,6 +408,7 @@ public class MiscTabController {
             colorPicker.setVisible(false);
             contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_DEVICE));
             gamma.setVisible(false);
+            enableAutomaticGamma.setVisible(false);
             contextGammaGain.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_GAIN));
             audioGain.setVisible(true);
             audioDevice.setVisible(true);
@@ -413,6 +418,7 @@ public class MiscTabController {
             colorPicker.setVisible(true);
             contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_COLOR));
             gamma.setVisible(true);
+            enableAutomaticGamma.setVisible(true);
             contextGammaGain.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_GAMMA));
             audioGain.setVisible(false);
             audioDevice.setVisible(false);
@@ -901,6 +907,16 @@ public class MiscTabController {
     public void openEyeCareDialog() {
         if (MainSingleton.getInstance().guiManager != null) {
             MainSingleton.getInstance().guiManager.showEyeCareDialog(settingsController);
+        }
+    }
+
+    /**
+     * Show gamma dialog
+     */
+    @FXML
+    public void openGammaDialog() {
+        if (MainSingleton.getInstance().guiManager != null) {
+            MainSingleton.getInstance().guiManager.showGammaDialog(settingsController);
         }
     }
 

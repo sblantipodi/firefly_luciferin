@@ -1,0 +1,866 @@
+/*
+  TcInteractionHandler.java
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+package org.dpsoftware.gui.tc;
+
+import javafx.application.Platform;
+import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.TestCanvas;
+import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.utilities.CommonUtility;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
+import static org.dpsoftware.utilities.CommonUtility.scaleUpResolution;
+
+/**
+ * Interaction handler for the test canvas
+ */
+@Getter
+@Setter
+@Slf4j
+public class TcInteractionHandler {
+
+    public final Set<LEDCoordinate> selectedLeds = new LinkedHashSet<>();
+    private final TestCanvas tc;
+    private final TcKeyboardHandler keyboardHandler;
+    private final TcSelectionOverlayDrawer overlayDrawer;
+    private final int RESIZE_RECT_SIZE = 8;
+    private final Map<LEDCoordinate, Point2D> dragOffsets = new HashMap<>();
+    private final Map<LEDCoordinate, Point2D> initialPositions = new HashMap<>();
+    boolean draggingTile = false;
+    boolean canvasClicked = false;
+    LEDCoordinate draggedLed = null;
+    LEDCoordinate resizingLed = null;
+    boolean selectionRectActive = false;
+    double selRectStartX, selRectStartY, selRectEndX, selRectEndY;
+    private boolean draggingRleOverlay = false;
+    private double rleOverlayDragStartY;
+    private double rleOverlayDragStartOffset;
+
+    /**
+     * Constructor
+     *
+     * @param tc test canvas
+     */
+    public TcInteractionHandler(TestCanvas tc) {
+        this.tc = tc;
+        this.keyboardHandler = new TcKeyboardHandler(tc, this);
+        this.overlayDrawer = new TcSelectionOverlayDrawer(tc, this);
+    }
+
+    /**
+     * Manage key pressed on canvas
+     *
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    public void manageCanvasKeyPressed(int saturation) {
+        keyboardHandler.setupKeyboardListeners(saturation);
+    }
+
+    /**
+     * Manage history
+     *
+     * @param idx        index
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    void manageHistory(int idx, int saturation) {
+        tc.injectColorDialogController();
+        try {
+            tc.setConfigHistoryIdx(idx);
+            tc.getColorCorrectionDialogController().back();
+            selectedLeds.clear();
+        } catch (CloneNotSupportedException e) {
+            log.error(e.getMessage());
+        }
+        Platform.runLater(() -> tc.drawTestShapes(MainSingleton.getInstance().config, saturation));
+    }
+
+    /**
+     * Enable dragging
+     *
+     * @param conf       stored config
+     * @param ledMatrix  led matrix
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    public void enableDragging(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
+        onMousePressed(conf, ledMatrix, saturation);
+        onMouseClicked(conf, saturation);
+        onMouseDragged(conf, saturation);
+        onMouseMoved(conf, ledMatrix);
+        onMouseReleased(conf, ledMatrix, saturation);
+    }
+
+    /**
+     * On mouse clicked
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void onMouseClicked(Configuration conf, int saturation) {
+        tc.getCanvas().setOnMouseClicked(e -> {
+            if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(e.getX(), e.getY())) {
+                tc.setTooltipVisible(false);
+                tc.drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+            }
+        });
+    }
+
+    /**
+     * On mouse pressed
+     *
+     * @param conf       stored config
+     * @param ledMatrix  led matrix
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void onMousePressed(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
+        tc.getCanvas().setOnMousePressed(event -> {
+            if (GuiSingleton.getInstance().rleVisualMapVisible && tc.getRleOverlayXBounds() != null
+                    && tc.getRleOverlayXBounds().contains(event.getX(), event.getY())) {
+                tc.stopOverlayOnlyMode();
+                tc.stage.close();
+                GuiSingleton.getInstance().rleVisualMapVisible = false;
+                String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
+                GrabberSingleton.getInstance().setLosslessCompressionLog(Constants.TRUE.equalsIgnoreCase(losslessCompressionLog));
+                return;
+            }
+            // Start dragging the RLE overlay panel (works both in overlay-only mode and when shown on top of the test canvas),
+            // but only if the click didn't land on the close button handled above.
+            if (GuiSingleton.getInstance().rleVisualMapVisible && tc.getRleOverlayPanelBounds() != null
+                    && tc.getRleOverlayPanelBounds().contains(event.getX(), event.getY())) {
+                draggingRleOverlay = true;
+                rleOverlayDragStartY = event.getScreenY();
+                rleOverlayDragStartOffset = tc.getRleOverlayYOffset();
+                tc.getCanvas().setCursor(Cursor.V_RESIZE);
+                return;
+            }
+            tc.setTooltipVisible(tc.isTooltipVisible());
+            int mouseX = (int) event.getX();
+            int mouseY = (int) event.getY();
+            draggedLed = null;
+            canvasClicked = true;
+            resizingLed = null;
+            dragOffsets.clear();
+            initialPositions.clear();
+            draggingTile = false;
+            boolean hitShape = false;
+            // Check if you click the tile or the resize rectangle
+            int coordIdx = 0;
+            for (LEDCoordinate coord : ledMatrix.values()) {
+                coordIdx++;
+                if (coord.isGroupedLed()) continue;
+                int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
+                int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
+                int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+                int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+                int mouseZoneSize = RESIZE_RECT_SIZE * 2;
+                // clickable area next to the led number
+                int ledNumAreaSize = RESIZE_RECT_SIZE * 3;
+                if (mouseX >= x && mouseX <= x + ledNumAreaSize && mouseY >= y && mouseY <= y + ledNumAreaSize) {
+                    boolean toggledActive = !coord.isActive();
+                    coord.setActive(toggledActive);
+                    MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).get(coordIdx).setActive(toggledActive);
+                    MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.LETTERBOX.getBaseI18n()).get(coordIdx).setActive(toggledActive);
+                    MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.PILLARBOX.getBaseI18n()).get(coordIdx).setActive(toggledActive);
+                    return;
+                }
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
+                    hitShape = isHitShapeTopRightCorner(ledMatrix, coord, conf, saturation);
+                    break;
+                }
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y + h - mouseZoneSize && mouseY <= y + h) {
+                    hitShape = isHitShapeBottomCorner(event, coord);
+                    break;
+                } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
+                    hitShape = isHitShape(conf, ledMatrix, event, coord, saturation);
+                }
+            }
+            if (!hitShape) {
+                selectionRectActive = true;
+                selRectStartX = event.getX();
+                selRectStartY = event.getY();
+                selRectEndX = selRectStartX;
+                selRectEndY = selRectStartY;
+                if (!event.isControlDown() && !event.isShiftDown()) {
+                    selectedLeds.clear();
+                }
+                tc.getCanvas().setCursor(Cursor.CROSSHAIR);
+            }
+            // save initial positions of the selected tiles this ensures that during dragging the block maintains its original spacing
+            initialPositions.clear();
+            if (draggingTile && draggedLed != null && !selectedLeds.isEmpty()) {
+                for (LEDCoordinate c : selectedLeds) {
+                    initialPositions.put(c, new Point2D(scaleDownResolution(c.getX(), conf.getOsScaling()), scaleDownResolution(c.getY(), conf.getOsScaling())));
+                }
+            }
+            tc.drawTestShapes(conf, saturation);
+            drawSelectionOverlay(conf);
+            FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
+        });
+    }
+
+    /**
+     * Check if the tiles has been pressed
+     *
+     * @param conf       stored config
+     * @param ledMatrix  led matrix
+     * @param event      mouse event
+     * @param coord      led coordinate
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @return true if the tile has been pressed
+     */
+    private boolean isHitShape(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, MouseEvent event, LEDCoordinate coord, int saturation) {
+        draggingTile = true;
+        draggedLed = coord;
+        if (event.isAltDown() && selectedLeds.contains(coord)) {
+            manageAddLed(ledMatrix, conf, saturation);
+        }
+        if (event.isShiftDown()) {
+            // remove the tile from the selection if present
+            selectedLeds.remove(coord);
+        } else if (event.isControlDown()) {
+            // add to the selection if not already present
+            selectedLeds.add(coord);
+        } else {
+            // if the tile is already selected, keep the selection as is
+            if (!selectedLeds.contains(coord)) {
+                selectedLeds.clear();
+                selectedLeds.add(coord);
+            }
+        }
+        // Calculate offset for all selected tiles
+        dragOffsets.clear();
+        for (LEDCoordinate c : selectedLeds) {
+            int cx = scaleDownResolution(c.getX(), conf.getOsScaling());
+            int cy = scaleDownResolution(c.getY(), conf.getOsScaling());
+            dragOffsets.put(c, new Point2D(event.getX() - cx, event.getY() - cy));
+        }
+        tc.getCanvas().setCursor(Cursor.CLOSED_HAND);
+        GuiSingleton.getInstance().colorDialog.setOpacity(0.5);
+        return true;
+    }
+
+    /**
+     * Show tile category dialog
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private String showTileCategoryDialog(Configuration conf, int saturation) {
+        AtomicReference<String> zoneName = new AtomicReference<>("");
+        Dialog<String> dialog = new Dialog<>();
+        // if there are three dialogues opened, settings dialog is opened, zone dialog needs to be put on top of it
+        Stage stageOwner = null;
+        if (Stage.getWindows().size() >= 3) {
+            for (Window w : Stage.getWindows()) {
+                if (w.isShowing()) {
+                    stageOwner = (Stage) w;
+                }
+            }
+            if (stageOwner != null) {
+                dialog.initOwner(stageOwner);
+                stageOwner.setOpacity(0.5); // half opacity when dialog is ontop of another dialog
+                Stage finalStageOwner = stageOwner;
+                dialog.setOnHidden(_ -> finalStageOwner.setOpacity(1.0));
+            }
+            MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
+        } else {
+            MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
+        }
+        dialog.initStyle(StageStyle.UNDECORATED);
+        dialog.setTitle(CommonUtility.getWord(Constants.CANVAS_ZONE_TITLE));
+        dialog.setHeaderText(CommonUtility.getWord(Constants.CANVAS_ZONE_DESCRIPTION));
+        // Ok / Cancel button
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        // Editable ComboBox
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.setEditable(true);
+        comboBox.getItems().add(Enums.PossibleZones.TOP.getI18n());
+        comboBox.getItems().add(Enums.PossibleZones.RIGHT.getI18n());
+        if (CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin())) {
+            comboBox.getItems().add(Enums.PossibleZones.BOTTOM_RIGHT.getI18n());
+            comboBox.getItems().add(Enums.PossibleZones.BOTTOM_LEFT.getI18n());
+        } else {
+            comboBox.getItems().add(Enums.PossibleZones.BOTTOM.getI18n());
+        }
+        comboBox.getItems().add(Enums.PossibleZones.LEFT.getI18n());
+        comboBox.setPromptText(CommonUtility.getWord(Constants.CANVAS_ZONE_TEXT));
+        dialog.getDialogPane().setContent(comboBox);
+        Platform.runLater(() -> comboBox.getEditor().requestFocus());
+        dialog.setResultConverter(button -> {
+            if (button == ButtonType.OK) {
+                return comboBox.getEditor().getText();
+            }
+            return null;
+        });
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(zn -> {
+            if (CommonUtility.isCommonZone(zn)) {
+                zoneName.set(LocalizedEnum.fromStr(Enums.PossibleZones.class, zn).getBaseI18n());
+            } else {
+                zoneName.set(zn);
+            }
+            Platform.runLater(() -> {
+                tc.drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+            });
+        });
+        return zoneName.get();
+    }
+
+    /**
+     * Orientation logic for mouse pressed
+     *
+     * @param ledMatrix led matrix
+     * @param zoneName  zone name
+     */
+    private void addLedUsingOrientationLogic(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, String zoneName) {
+        LinkedHashMap<Integer, LEDCoordinate> newMap = new LinkedHashMap<>();
+        boolean isClockwise = Enums.Orientation.CLOCKWISE.equals(LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation()));
+        int nextId = 1;
+        if (isClockwise) {
+            // Insert the copies at the beginning
+            for (LEDCoordinate c : selectedLeds) {
+                LEDCoordinate copy = tc.getLedCoordinate(c, zoneName);
+                newMap.put(nextId++, copy);
+            }
+            // Then all the existing tiles
+            for (LEDCoordinate existing : ledMatrix.values()) {
+                newMap.put(nextId++, existing);
+            }
+            ledMatrix.clear();
+            ledMatrix.putAll(newMap);
+        } else {
+            // Insert the copies at the end
+            for (LEDCoordinate existing : ledMatrix.values()) {
+                newMap.put(nextId++, existing);
+            }
+            for (LEDCoordinate c : selectedLeds) {
+                LEDCoordinate copy = tc.getLedCoordinate(c, zoneName);
+                newMap.put(nextId++, copy);
+            }
+        }
+        // Replace the original map with the new map with updated IDs
+        ledMatrix.clear();
+        ledMatrix.putAll(newMap);
+    }
+
+    /**
+     * Check if the tile has been pressed in the top right corner (button)
+     *
+     * @param ledMatrix  led matrix
+     * @param coord      led coordinate
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @return true if clicked
+     */
+    private boolean isHitShapeTopRightCorner(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, LEDCoordinate coord, Configuration conf, int saturation) {
+        selectedLeds.add(coord);
+        manageAddLed(ledMatrix, conf, saturation);
+        return true;
+    }
+
+    /**
+     * Manage add LED
+     *
+     * @param ledMatrix  led matrix
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void manageAddLed(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, Configuration conf, int saturation) {
+        String zoneName = showTileCategoryDialog(conf, saturation);
+        canvasClicked = false;
+        if (zoneName == null || zoneName.isEmpty()) {
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANVAS_ZONE_EMPTY_TITLE,
+                    Constants.CANVAS_ZONE_EMPTY, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            return;
+        }
+        addLedUsingOrientationLogic(ledMatrix, zoneName);
+        if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(MainSingleton.getInstance().config.getDefaultLedMatrix())) {
+            addLedUsingOrientationLogic(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.LETTERBOX.getBaseI18n()), zoneName);
+            addLedUsingOrientationLogic(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.PILLARBOX.getBaseI18n()), zoneName);
+        } else if (Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(MainSingleton.getInstance().config.getDefaultLedMatrix())) {
+            addLedUsingOrientationLogic(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()), zoneName);
+            addLedUsingOrientationLogic(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.LETTERBOX.getBaseI18n()), zoneName);
+        } else if (Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(MainSingleton.getInstance().config.getDefaultLedMatrix())) {
+            addLedUsingOrientationLogic(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()), zoneName);
+            addLedUsingOrientationLogic(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.PILLARBOX.getBaseI18n()), zoneName);
+        }
+        updateLedParam(+1, zoneName);
+        selectedLeds.clear();
+        Platform.runLater(() -> {
+            if (CommonUtility.isCommonZone(zoneName)) {
+                tc.injectColorDialogController();
+                tc.getColorCorrectionDialogController().resetLedMatrix();
+            }
+            tc.drawTestShapes(MainSingleton.getInstance().config, saturation);
+            drawSelectionOverlay(MainSingleton.getInstance().config);
+        });
+        // Restart capture with new LED count
+        if (MainSingleton.getInstance().RUNNING) {
+            PipelineManager.restartCapture(CommonUtility::run);
+        }
+    }
+
+    /**
+     * Check if the tile has been pressed in the bottom right corner for the resize
+     *
+     * @param event mouse event
+     * @param coord led coordinate
+     * @return true if the tile has been pressed in the bottom right corner for the resize
+     */
+    private boolean isHitShapeBottomCorner(MouseEvent event, LEDCoordinate coord) {
+        draggingTile = true;
+        resizingLed = coord;
+        if (!event.isControlDown() && !selectedLeds.contains(coord)) {
+            selectedLeds.clear();
+            selectedLeds.add(coord);
+        } else if (event.isControlDown()) {
+            selectedLeds.add(coord);
+        }
+        tc.getCanvas().setCursor(Cursor.SE_RESIZE);
+        GuiSingleton.getInstance().colorDialog.setOpacity(0.5);
+        return true;
+    }
+
+    /**
+     * On mouse dragged
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void onMouseDragged(Configuration conf, int saturation) {
+        final int SNAP_THRESHOLD = tc.getTileDistance();
+        tc.getCanvas().setOnMouseDragged(event -> {
+            if (draggingRleOverlay) {
+                double delta = event.getScreenY() - rleOverlayDragStartY;
+                tc.setRleOverlayYOffset(rleOverlayDragStartOffset + delta);
+                if (tc.isRleOverlayOnlyMode()) {
+                    tc.updateStageBounds();
+                }
+                if (GuiSingleton.getInstance().rleVisualMapVisible) {
+                    tc.drawOverlayOnly();
+                } else {
+                    tc.drawTestShapes(conf, saturation);
+                }
+                return;
+            }
+            boolean snapEnabled = !event.isControlDown(); // disable snap when holding CTRL
+            int mouseX = (int) event.getX();
+            int mouseY = (int) event.getY();
+            if (selectionRectActive) {
+                handleSelectionRect(conf, saturation, event);
+                return;
+            }
+            if (draggedLed != null && !selectedLeds.isEmpty()) {
+                handleDrag(conf, saturation, mouseX, mouseY, snapEnabled, SNAP_THRESHOLD);
+            } else if (resizingLed != null && !selectedLeds.isEmpty()) {
+                handleResize(conf, saturation, mouseX, mouseY);
+            }
+        });
+    }
+
+    /**
+     * Rectangle selection handling
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @param event      mouse event
+     */
+    private void handleSelectionRect(Configuration conf, int saturation, MouseEvent event) {
+        selRectEndX = event.getX();
+        selRectEndY = event.getY();
+        tc.drawTestShapes(conf, saturation);
+        drawSelectionOverlay(conf);
+    }
+
+    /**
+     * Drag handling
+     *
+     * @param conf          stored config
+     * @param saturation    use full or half saturation, this is influenced by the combo box
+     * @param mouseX        mouse event
+     * @param mouseY        mouse event
+     * @param snapEnabled   if disabled don't snap
+     * @param snapThreshold snap threshold
+     */
+    private void handleDrag(Configuration conf, int saturation, int mouseX, int mouseY, boolean snapEnabled, int snapThreshold) {
+        int canvasWidth = (int) tc.getCanvas().getWidth();
+        int canvasHeight = (int) tc.getCanvas().getHeight();
+        Point2D mainOffset = dragOffsets.get(draggedLed);
+        int cw = scaleDownResolution(draggedLed.getWidth(), conf.getOsScaling());
+        int ch = scaleDownResolution(draggedLed.getHeight(), conf.getOsScaling());
+        int proposedX = Math.clamp((int) (mouseX - (mainOffset != null ? mainOffset.getX() : 0)), 0, canvasWidth - cw);
+        int proposedY = Math.clamp((int) (mouseY - (mainOffset != null ? mainOffset.getY() : 0)), 0, canvasHeight - ch);
+        Point snapped = snapEnabled ? TcSnappingHelper.calculateSnappedPosition(
+                conf, proposedX, proposedY, cw, ch, snapThreshold, selectedLeds) : new Point(proposedX, proposedY);
+        moveSelectedLeds(conf, snapped.x, snapped.y, canvasWidth, canvasHeight);
+        tc.drawTestShapes(conf, saturation);
+        drawSelectionOverlay(conf);
+    }
+
+    /**
+     * Moves all selected LEDs by the drag delta, keeping their spacing and ensuring they remain within the canvas bounds.
+     * The new positions are scaled according to the OS scaling factor.
+     *
+     * @param conf         The current configuration containing scaling and LED matrix info.
+     * @param snappedX     The snapped X position for the dragged LED.
+     * @param snappedY     The snapped Y position for the dragged LED.
+     * @param canvasWidth  The width of the canvas.
+     * @param canvasHeight The height of the canvas.
+     */
+    private void moveSelectedLeds(Configuration conf, int snappedX, int snappedY, int canvasWidth, int canvasHeight) {
+        Point2D startDragged = initialPositions.get(draggedLed);
+        int startX = startDragged != null ? (int) startDragged.getX() : scaleDownResolution(draggedLed.getX(), conf.getOsScaling());
+        int startY = startDragged != null ? (int) startDragged.getY() : scaleDownResolution(draggedLed.getY(), conf.getOsScaling());
+        int deltaX = snappedX - startX;
+        int deltaY = snappedY - startY;
+        for (LEDCoordinate coord : selectedLeds) {
+            Point2D startPos = initialPositions.get(coord);
+            int sX = startPos != null ? (int) startPos.getX() : scaleDownResolution(coord.getX(), conf.getOsScaling());
+            int sY = startPos != null ? (int) startPos.getY() : scaleDownResolution(coord.getY(), conf.getOsScaling());
+            int newX = Math.clamp(sX + deltaX, 0, canvasWidth - scaleDownResolution(coord.getWidth(), conf.getOsScaling()));
+            int newY = Math.clamp(sY + deltaY, 0, canvasHeight - scaleDownResolution(coord.getHeight(), conf.getOsScaling()));
+            coord.setX(scaleUpResolution(newX, conf.getOsScaling()));
+            coord.setY(scaleUpResolution(newY, conf.getOsScaling()));
+        }
+    }
+
+    /**
+     * Resizes all selected LEDs proportionally based on the mouse drag.
+     * The new width and height are calculated using the drag scale factors,
+     * and the minimum tile size is enforced. After resizing, the canvas and
+     * selection overlay are redrawn.
+     *
+     * @param conf       The current configuration containing scaling and LED matrix info.
+     * @param saturation The saturation setting for drawing.
+     * @param mouseX     The current X position of the mouse.
+     * @param mouseY     The current Y position of the mouse.
+     */
+    private void handleResize(Configuration conf, int saturation, int mouseX, int mouseY) {
+        int baseWidth = Math.max(1, scaleDownResolution(resizingLed.getWidth(), conf.getOsScaling()));
+        int baseHeight = Math.max(1, scaleDownResolution(resizingLed.getHeight(), conf.getOsScaling()));
+        double scaleX = (mouseX - scaleDownResolution(resizingLed.getX(), conf.getOsScaling())) / (double) baseWidth;
+        double scaleY = (mouseY - scaleDownResolution(resizingLed.getY(), conf.getOsScaling())) / (double) baseHeight;
+        for (LEDCoordinate coord : selectedLeds) {
+            int newW = (int) (coord.getWidth() * scaleX);
+            int newH = (int) (coord.getHeight() * scaleY);
+            coord.setWidth(Math.max(newW, scaleUpResolution(tc.getMIN_TILE_SIZE(), conf.getOsScaling())));
+            coord.setHeight(Math.max(newH, scaleUpResolution(tc.getMIN_TILE_SIZE(), conf.getOsScaling())));
+        }
+        tc.drawTestShapes(conf, saturation);
+        drawSelectionOverlay(conf);
+    }
+
+    /**
+     * On mouse moved
+     *
+     * @param conf      stored config
+     * @param ledMatrix led matrix
+     */
+    private void onMouseMoved(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
+        tc.getCanvas().setOnMouseMoved(event -> {
+            int mouseX = (int) event.getX();
+            int mouseY = (int) event.getY();
+            boolean overResize = false;
+            boolean overShape = false;
+            boolean overTopRight = false;
+            boolean overLedNumArea = false;
+            for (LEDCoordinate coord : ledMatrix.values()) {
+                int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
+                int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
+                int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+                int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+                int mouseZoneSize = RESIZE_RECT_SIZE * 2;
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
+                    overTopRight = true;
+                }
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y + h - mouseZoneSize && mouseY <= y + h) {
+                    overResize = true;
+                } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
+                    overShape = true;
+                }
+                // clickable area next to the led number
+                int ledNumAreaSize = RESIZE_RECT_SIZE * 3;
+                if (mouseX >= x && mouseX <= x + ledNumAreaSize && mouseY >= y && mouseY <= y + ledNumAreaSize) {
+                    overLedNumArea = true;
+                }
+            }
+            Cursor cursor = determineCursor(mouseX, mouseY, overTopRight, overResize, overLedNumArea, overShape);
+            tc.getCanvas().setCursor(cursor);
+        });
+    }
+
+    /**
+     * Determine the correct cursor for the current mouse position.
+     * Priority: RLE overlay close button > RLE overlay panel > top-right corner / LED num area / resize handle / shape > tooltip close button > default.
+     *
+     * @param mouseX         mouse X coordinate
+     * @param mouseY         mouse Y coordinate
+     * @param overTopRight   true if hovering a top-right corner action area
+     * @param overResize     true if hovering a resize handle
+     * @param overLedNumArea true if hovering an LED number area
+     * @param overShape      true if hovering any shape
+     * @return the appropriate Cursor
+     */
+    private Cursor determineCursor(int mouseX, int mouseY, boolean overTopRight, boolean overResize, boolean overLedNumArea, boolean overShape) {
+        // Highest priority: RLE overlay controls
+        if (GuiSingleton.getInstance().rleVisualMapVisible) {
+            if (tc.getRleOverlayXBounds() != null && tc.getRleOverlayXBounds().contains(mouseX, mouseY)) {
+                return Cursor.HAND;
+            }
+            if (tc.getRleOverlayPanelBounds() != null && tc.getRleOverlayPanelBounds().contains(mouseX, mouseY)) {
+                return Cursor.V_RESIZE;
+            }
+        }
+        // Shape related cursors (priority order)
+        if (overTopRight || overLedNumArea) return Cursor.HAND;
+        if (overResize) return Cursor.SE_RESIZE;
+        if (overShape) return Cursor.OPEN_HAND;
+        // Tooltip close button
+        if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(mouseX, mouseY)) {
+            return Cursor.HAND;
+        }
+        return Cursor.DEFAULT;
+    }
+
+    /**
+     * On mouse released
+     *
+     * @param conf       stored config
+     * @param ledMatrix  led matrix
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void onMouseReleased(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
+        tc.getCanvas().setOnMouseReleased(event -> {
+            if (draggingRleOverlay) {
+                draggingRleOverlay = false;
+                tc.getCanvas().setCursor(Cursor.DEFAULT);
+                return;
+            }
+            canvasClicked = false;
+            draggingTile = false;
+            if (selectionRectActive) {
+                selectionRectActive = false;
+                double rx1 = Math.min(selRectStartX, selRectEndX);
+                double ry1 = Math.min(selRectStartY, selRectEndY);
+                double rx2 = Math.max(selRectStartX, selRectEndX);
+                double ry2 = Math.max(selRectStartY, selRectEndY);
+                boolean ctrlDown = event.isControlDown();
+                boolean shiftDown = event.isShiftDown();
+                if (!ctrlDown && !shiftDown) {
+                    selectedLeds.clear();
+                }
+                for (LEDCoordinate coord : ledMatrix.values()) {
+                    int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
+                    int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
+                    int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+                    int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+                    if (!(x + w < rx1 || x > rx2 || y + h < ry1 || y > ry2)) {
+                        selectedLeds.add(coord);
+                    }
+                }
+            } else {
+                draggedLed = null;
+                resizingLed = null;
+                dragOffsets.clear();
+                initialPositions.clear(); // clear the saved positions at the end of the drag
+                tc.getCanvas().setCursor(Cursor.DEFAULT);
+            }
+            tc.drawTestShapes(conf, saturation);
+            drawSelectionOverlay(conf);
+            GuiSingleton.getInstance().colorDialog.setOpacity(1.0);
+            manageHistoryOnRelease(conf);
+        });
+    }
+
+    /**
+     * Manage history on release
+     *
+     * @param conf stored config
+     */
+    void manageHistoryOnRelease(Configuration conf) {
+        Configuration clonedConfig = CommonUtility.deepClone(conf, Configuration.class);
+        if (tc.getConfigHistory().size() > tc.getHISTORY_SIZE()) {
+            tc.getConfigHistory().remove(1);
+        }
+        if (tc.getConfigHistoryIdx() > 1) {
+            if (tc.getConfigHistory().size() > 1) {
+                int toRemove = tc.getConfigHistoryIdx() - 1;
+                int startIndex = tc.getConfigHistory().size() - toRemove;
+                tc.getConfigHistory().subList(startIndex, tc.getConfigHistory().size()).clear();
+            }
+        }
+        tc.getConfigHistory().add(clonedConfig);
+        tc.setConfigHistoryIdx(1);
+    }
+
+    /**
+     * Draw small rects for resize and add LED
+     *
+     * @param newFont font
+     * @param x       x
+     * @param width   width
+     * @param y       y
+     * @param height  height
+     * @param conf    configuration
+     */
+    public void drawSmallRects(Font newFont, int x, int width, int y, int height, Configuration conf) {
+        overlayDrawer.drawHandles(newFont, x, width, y, height, conf);
+    }
+
+    /**
+     * Delete selected tiles from the ledMatrix
+     */
+    public void deleteSelectedTiles() {
+        if (selectedLeds.isEmpty()) return;
+        Configuration conf = MainSingleton.getInstance().config;
+        if (conf == null) return;
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+        updateLedParam(-1, "");
+        List<Integer> keyToRemove = new ArrayList<>();
+        deleteTilesFromMatrix(ledMatrix, keyToRemove);
+        if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(MainSingleton.getInstance().config.getDefaultLedMatrix())) {
+            deleteTilesFromMatrix(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.LETTERBOX.getBaseI18n()), keyToRemove);
+            deleteTilesFromMatrix(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.PILLARBOX.getBaseI18n()), keyToRemove);
+        } else if (Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(MainSingleton.getInstance().config.getDefaultLedMatrix())) {
+            deleteTilesFromMatrix(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()), keyToRemove);
+            deleteTilesFromMatrix(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.LETTERBOX.getBaseI18n()), keyToRemove);
+        } else if (Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(MainSingleton.getInstance().config.getDefaultLedMatrix())) {
+            deleteTilesFromMatrix(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()), keyToRemove);
+            deleteTilesFromMatrix(MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.PILLARBOX.getBaseI18n()), keyToRemove);
+        }
+        // Clear selection
+        selectedLeds.clear();
+        FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
+        // Redraw
+        Platform.runLater(() -> {
+            tc.drawTestShapes(conf, 0);
+            drawSelectionOverlay(conf);
+            // Restart capture with new LED count
+            if (MainSingleton.getInstance().RUNNING) {
+                PipelineManager.restartCapture(CommonUtility::run);
+            }
+        });
+    }
+
+    /**
+     * Update led param on delete or add
+     *
+     * @param delta    delta
+     * @param zoneName zone name
+     */
+    private void updateLedParam(int delta, String zoneName) {
+        boolean updateLedParam = false;
+        var config = MainSingleton.getInstance().config;
+        for (LEDCoordinate selectedLed : selectedLeds) {
+            String zone = zoneName.isEmpty() ? selectedLed.getZone() : zoneName;
+            if (Enums.PossibleZones.TOP.getBaseI18n().equals(zone)) {
+                config.setTopLed(config.getTopLed() + delta);
+                updateLedParam = true;
+            } else if (Enums.PossibleZones.RIGHT.getBaseI18n().equals(zone)) {
+                config.setRightLed(config.getRightLed() + delta);
+                updateLedParam = true;
+            } else if (Enums.PossibleZones.BOTTOM_RIGHT.getBaseI18n().equals(zone)) {
+                config.setBottomRightLed(config.getBottomRightLed() + delta);
+                updateLedParam = true;
+            } else if (Enums.PossibleZones.BOTTOM.getBaseI18n().equals(zone)) {
+                config.setBottomRowLed(config.getBottomRowLed() + delta);
+                updateLedParam = true;
+            } else if (Enums.PossibleZones.BOTTOM_LEFT.getBaseI18n().equals(zone)) {
+                config.setBottomLeftLed(config.getBottomLeftLed() + delta);
+                updateLedParam = true;
+            } else if (Enums.PossibleZones.LEFT.getBaseI18n().equals(zone)) {
+                config.setLeftLed(config.getLeftLed() + delta);
+                updateLedParam = true;
+            }
+        }
+        if (updateLedParam) {
+            tc.injectColorDialogController();
+            tc.getColorCorrectionDialogController().updateLedConfigParam();
+        }
+    }
+
+    /**
+     * Delete tiles from matrix
+     *
+     * @param ledMatrix   led matrix
+     * @param keyToRemove list of keys to remove
+     */
+    private void deleteTilesFromMatrix(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, List<Integer> keyToRemove) {
+        // Removed selected
+        if (keyToRemove.isEmpty()) {
+            for (LEDCoordinate selectedLed : selectedLeds) {
+                Integer foundKey = ledMatrix.entrySet().stream().filter(entry -> entry.getValue().equals(selectedLed)).map(Map.Entry::getKey).findFirst().orElse(null);
+                ledMatrix.remove(foundKey);
+                keyToRemove.add(foundKey);
+            }
+        } else {
+            for (Integer key : keyToRemove) {
+                ledMatrix.remove(key);
+            }
+        }
+        // Reindex
+        LinkedHashMap<Integer, LEDCoordinate> newMap = new LinkedHashMap<>();
+        int newId = 1;
+        for (LEDCoordinate c : ledMatrix.values()) {
+            newMap.put(newId++, c);
+        }
+        ledMatrix.clear();
+        ledMatrix.putAll(newMap);
+    }
+
+    /**
+     * Draw selection overlay
+     *
+     * @param conf stored config
+     */
+    void drawSelectionOverlay(Configuration conf) {
+        overlayDrawer.drawOverlay(conf);
+    }
+
+}

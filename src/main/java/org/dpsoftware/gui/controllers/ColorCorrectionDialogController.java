@@ -35,10 +35,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.TestCanvas;
@@ -102,6 +104,8 @@ public class ColorCorrectionDialogController {
     @FXML
     public Button settingsBtn;
     @FXML
+    public Button overlayBtn;
+    @FXML
     public Button tooltipBtn;
     TestCanvas testCanvas;
     boolean useHalfSaturation = false;
@@ -153,6 +157,9 @@ public class ColorCorrectionDialogController {
     @FXML
     protected void initialize() {
         Platform.runLater(() -> {
+            if (NativeExecutor.isLinux()) {
+                overlayBtn.setText(Constants.SHARP);
+            }
             initListeners(redSaturation, yellowSaturation, greenSaturation, cyanSaturation, blueSaturation, magentaSaturation, saturation);
             initListeners(redLightness, yellowLightness, greenLightness, cyanLightness, blueLightness, magentaLightness, saturationLightness);
             initListeners(redHue, yellowHue, greenHue, cyanHue, blueHue, magentaHue, null);
@@ -705,6 +712,32 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Show overlay
+     */
+    @FXML
+    public void showOverlay() {
+        Stage colorDialog = GuiSingleton.getInstance().getColorDialog();
+        if (GuiSingleton.getInstance().rleVisualMapVisible) {
+            testCanvas.stopOverlayOnlyMode();
+            if (colorDialog != null) {
+                colorDialog.show();
+            }
+        } else {
+            GrabberSingleton.getInstance().losslessCompressionLog = true;
+            GuiSingleton.getInstance().rleVisualMapVisible = true;
+            testCanvas.injectColorDialogController();
+            if (testCanvas.getColorCorrectionDialogController() != null) {
+                testCanvas.getColorCorrectionDialogController().stopLatencyTest();
+            }
+            testCanvas.startOverlayOnlyMode();
+            testCanvas.drawTestShapes(MainSingleton.getInstance().config, 0);
+            if (colorDialog != null) {
+                colorDialog.hide();
+            }
+        }
+    }
+
+    /**
      * Show settings dialog
      */
     @FXML
@@ -763,7 +796,7 @@ public class ColorCorrectionDialogController {
     /**
      * Stop latency test executor
      */
-    void stopLatencyTest() {
+    public void stopLatencyTest() {
         if (animationTimer != null) {
             animationTimer.stop();
         }
@@ -926,6 +959,8 @@ public class ColorCorrectionDialogController {
         GuiManager.createTooltip(Constants.TOOLTIP_LATENCY_TEST, latencyTestToggle);
         GuiManager.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED, latencyTestSpeed);
         GuiManager.createTooltip(Constants.TOOLTIP_SETTINGS, settingsBtn);
+        GuiManager.createTooltip(Constants.TOOLTIP_CD_INFO, tooltipBtn);
+        GuiManager.createTooltip(Constants.TOOLTIP_OVERLAY, overlayBtn);
     }
 
     /**

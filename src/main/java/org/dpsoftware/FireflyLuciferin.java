@@ -35,6 +35,7 @@ import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.network.McpServer;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
 import org.dpsoftware.network.NetworkSingleton;
@@ -73,6 +74,7 @@ public class FireflyLuciferin extends Application {
     SerialManager serialManager;
     // MQTT
     NetworkManager networkManager = null;
+    private final McpServer mcpServer = new McpServer();
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
@@ -154,15 +156,6 @@ public class FireflyLuciferin extends Application {
      */
     public static void setLedNumber(String ledMatrixInUse) {
         MainSingleton.getInstance().ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? NetworkSingleton.getInstance().totalLedNum : MainSingleton.getInstance().config.getLedMatrixInUse(ledMatrixInUse).size();
-        int multiplier = (int) Math.floor((double) MainSingleton.getInstance().ledNumber / Constants.SERIAL_CHUNK_SIZE);
-        int lastPart = MainSingleton.getInstance().ledNumber - (Constants.SERIAL_CHUNK_SIZE * multiplier);
-        if (lastPart < 1) {
-            multiplier--;
-            MainSingleton.getInstance().ledNumHighLowCount = Constants.SERIAL_CHUNK_SIZE - 1;
-        } else {
-            MainSingleton.getInstance().ledNumHighLowCount = MainSingleton.getInstance().ledNumber > Constants.SERIAL_CHUNK_SIZE ? lastPart - 1 : MainSingleton.getInstance().ledNumber - 1;
-        }
-        MainSingleton.getInstance().ledNumHighLowCountSecondPart = MainSingleton.getInstance().ledNumber > Constants.SERIAL_CHUNK_SIZE ? multiplier : 0;
     }
 
     /**
@@ -250,6 +243,9 @@ public class FireflyLuciferin extends Application {
             log.info("Starting default instance");
         }
         logEnvironment();
+        String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
+        if (Constants.TRUE.equalsIgnoreCase(losslessCompressionLog))
+            GrabberSingleton.getInstance().losslessCompressionLog = true;
     }
 
     /**
@@ -265,6 +261,9 @@ public class FireflyLuciferin extends Application {
         StorageManager storageManager = new StorageManager();
         storageManager.updateConfigFile(MainSingleton.getInstance().config);
         setRuntimeLogLevel();
+        if (MainSingleton.getInstance().whoAmI == 1) {
+            mcpServer.start();
+        }
         // Manage tray icon and framerate dialog
         MainSingleton.getInstance().guiManager = new GuiManager(true);
         MainSingleton.getInstance().guiManager.trayIconManager.initTray();
@@ -282,7 +281,7 @@ public class FireflyLuciferin extends Application {
                 udpServer.receiveBroadcastUDPPacket();
             }
         }
-        grabberManager.getFPS();
+        grabberManager.createBackgroundTasks();
         grabberManager.pingDevice();
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single device, start message server before grabbers produce frames.
@@ -328,6 +327,8 @@ public class FireflyLuciferin extends Application {
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
             grabberManager.launchAdvancedGrabber(imageProcessor);
         } else { // Standard Producers

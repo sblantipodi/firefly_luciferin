@@ -22,18 +22,21 @@
 package org.dpsoftware.network.tcpUdp;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.managers.NetworkManager;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.*;
+import java.util.List;
 
 /**
  * UDP Client to manage UDP wireless stream, this is an alternative to MQTT stream
@@ -44,6 +47,13 @@ public class UdpClient {
     public final DatagramSocket socket;
     final int UDP_PORT = Constants.UDP_PORT;
     private final InetAddress address;
+
+    /**
+     * Rolling frame sequence counter (0-255). Incremented for every new captured frame.
+     * The firmware uses this to detect when chunks belong to different frames,
+     * allowing safe rejection of orphaned chunks without relying on a timing threshold.
+     */
+    private int frameNum = 0;
 
     /**
      * UDP constructor for the socket
@@ -181,7 +191,9 @@ public class UdpClient {
      */
     private void setTrafficClass() {
         try {
-            socket.setTrafficClass(MainSingleton.getInstance().config.getUdpTrafficClass());
+            if (MainSingleton.getInstance().config.getUdpTrafficClass() != 0) {
+                socket.setTrafficClass(MainSingleton.getInstance().config.getUdpTrafficClass());
+            }
         } catch (SocketException e) {
             log.warn("Cannot set UDP traffic class {}, (not supported on this OS/NIC): {}", MainSingleton.getInstance().config.getUdpTrafficClass(), e.getMessage());
         }
@@ -196,8 +208,6 @@ public class UdpClient {
         byte[] buf = msg.getBytes();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, UDP_PORT);
         try {
-            log.trace("Sending UDP stream packet from localPort={} to targetIp={} targetPort={}",
-                    socket.getLocalPort(), address.getHostAddress(), UDP_PORT);
             socket.send(packet);
         } catch (IOException e) {
             socket.close();
@@ -206,31 +216,110 @@ public class UdpClient {
     }
 
     /**
+     * Populate RLE map data in NetworkSingleton so the canvas overlay can render it.
+     * Logging is gated by LUCIFERIN_LOSSLESS_COMPRESSION_LOG; data population always happens.
+     *
+     * @param rleMap               array of rle gropup
+     * @param ledMatrixWithLeaders array of leaders
+     * @param length               total number of LEDs in the strip
+     */
+    private static void printRleMapForDebug(String rleMap, LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders, int length) {
+        // Log only if the lossless compression log flag is enabled
+        if (!GrabberSingleton.getInstance().isLosslessCompressionLog()) {
+            return;
+        }
+        String[] parts = rleMap.split(",", 4);
+        if (parts.length != 4) {
+            return;
+        }
+        // Group details
+        String rleInline = parts[3]; // "7x2,1x3,42x2,1x3,7x2"
+        if (NetworkSingleton.getInstance().getRleMapInUse().contentEquals(rleInline)) {
+            return;
+        }
+        NetworkSingleton.getInstance().setRleMapInUse(rleInline);
+        String[] entries = rleInline.split(",");
+        int total = entries.length;
+        StringBuilder groups = new StringBuilder();
+        for (int i = 0; i < total; i++) {
+            groups.append("[")
+                    .append(entries[i])
+                    .append("]");
+            if (i < total - 1) {
+                groups.append(",");
+            }
+        }
+        // Always populate visual RLE map for canvas overlay
+        NetworkSingleton.printVisualRleMap(ledMatrixWithLeaders, groups, length);
+        String formatted = "UDP RLE Entries Array [Total: " +
+                total +
+                "] -> " +
+                groups;
+        log.debug(formatted);
+    }
+
+    /**
      * Organize led data and send it via UDP stream
      *
      * @param leds array containing color information
      */
     public void manageStream(Color[] leds) {
-        int chunkTotal;
-        chunkTotal = (int) Math.ceil(leds.length / Constants.UDP_CHUNK_SIZE);
+        // Advance frame sequence counter (wraps 0-255)
+        frameNum = (frameNum + 1) & 0xFF;
+        // Create new RLE leaders (grouping + RLE entries are computed once inside builtRleLeaders)
+        NetworkSingleton.RleLeadersResult rleLeadersResult = NetworkSingleton.builtRleLeaders(leds);
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrixWithLeaders = rleLeadersResult.ledMatrix();
+        // Build compressed LED array (only leaders)
+        List<Color> leaderColors = new ArrayList<>();
+        int ledIndex = 0;
+        for (LEDCoordinate coord : ledMatrixWithLeaders.values()) {
+            if (!coord.isGroupedLed()) {
+                leaderColors.add(leds[ledIndex]);
+            }
+            ledIndex++;
+        }
+        Color[] compressedLeds = leaderColors.toArray(new Color[0]);
+        // Reuse the RLE entries already computed by builtRleLeaders, do not recompute the grouping here
+        String rleMap = buildRleGroupMap(ledMatrixWithLeaders.size(), rleLeadersResult.rleEntries());
+        printRleMapForDebug(rleMap, ledMatrixWithLeaders, leds.length);
+        String[] rleparts = rleMap.split(",", 4);
+        String rleInline = rleparts[2] + "," + rleparts[3]; // "numEntries,c1xs1,..."
+        int numLedsPhysical = leds.length;
+        int chunkTotal = (int) Math.ceil((double) compressedLeds.length / Constants.UDP_CHUNK_SIZE);
+        // How big is first chunk with and inline RLE map?
+        Color[] firstChunk = Arrays.copyOfRange(compressedLeds, 0, Math.min(Constants.UDP_CHUNK_SIZE, compressedLeds.length));
+        int colorsLen = 0;
+        for (Color c : firstChunk) colorsLen += String.valueOf(c.getRGB()).length() + 1;
+        int headerLen = 40; // header length estimation with a 40 bytes
+        int inlineChunk0Size = headerLen + rleInline.length() + colorsLen;
+        boolean rleInlineFits = inlineChunk0Size <= Constants.SAFE_PACKET_SIZE;
+        if (!rleInlineFits) {
+            // This is too big send a separate RLE map
+            sendUdpStream("DPsoftwareGRP," + rleparts[1] + "," + rleInline + "," + frameNum);
+            if (Constants.UDP_MICROCONTROLLER_REST_TIME > 0) {
+                CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
+            }
+        }
         for (int chunkNum = 0; chunkNum < chunkTotal; chunkNum++) {
             StringBuilder sb = new StringBuilder();
             sb.append("DPsoftware").append(",");
-            sb.append(leds.length).append(",");
+            sb.append(numLedsPhysical).append(",");
             sb.append((AudioSingleton.getInstance().AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioSingleton.getInstance().AUDIO_BRIGHTNESS)).append(",");
             sb.append(chunkTotal).append(",");
             sb.append(chunkNum).append(",");
-            int chunkSizeInteger = (int) Constants.UDP_CHUNK_SIZE * chunkNum;
-            int nextChunk = (int) (chunkSizeInteger + Constants.UDP_CHUNK_SIZE);
-            Color[] ledChunk = Arrays.copyOfRange(leds, chunkSizeInteger, Math.min(nextChunk, leds.length));
-            for (int ledIndex = 0; ledIndex < ledChunk.length; ledIndex++) {
-                sb.append(ledChunk[ledIndex].getRGB());
-                if (ledIndex < ledChunk.length - 1) {
-                    sb.append(",");
-                }
+            sb.append(frameNum).append(",");
+            sb.append(rleInlineFits ? "1" : "0").append(","); // flag: 1=RLE inline in chunk0, 0=separate packet GRP
+            if (chunkNum == 0 && rleInlineFits) {
+                sb.append(rleInline).append(",");
+            }
+            int chunkSizeInteger = Constants.UDP_CHUNK_SIZE * chunkNum;
+            int nextChunk = chunkSizeInteger + Constants.UDP_CHUNK_SIZE;
+            Color[] ledChunk = Arrays.copyOfRange(compressedLeds, chunkSizeInteger, Math.min(nextChunk, compressedLeds.length));
+            for (int i = 0; i < ledChunk.length; i++) {
+                sb.append(ledChunk[i].getRGB());
+                if (i < ledChunk.length - 1) sb.append(",");
             }
             sendUdpStream(sb.toString());
-            // Let the microcontroller rest for 1 milliseconds before next stream
             if (Constants.UDP_MICROCONTROLLER_REST_TIME > 0) {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
@@ -242,6 +331,32 @@ public class UdpClient {
      */
     public void close() {
         socket.close();
+    }
+
+    /**
+     * Builds a compact RLE (Run-Length Encoding) group map string from already-computed RLE entries.
+     * The map is used by the ESP32 to expand compressed color streams.
+     * Format: "DPsoftwareGRP,<numLedsPhysical>,<numRleEntries>,<count1>x<size1>,..."
+     * The RLE entries must come from {@link NetworkSingleton#computeRleEntries} (via
+     * {@link NetworkSingleton#builtRleLeaders}), this method does not recompute the grouping.
+     *
+     * @param numLedsPhysical total number of physical LEDs
+     * @param rleEntries      pre-computed RLE entries, each one is {count, size}
+     * @return the RLE-encoded group map string ready to send via UDP
+     */
+    public String buildRleGroupMap(int numLedsPhysical, List<int[]> rleEntries) {
+        if (rleEntries == null || rleEntries.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("DPsoftwareGRP").append(",");
+        sb.append(numLedsPhysical).append(",");
+        sb.append(rleEntries.size()).append(",");
+        for (int j = 0; j < rleEntries.size(); j++) {
+            sb.append(rleEntries.get(j)[0]).append("x").append(rleEntries.get(j)[1]);
+            if (j < rleEntries.size() - 1) sb.append(",");
+        }
+        return sb.toString();
     }
 
 }

@@ -132,9 +132,9 @@ public class GrabberManager {
                             DisplayManager displayManager = new DisplayManager();
                             String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
                             if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11.replace("{0}", monitorNativePeer), true);
+                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11).replace("{0}", monitorNativePeer), true);
                             } else {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12.replace("{0}", monitorNativePeer), true);
+                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12).replace("{0}", monitorNativePeer), true);
                             }
                         } else if (NativeExecutor.isLinux()) {
                             int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
@@ -143,15 +143,17 @@ public class GrabberManager {
                                     .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
                             bin = Gst.parseBinFromDescription(runtimeParams, true);
                         } else {
-                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
+                            bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_MAC), true);
                         }
                     }
                     vc = new GStreamerGrabber();
                     GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
                     Pipeline.linkMany(bin, vc.getElement());
                     JFrame f = new JFrame(Constants.SCREEN_GRABBER);
-                    f.add(vc);
-                    vc.setPreferredSize(new Dimension(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getScreenResY()));
+                    JPanel panel = new JPanel();
+                    panel.setPreferredSize(new Dimension(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getScreenResY()));
+                    panel.setBackground(Color.BLACK);
+                    f.add(panel);
                     f.pack();
                     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     GrabberSingleton.getInstance().pipe.play();
@@ -224,13 +226,20 @@ public class GrabberManager {
     }
 
     /**
-     * Calculate Screen Capture Framerate and how fast your microcontroller can consume it
+     * It creates background tasks that runs every 5 seconds.
+     * - Calculate Screen Capture Framerate and how fast your microcontroller can consume it.
+     * - Check if HDR is ON to enable dynamic gamma calculation.
      */
-    public void getFPS() {
+    public void createBackgroundTasks() {
         AtomicInteger framerateAlert = new AtomicInteger();
         AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
+            boolean isHdrActive = NativeExecutor.isHdrActive();
+            if (isHdrActive != MainSingleton.getInstance().isHdrActive()) {
+                MainSingleton.getInstance().setHdrActive(isHdrActive);
+                log.info("HDR is {}", MainSingleton.getInstance().isHdrActive() ? "ON" : "OFF");
+            }
             if (MainSingleton.getInstance().FPS_PRODUCER_COUNTER > 0 || MainSingleton.getInstance().FPS_CONSUMER_COUNTER > 0) {
                 if (CommonUtility.isSingleDeviceOtherInstance() && MainSingleton.getInstance().config.getEffect().contains(Constants.MUSIC_MODE)) {
                     MainSingleton.getInstance().FPS_PRODUCER = MainSingleton.getInstance().FPS_GW_CONSUMER;
@@ -254,6 +263,10 @@ public class GrabberManager {
                     mqttFramerateDto.setAspectRatio(MainSingleton.getInstance().config.isAutoDetectBlackBars() ?
                             CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS) : MainSingleton.getInstance().config.getDefaultLedMatrix());
                     mqttFramerateDto.setGamma(String.valueOf(MainSingleton.getInstance().config.getGamma()));
+                    String adaptiveGamma = String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
+                    if (NativeExecutor.isWindows())
+                        adaptiveGamma += " (" + (MainSingleton.getInstance().hdrActive ? Constants.HDR : Constants.SDR) + ")";
+                    mqttFramerateDto.setAdaptiveGamma(adaptiveGamma);
                     mqttFramerateDto.setSmoothingLvl((Enums.Ema.findByValue(MainSingleton.getInstance().config.getEmaAlpha()).getBaseI18n()));
                     mqttFramerateDto.setFrameGen((Enums.FrameGeneration.findByValue(MainSingleton.getInstance().config.getFrameInsertionTarget()).getBaseI18n()));
                     mqttFramerateDto.setProfile(Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg) ?

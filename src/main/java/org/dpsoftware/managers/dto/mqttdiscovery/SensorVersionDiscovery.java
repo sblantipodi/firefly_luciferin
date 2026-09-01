@@ -49,7 +49,7 @@ public class SensorVersionDiscovery extends DeviceDiscovery implements Discovery
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Glow Worm Version");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.valueTemplate = "{{ value_json.ver if value_json.ver is defined else this.state }}";
         this.forceUpdate = true;

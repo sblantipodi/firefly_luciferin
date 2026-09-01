@@ -23,7 +23,6 @@ package org.dpsoftware.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
@@ -142,9 +141,8 @@ public class NetworkManager implements MqttCallback {
         if (sat == null) {
             return msg;
         } else {
-            ObjectMapper mapper = new ObjectMapper();
             try {
-                JsonNode jsonMsg = mapper.readTree(msg.getBytes());
+                JsonNode jsonMsg = CommonUtility.JSON_MAPPER.readTree(msg.getBytes());
                 if (jsonMsg.get(Constants.MAC) != null) {
                     ObjectNode object = (ObjectNode) jsonMsg;
                     String satMac = GuiSingleton.getInstance().deviceTableData.stream()
@@ -153,7 +151,7 @@ public class NetworkManager implements MqttCallback {
                             .map(GlowWormDevice::getMac)
                             .orElse(null);
                     object.put(Constants.MAC, satMac);
-                    return mapper.writeValueAsString(object);
+                    return CommonUtility.JSON_MAPPER.writeValueAsString(object);
                 } else {
                     return msg;
                 }
@@ -333,8 +331,7 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private static void manageDefaultTopic(MqttMessage message) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode mqttmsg = mapper.readTree(message.getPayload());
+        JsonNode mqttmsg = CommonUtility.JSON_MAPPER.readTree(message.getPayload());
         if (mqttmsg.get(Constants.STATE) != null && mqttmsg.get(Constants.MQTT_TOPIC) != null) {
             if (mqttmsg.get(Constants.MQTT_TOPIC) != null) {
                 if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
@@ -378,8 +375,7 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private static void manageMqttSetTopic(MqttMessage message) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode mqttmsg = mapper.readTree(message.getPayload());
+        JsonNode mqttmsg = CommonUtility.JSON_MAPPER.readTree(message.getPayload());
         if (message.toString().contains(Constants.MQTT_START)) {
             MainSingleton.getInstance().guiManager.startCapturingThreads();
         } else if (message.toString().contains(Constants.MQTT_STOP)) {
@@ -409,8 +405,7 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private static void manageFpsTopic(MqttMessage message) throws IOException {
-        ObjectMapper mapperFps = new ObjectMapper();
-        JsonNode mqttmsg = mapperFps.readTree(message.getPayload());
+        JsonNode mqttmsg = CommonUtility.JSON_MAPPER.readTree(message.getPayload());
         CommonUtility.updateFpsWithFpsTopic(mqttmsg);
     }
 
@@ -625,8 +620,7 @@ public class NetworkManager implements MqttCallback {
     private void manageFirmwareConfig(String message) throws JsonProcessingException {
         if (MainSingleton.getInstance().config != null) {
             if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode mqttmsg = mapper.readTree(message);
+                JsonNode mqttmsg = CommonUtility.JSON_MAPPER.readTree(message);
                 if (CommonUtility.getDeviceToUse().getMac().equals(mqttmsg.get(Constants.MAC).asText())) {
                     MainSingleton.getInstance().config.setColorMode(mqttmsg.get(Constants.COLOR_MODE).asInt());
                 }
@@ -642,8 +636,7 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private void manageGamma(MqttMessage message) throws IOException {
-        ObjectMapper gammaMapper = new ObjectMapper();
-        JsonNode gammaObj = gammaMapper.readTree(message.getPayload());
+        JsonNode gammaObj = CommonUtility.JSON_MAPPER.readTree(message.getPayload());
         if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
             MainSingleton.getInstance().config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
         }

@@ -274,6 +274,15 @@
                     <Insets right="8.0"/>
                 </HBox.margin>
             </ComboBox>
+            <Button fx:id="overlayBtn" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#showOverlay"
+                    prefWidth="30.0" text="⧉">
+                <HBox.margin>
+                    <Insets right="8.0"/>
+                </HBox.margin>
+                <font>
+                    <Font name="System Bold" size="12.0"/>
+                </font>
+            </Button>
             <Button fx:id="settingsBtn" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#showSettings"
                     prefWidth="30.0" text="☰">
                 <HBox.margin>

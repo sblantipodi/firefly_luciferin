@@ -229,7 +229,8 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
                 config.setLuminosityThreshold((Boolean) data.get("eyeCare") ? 1 : 0);
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.debug("Legacy config migration block failed, ignoring", e);
             }
         }
         return writeToStorage;
@@ -292,6 +293,24 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
             if (config.getUdpTrafficClass() != Constants.DEFAULT_UDP_TRAFFIC_CLASS) {
                 config.setUdpTrafficClass(Constants.DEFAULT_UDP_TRAFFIC_CLASS);
             }
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.29.5
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    boolean updatePrevious2295(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.29.5")) {
+            if (config.getUdpTrafficClass() != Constants.DEFAULT_UDP_TRAFFIC_CLASS) {
+                config.setUdpTrafficClass(Constants.DEFAULT_UDP_TRAFFIC_CLASS);
+            }
+            config.setGamma(Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma()));
             writeToStorage = true;
         }
         return writeToStorage;

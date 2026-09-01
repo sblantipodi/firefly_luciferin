@@ -53,8 +53,6 @@ public class Constants {
     public static final String CLEAN_EXIT = "CLEAN EXIT";
     public static final String FULL_FIRM = "full.firm";
     public static final String LIGHT_FIRM = "light.firm";
-    // This value must meet the one in Firefly Luciferin
-    public static final int SERIAL_CHUNK_SIZE = 250;
     public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
     public static final String SETTING_LED_SERIAL = "Setting LEDs";
     public static final int NUMBER_OF_BENCHMARK_ITERATION = 15;
@@ -70,7 +68,7 @@ public class Constants {
     public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
     public static final int NUMBER_OF_AREA_TO_CHECK = 50;
     public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 15;
-    public static final int MINIMUM_WHITE_PIXELS_PCT = 40;
+    public static final int BLACK_BAR_MINIMUM_PCT = 95;
     public static final int AR_LETTERBOX_GAP = 42;
     public static final int AR_PILLARBOX_GAP = 480;
     public static final int REQUIRED_CONFIRMATIONS = 4;
@@ -116,6 +114,8 @@ public class Constants {
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
     public static final String HOME_PATH = "user.home";
     public static final String LUCIFERIN_LOG_LEVEL = "LUCIFERIN_LOG_LEVEL";
+    public static final String LUCIFERIN_LOSSLESS_COMPRESSION_LOG = "LUCIFERIN_LOSSLESS_COMPRESSION_LOG";
+    public static final String LUCIFERIN_SIMD_STRATEGY_OVERRIDE = "LUCIFERIN_SIMD_STRATEGY";
     public static final String XDG_HOME = "XDG_CONFIG_HOME";
     public static final String DOCUMENTS_FOLDER = "Documents";
     public static final String OPENJFX_PATH = ".openjfx";
@@ -190,6 +190,7 @@ public class Constants {
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
     public static final String FXML_PROFILE_DIALOG = "profileDialog";
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
+    public static final String FXML_GAMMA_DIALOG = "gammaDialog";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
     public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
@@ -334,7 +335,7 @@ public class Constants {
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
     public static final String ACTIVATE_EVENT = "activate";
-    public static final int SERIAL_PARAMS = 27;
+    public static final int SERIAL_PARAMS = 26;
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
     public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
     public static final String CUDA_ERROR_TITLE = "cuda.error.title";
@@ -449,7 +450,11 @@ public class Constants {
     public static final String TOOLTIP_LATENCY_TEST = "tooltip.colorcorrection.latency.test";
     public static final String TOOLTIP_LATENCY_TEST_SPEED = "tooltip.colorcorrection.latency.test.speed";
     public static final String TOOLTIP_SETTINGS = "tooltip.colorcorrection.settings";
+    public static final String TOOLTIP_CD_INFO = "tooltip.colorcorrection.info";
+    public static final String TOOLTIP_OVERLAY = "tooltip.colorcorrection.overlay";
     public static final String TOOLTIP_GAMMA = "tooltip.gamma";
+    public static final String TOOLTIP_GAMMA_ENABLE_AUTO = "tooltip.gamma.enable.auto";
+    public static final String TOOLTIP_GAMMA_LEVEL = "tooltip.gamma.level";
     public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
     public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";
@@ -586,20 +591,30 @@ public class Constants {
     // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
     // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
+    public static final String CUSTOM_GSTREAMER_PIPELINE = System.getenv("CUSTOM_GSTREAMER_PIPELINE");
+    public static final String CUSTOM_GSTREAMER_CAPS = System.getenv("CUSTOM_GSTREAMER_CAPS");
+    public static final String CUSTOM_GSTREAMER_BO = System.getenv("CUSTOM_GSTREAMER_BO");
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11 = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! queue ! videoscale ! queue ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
-    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE min-buffers=2 ! videorate drop-only=true ! video/x-raw,framerate=FRAMERATE_PLACEHOLDER/1 ! videoscale ! videoconvert";
-    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE min-buffers=2 ! videorate drop-only=true ! video/x-raw,framerate=FRAMERATE_PLACEHOLDER/1 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! glupload ! glcolorscale ! glcolorconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! cudaupload ! cudascale ! cudaconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! vapostproc ! videorate drop-only=true";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     public static final String GSTREAMER_DDUPL = "DDUPL";
     // public static final String GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_DDUPL_DX12 = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_OPENGL = "video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
     public static final String BYTE_ORDER_RGB = "format=xRGB";
+    public static final String BYTE_ORDER_BGRA = "format=BGRA";
+    public static final String BYTE_ORDER_ARGB = "format=ARGB";
     public static final String RGB = "RGB Matrix";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
     public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
@@ -614,6 +629,19 @@ public class Constants {
     public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
+    public static final long SIMD_BENCHMARK_DURATION_MS = 120_000;
+    public static final String HDR = "HDR";
+    public static final String SDR = "SDR";
+    public static final double ADAPTIVE_GAMMA_FLOOR_SDR = 0.8;                    // minimum gamma multiplier on dark scenes
+    public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_SDR = 0.05;    // below this brightness, full adaptive gamma
+    public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_SDR = 0.15;  // above this brightness, classic gamma correction
+    public static final double ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_SDR = 0.05;
+    public static final double ADAPTIVE_GAMMA_FLOOR_HDR = 0.6;
+    public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_HDR = 0.05;
+    public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_HDR = 0.15;
+    public static final double ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_HDR = 0.15;
+    public static final double ADAPTIVE_GAMMA_SMOOTHING_FACTOR = 0.8;         // convergence speed: 0=no update, 1=instant
+    public static final double ADAPTIVE_GAMMA_DEAD_ZONE = 0.02;               // minimum gamma delta to trigger an update
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
@@ -660,9 +688,10 @@ public class Constants {
     public static final String UDP_DEVICE_NAME = "DN";
     public static final String UDP_DEVICE_NAME_STATIC = "DNStatic";
     public static final String UDP_PONG = "PONG";
-    public static final int DEFAULT_UDP_TRAFFIC_CLASS = 184;
-    public static final double UDP_CHUNK_SIZE = 140;
-    public static final int UDP_MAX_BUFFER_SIZE = 4096;
+    public static final int DEFAULT_UDP_TRAFFIC_CLASS = 160;
+    public static final int UDP_CHUNK_SIZE = 140; // this value must match with the one in Glow Worm Luciferin firmware
+    public static final int SAFE_PACKET_SIZE = UDP_CHUNK_SIZE * 10;
+    public static final int UDP_MAX_BUFFER_SIZE = SAFE_PACKET_SIZE + 50; // this value must match with the one in Glow Worm Luciferin firmware, less one
     public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
     // Audio
     public static final String WASAPI = "WASAPI";
@@ -683,6 +712,7 @@ public class Constants {
     public static final float HSL_TOLERANCE = 20.0F;
     public static final float GREY_TOLERANCE = 0.05F;
     public static final float DEGREE_360 = 360.0F;
+    public static final boolean USE_LOSSLESS_COMPRESSION = true;
     // Info
     public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
     public static final String INFO_WIFI_STRENGTH = "fxml.info.signal.strenght";
@@ -753,14 +783,14 @@ public class Constants {
     public static final String CSS_TRAY_SELECTIONBACKGROUND_KEY = "Menu.selectionBackground";
     public static final String CSS_TRAY_SELECTIONFOREGROUND = "tray_menu_selectionforeground";
     public static final String CSS_TRAY_SELECTIONFOREGROUND_KEY = "Menu.selectionForeground";
-
-
     public static final String CSS_COLOR_REGEX = "\\.([a-zA-Z0-9_-]+)\\s*\\{[^#]*#?([0-9a-fA-F]{6,8})[^}]*}";
     // Windows Registry and native commands
     public static final String NIGHT_LIGHT_KEY_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
     public static final String NIGHT_LIGHT_VALUE_NAME = "Data";
     public static final String CMD_POWERSHELL = "powershell.exe";
     public static final String CMD_SET_PRIORITY = "Get-WmiObject Win32_process -filter 'name = \\\"Firefly Luciferin.exe\\\"' | foreach-object { $_.SetPriority({0}) }";
+    public static final String REGISTRY_HDR_KEY_PATH = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\MonitorDataStore";
+    public static final String REGISTRY_HDR_VAL = "HDREnabled";
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
     public static final String REGISTRY_KEY_PATH_SCREEN_SAVER = "Control Panel\\Desktop";
     public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
@@ -788,6 +818,12 @@ public class Constants {
     public static String USB_NOT_AVAILABLE_HEADER = "usb.not.available.header";
     public static String USB_NOT_AVAILABLE_CONTENT = "usb.not.available.content";
     public static String USB_NOT_AVAILABLE_CONTENT_SNAP = "usb.not.available.content.snap";
+    // MCP
+    public static final String MCP_ENDPOINT = "/mcp";
+    public static final String MCP_JSONRPC_KEY = "jsonrpc";
+    public static final String MCP_JSONRPC_VERSION = "2.0";
+    public static final String MCP_PROTOCOL_VERSION = "2025-11-25";
+    public static final int MCP_DEFAULT_PORT = 33555;
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};

@@ -112,6 +112,8 @@ public class SettingsController {
     @FXML
     private EyeCareDialogController eyeCareDialogController;
     @FXML
+    private GammaDialogController gammaDialogController;
+    @FXML
     private ImprovDialogController improvDialogController;
     @FXML
     private ProfileDialogController profileDialogController;
@@ -518,6 +520,10 @@ public class SettingsController {
                 config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG.name());
             } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA) {
                 config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL) {
+                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_OPENGL) {
+                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name());
             }
         }
     }
@@ -775,7 +781,7 @@ public class SettingsController {
                 modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {
                 modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
-                        Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
+                        Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_OPENGL, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA, Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL);
             }
         }
         if (MainSingleton.getInstance().config != null) {
@@ -877,6 +883,9 @@ public class SettingsController {
             if (eyeCareDialogController != null) {
                 eyeCareDialogController.initDefaultValues();
             }
+            if (gammaDialogController != null) {
+                gammaDialogController.initDefaultValues();
+            }
             if (improvDialogController != null) {
                 improvDialogController.initDefaultValues();
             }
@@ -903,6 +912,9 @@ public class SettingsController {
         }
         if (eyeCareDialogController != null) {
             eyeCareDialogController.save(config);
+        }
+        if (gammaDialogController != null) {
+            gammaDialogController.save(config);
         }
         if (improvDialogController != null) {
             improvDialogController.save();
@@ -1096,6 +1108,15 @@ public class SettingsController {
      */
     public void injectEyeCareController(EyeCareDialogController eyeCareDialogController) {
         this.eyeCareDialogController = eyeCareDialogController;
+    }
+
+    /**
+     * Inject gamma dialogue controller into the main controller
+     *
+     * @param gammaDialogController dialog controller
+     */
+    public void injectGammaController(GammaDialogController gammaDialogController) {
+        this.gammaDialogController = gammaDialogController;
     }
 
     /**

@@ -204,14 +204,21 @@ public class PipelineManager {
      * @return params for Linux Pipeline
      */
     public static String getLinuxPipelineParams() {
+        MainSingleton main = MainSingleton.getInstance();
         String gstreamerPipeline;
         String pipeline;
-        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
-                || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
-            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())) {
-                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG;
+        if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())
+                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
+            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA);
+            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL);
+            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL);
             } else {
-                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA;
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG);
             }
             XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
             assert xdgStreamDetails != null;
@@ -220,32 +227,38 @@ public class PipelineManager {
                     .replace("{2}", xdgStreamDetails.streamId.toString());
         } else {
             // startx{0}, endx{1}, starty{2}, endy{3}
-            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
-                pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC;
+            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC);
             } else {
-                pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA;
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA);
             }
             DisplayManager displayManager = new DisplayManager();
             List<DisplayInfo> displayList = displayManager.getDisplayList();
-            DisplayInfo monitorInfo = displayList.get(MainSingleton.getInstance().config.getMonitorNumber());
+            DisplayInfo monitorInfo = displayList.get(main.config.getMonitorNumber());
             gstreamerPipeline = pipeline
                     .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
                     .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
                     .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
                     .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
         }
-        log.info(gstreamerPipeline);
+        log.debug("Pipeline: {}", gstreamerPipeline);
         return gstreamerPipeline;
     }
 
     /**
      * Message offered to the queue is sent to the LED strip, if multi screen single instance, is sent via TCP Socket to the main instance
+     * EMA and white balance run on full-precision values, converting to 8-bit only before serialization or offering to the queue.
      *
-     * @param leds colors to be sent to the LED strip
+     * @param ledsFloat color floats [0..255] to be sent to the LED strip
      */
-    public static void offerToTheQueue(Color[] leds) {
-        ImageProcessor.exponentialMovingAverage(leds);
-        ImageProcessor.adjustStripWhiteBalance(leds);
+    public static void offerToTheQueue(org.dpsoftware.grabber.ColorFloat[] ledsFloat) {
+        ImageProcessor.exponentialMovingAverage(ledsFloat);
+        ImageProcessor.adjustStripWhiteBalance(ledsFloat);
+        // Convert to 8-bit only here, final quantization point
+        Color[] leds = new Color[ledsFloat.length];
+        for (int i = 0; i < ledsFloat.length; i++) {
+            leds[i] = ledsFloat[i].toColor();
+        }
         if (CommonUtility.isSingleDeviceMultiScreen()) {
             if (NetworkSingleton.getInstance().msgClient == null) {
                 NetworkSingleton.getInstance().msgClient = new MessageClient();
@@ -581,6 +594,9 @@ public class PipelineManager {
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
             GrabberSingleton.getInstance().pipe.stop();
         }
@@ -597,6 +613,21 @@ public class PipelineManager {
         }
         AudioSingleton.getInstance().AUDIO_BRIGHTNESS = 255;
         MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
+    }
+
+    // Returns GSTREAMER_CUSTOM_PIPELINE env var if set, otherwise the default.
+    public static String getPipeline(final String defaultPipeline) {
+        return Constants.CUSTOM_GSTREAMER_PIPELINE != null ? Constants.CUSTOM_GSTREAMER_PIPELINE : defaultPipeline;
+    }
+
+    // Returns CUSTOM_GSTREAMER_CAPS env var if set, otherwise the default.
+    public static String getCap(final String defaultCap) {
+        return Constants.CUSTOM_GSTREAMER_CAPS != null ? Constants.CUSTOM_GSTREAMER_CAPS : defaultCap;
+    }
+
+    // Returns CUSTOM_GSTREAMER_BO env var if set, otherwise the default.
+    public static String getBo(final String defaultBo) {
+        return Constants.CUSTOM_GSTREAMER_BO != null ? Constants.CUSTOM_GSTREAMER_BO : defaultBo;
     }
 
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {

@@ -47,6 +47,8 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.grabber.SimdBenchmark;
 import org.dpsoftware.gui.bindings.notify.LibNotify;
 import org.dpsoftware.gui.controllers.*;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
@@ -475,7 +477,7 @@ public class GuiManager {
      *
      * @param dialog in use
      */
-    void setDialogTheme(Dialog<String> dialog) {
+    public void setDialogTheme(Dialog<String> dialog) {
         setStylesheet(dialog.getDialogPane().getStylesheets(), null);
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
     }
@@ -679,6 +681,14 @@ public class GuiManager {
             } else {
                 ((SmoothingDialogController) controller).initDefaultValues();
             }
+        }
+        if (classForCast == GammaDialogController.class) {
+            ((GammaDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((GammaDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((GammaDialogController) controller).initDefaultValues();
+            }
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
             ((SatellitesDialogController) controller).setTooltips();
@@ -768,6 +778,22 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SMOOTHING_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(SmoothingDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show gamma dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showGammaDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_GAMMA_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(GammaDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
@@ -990,6 +1016,7 @@ public class GuiManager {
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
+        if (GrabberSingleton.getInstance() != null) GrabberSingleton.getInstance().resetFlowRamp();
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = getStateDto();
             if (NativeExecutor.isLinux()) {
@@ -1024,6 +1051,7 @@ public class GuiManager {
      * Start capturing threads
      */
     public void startCapturingThreads() {
+        SimdBenchmark.resetSimdBenchmark();
         if (!MainSingleton.getInstance().communicationError) {
             if (!MainSingleton.getInstance().RUNNING) {
                 trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);

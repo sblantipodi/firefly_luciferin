@@ -55,6 +55,8 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.gui.tc.RleVisualMapHandler;
+import org.dpsoftware.gui.tc.TcInteractionHandler;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.ColorRGBW;
@@ -81,7 +83,7 @@ public class TestCanvas {
     public boolean tooltipVisible;
     GraphicsContext gc;
     Canvas canvas;
-    Stage stage;
+    public Stage stage;
     double stageX;
     double stageY;
     int imageHeight, itemsPositionY;
@@ -89,9 +91,37 @@ public class TestCanvas {
     private int lineWidth;
     private ColorCorrectionDialogController colorCorrectionDialogController;
     private TcInteractionHandler interactionHandler;
+    private RleVisualMapHandler rleVisualMapHandler;
     private List<Configuration> configHistory;
     private int configHistoryIdx = 1;
     private int dialogY;
+    private boolean rleVisualMapVisible;
+
+    /**
+     * Forwarding getters/setters for RLE overlay state (owned by {@link RleVisualMapHandler}).
+     * Kept here so that {@link TcInteractionHandler} and other callers continue to work without changes.
+     */
+    public Rectangle2D getRleOverlayXBounds() {
+        return rleVisualMapHandler != null ? rleVisualMapHandler.getRleOverlayXBounds() : null;
+    }
+
+    public Rectangle2D getRleOverlayPanelBounds() {
+        return rleVisualMapHandler != null ? rleVisualMapHandler.getRleOverlayPanelBounds() : null;
+    }
+
+    public double getRleOverlayYOffset() {
+        return rleVisualMapHandler != null ? rleVisualMapHandler.getRleOverlayYOffset() : 0;
+    }
+
+    public void setRleOverlayYOffset(double offset) {
+        if (rleVisualMapHandler != null) {
+            rleVisualMapHandler.setRleOverlayYOffset(offset);
+        }
+    }
+
+    public boolean isRleOverlayOnlyMode() {
+        return rleVisualMapHandler != null && rleVisualMapHandler.isRleOverlayOnlyMode();
+    }
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
@@ -128,9 +158,10 @@ public class TestCanvas {
         stage = new Stage();
         stage.initOwner(settingStage);
         stage.initStyle(StageStyle.TRANSPARENT);
-        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.initModality(Modality.NONE);
         stage.setAlwaysOnTop(false);
         interactionHandler = new TcInteractionHandler(this);
+        rleVisualMapHandler = new RleVisualMapHandler(this);
         interactionHandler.manageCanvasKeyPressed(0);
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, 0);
@@ -239,17 +270,6 @@ public class TestCanvas {
         if (stage != null) {
             colorCorrectionDialogController = (ColorCorrectionDialogController) stage.getProperties().get(Constants.FXML_COLOR_CORRECTION_DIALOG);
         }
-    }
-
-    /**
-     * Hide test image canvas
-     */
-    public void hideCanvas() {
-        stage.setFullScreen(false);
-        stage.hide();
-        stage.setX(stageX);
-        stage.setY(stageY);
-        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
     }
 
     /**
@@ -373,57 +393,16 @@ public class TestCanvas {
         gc.fillText(text, x, y);
     }
 
-    /**
-     * DisplayInfo a canvas, useful to test LED matrix
-     *
-     * @param conf       stored config
-     * @param saturation use full or half saturation, this is influenced by the combo box
+    /*
+     * Hide test image canvas
      */
-    public void drawTestShapes(Configuration conf, int saturation) {
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-        float saturationToUse;
-        switch (saturation) {
-            case 1 -> saturationToUse = 0.75F;
-            case 2 -> saturationToUse = 0.50F;
-            case 3 -> saturationToUse = 0.25F;
-            case 4 -> saturationToUse = 0.15F;
-            case 5 -> saturationToUse = 0.99F;
-            default -> saturationToUse = 1.0F;
-        }
-        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        int scaleRatio = conf.getOsScaling();
-        // 50% opacity if dragging
-        if (interactionHandler.isCanvasClicked()) {
-            drawLogo(conf, scaleRatio);
-            gc.setFill(Color.BLACK);
-            gc.setFill(new Color(0, 0, 0, 0.5));
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        } else {
-            gc.setFill(Color.BLACK);
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            drawLogo(conf, scaleRatio);
-        }
-        drawFireflyText();
-        gc.setFill(Color.GREEN);
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(INITIAL_TILE_DISTANCE);
-        gc.stroke();
-        List<Integer> numbersList = new ArrayList<>();
-        ledMatrix.forEach((key, coordinate) -> {
-            if (!coordinate.isGroupedLed()) {
-                String ledNum = drawNumLabel(conf, key);
-                numbersList.add(Integer.parseInt(ledNum.replace("#", "")));
-            }
-        });
-        Collections.sort(numbersList);
-        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
-        interactionHandler.enableDragging(conf, ledMatrix, saturation);
-        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
-        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
-        if (tooltipVisible) {
-            drawTooltip(gc);
-        }
+    public void hideCanvas() {
+        rleVisualMapHandler.stopOverlayOnlyMode();
+        stage.setFullScreen(false);
+        stage.hide();
+        stage.setX(stageX);
+        stage.setY(stageY);
+        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
     }
 
     /**
@@ -579,6 +558,35 @@ public class TestCanvas {
     }
 
     /**
+     * Draw a circular close button with an "X" glyph, used both by the tooltip overlay
+     * and by the RLE visual map overlay so both share the exact same look and feel.
+     *
+     * @param x    top-left x position of the button
+     * @param y    top-left y position of the button
+     * @param size button width/height (square)
+     * @return the bounds of the drawn button, useful for hit-testing clicks
+     */
+    public Rectangle2D drawCloseButton(double x, double y, double size) {
+        LinearGradient closeBtnGradient = new LinearGradient(
+                0, y, 0, y + size, false, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.rgb(50, 50, 50)),
+                new Stop(1, Color.rgb(20, 20, 20))
+        );
+        gc.setFill(closeBtnGradient);
+        gc.fillRoundRect(x, y, size, size, 4, 4);
+        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
+        gc.setLineWidth(1);
+        gc.strokeRoundRect(x, y, size, size, 4, 4);
+        // Draw "X"
+        gc.setStroke(Color.rgb(255, 255, 255, 0.9));
+        gc.setLineWidth(2);
+        double margin = size * (4.0 / 18.0);
+        gc.strokeLine(x + margin, y + margin, x + size - margin, y + size - margin);
+        gc.strokeLine(x + margin, y + size - margin, x + size - margin, y + margin);
+        return new Rectangle2D(x, y, size, size);
+    }
+
+    /**
      * Draw tooltip
      *
      * @param gc gc
@@ -625,25 +633,7 @@ public class TestCanvas {
         double closeBtnSize = 18;
         double closeBtnX = x + boxWidth - closeBtnSize - 6;
         double closeBtnY = y + 6;
-        LinearGradient closeBtnGradient = new LinearGradient(
-                0, closeBtnY, 0, closeBtnY + closeBtnSize, false, CycleMethod.NO_CYCLE,
-                new Stop(0, Color.rgb(50, 50, 50)),
-                new Stop(1, Color.rgb(20, 20, 20))
-        );
-        gc.setFill(closeBtnGradient);
-        gc.fillRoundRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize, 4, 4);
-        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
-        gc.setLineWidth(1);
-        gc.strokeRoundRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize, 4, 4);
-        // Draw "X"
-        gc.setStroke(Color.rgb(255, 255, 255, 0.9));
-        gc.setLineWidth(2);
-        double margin = 4;
-        gc.strokeLine(closeBtnX + margin, closeBtnY + margin,
-                closeBtnX + closeBtnSize - margin, closeBtnY + closeBtnSize - margin);
-        gc.strokeLine(closeBtnX + margin, closeBtnY + closeBtnSize - margin,
-                closeBtnX + closeBtnSize - margin, closeBtnY + margin);
-        this.closeBtnBounds = new Rectangle2D(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize);
+        this.closeBtnBounds = drawCloseButton(closeBtnX, closeBtnY, closeBtnSize);
         double textY = y + padding + (boxHeight - 2 * padding - textHeight) / 2 + lineHeights[0] / 2;
         for (int i = 0; i < lines.length; i++) {
             gc.setFill(Color.WHITE);
@@ -662,7 +652,7 @@ public class TestCanvas {
      * @param zoneName zone name
      * @return new led coordinate
      */
-    LEDCoordinate getLedCoordinate(LEDCoordinate c, String zoneName) {
+    public LEDCoordinate getLedCoordinate(LEDCoordinate c, String zoneName) {
         int canvasWidth = (int) canvas.getWidth();
         int canvasHeight = (int) canvas.getHeight();
         int newX;
@@ -770,6 +760,82 @@ public class TestCanvas {
         if (MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemsPositionY += rowHeight;
         }
+    }
+
+    /**
+     * DisplayInfo a canvas, useful to test LED matrix
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    public void drawTestShapes(Configuration conf, int saturation) {
+        if (isRleOverlayOnlyMode()) {
+            rleVisualMapHandler.drawOverlayOnly();
+            return;
+        }
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+        float saturationToUse;
+        switch (saturation) {
+            case 1 -> saturationToUse = 0.75F;
+            case 2 -> saturationToUse = 0.50F;
+            case 3 -> saturationToUse = 0.25F;
+            case 4 -> saturationToUse = 0.15F;
+            case 5 -> saturationToUse = 0.99F;
+            default -> saturationToUse = 1.0F;
+        }
+        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        int scaleRatio = conf.getOsScaling();
+        // 50% opacity if dragging
+        if (interactionHandler.isCanvasClicked()) {
+            drawLogo(conf, scaleRatio);
+            gc.setFill(Color.BLACK);
+            gc.setFill(new Color(0, 0, 0, 0.5));
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        } else {
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawLogo(conf, scaleRatio);
+        }
+        drawFireflyText();
+        gc.setFill(Color.GREEN);
+        gc.setStroke(Color.BLUE);
+        gc.setLineWidth(INITIAL_TILE_DISTANCE);
+        gc.stroke();
+        List<Integer> numbersList = new ArrayList<>();
+        ledMatrix.forEach((key, coordinate) -> {
+            if (!coordinate.isGroupedLed()) {
+                String ledNum = drawNumLabel(conf, key);
+                numbersList.add(Integer.parseInt(ledNum.replace("#", "")));
+            }
+        });
+        Collections.sort(numbersList);
+        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
+        interactionHandler.enableDragging(conf, ledMatrix, saturation);
+        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
+        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
+        if (tooltipVisible) {
+            drawTooltip(gc);
+        }
+        if (rleVisualMapVisible) {
+            rleVisualMapHandler.drawRleVisualMap();
+        }
+    }
+
+    public void updateStageBounds() {
+        rleVisualMapHandler.updateStageBounds();
+    }
+
+    public void startOverlayOnlyMode() {
+        rleVisualMapHandler.startOverlayOnlyMode();
+    }
+
+    public void stopOverlayOnlyMode() {
+        rleVisualMapHandler.stopOverlayOnlyMode();
+    }
+
+    public void drawOverlayOnly() {
+        rleVisualMapHandler.drawOverlayOnly();
     }
 
 }

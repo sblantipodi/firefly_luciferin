@@ -478,6 +478,30 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if HDR is active
+     */
+    public static boolean isHdrActive() {
+        if (isWindows()) {
+            try {
+                String baseKey = Constants.REGISTRY_HDR_KEY_PATH;
+                String[] subKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, baseKey);
+                for (String monitorKey : subKeys) {
+                    String fullKey = baseKey + "\\" + monitorKey;
+                    if (Advapi32Util.registryValueExists(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL)) {
+                        int hdrEnabled = Advapi32Util.registryGetIntValue(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL);
+                        if (hdrEnabled == 1) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("HDR registry check failed", e);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Single Instruction Multiple Data - Advanced Vector Extensions
      * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
      */
@@ -517,23 +541,27 @@ public final class NativeExecutor {
                 nightLightEnabled = true;
             }
         } else if (NativeExecutor.isLinux()) {
-            try {
-                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-                Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
-                if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
-                    nightLightEnabled = true;
+            try (DBusConnection connection = DBusConnectionBuilder.forSessionBus().build()) {
+                try {
+                    Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
+                    if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
+                        nightLightEnabled = true;
+                    }
+                } catch (Exception e) {
+                    log.debug("KDE nightlight DBus check failed", e);
                 }
-                connection.close();
-            } catch (Exception ignored) {
-            }
-            try {
-                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-                Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
-                if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
-                    nightLightEnabled = true;
+                if (!nightLightEnabled) {
+                    try {
+                        Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
+                        if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
+                            nightLightEnabled = true;
+                        }
+                    } catch (Exception e) {
+                        log.debug("GNOME nightlight DBus check failed", e);
+                    }
                 }
-                connection.close();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.debug("DBus session bus connection failed", e);
             }
         }
         return nightLightEnabled;

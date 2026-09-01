@@ -23,7 +23,6 @@ package org.dpsoftware.network;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -84,10 +83,9 @@ public class MessageClient {
                 MainSingleton.getInstance().FPS_GW_CONSUMER = Float.parseFloat(stateStatusDto.get(Constants.FPS_GW_CONSUMER).asText());
                 // Update device table data
                 GuiSingleton.getInstance().deviceTableData.remove(0, GuiSingleton.getInstance().deviceTableData.size());
-                ObjectMapper mapper = new ObjectMapper();
                 JsonNode arrayNode = stateStatusDto.get(Constants.DEVICE_TABLE_DATA);
                 if (arrayNode.isArray()) {
-                    ObjectReader reader = mapper.readerFor(new TypeReference<List<GlowWormDevice>>() {
+                    ObjectReader reader = CommonUtility.JSON_MAPPER.readerFor(new TypeReference<List<GlowWormDevice>>() {
                     });
                     List<GlowWormDevice> list = reader.readValue(arrayNode);
                     GuiSingleton.getInstance().deviceTableData.addAll(list);
