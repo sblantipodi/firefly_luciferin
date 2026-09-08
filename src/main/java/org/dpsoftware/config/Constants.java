@@ -603,6 +603,10 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! cudaupload ! cudascale ! cudaconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! vapostproc ! videorate drop-only=true";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC = "v4l2src ! videorate ! image/jpeg ! jpegdec ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! glupload ! glcolorscale ! glcolorconvert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA = "v4l2src ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! cudaupload ! cudascale ! cudaconvert ! cudadownload ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_DDUPL = "DDUPL";
     // public static final String GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
@@ -611,6 +615,10 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_OPENGL = "video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC_OPENGL = "video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
     public static final String BYTE_ORDER_RGB = "format=xRGB";
     public static final String BYTE_ORDER_BGRA = "format=BGRA";
