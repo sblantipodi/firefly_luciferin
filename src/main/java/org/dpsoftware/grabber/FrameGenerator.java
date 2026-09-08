@@ -71,8 +71,8 @@ public class FrameGenerator {
     public void frameGeneration(ColorFloat[] leds) {
         MainSingleton main = MainSingleton.getInstance();
         int skipFastFramesMs = 8;
-        int targetFramerate = main.config.getSmoothingTargetFramerate();
-        int gpuFramerateFps = main.config.getFrameInsertionTarget();
+        int targetFramerate = main.getConfig().getSmoothingTargetFramerate();
+        int gpuFramerateFps = main.getConfig().getFrameInsertionTarget();
         if (targetFramerate == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
             skipFastFramesMs /= 2;
             gpuFramerateFps *= 2;
