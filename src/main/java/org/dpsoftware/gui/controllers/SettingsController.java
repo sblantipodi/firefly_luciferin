@@ -820,13 +820,17 @@ public class SettingsController {
             modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
         } else {
             if (currentConfig.getExtSrcFriendlyName().isEmpty()) {
-                modeTabController.captureMethod.getItems().addAll(
-                        Configuration.CaptureMethod.XIMAGESRC,
-                        Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
-                        Configuration.CaptureMethod.PIPEWIREXDG,
-                        Configuration.CaptureMethod.PIPEWIREXDG_OPENGL,
-                        Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA,
-                        Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL);
+                if (NativeExecutor.isWayland()) {
+                    modeTabController.captureMethod.getItems().addAll(
+                            Configuration.CaptureMethod.PIPEWIREXDG,
+                            Configuration.CaptureMethod.PIPEWIREXDG_OPENGL,
+                            Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA,
+                            Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL);
+                } else {
+                    modeTabController.captureMethod.getItems().addAll(
+                            Configuration.CaptureMethod.XIMAGESRC,
+                            Configuration.CaptureMethod.XIMAGESRC_NVIDIA);
+                }
             } else {
                 modeTabController.captureMethod.getItems().addAll(
                         Configuration.CaptureMethod.USB_VIDEO,
@@ -1075,6 +1079,7 @@ public class SettingsController {
     private void setModeTabParams(Configuration currentSettingsInUse) {
         if (currentSettingsInUse != null) {
             currentSettingsInUse.setTheme(modeTabController.theme.getValue());
+            currentSettingsInUse.setExtSrcFriendlyName(modeTabController.monitorNumber.getValue());
             currentSettingsInUse.setBaudRate(modeTabController.baudRate.getValue());
             currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
             currentSettingsInUse.setLanguage(modeTabController.language.getValue());

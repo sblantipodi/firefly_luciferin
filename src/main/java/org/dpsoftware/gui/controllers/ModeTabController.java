@@ -156,23 +156,23 @@ public class ModeTabController {
                         case XIMAGESRC_NVIDIA -> Configuration.CaptureMethod.XIMAGESRC_NVIDIA.getCaptureMethod();
                         case PIPEWIREXDG -> Configuration.CaptureMethod.PIPEWIREXDG.getCaptureMethod();
                         case PIPEWIREXDG_NVIDIA -> Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.getCaptureMethod();
-                        case PIPEWIREXDG_AMD_INTEL ->
-                                Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.getCaptureMethod();
+                        case PIPEWIREXDG_AMD_INTEL -> Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.getCaptureMethod();
                         case PIPEWIREXDG_OPENGL -> Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.getCaptureMethod();
                         case USB_VIDEO -> Configuration.CaptureMethod.USB_VIDEO.getCaptureMethod();
                         case USB_VIDEO_OPENGL -> Configuration.CaptureMethod.USB_VIDEO_OPENGL.getCaptureMethod();
                         case USB_VIDEO_NVIDIA -> Configuration.CaptureMethod.USB_VIDEO_NVIDIA.getCaptureMethod();
                         case USB_VIDEO_AMD_INTEL -> Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.getCaptureMethod();
-                        default -> null;
+                        default -> Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod()).getCaptureMethod();
                     };
                 } else {
-                    return Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.getCaptureMethod();
+                    return Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod()).getCaptureMethod();
                 }
             }
 
             @Override
             public Configuration.CaptureMethod fromString(String string) {
-                return null;
+                if (string == null || string.isEmpty()) return null;
+                else return Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod());
             }
         });
     }
@@ -434,7 +434,12 @@ public class ModeTabController {
         });
         firmTypeFull.setOnAction(_ -> firmTypeEvaluation());
         firmTypeLight.setOnAction(_ -> firmTypeEvaluation());
-        monitorNumber.valueProperty().addListener((_, _, _) -> monitorAction());
+        monitorNumber.valueProperty().addListener((_, oldVal, newVal) -> {
+            if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
+                monitorAction();
+                settingsController.checkProfileDifferences();
+            }
+        });
         serialPort.valueProperty().addListener((_, oldVal, newVal) -> {
             if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
                 settingsController.checkProfileDifferences();
