@@ -586,6 +586,11 @@ public class Constants {
     public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
     public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
     public static final String SCREEN_GRABBER = "FireflyLuciferin";
+    // GL env
+    public static final String GST_GL_WINDOW = "GST_GL_WINDOW";
+    public static final String GST_GL_PLATFORM = "GST_GL_PLATFORM";
+    public static final String X11 = "x11";
+    public static final String GLX = "glx";
     // GStreamer System Env Overrides
     public static final String CUSTOM_GSTREAMER_PIPELINE = System.getenv("CUSTOM_GSTREAMER_PIPELINE");
     public static final String CUSTOM_GSTREAMER_CAPS = System.getenv("CUSTOM_GSTREAMER_CAPS");
@@ -596,14 +601,14 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! queue ! videoscale ! queue ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! videoscale ! videoconvert";
-    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! glupload ! glcolorscale ! glcolorconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! glupload ! glcolorconvert ! glcolorscale ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! gldownload ! videoconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! cudaupload ! cudascale ! cudaconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! vapostproc ! videorate drop-only=true";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     // GStreamer Pipelines External Sources
     public static final String GSTREAMER_PIPELINE_WINDOWS_EXT_SRC = "mfvideosrc device-name=\"{0}\" ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12upload ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! videoscale ! videoconvert";
-    public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! glupload ! glcolorscale ! glcolorconvert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! glupload ! glcolorconvert ! glcolorscale ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! gldownload ! videoconvert";
     public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! cudaupload ! cudascale ! cudaconvert ! cudadownload ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_DDUPL = "DDUPL";
@@ -611,13 +616,13 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_DDUPL_DX12 = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String GSTREAMER_PIPELINE_OPENGL = "video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_OPENGL = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     // GStreamer Caps External Sources
     public static final String GSTREAMER_PIPELINE_WINDOWS_ETX_SRC = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_ETX_SRC = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String GSTREAMER_PIPELINE_ETX_SRC_OPENGL = "video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC_OPENGL = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_ETX_SRC_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_ETX_SRC_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     // GStreamer Format Caps
