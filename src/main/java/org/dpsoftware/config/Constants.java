@@ -602,10 +602,10 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     // GStreamer Pipelines External Sources
     public static final String GSTREAMER_PIPELINE_WINDOWS_EXT_SRC = "mfvideosrc device-name=\"{0}\" ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12upload ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
-    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC = "v4l2src ! videorate ! image/jpeg ! jpegdec ! videoscale ! videoconvert";
-    public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! glupload ! glcolorscale ! glcolorconvert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
-    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA = "v4l2src ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! cudaupload ! cudascale ! cudaconvert ! cudadownload ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
-    public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! glupload ! glcolorscale ! glcolorconvert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! cudaupload ! cudascale ! cudaconvert ! cudadownload ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_DDUPL = "DDUPL";
     // GStreamer Caps
     public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
@@ -838,6 +838,7 @@ public class Constants {
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
+    public static final String[] CMD_USB_DEVIE_CHECK = {"/bin/sh", "-c", "ls -1 /dev/video*"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};
     public static final String[] CURL_HEAD_LINUX = {"curl", "-I", "--max-time", "4"};

@@ -142,6 +142,7 @@ public class GrabberManager {
                         } else if (NativeExecutor.isLinux()) {
                             int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
                             String runtimeParams = finalLinuxParams
+                                    .replace("{0}", main.getConfig().getExtSrcFriendlyName())
                                     .replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime))
                                     .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
                             bin = Gst.parseBinFromDescription(runtimeParams, true);
