@@ -102,6 +102,7 @@ public class GrabberManager {
      * @param imageProcessor image processor utility
      */
     public void launchAdvancedGrabber(ImageProcessor imageProcessor) {
+        MainSingleton main = MainSingleton.getInstance();
         AtomicInteger restartCounter = new AtomicInteger();
         imageProcessor.initGStreamerLibraryPaths();
         //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
@@ -113,7 +114,7 @@ public class GrabberManager {
         }
         String finalLinuxParams = linuxParams;
         Gst.getExecutor().scheduleAtFixedRate(() -> {
-            if (!ManagerSingleton.getInstance().pipelineStopping && MainSingleton.getInstance().RUNNING && MainSingleton.getInstance().FPS_PRODUCER_COUNTER == 0) {
+            if (!ManagerSingleton.getInstance().pipelineStopping && main.RUNNING && main.FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
                 if (GrabberSingleton.getInstance().pipe == null || !GrabberSingleton.getInstance().pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (GrabberSingleton.getInstance().pipe != null) {
@@ -130,11 +131,13 @@ public class GrabberManager {
                         GrabberSingleton.getInstance().pipe = new Pipeline();
                         if (NativeExecutor.isWindows()) {
                             DisplayManager displayManager = new DisplayManager();
-                            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
-                            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+                            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(main.getConfig().getMonitorNumber()).getNativePeer());
+                            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
                                 bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11).replace("{0}", monitorNativePeer), true);
-                            } else {
+                            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
                                 bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12).replace("{0}", monitorNativePeer), true);
+                            } else {
+                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC).replace("{0}", main.getConfig().getExtSrcFriendlyName()), true);
                             }
                         } else if (NativeExecutor.isLinux()) {
                             int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
@@ -151,7 +154,7 @@ public class GrabberManager {
                     Pipeline.linkMany(bin, vc.getElement());
                     JFrame f = new JFrame(Constants.SCREEN_GRABBER);
                     JPanel panel = new JPanel();
-                    panel.setPreferredSize(new Dimension(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getScreenResY()));
+                    panel.setPreferredSize(new Dimension(main.getConfig().getScreenResX(), main.getConfig().getScreenResY()));
                     panel.setBackground(Color.BLACK);
                     f.add(panel);
                     f.pack();
