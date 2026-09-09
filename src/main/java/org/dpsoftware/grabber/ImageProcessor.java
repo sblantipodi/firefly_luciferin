@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.grabber;
 
+import com.sun.jna.Library;
+import com.sun.jna.Native;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
 import lombok.extern.slf4j.Slf4j;
@@ -1066,6 +1068,17 @@ public class ImageProcessor {
                     System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + gstPath);
                 }
             }
+        } else if (NativeExecutor.isLinux()) {
+            try {
+                if (System.getenv(Constants.GST_GL_WINDOW) == null) {
+                    LinuxLibC.INSTANCE.setenv(Constants.GST_GL_WINDOW, Constants.X11, 0);
+                }
+                if (System.getenv(Constants.GST_GL_PLATFORM) == null) {
+                    LinuxLibC.INSTANCE.setenv(Constants.GST_GL_PLATFORM, Constants.GLX, 0);
+                }
+            } catch (Throwable t) {
+                log.warn("Could not set GStreamer GL environment variables: {}", t.getMessage());
+            }
         }
         String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
         if (jnaPath.isEmpty()) {
@@ -1073,6 +1086,14 @@ public class ImageProcessor {
         } else {
             System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + libPath);
         }
+    }
+
+    /**
+     * Set OpenGL environment
+     */
+    private interface LinuxLibC extends Library {
+        LinuxLibC INSTANCE = Native.load("c", LinuxLibC.class);
+        int setenv(String name, String value, int overwrite);
     }
 
     /**
