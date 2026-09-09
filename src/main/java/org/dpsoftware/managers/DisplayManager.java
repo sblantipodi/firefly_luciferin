@@ -299,7 +299,7 @@ public class DisplayManager {
             CommonUtility.delayMilliseconds(() -> {
                 List<String> extSrcFriendlyNames = new ArrayList<>();
                 String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_GET_EXT_SRC};
-                List<String> rawOutput = NativeExecutor.runNative(cmd, 5000);
+                List<String> rawOutput = NativeExecutor.runNative(cmd, Constants.CMD_WAIT_DELAY);
                 String json = String.join(" ", rawOutput);
                 try {
                     JsonNode node = CommonUtility.JSON_MAPPER.readTree(json);
@@ -318,8 +318,12 @@ public class DisplayManager {
                 Platform.runLater(() -> onComplete.accept(extSrcFriendlyNames));
             }, 10);
         } else {
-            onComplete.accept(new ArrayList<>());
+            CommonUtility.delayMilliseconds(() -> {
+                List<String> rawOutput = NativeExecutor.runNative(Constants.CMD_USB_DEVIE_CHECK, Constants.CMD_WAIT_DELAY);
+                Platform.runLater(() -> onComplete.accept(rawOutput));
+            }, 10);
         }
+        onComplete.accept(new ArrayList<>());
     }
 
 }
