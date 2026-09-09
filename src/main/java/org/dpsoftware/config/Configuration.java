@@ -104,6 +104,7 @@ public class Configuration implements Cloneable {
     private int ledStartOffset = 0;
     private int leftLed;
     private int monitorNumber = 1;
+    private String extSrcFriendlyName = "";
     private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
     private String mqttPwd = "";
@@ -230,14 +231,19 @@ public class Configuration implements Cloneable {
     public enum CaptureMethod {
         CPU("CPU"),
         WinAPI("WinAPI"),
-        DDUPL_DX11("DDUPL (DX11)"),
-        DDUPL_DX12("DDUPL (DX12)"),
-        XIMAGESRC("XIMAGESRC"),
-        XIMAGESRC_NVIDIA("XIMAGESRC (NVIDIA)"),
-        PIPEWIREXDG("PIPEWIREXDG"),
-        PIPEWIREXDG_OPENGL("PIPEWIREXDG (OpenGL)"),
-        PIPEWIREXDG_NVIDIA("PIPEWIREXDG (NVIDIA)"),
-        PIPEWIREXDG_AMD_INTEL("PIPEWIREXDG (AMD/INTEL)"),
+        DDUPL_DX11("DX11 GPU"),
+        DDUPL_DX12("DX12 GPU"),
+        WIN_USB_VIDEO("USB VIDEO"),
+        XIMAGESRC("CPU"),
+        XIMAGESRC_NVIDIA("NVIDIA GPU"),
+        PIPEWIREXDG("CPU"),
+        PIPEWIREXDG_OPENGL("OpenGL GPU"),
+        PIPEWIREXDG_NVIDIA("NVIDIA GPU"),
+        PIPEWIREXDG_AMD_INTEL("AMD/INTEL GPU"),
+        USB_VIDEO("CPU"),
+        USB_VIDEO_OPENGL("OpenGL GPU"),
+        USB_VIDEO_NVIDIA("NVIDIA GPU"),
+        USB_VIDEO_AMD_INTEL("AMD/INTEL GPU"),
         AVFVIDEOSRC("AVFVIDEOSRC");
         private final String captureMethod;
 

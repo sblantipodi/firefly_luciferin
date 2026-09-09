@@ -207,16 +207,28 @@ public class PipelineManager {
         MainSingleton main = MainSingleton.getInstance();
         String gstreamerPipeline;
         String pipeline;
-        if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
-                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
-                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())
-                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
-            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
+        if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
+            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA);
-            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL);
-            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL);
             } else {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG);
             }
@@ -227,14 +239,14 @@ public class PipelineManager {
                     .replace("{2}", xdgStreamDetails.streamId.toString());
         } else {
             // startx{0}, endx{1}, starty{2}, endy{3}
-            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
+            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC);
             } else {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA);
             }
             DisplayManager displayManager = new DisplayManager();
             List<DisplayInfo> displayList = displayManager.getDisplayList();
-            DisplayInfo monitorInfo = displayList.get(main.config.getMonitorNumber());
+            DisplayInfo monitorInfo = displayList.get(main.getConfig().getMonitorNumber());
             gstreamerPipeline = pipeline
                     .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
                     .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
@@ -592,11 +604,16 @@ public class PipelineManager {
         MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
         if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.WIN_USB_VIDEO.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
             GrabberSingleton.getInstance().pipe.stop();
         }

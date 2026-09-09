@@ -79,43 +79,54 @@ public class GStreamerGrabber {
     public GStreamerGrabber(AppSink appsink) {
         MainSingleton main = MainSingleton.getInstance();
         this.videosink = appsink;
-        ledMatrix = main.config.getLedMatrixInUse(main.config.getDefaultLedMatrix());
+        ledMatrix = main.getConfig().getLedMatrixInUse(main.getConfig().getDefaultLedMatrix());
         frameGenerator = new FrameGenerator(ledMatrix.size());
         videosink.set(Constants.EMIT_SIGNALS, true);
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
         String gstreamerPipeline;
-        if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
-                || main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
+        if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.WIN_USB_VIDEO.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR
             String gstPipelineStr;
-            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
                 gstPipelineStr = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_DDUPL_DX11);
-            } else {
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
                 gstPipelineStr = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_DDUPL_DX12);
+            } else {
+                gstPipelineStr = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_WINDOWS_ETX_SRC);
             }
             gstreamerPipeline = gstPipelineStr.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
+                            String.valueOf(main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor()))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor()));
         } else {
-            if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
+            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_CUDA);
-            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_AMD_INTEL);
-            } else if (main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_OPENGL);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC_OPENGL);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC_CUDA);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC_AMD_INTEL);
             } else {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE);
             }
             gstreamerPipeline = gstreamerPipeline.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(main.config.getScreenResX() / main.config.getResamplingFactor()))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.config.getScreenResY() / main.config.getResamplingFactor()));
+                            String.valueOf(main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor()))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor()));
         }
         gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
-        if (!(main.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
-            boolean isAmdIntel = main.config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name());
+        if (!(main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
+            boolean isAmdIntel = main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name());
             if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
                 caps.append(PipelineManager.getBo(isAmdIntel ? Constants.BYTE_ORDER_BGRA : Constants.BYTE_ORDER_BGR));
             } else {
@@ -144,17 +155,17 @@ public class GStreamerGrabber {
     public static int getTargetFramerate() {
         MainSingleton main = MainSingleton.getInstance();
         String targetFramerate;
-        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, main.config.getDesiredFramerate()))) {
-            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, main.config.getDesiredFramerate());
-            targetFramerate = framerateToSave != null ? framerateToSave.getBaseI18n() : main.config.getDesiredFramerate();
+        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, main.getConfig().getDesiredFramerate()))) {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, main.getConfig().getDesiredFramerate());
+            targetFramerate = framerateToSave != null ? framerateToSave.getBaseI18n() : main.getConfig().getDesiredFramerate();
         } else {
             targetFramerate = Constants.FRAMERATE_CAP;
         }
-        if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getFrameInsertionTarget() > 0) {
-            int target = main.config.getFrameInsertionTarget();
-            if (main.config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
+        if (!main.getConfig().getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.getConfig().getFrameInsertionTarget() > 0) {
+            int target = main.getConfig().getFrameInsertionTarget();
+            if (main.getConfig().getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
                 target *= 2;
-            } else if (main.config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
+            } else if (main.getConfig().getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
                 target /= 2;
             }
             targetFramerate = String.valueOf(target);
@@ -170,10 +181,10 @@ public class GStreamerGrabber {
     public static long getTargetFramerateForDevice() {
         MainSingleton main = MainSingleton.getInstance();
         int targetFramerate;
-        if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getSmoothingTargetFramerate() > 0) {
-            targetFramerate = main.config.getSmoothingTargetFramerate();
+        if (!main.getConfig().getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.getConfig().getSmoothingTargetFramerate() > 0) {
+            targetFramerate = main.getConfig().getSmoothingTargetFramerate();
         } else {
-            targetFramerate = Integer.parseInt(main.config.getDesiredFramerate());
+            targetFramerate = Integer.parseInt(main.getConfig().getDesiredFramerate());
         }
         return targetFramerate;
     }
@@ -195,8 +206,8 @@ public class GStreamerGrabber {
     private void intBufferRgbToImage(IntBuffer rgbBuffer) {
         MainSingleton main = MainSingleton.getInstance();
         capturedFrames++;
-        BufferedImage img = new BufferedImage(main.config.getScreenResX() / main.config.getResamplingFactor(),
-                main.config.getScreenResY() / main.config.getResamplingFactor(), 1);
+        BufferedImage img = new BufferedImage(main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor(),
+                main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor(), 1);
         int[] rgbArray = new int[rgbBuffer.capacity()];
         rgbBuffer.rewind();
         rgbBuffer.get(rgbArray);
@@ -446,10 +457,10 @@ public class GStreamerGrabber {
             ledMatrix.forEach((key, value) -> {
                 int r = 0, g = 0, b = 0;
                 int pickNumber = 0;
-                int xCoordinate = (value.getX() / main.config.getResamplingFactor());
-                int yCoordinate = (value.getY() / main.config.getResamplingFactor());
-                int pixelInUseX = value.getWidth() / main.config.getResamplingFactor();
-                int pixelInUseY = value.getHeight() / main.config.getResamplingFactor();
+                int xCoordinate = (value.getX() / main.getConfig().getResamplingFactor());
+                int yCoordinate = (value.getY() / main.getConfig().getResamplingFactor());
+                int pixelInUseX = value.getWidth() / main.getConfig().getResamplingFactor();
+                int pixelInUseY = value.getHeight() / main.getConfig().getResamplingFactor();
 
                 if (SPECIES != null && vectorLength > 0) {
                     if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
@@ -513,7 +524,7 @@ public class GStreamerGrabber {
             if (!bufferLock.tryLock()) {
                 return;
             }
-            if (main.config.isAutoDetectBlackBars()) {
+            if (main.getConfig().isAutoDetectBlackBars()) {
                 if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
                     GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = false;
                     ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
@@ -529,8 +540,8 @@ public class GStreamerGrabber {
                 ImageProcessor.averageOnAllLeds(leds);
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!main.exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
-                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, main.config.getEffect())))) {
-                    if (!main.config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.config.getFrameInsertionTarget() > 0) {
+                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, main.getConfig().getEffect())))) {
+                    if (!main.getConfig().getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.getConfig().getFrameInsertionTarget() > 0) {
                         frameGenerator.frameGeneration(leds);
                     } else {
                         PipelineManager.offerToTheQueue(leds);

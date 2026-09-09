@@ -87,26 +87,27 @@ public class FireflyLuciferin extends Application {
      */
     public FireflyLuciferin() {
         PropertiesLoader propertiesLoader = new PropertiesLoader();
-        MainSingleton.getInstance().formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
+        MainSingleton main = MainSingleton.getInstance();
+        main.formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
         // Extract project version computed from Continuous Integration (GitHub Actions)
-        MainSingleton.getInstance().version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
+        main.version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
         Locale currentLocale = Locale.getDefault();
-        MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
-        if (MainSingleton.getInstance().bundle.getLocale().toString().isEmpty()) {
-            MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, Locale.ENGLISH);
+        main.bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
+        if (main.bundle.getLocale().toString().isEmpty()) {
+            main.bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, Locale.ENGLISH);
         }
         String ledMatrixInUse = "";
         try {
             StorageManager storageManager = new StorageManager();
             MainSingleton.getInstance().config = storageManager.loadConfigurationYaml();
-            ledMatrixInUse = MainSingleton.getInstance().config.getDefaultLedMatrix();
+            ledMatrixInUse = main.getConfig().getDefaultLedMatrix();
         } catch (NullPointerException e) {
             log.error("Please configure the app.");
             NativeExecutor.exit();
         }
         manageLocale();
         // Queue is configured to hold a single frame, don't use `put` on it, but `offer` to prevent to block the writing thread.
-        MainSingleton.getInstance().sharedQueue = new LinkedBlockingQueue<>(1);
+        main.sharedQueue = new LinkedBlockingQueue<>(1);
         imageProcessor = new ImageProcessor(true);
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
@@ -115,14 +116,14 @@ public class FireflyLuciferin extends Application {
             NetworkSingleton.getInstance().messageServer.initNumLed();
         }
         setLedNumber(ledMatrixInUse);
-        MainSingleton.getInstance().baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + MainSingleton.getInstance().config.getBaudRate()).getBaudRateValue();
+        main.baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + main.getConfig().getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
         initThreadPool();
-        MainSingleton.getInstance().hostServices = this.getHostServices();
+        main.hostServices = this.getHostServices();
         powerSavingManager = new PowerSavingManager();
         powerSavingManager.setLastFrameTime(LocalDateTime.now());
-        NativeExecutor.setHighPriorityThreads(MainSingleton.getInstance().config.getThreadPriority());
+        NativeExecutor.setHighPriorityThreads(main.getConfig().getThreadPriority());
     }
 
     /**
@@ -131,9 +132,10 @@ public class FireflyLuciferin extends Application {
      * @param tempNightMode previous value
      */
     private static void setNightBrightness(boolean tempNightMode) {
-        if (tempNightMode != MainSingleton.getInstance().nightMode) {
-            log.info("Night Mode: {}", MainSingleton.getInstance().nightMode);
-            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
+        MainSingleton main = MainSingleton.getInstance();
+        if (tempNightMode != main.nightMode) {
+            log.info("Night Mode: {}", main.nightMode);
+            if (main.getConfig() != null && main.getConfig().isFullFirmware()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
                 stateDto.setBrightness(CommonUtility.getNightBrightness());
@@ -141,7 +143,7 @@ public class FireflyLuciferin extends Application {
                 if (CommonUtility.getDeviceToUse() != null) {
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
-                stateDto.setWhitetemp(MainSingleton.getInstance().config.getWhiteTemperature());
+                stateDto.setWhitetemp(main.getConfig().getWhiteTemperature());
                 NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
             }
         }
@@ -155,7 +157,8 @@ public class FireflyLuciferin extends Application {
      * @param ledMatrixInUse led matrix in use
      */
     public static void setLedNumber(String ledMatrixInUse) {
-        MainSingleton.getInstance().ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? NetworkSingleton.getInstance().totalLedNum : MainSingleton.getInstance().config.getLedMatrixInUse(ledMatrixInUse).size();
+        MainSingleton main = MainSingleton.getInstance();
+        main.ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? NetworkSingleton.getInstance().totalLedNum : main.getConfig().getLedMatrixInUse(ledMatrixInUse).size();
     }
 
     /**
@@ -171,14 +174,15 @@ public class FireflyLuciferin extends Application {
             CommonUtility.sleepSeconds(Constants.RESTART_DELAY_SECONDS);
         }
         moveToStandardDocsFolder();
+        MainSingleton main = MainSingleton.getInstance();
         if (args != null && args.length > 0) {
-            MainSingleton.getInstance().whoAmI = Integer.parseInt(args[0]);
-            MainSingleton.getInstance().spawnInstances = false;
+            main.whoAmI = Integer.parseInt(args[0]);
+            main.spawnInstances = false;
             CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
         }
-        MainSingleton.getInstance().profileArg = Constants.DEFAULT;
+        main.profileArg = Constants.DEFAULT;
         if (args != null && args.length > 1) {
-            MainSingleton.getInstance().profileArg = args[1];
+            main.profileArg = args[1];
         }
         NativeExecutor.createStartWMClass();
         StorageManager sm = new StorageManager();
@@ -208,18 +212,19 @@ public class FireflyLuciferin extends Application {
      * Activate/deactivate night mode
      */
     public static void checkForNightMode() {
-        var tempNightMode = MainSingleton.getInstance().nightMode;
-        if (!(MainSingleton.getInstance().config.getNightModeBrightness().equals(Constants.PERCENTAGE_OFF)) && MainSingleton.getInstance().config.isToggleLed()) {
+        MainSingleton main = MainSingleton.getInstance();
+        var tempNightMode = main.nightMode;
+        if (!(main.getConfig().getNightModeBrightness().equals(Constants.PERCENTAGE_OFF)) && main.getConfig().isToggleLed()) {
             LocalTime from = LocalTime.now();
             LocalTime to = LocalTime.now();
-            from = from.withHour(LocalTime.parse(MainSingleton.getInstance().config.getNightModeFrom()).getHour());
-            from = from.withMinute(LocalTime.parse(MainSingleton.getInstance().config.getNightModeFrom()).getMinute());
-            to = to.withHour(LocalTime.parse(MainSingleton.getInstance().config.getNightModeTo()).getHour());
-            to = to.withMinute(LocalTime.parse(MainSingleton.getInstance().config.getNightModeTo()).getMinute());
-            MainSingleton.getInstance().nightMode = (LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to));
+            from = from.withHour(LocalTime.parse(main.getConfig().getNightModeFrom()).getHour());
+            from = from.withMinute(LocalTime.parse(main.getConfig().getNightModeFrom()).getMinute());
+            to = to.withHour(LocalTime.parse(main.getConfig().getNightModeTo()).getHour());
+            to = to.withMinute(LocalTime.parse(main.getConfig().getNightModeTo()).getMinute());
+            main.nightMode = (LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to));
             setNightBrightness(tempNightMode);
         } else {
-            MainSingleton.getInstance().nightMode = false;
+            main.nightMode = false;
         }
     }
 
@@ -227,10 +232,11 @@ public class FireflyLuciferin extends Application {
      * Set log level at runtime based on user preferences
      */
     private void setRuntimeLogLevel() {
+        MainSingleton main = MainSingleton.getInstance();
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         String logLevel = System.getenv(Constants.LUCIFERIN_LOG_LEVEL);
         if (logLevel == null || logLevel.isEmpty()) {
-            logLevel = MainSingleton.getInstance().config.getRuntimeLogLevel();
+            logLevel = main.getConfig().getRuntimeLogLevel();
         }
         loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(logLevel));
         log.debug("** Log level -> {} **", logLevel);
@@ -253,29 +259,30 @@ public class FireflyLuciferin extends Application {
      */
     @Override
     public void start(Stage stage) throws Exception {
+        MainSingleton main = MainSingleton.getInstance();
         // Gnome 3 doesn't like this
         if (!NativeExecutor.isLinux()) {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         scheduleCheckForNightMode();
         StorageManager storageManager = new StorageManager();
-        storageManager.updateConfigFile(MainSingleton.getInstance().config);
+        storageManager.updateConfigFile(main.getConfig());
         setRuntimeLogLevel();
-        if (MainSingleton.getInstance().whoAmI == 1) {
+        if (main.whoAmI == 1) {
             mcpServer.start();
         }
         // Manage tray icon and framerate dialog
-        MainSingleton.getInstance().guiManager = new GuiManager(true);
-        MainSingleton.getInstance().guiManager.trayIconManager.initTray();
-        MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade(!NativeExecutor.isSystemTraySupported());
+        main.guiManager = new GuiManager(true);
+        main.guiManager.trayIconManager.initTray();
+        main.guiManager.showSettingsAndCheckForUpgrade(!NativeExecutor.isSystemTraySupported());
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             serialManager.initSerial();
         }
-        if (MainSingleton.getInstance().config.isMqttEnable()) {
+        if (main.getConfig().isMqttEnable()) {
             connectToMqttServer();
         } else {
             log.info(Constants.MQTT_DISABLED);
-            if (MainSingleton.getInstance().config.isFullFirmware()) {
+            if (main.getConfig().isFullFirmware()) {
                 UdpServer udpServer = new UdpServer();
                 NetworkSingleton.getInstance().udpBroadcastReceiverRunning = true;
                 udpServer.receiveBroadcastUDPPacket();
@@ -289,26 +296,26 @@ public class FireflyLuciferin extends Application {
             NetworkSingleton.getInstance().messageServer.startMessageServer();
         }
         // If this instance spawns new instances, don't launch grabbers here.
-        if (!(MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1)) {
+        if (!(main.spawnInstances && main.getConfig().getMultiMonitor() > 1)) {
             launchGrabberAndConsumers();
         }
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();
         }
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-        if (MainSingleton.getInstance().config.isToggleLed()) {
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, main.getConfig().getEffect());
+        if (main.getConfig().isToggleLed()) {
             switch (effectInUse) {
                 case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
                         manageAutoStart();
             }
         }
-        if (!MainSingleton.getInstance().config.isMqttEnable() && !MainSingleton.getInstance().config.isFullFirmware()) {
+        if (!main.getConfig().isMqttEnable() && !main.getConfig().isFullFirmware()) {
             serialManager.manageSolidLed();
         }
         scheduleBackgroundTasks(stage);
         // Preload main dialog that requires 1.8s to laod the FXML (more or less on a 13900K CPU)
         if (NativeExecutor.isSystemTraySupported()) {
-            MainSingleton.getInstance().guiManager.showSettingsDialog(true);
+            main.guiManager.showSettingsDialog(true);
         }
         NativeExecutor.setSimdAvxInstructions();
     }
@@ -319,17 +326,23 @@ public class FireflyLuciferin extends Application {
      * @throws AWTException GUI exception
      */
     private void launchGrabberAndConsumers() throws AWTException {
+        MainSingleton main = MainSingleton.getInstance();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
         // Desktop Duplication API producers
-        if ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
+        if ((main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.WIN_USB_VIDEO.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name()))
+                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
             grabberManager.launchAdvancedGrabber(imageProcessor);
         } else { // Standard Producers
             grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);
@@ -377,24 +390,25 @@ public class FireflyLuciferin extends Application {
      */
     @SuppressWarnings("all")
     private void scheduleBackgroundTasks(Stage stage) {
+        MainSingleton main = MainSingleton.getInstance();
         // Wayland only, create a task that pings Glow Worm device every 2 seconds, this is needed because wayland stops sending
         // updates to the device when the image on the screen is still.
         if (NativeExecutor.isWayland()) {
             ScheduledExecutorService waylandScheduledExecutorService = Executors.newScheduledThreadPool(1);
             Runnable waylandTask = () -> {
-                if (MainSingleton.getInstance().RUNNING && MainSingleton.getInstance().FPS_PRODUCER == 0
-                        && MainSingleton.getInstance().lastLedColor != null && MainSingleton.getInstance().lastLedColor.length > 0) {
-                    Collections.reverse(Arrays.asList(MainSingleton.getInstance().lastLedColor));
-                    MainSingleton.getInstance().sharedQueue.offer(MainSingleton.getInstance().lastLedColor);
+                if (main.RUNNING && main.FPS_PRODUCER == 0
+                        && main.lastLedColor != null && main.lastLedColor.length > 0) {
+                    Collections.reverse(Arrays.asList(main.lastLedColor));
+                    main.sharedQueue.offer(main.lastLedColor);
                 }
             };
             waylandScheduledExecutorService.scheduleAtFixedRate(waylandTask, 0, 200, TimeUnit.MILLISECONDS);
         }
         NativeExecutor.addShutdownHook();
-        if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() || CommonUtility.isSingleDeviceMainInstance()) {
+        if (!main.getConfig().isMultiScreenSingleDevice() || CommonUtility.isSingleDeviceMainInstance()) {
             powerSavingManager.addPowerSavingTask();
         }
-        if (MainSingleton.getInstance().config.getNightLight() != null && MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.AUTO.getBaseI18n())) {
+        if (main.getConfig().getNightLight() != null && main.getConfig().getNightLight().equals(Enums.NightLight.AUTO.getBaseI18n())) {
             GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
         }
         ProfileManager.getInstance().manageExecProfiles();
@@ -404,25 +418,27 @@ public class FireflyLuciferin extends Application {
      * Delay autostart when on multi monitor, first instance must start capturing for first.
      */
     void manageAutoStart() {
+        MainSingleton main = MainSingleton.getInstance();
         int timeToWait = 0;
-        if ((MainSingleton.getInstance().config.getMultiMonitor() == 2 && MainSingleton.getInstance().whoAmI == 2)
-                || (MainSingleton.getInstance().config.getMultiMonitor() == 3 && MainSingleton.getInstance().whoAmI == 3)) {
+        if ((main.getConfig().getMultiMonitor() == 2 && main.whoAmI == 2)
+                || (main.getConfig().getMultiMonitor() == 3 && main.whoAmI == 3)) {
             timeToWait = 15;
         }
-        CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), timeToWait);
+        CommonUtility.delaySeconds(() -> main.guiManager.startCapturingThreads(), timeToWait);
     }
 
     /**
      * Manage localization
      */
     private void manageLocale() {
+        MainSingleton main = MainSingleton.getInstance();
         Locale currentLocale;
         currentLocale = Locale.getDefault();
-        if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getLanguage() != null) {
-            currentLocale = Locale.forLanguageTag(LocalizedEnum.fromBaseStr(Enums.Language.class, MainSingleton.getInstance().config.getLanguage()).name().toLowerCase());
+        if (main.getConfig() != null && main.getConfig().getLanguage() != null) {
+            currentLocale = Locale.forLanguageTag(LocalizedEnum.fromBaseStr(Enums.Language.class, main.getConfig().getLanguage()).name().toLowerCase());
         }
         Locale.setDefault(currentLocale);
-        MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
+        main.bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
     }
 
     /**
@@ -439,10 +455,11 @@ public class FireflyLuciferin extends Application {
      * Initialize how many Threads to use in the ThreadPool and how many Executor to use
      */
     private void initThreadPool() {
-        int numberOfCPUThreads = MainSingleton.getInstance().config.getNumberOfCPUThreads();
+        MainSingleton main = MainSingleton.getInstance();
+        int numberOfCPUThreads = main.getConfig().getNumberOfCPUThreads();
         threadPoolNumber = numberOfCPUThreads * 2;
         if (numberOfCPUThreads > 1) {
-            if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name()))) {
+            if (!(main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name()))) {
                 executorNumber = numberOfCPUThreads;
             } else {
                 executorNumber = numberOfCPUThreads * 3;
@@ -459,7 +476,8 @@ public class FireflyLuciferin extends Application {
      * @param leds array of LEDs containing the average color to display on the LED
      */
     private void sendColors(Color[] leds) throws IOException {
-        if (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, MainSingleton.getInstance().config.getPowerSaving()))) {
+        MainSingleton main = MainSingleton.getInstance();
+        if (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, main.getConfig().getPowerSaving()))) {
             if (powerSavingManager.isUnlockCheckLedDuplication()) {
                 powerSavingManager.setUnlockCheckLedDuplication(false);
                 powerSavingManager.checkForLedDuplication(leds);
@@ -468,22 +486,22 @@ public class FireflyLuciferin extends Application {
                 Arrays.fill(leds, new Color(0, 0, 0));
             }
         }
-        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation())))) {
+        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, main.getConfig().getOrientation())))) {
             Collections.reverse(Arrays.asList(leds));
         }
-        if (MainSingleton.getInstance().config.getLedStartOffset() > 0) {
+        if (main.getConfig().getLedStartOffset() > 0) {
             List<Color> tempList = new ArrayList<>();
-            List<Color> tempListHead = Arrays.asList(leds).subList(MainSingleton.getInstance().config.getLedStartOffset(), leds.length);
-            List<Color> tempListTail = Arrays.asList(leds).subList(0, MainSingleton.getInstance().config.getLedStartOffset());
+            List<Color> tempListHead = Arrays.asList(leds).subList(main.getConfig().getLedStartOffset(), leds.length);
+            List<Color> tempListTail = Arrays.asList(leds).subList(0, main.getConfig().getLedStartOffset());
             tempList.addAll(tempListHead);
             tempList.addAll(tempListTail);
             leds = tempList.toArray(leds);
         }
         int i = 0;
         if (leds != null && leds[0] != null) {
-            if (MainSingleton.getInstance().config.isFullFirmware() && MainSingleton.getInstance().config.isWirelessStream()) {
+            if (main.getConfig().isFullFirmware() && main.getConfig().isWirelessStream()) {
                 // Single part stream
-                if (MainSingleton.getInstance().ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
+                if (main.ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
                     sendChunck(i, leds, 1);
                 } else { // Multi part stream
                     // First Chunk
@@ -495,7 +513,7 @@ public class FireflyLuciferin extends Application {
                         i = sendChunck(i, leds, 3);
                     }
                     // Fourth Chunk
-                    if (i >= Constants.THIRD_CHUNK && i < MainSingleton.getInstance().ledNumber) {
+                    if (i >= Constants.THIRD_CHUNK && i < main.ledNumber) {
                         sendChunck(i, leds, 4);
                     }
                 }
@@ -503,7 +521,7 @@ public class FireflyLuciferin extends Application {
                 serialManager.sendColorsViaUSB(leds);
             }
         }
-        MainSingleton.getInstance().FPS_CONSUMER_COUNTER++;
+        main.FPS_CONSUMER_COUNTER++;
     }
 
     /**
@@ -574,10 +592,11 @@ public class FireflyLuciferin extends Application {
     void consume() throws InterruptedException, IOException {
         boolean isWayland = NativeExecutor.isWayland();
         boolean multiMonitorLedStripOrdering = false;
+        MainSingleton main = MainSingleton.getInstance();
         while (true) {
-            Color[] colorArray = MainSingleton.getInstance().sharedQueue.take();
-            if (isWayland) MainSingleton.getInstance().lastLedColor = colorArray;
-            if (MainSingleton.getInstance().RUNNING) {
+            Color[] colorArray = main.sharedQueue.take();
+            if (isWayland) main.lastLedColor = colorArray;
+            if (main.RUNNING) {
                 if (CommonUtility.isSingleDeviceMultiScreen()) {
                     if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
                         if (NetworkSingleton.getInstance().isLedOrderRequired()) {
@@ -594,7 +613,7 @@ public class FireflyLuciferin extends Application {
                         }
                         sendColors(colorArray);
                     }
-                } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {
+                } else if (colorArray.length == main.ledNumber) {
                     sendColors(colorArray);
                 }
             }
@@ -605,14 +624,15 @@ public class FireflyLuciferin extends Application {
      * Clean and Close Serial Output Stream
      */
     private void clean() {
-        if (MainSingleton.getInstance().output != null) {
+        MainSingleton main = MainSingleton.getInstance();
+        if (main.output != null) {
             try {
-                MainSingleton.getInstance().output.close();
+                main.output.close();
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
         }
-        if (MainSingleton.getInstance().serial != null) {
+        if (main.serial != null) {
             SerialManager sm = new SerialManager();
             sm.closeSerial();
         }
@@ -622,6 +642,7 @@ public class FireflyLuciferin extends Application {
      * Log the environment in use
      */
     private void logEnvironment() {
+        MainSingleton main = MainSingleton.getInstance();
         if (NativeExecutor.isLinux()) {
             if (NativeExecutor.isFlatpak()) {
                 log.debug("Running on Linux using Flatpak sandbox");
@@ -633,7 +654,7 @@ public class FireflyLuciferin extends Application {
         } else if (NativeExecutor.isWindows()) {
             log.debug("Running on Windows");
         }
-        log.info("Traffic Class for the UDP socket: 0x{}", Integer.toHexString(MainSingleton.getInstance().config.getUdpTrafficClass()).toUpperCase());
+        log.info("Traffic Class for the UDP socket: 0x{}", Integer.toHexString(main.getConfig().getUdpTrafficClass()).toUpperCase());
     }
 
 }
