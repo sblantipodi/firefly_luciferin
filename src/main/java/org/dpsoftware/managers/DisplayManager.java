@@ -320,7 +320,10 @@ public class DisplayManager {
         } else {
             CommonUtility.delayMilliseconds(() -> {
                 List<String> rawOutput = NativeExecutor.runNative(Constants.CMD_USB_DEVIE_CHECK, Constants.CMD_WAIT_DELAY);
-                Platform.runLater(() -> onComplete.accept(rawOutput));
+                List<String> videoDevices = rawOutput.stream()
+                        .filter(line -> line.startsWith("/dev/video"))
+                        .toList();
+                Platform.runLater(() -> onComplete.accept(videoDevices));
             }, 10);
         }
         onComplete.accept(new ArrayList<>());
