@@ -220,11 +220,11 @@ public class PipelineManager {
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL);
+                pipeline = GStreamerGrabber.setScaling(getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL), main);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL);
+                pipeline = GStreamerGrabber.setScaling(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL), main);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {

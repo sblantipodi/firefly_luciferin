@@ -97,20 +97,18 @@ public class GStreamerGrabber {
             } else {
                 gstPipelineStr = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_WINDOWS_ETX_SRC);
             }
-            gstreamerPipeline = gstPipelineStr.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor()))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor()));
+            gstreamerPipeline = setScaling(gstPipelineStr, main);
         } else {
             if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_CUDA);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_AMD_INTEL);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
-                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_OPENGL);
+                return;
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
-                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC_OPENGL);
+                return;
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC_CUDA);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
@@ -118,9 +116,7 @@ public class GStreamerGrabber {
             } else {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE);
             }
-            gstreamerPipeline = gstreamerPipeline.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor()))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor()));
+            gstreamerPipeline = setScaling(gstreamerPipeline, main);
         }
         gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
@@ -135,6 +131,22 @@ public class GStreamerGrabber {
         }
         log.debug("Caps: {}", caps);
         videosink.setCaps(new Caps(caps.toString()));
+    }
+
+    /**
+     * Replaces placeholders for internal scaling values in a GStreamer pipeline string
+     * based on the screen resolution and resampling factors from the provided configuration.
+     *
+     * @param gstPipelineStr the original GStreamer pipeline string containing placeholders
+     * @param main           the MainSingleton instance providing configuration and scaling values
+     * @return the modified GStreamer pipeline string with scaling values substituted
+     */
+    public static String setScaling(String gstPipelineStr, MainSingleton main) {
+        String gstreamerPipeline;
+        gstreamerPipeline = gstPipelineStr
+                .replace(Constants.INTERNAL_SCALING_X, String.valueOf(main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor()))
+                .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor()));
+        return gstreamerPipeline;
     }
 
     /**
