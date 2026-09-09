@@ -100,6 +100,7 @@ public class ModeTabController {
     // Inject main controller
     @FXML
     private SettingsController settingsController;
+    private boolean updatingCaptureMethod;
 
     /**
      * Inject main controller containing the TabPane
@@ -379,12 +380,12 @@ public class ModeTabController {
     }
 
     /**
-     * Manage monitor action
+     * Manage monitor selection change (called only on actual selection, not on combo open)
      */
     @FXML
     private void monitorAction() {
         monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
-        if (monitorIndex < settingsController.displayManager.getDisplayList().size()) {
+        if (monitorIndex >= 0 && monitorIndex < settingsController.displayManager.getDisplayList().size()) {
             DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
             setDispInfo(screenInfo);
             settingsController.currentConfig.setExtSrcFriendlyName("");
@@ -397,30 +398,57 @@ public class ModeTabController {
         }
     }
 
+    /**
+     * Set the default capture method for the current OS (display capture)
+     */
     void setCaptureMethod() {
+        Configuration.CaptureMethod newMethod;
         if (NativeExecutor.isWindows()) {
-            captureMethod.setValue(Configuration.CaptureMethod.DDUPL_DX12);
+            newMethod = Configuration.CaptureMethod.DDUPL_DX12;
         } else if (NativeExecutor.isMac()) {
-            captureMethod.setValue(Configuration.CaptureMethod.AVFVIDEOSRC);
+            newMethod = Configuration.CaptureMethod.AVFVIDEOSRC;
+        } else if (NativeExecutor.isWayland()) {
+            newMethod = Configuration.CaptureMethod.PIPEWIREXDG;
         } else {
-            if (NativeExecutor.isWayland()) {
-                captureMethod.setValue(Configuration.CaptureMethod.PIPEWIREXDG);
-            } else {
-                captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
-            }
+            newMethod = Configuration.CaptureMethod.XIMAGESRC;
         }
-        captureMethod.commitValue();
+        applyCaptureMethod(newMethod);
     }
 
+    /**
+     * Set the default capture method for external USB video devices
+     */
     void setCaptureMethodUsbVideo() {
+        Configuration.CaptureMethod newMethod;
         if (NativeExecutor.isWindows()) {
-            captureMethod.setValue(Configuration.CaptureMethod.WIN_USB_VIDEO);
+            newMethod = Configuration.CaptureMethod.WIN_USB_VIDEO;
         } else if (NativeExecutor.isMac()) {
-            captureMethod.setValue(Configuration.CaptureMethod.AVFVIDEOSRC);
+            newMethod = Configuration.CaptureMethod.AVFVIDEOSRC;
         } else {
-            captureMethod.setValue(Configuration.CaptureMethod.USB_VIDEO);
+            newMethod = Configuration.CaptureMethod.USB_VIDEO;
         }
-        captureMethod.commitValue();
+        applyCaptureMethod(newMethod);
+    }
+
+    /**
+     * Set capture method value, guarding against re-entrant calls and re-anchoring
+     * the visual selection if it was lost after the items list was cleared and re-populated.
+     */
+    private void applyCaptureMethod(Configuration.CaptureMethod newMethod) {
+        if (updatingCaptureMethod) {
+            return;
+        }
+        updatingCaptureMethod = true;
+        try {
+            captureMethod.setValue(newMethod);
+            if (captureMethod.getValue() != null
+                    && captureMethod.getSelectionModel().getSelectedIndex() < 0
+                    && newMethod.equals(captureMethod.getValue())) {
+                captureMethod.getSelectionModel().select(captureMethod.getItems().indexOf(newMethod));
+            }
+        } finally {
+            updatingCaptureMethod = false;
+        }
     }
 
     /**
@@ -539,7 +567,7 @@ public class ModeTabController {
                 Enums.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Enums.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)));
         monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
-        if (monitorIndex < settingsController.displayManager.getDisplayList().size()) {
+        if (monitorIndex >= 0 && monitorIndex < settingsController.displayManager.getDisplayList().size()) {
             config.setMonitorNumber(monitorIndex);
             config.setExtSrcFriendlyName("");
         } else {
