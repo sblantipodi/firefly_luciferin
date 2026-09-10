@@ -101,6 +101,7 @@ public class ModeTabController {
     @FXML
     private SettingsController settingsController;
     private boolean updatingCaptureMethod;
+    private boolean refreshingMonitorValue;
 
     /**
      * Inject main controller containing the TabPane
@@ -326,9 +327,14 @@ public class ModeTabController {
         }
         algo.setValue(LocalizedEnum.fromBaseStr(Enums.Algo.class, currentConfig.getAlgo()).getI18n());
         monitorIndex = currentConfig.getMonitorNumber();
-        monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
-        if (!currentConfig.getExtSrcFriendlyName().isEmpty()) {
-            monitorNumber.setValue(currentConfig.getExtSrcFriendlyName());
+        refreshingMonitorValue = true;
+        try {
+            monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
+            if (!currentConfig.getExtSrcFriendlyName().isEmpty()) {
+                monitorNumber.setValue(currentConfig.getExtSrcFriendlyName());
+            }
+        } finally {
+            refreshingMonitorValue = false;
         }
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
@@ -380,10 +386,16 @@ public class ModeTabController {
     }
 
     /**
-     * Manage monitor selection change (called only on actual selection, not on combo open)
+     * Manage monitor selection change. The capture method is reset to the OS default
+     * only when the user actually picks a different monitor; a plain click that opens
+     * the combo (or any call with no value change) must not overwrite the capture
+     * method currently in use.
      */
     @FXML
     private void monitorAction(String newVal, String oldVal) {
+        if (refreshingMonitorValue) {
+            return;
+        }
         monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
         if (monitorIndex >= 0 && monitorIndex < settingsController.displayManager.getDisplayList().size()) {
             DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
