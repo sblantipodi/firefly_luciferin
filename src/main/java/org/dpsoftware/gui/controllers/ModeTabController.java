@@ -383,18 +383,22 @@ public class ModeTabController {
      * Manage monitor selection change (called only on actual selection, not on combo open)
      */
     @FXML
-    private void monitorAction() {
+    private void monitorAction(String newVal, String oldVal) {
         monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
         if (monitorIndex >= 0 && monitorIndex < settingsController.displayManager.getDisplayList().size()) {
             DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
             setDispInfo(screenInfo);
-            settingsController.currentConfig.setExtSrcFriendlyName("");
-            settingsController.initCaptureMethods();
-            setCaptureMethod();
+            if (newVal != null && !newVal.equals(oldVal)) {
+                settingsController.currentConfig.setExtSrcFriendlyName("");
+                settingsController.initCaptureMethods();
+                setCaptureMethod();
+            }
         } else {
-            settingsController.currentConfig.setExtSrcFriendlyName(monitorNumber.getValue());
-            settingsController.initCaptureMethods();
-            setCaptureMethodUsbVideo();
+            if (newVal != null && !newVal.equals(oldVal)) {
+                settingsController.currentConfig.setExtSrcFriendlyName(monitorNumber.getValue());
+                settingsController.initCaptureMethods();
+                setCaptureMethodUsbVideo();
+            }
         }
     }
 
@@ -462,12 +466,8 @@ public class ModeTabController {
         });
         firmTypeFull.setOnAction(_ -> firmTypeEvaluation());
         firmTypeLight.setOnAction(_ -> firmTypeEvaluation());
-        monitorNumber.valueProperty().addListener((_, oldVal, newVal) -> {
-            if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
-                monitorAction();
-                settingsController.checkProfileDifferences();
-            }
-        });
+        monitorNumber.setOnMouseClicked((_) -> monitorAction(null, null));
+        monitorNumber.valueProperty().addListener((_, newVal, oldVal) -> monitorAction(newVal, oldVal));
         serialPort.valueProperty().addListener((_, oldVal, newVal) -> {
             if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
                 settingsController.checkProfileDifferences();
