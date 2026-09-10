@@ -210,26 +210,14 @@ public class PipelineManager {
         if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
                 || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
                 || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())
-                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())
-                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())
-                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())
-                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())
-                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
             if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL);
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC);
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
-                pipeline = GStreamerGrabber.setScaling(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL), main);
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA);
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL);
-            } else {
+            }  else {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG);
             }
             XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
@@ -239,21 +227,45 @@ public class PipelineManager {
                     .replace("{2}", xdgStreamDetails.streamId.toString());
         } else {
             // startx{0}, endx{1}, starty{2}, endy{3}
-            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC);
-            } else {
+            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
+                gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
+                gstreamerPipeline = GStreamerGrabber.setScaling(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL), main);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
+                gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
+                gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA);
+                gstreamerPipeline = replaceWithMonitorInfo(main, pipeline);
+            } else {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC);
+                gstreamerPipeline = replaceWithMonitorInfo(main, pipeline);
             }
-            DisplayManager displayManager = new DisplayManager();
-            List<DisplayInfo> displayList = displayManager.getDisplayList();
-            DisplayInfo monitorInfo = displayList.get(main.getConfig().getMonitorNumber());
-            gstreamerPipeline = pipeline
-                    .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
-                    .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
-                    .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
-                    .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
         }
         log.debug("Pipeline: {}", gstreamerPipeline);
+        return gstreamerPipeline;
+    }
+
+    /**
+     * Replaces placeholders in the provided pipeline string with monitor-specific information
+     * based on the display configuration of the system.
+     *
+     * @param main     an instance of MainSingleton containing the application configuration,
+     *                 including the monitor number to retrieve display info.
+     * @param pipeline the GStreamer pipeline string containing placeholders ({0}, {1}, {2}, {3})
+     *                 to be replaced with the respective monitor's dimensions and position.
+     * @return a string representing the pipeline with the monitor-specific details substituted into it.
+     */
+    private static String replaceWithMonitorInfo(MainSingleton main, String pipeline) {
+        String gstreamerPipeline;
+        DisplayManager displayManager = new DisplayManager();
+        List<DisplayInfo> displayList = displayManager.getDisplayList();
+        DisplayInfo monitorInfo = displayList.get(main.getConfig().getMonitorNumber());
+        gstreamerPipeline = pipeline.replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
+                .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
+                .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
+                .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
         return gstreamerPipeline;
     }
 
