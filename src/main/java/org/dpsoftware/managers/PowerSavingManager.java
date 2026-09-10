@@ -92,7 +92,7 @@ public class PowerSavingManager {
      * Execute a task that checks if screensaver is enabled/running.
      */
     public void addPowerSavingTask() {
-        if (!CommonUtility.isSingleDeviceMultiScreen()) {
+        if (!MainSingleton.getInstance().isHeadlessMode() && !CommonUtility.isSingleDeviceMultiScreen()) {
             log.info("Adding hook for power saving.");
             PointerInfo a = MouseInfo.getPointerInfo();
             Point mouseCoordinate = a.getLocation();

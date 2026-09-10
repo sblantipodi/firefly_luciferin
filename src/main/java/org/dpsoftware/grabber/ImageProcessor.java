@@ -68,10 +68,10 @@ public class ImageProcessor {
     private static Enums.AspectRatio pendingAspectRatio = null;
     private static int consecutiveDetections = 0;
     public static final AtomicLong currentGammaAtomic = new AtomicLong(
-            Double.doubleToLongBits(MainSingleton.getInstance().config.getGamma())
+        Double.doubleToLongBits(MainSingleton.getInstance().config != null ? MainSingleton.getInstance().config.getGamma() : Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma()))
     );
     private static final AtomicLong currentAvgBrightnessAtomic = new AtomicLong(
-            Double.doubleToLongBits(0.0)
+        Double.doubleToLongBits(0.0)
     );
 
     /**

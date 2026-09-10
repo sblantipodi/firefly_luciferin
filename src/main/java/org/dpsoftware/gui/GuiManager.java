@@ -574,7 +574,9 @@ public class GuiManager {
      * @param preloadFxml if true, it preload the fxml without showing it
      */
     public void showSettingsDialog(boolean preloadFxml) {
-        showStage(Constants.FXML_SETTINGS, preloadFxml, true);
+        if (!MainSingleton.getInstance().isHeadlessMode()) {
+            showStage(Constants.FXML_SETTINGS, preloadFxml, true);
+        }
     }
 
     /**
@@ -1089,6 +1091,9 @@ public class GuiManager {
      */
     // TODO prevent to launch 2 checks at the same time
     public void showSettingsAndCheckForUpgrade(boolean showChangelog) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            return;
+        }
         if (!NativeExecutor.isSystemTraySupported()) {
             showSettingsDialog(false);
         }

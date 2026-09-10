@@ -328,10 +328,11 @@ public class StorageManager {
         if (config == null) {
             try {
                 MainSingleton.getInstance().guiManager = new GuiManager(false);
-                MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
+                }
                 config = readProfileInUseConfig();
-            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
-                     IllegalAccessException e) {
+            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
