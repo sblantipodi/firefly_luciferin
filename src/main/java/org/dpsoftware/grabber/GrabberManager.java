@@ -153,15 +153,19 @@ public class GrabberManager {
                     vc = new GStreamerGrabber();
                     GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
                     Pipeline.linkMany(bin, vc.getElement());
-                    JFrame f = new JFrame(Constants.SCREEN_GRABBER);
-                    JPanel panel = new JPanel();
-                    panel.setPreferredSize(new Dimension(main.getConfig().getScreenResX(), main.getConfig().getScreenResY()));
-                    panel.setBackground(Color.BLACK);
-                    f.add(panel);
-                    f.pack();
-                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    GrabberSingleton.getInstance().pipe.play();
-                    f.setVisible(false);
+                    if (!MainSingleton.getInstance().isHeadlessMode()) {
+                        JFrame f = new JFrame(Constants.SCREEN_GRABBER);
+                        JPanel panel = new JPanel();
+                        panel.setPreferredSize(new Dimension(main.getConfig().getScreenResX(), main.getConfig().getScreenResY()));
+                        panel.setBackground(Color.BLACK);
+                        f.add(panel);
+                        f.pack();
+                        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        GrabberSingleton.getInstance().pipe.play();
+                        f.setVisible(false);
+                    } else {
+                        GrabberSingleton.getInstance().pipe.play();
+                    }
                 }
             } else {
                 pipelineRetry.set(0);
