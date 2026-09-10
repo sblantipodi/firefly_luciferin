@@ -806,8 +806,9 @@ public class SettingsController {
      **/
     void initCaptureMethods() {
         modeTabController.captureMethod.getItems().clear();
+        boolean isExtSrc = currentConfig != null && !currentConfig.getExtSrcFriendlyName().isEmpty();
         if (NativeExecutor.isWindows()) {
-            if (currentConfig.getExtSrcFriendlyName().isEmpty()) {
+            if (!isExtSrc) {
                 modeTabController.captureMethod.getItems().addAll(
                         Configuration.CaptureMethod.DDUPL_DX12,
                         Configuration.CaptureMethod.DDUPL_DX11,
@@ -819,7 +820,7 @@ public class SettingsController {
         } else if (NativeExecutor.isMac()) {
             modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
         } else {
-            if (currentConfig.getExtSrcFriendlyName().isEmpty()) {
+            if (!isExtSrc) {
                 if (NativeExecutor.isWayland()) {
                     modeTabController.captureMethod.getItems().addAll(
                             Configuration.CaptureMethod.PIPEWIREXDG,
