@@ -107,6 +107,7 @@ public class MainSingleton {
     public boolean restartNeeded = false;
     public String improvActive = "";
     public boolean hdrActive;
+    public boolean headlessMode = false;
 
 }
 

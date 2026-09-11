@@ -144,6 +144,10 @@ public final class NativeExecutor {
         }
         restartCmd(execCommand);
         execCommand.add(String.valueOf(whoAmISupposedToBe));
+        execCommand.add(MainSingleton.getInstance().profileArg);
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            execCommand.add(Constants.HEADLESS_ARG);
+        }
         log.info("Spawning new instance");
         runNative(execCommand.toArray(String[]::new), 0);
     }
@@ -182,17 +186,19 @@ public final class NativeExecutor {
      */
     public static void restartNativeInstance(String profileToUse) {
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
+            MainSingleton main = MainSingleton.getInstance();
             List<String> execCommand = new ArrayList<>();
             restartCmd(execCommand);
-            execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
-            if (profileToUse != null) {
-                execCommand.add(profileToUse);
+            execCommand.add(String.valueOf(main.whoAmI));
+            execCommand.add(profileToUse != null ? profileToUse : main.profileArg);
+            if (main.isHeadlessMode()) {
+                execCommand.add(Constants.HEADLESS_ARG);
             }
             log.info("Restarting instance");
             log.debug("Restart command: {}", execCommand);
             runNative(execCommand.toArray(String[]::new), 0);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
-                MainSingleton.getInstance().restartOnly = true;
+                main.restartOnly = true;
             }
             NativeExecutor.exit();
         }
@@ -202,11 +208,7 @@ public final class NativeExecutor {
      * Restart a native instance of Luciferin
      */
     public static void restartNativeInstanceWithCurrentProfile() {
-        if (MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
-            NativeExecutor.restartNativeInstance();
-        } else {
-            NativeExecutor.restartNativeInstance(MainSingleton.getInstance().profileArg);
-        }
+        NativeExecutor.restartNativeInstance(MainSingleton.getInstance().profileArg);
     }
 
     /**
@@ -339,10 +341,13 @@ public final class NativeExecutor {
     public static boolean isSystemTraySupported() {
         boolean supported = false;
         Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
-        if (MainSingleton.getInstance() != null
-                && MainSingleton.getInstance().config != null
-                && MainSingleton.getInstance().config.getTrayPreference() != null) {
-            trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+        if (MainSingleton.getInstance() != null) {
+            if (MainSingleton.getInstance().isHeadlessMode()) {
+                return false;
+            }
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getTrayPreference() != null) {
+                trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+            }
         }
         switch (trayPreference) {
             case AUTO ->
