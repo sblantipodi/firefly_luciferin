@@ -846,7 +846,7 @@ public class Constants {
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};
     public static final String[] CURL_HEAD_LINUX = {"curl", "-I", "--max-time", "4"};
-    public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
+    public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudadownload"};
     public static final String OBJPATH_KDE_NIGHTLIGHT = "/org/kde/KWin/NightLight";
     public static final String PROP_KDE_NIGHTLIGHT = "enabled";
     public static final String BUSNAME_GNOME_NIGHTLIGHT = "org.gnome.SettingsDaemon.Color";

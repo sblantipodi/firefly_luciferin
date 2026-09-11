@@ -310,7 +310,7 @@ public final class NativeExecutor {
      * @return if it's Snap
      */
     public static boolean isSnap() {
-        return System.getenv(Constants.SNAP_NAME) != null;
+        return System.getenv(Constants.SNAP_NAME) != null && System.getenv(Constants.SNAP_NAME).equals("fireflyluciferin");
     }
 
 
