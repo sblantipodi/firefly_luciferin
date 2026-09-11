@@ -603,7 +603,7 @@ public class NetworkManager implements MqttCallback {
         if (MainSingleton.getInstance().config != null) {
             CommonUtility.delayMilliseconds(() -> {
                 if (message.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                    NativeExecutor.restartNativeInstance(null);
+                    NativeExecutor.restartNativeInstance(Constants.DEFAULT);
                 } else {
                     NativeExecutor.restartNativeInstance(message);
                 }
