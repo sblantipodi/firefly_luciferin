@@ -590,7 +590,9 @@ public class Constants {
     public static final String GST_GL_WINDOW = "GST_GL_WINDOW";
     public static final String GST_GL_PLATFORM = "GST_GL_PLATFORM";
     public static final String X11 = "x11";
+    public static final String SURFACELESS = "surfaceless";
     public static final String GLX = "glx";
+    public static final String EGL = "egl";
     // GStreamer System Env Overrides
     public static final String CUSTOM_GSTREAMER_PIPELINE = System.getenv("CUSTOM_GSTREAMER_PIPELINE");
     public static final String CUSTOM_GSTREAMER_CAPS = System.getenv("CUSTOM_GSTREAMER_CAPS");
