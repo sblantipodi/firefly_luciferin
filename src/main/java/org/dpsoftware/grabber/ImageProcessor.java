@@ -1068,7 +1068,7 @@ public class ImageProcessor {
                     System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + gstPath);
                 }
             }
-        } else if (NativeExecutor.isLinux()) {
+        } else if (NativeExecutor.isLinux() && MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
             try {
                 if (System.getenv(Constants.GST_GL_WINDOW) == null) {
                     LinuxLibC.INSTANCE.setenv(Constants.GST_GL_WINDOW, Constants.X11, 0);
