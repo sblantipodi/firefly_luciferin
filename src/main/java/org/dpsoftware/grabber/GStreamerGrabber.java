@@ -104,7 +104,7 @@ public class GStreamerGrabber {
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_AMD_INTEL);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
-                return;
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_OPENGL);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
