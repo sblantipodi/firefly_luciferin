@@ -178,6 +178,7 @@ public class FireflyLuciferin extends Application {
             CommonUtility.sleepSeconds(Constants.RESTART_DELAY_SECONDS);
         }
         if (args != null && args.length > 2 && Constants.HEADLESS_ARG.equals(args[2])) {
+            log.info("Running in headless mode");
             main.setHeadlessMode(true);
             System.setProperty("glass.platform", "Headless");
         }
