@@ -104,6 +104,9 @@ public class FireflyLuciferin extends Application {
         } catch (NullPointerException e) {
             log.error("Please configure the app.");
             NativeExecutor.exit();
+        } catch (Exception e) {
+            log.error("Can't open settings dialog.", e);
+            NativeExecutor.exit();
         }
         manageLocale();
         // Queue is configured to hold a single frame, don't use `put` on it, but `offer` to prevent to block the writing thread.
