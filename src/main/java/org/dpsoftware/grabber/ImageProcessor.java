@@ -1071,10 +1071,18 @@ public class ImageProcessor {
         } else if (NativeExecutor.isLinux() && MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
             try {
                 if (System.getenv(Constants.GST_GL_WINDOW) == null) {
-                    LinuxLibC.INSTANCE.setenv(Constants.GST_GL_WINDOW, Constants.X11, 0);
+                    if (MainSingleton.getInstance().isHeadlessMode()) {
+                        LinuxLibC.INSTANCE.setenv(Constants.GST_GL_WINDOW, Constants.SURFACELESS, 0);
+                    } else {
+                        LinuxLibC.INSTANCE.setenv(Constants.GST_GL_WINDOW, Constants.X11, 0);
+                    }
                 }
                 if (System.getenv(Constants.GST_GL_PLATFORM) == null) {
-                    LinuxLibC.INSTANCE.setenv(Constants.GST_GL_PLATFORM, Constants.GLX, 0);
+                    if (MainSingleton.getInstance().isHeadlessMode()) {
+                        LinuxLibC.INSTANCE.setenv(Constants.GST_GL_PLATFORM, Constants.EGL, 0);
+                    } else {
+                        LinuxLibC.INSTANCE.setenv(Constants.GST_GL_PLATFORM, Constants.GLX, 0);
+                    }
                 }
             } catch (Throwable t) {
                 log.warn("Could not set GStreamer GL environment variables: {}", t.getMessage());
