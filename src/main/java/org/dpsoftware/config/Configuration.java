@@ -89,7 +89,7 @@ public class Configuration implements Cloneable {
     // MQTT WiFi Config params
     private boolean fullFirmware = false;
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
-    private double gamma;
+    private double gamma = Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma());
     private String gammaLevel = Enums.GammaLevel.LOW.getBaseI18n();
     private boolean enableAutomaticGamma = true;
     private String gapTypeSide = Constants.GAP_TYPE_DEFAULT_SIDE;

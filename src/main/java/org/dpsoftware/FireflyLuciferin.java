@@ -170,14 +170,17 @@ public class FireflyLuciferin extends Application {
      * @param args startup args
      */
     public static void main(String[] args) {
+        MainSingleton main = MainSingleton.getInstance();
         if (args != null && args.length > 0 && args[0] != null && args[0].equals(Constants.RESTART_DELAY)) {
             String[] newArray = new String[args.length - 1];
             System.arraycopy(args, 1, newArray, 0, newArray.length);
             args = newArray;
             CommonUtility.sleepSeconds(Constants.RESTART_DELAY_SECONDS);
         }
+        if (args != null && args.length > 2 && Constants.HEADLESS_ARG.equals(args[2])) {
+            main.setHeadlessMode(false);
+        }
         moveToStandardDocsFolder();
-        MainSingleton main = MainSingleton.getInstance();
         if (args != null && args.length > 0) {
             main.whoAmI = Integer.parseInt(args[0]);
             main.spawnInstances = false;
