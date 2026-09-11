@@ -274,7 +274,7 @@ public final class NativeExecutor {
      * @return if it's Wayland
      */
     public static boolean isWayland() {
-        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
+        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_CHK) != null && System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
     }
 
     /**
