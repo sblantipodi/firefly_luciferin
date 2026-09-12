@@ -28,10 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
 import org.dpsoftware.managers.PipelineManager;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
@@ -227,7 +224,7 @@ public class GStreamerGrabber {
         try {
             if (!writeToFile && capturedFrames == 90) {
                 writeToFile = true;
-                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION, new File(Constants.GSTREAMER_SCREENSHOT));
+                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION, new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.GSTREAMER_SCREENSHOT));
             }
         } catch (IOException e) {
             log.error(e.getMessage());
