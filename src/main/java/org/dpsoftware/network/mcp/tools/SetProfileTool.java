@@ -128,7 +128,7 @@ public class SetProfileTool extends AbstractMcpTool {
             return createToolErrorResult(msg);
         }
         if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            NativeExecutor.restartNativeInstance(null);
+            NativeExecutor.restartNativeInstance(Constants.DEFAULT);
         } else {
             NativeExecutor.restartNativeInstance(profileName);
         }

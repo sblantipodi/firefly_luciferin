@@ -100,7 +100,7 @@ public abstract class TrayIconBase extends CommonBinding {
         MainSingleton.getInstance().config = sm.readProfileAndCheckDifference(menuItemText, sm);
         if (MainSingleton.getInstance().isRestartNeeded()) {
             if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                NativeExecutor.restartNativeInstance(null);
+                NativeExecutor.restartNativeInstance(Constants.DEFAULT);
             } else {
                 NativeExecutor.restartNativeInstance(menuItemText);
             }
@@ -180,7 +180,7 @@ public abstract class TrayIconBase extends CommonBinding {
         if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(selectedProfile))
                 || selectedProfile.equals(CommonUtility.getWord(Constants.DEFAULT))) {
             if (selectedProfile.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                NativeExecutor.restartNativeInstance(null);
+                NativeExecutor.restartNativeInstance(Constants.DEFAULT);
             } else {
                 NativeExecutor.restartNativeInstance(selectedProfile);
             }
