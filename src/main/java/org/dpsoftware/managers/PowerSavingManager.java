@@ -28,6 +28,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
@@ -36,6 +37,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -84,7 +86,7 @@ public class PowerSavingManager {
         ));
         if (log.isTraceEnabled()) {
             log.trace("Taking screenshot");
-            ImageIO.write(GrabberSingleton.getInstance().screen, "png", new java.io.File("screenshot" + MainSingleton.getInstance().whoAmI + ".png"));
+            ImageIO.write(GrabberSingleton.getInstance().screen, "png", new java.io.File(InstanceConfigurer.getConfigPath() + File.separator + "screenshot" + MainSingleton.getInstance().whoAmI + ".png"));
         }
     }
 
