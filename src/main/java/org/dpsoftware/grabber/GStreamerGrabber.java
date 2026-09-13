@@ -56,10 +56,10 @@ public class GStreamerGrabber {
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     private final Lock bufferLock = new ReentrantLock();
     public AppSink videosink;
-    boolean writeToFile = false;
     int capturedFrames = 0;
     private final int[] reusableRgbTotals = new int[4];
     private final FrameGenerator frameGenerator;
+    private long lastCaptureTime = 0;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -215,19 +215,22 @@ public class GStreamerGrabber {
     private void intBufferRgbToImage(IntBuffer rgbBuffer) {
         MainSingleton main = MainSingleton.getInstance();
         capturedFrames++;
-        BufferedImage img = new BufferedImage(main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor(),
-                main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor(), 1);
+        int width = main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor();
+        int height = main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor();
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         int[] rgbArray = new int[rgbBuffer.capacity()];
         rgbBuffer.rewind();
         rgbBuffer.get(rgbArray);
-        img.setRGB(0, 0, img.getWidth(), img.getHeight(), rgbArray, 0, img.getWidth());
-        try {
-            if (!writeToFile && capturedFrames == 90) {
-                writeToFile = true;
-                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION, new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.GSTREAMER_SCREENSHOT));
+        img.setRGB(0, 0, width, height, rgbArray, 0, width);
+        long now = System.currentTimeMillis();
+        if (now - lastCaptureTime >= 5000) {
+            lastCaptureTime = now;
+            try {
+                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION,
+                        new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.GSTREAMER_SCREENSHOT));
+            } catch (IOException e) {
+                log.error(e.getMessage());
             }
-        } catch (IOException e) {
-            log.error(e.getMessage());
         }
     }
 
