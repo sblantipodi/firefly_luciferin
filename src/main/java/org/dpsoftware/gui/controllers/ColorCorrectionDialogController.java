@@ -739,6 +739,21 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Show capture image
+     */
+    @FXML
+    public void showCaptureImage(InputEvent e) {
+        GuiSingleton.getInstance().setShowCapturedImage(!GuiSingleton.getInstance().isShowCapturedImage());
+        stopLatencyTest();
+        // Stop the capture timeline and exit overlay only mode, then hide the canvas stage
+        // (do not close it: closing it mid render frame orphans the NGCanvas and exhausts the Prism texture pool).
+        // The new canvas reuses the same stage via show().
+        testCanvas.stopForRecreate();
+        testCanvas.stage.hide();
+        CommonUtility.delayMilliseconds(() -> MainSingleton.getInstance().guiManager.showColorCorrectionDialog(settingsController, e), 100);
+    }
+
+    /**
      * Show settings dialog
      */
     @FXML
