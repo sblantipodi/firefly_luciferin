@@ -52,6 +52,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
@@ -63,6 +64,8 @@ import org.dpsoftware.managers.dto.ColorRGBW;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.nio.ByteBuffer;
+import org.dpsoftware.grabber.GrabberSingleton;
 import java.util.*;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
@@ -92,10 +95,15 @@ public class TestCanvas {
     private ColorCorrectionDialogController colorCorrectionDialogController;
     private TcInteractionHandler interactionHandler;
     private RleVisualMapHandler rleVisualMapHandler;
+    private javafx.animation.Timeline captureBackgroundTimeline;
+    // Last successfully decoded GStreamer frame kept so the canvas never goes blank between refreshes
+    private javafx.scene.image.Image lastCaptureImage;
     private List<Configuration> configHistory;
     private int configHistoryIdx = 1;
     private int dialogY;
     private boolean rleVisualMapVisible;
+    // True once the GStreamer pipeline has produced at least one frame; avoids logging during warm up
+    private boolean everCapturedFrame;
 
     /**
      * Forwarding getters/setters for RLE overlay state (owned by {@link RleVisualMapHandler}).
@@ -159,12 +167,13 @@ public class TestCanvas {
         stage.initOwner(settingStage);
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.NONE);
-        stage.setAlwaysOnTop(false);
+        stage.setAlwaysOnTop(GuiSingleton.getInstance().isShowCapturedImage());
         interactionHandler = new TcInteractionHandler(this);
         rleVisualMapHandler = new RleVisualMapHandler(this);
         interactionHandler.manageCanvasKeyPressed(0);
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, 0);
+        startCaptureBackgroundRefresh();
         root.getChildren().add(canvas);
         stage.setScene(s);
         int index = 0;
@@ -187,12 +196,15 @@ public class TestCanvas {
 
     /**
      * Keep the test image canvas above regular application windows.
+     * In ShowCapturedImage mode the stage is {@code alwaysOnTop}, so {@code toFront()} is not needed.
      */
     public void bringToFront() {
         if (stage != null) {
             stage.setIconified(false);
-            stage.setAlwaysOnTop(false);
-            stage.toFront();
+            stage.setAlwaysOnTop(GuiSingleton.getInstance().isShowCapturedImage());
+            if (!GuiSingleton.getInstance().isShowCapturedImage()) {
+                stage.toFront();
+            }
         }
     }
 
@@ -773,6 +785,10 @@ public class TestCanvas {
             rleVisualMapHandler.drawOverlayOnly();
             return;
         }
+        if (GuiSingleton.getInstance().isShowCapturedImage()) {
+            drawPippoCapture();
+            // fall through: tiles are drawn on top of the capture background below
+        }
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
         float saturationToUse;
         switch (saturation) {
@@ -784,18 +800,25 @@ public class TestCanvas {
             default -> saturationToUse = 1.0F;
         }
         ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         int scaleRatio = conf.getOsScaling();
-        // 50% opacity if dragging
-        if (interactionHandler.isCanvasClicked()) {
-            drawLogo(conf, scaleRatio);
-            gc.setFill(Color.BLACK);
-            gc.setFill(new Color(0, 0, 0, 0.5));
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        if (!GuiSingleton.getInstance().isShowCapturedImage()) {
+            // Normal mode: clear the canvas and fill with a black background.
+            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            if (interactionHandler.isCanvasClicked()) {
+                drawLogo(conf, scaleRatio);
+                gc.setFill(new Color(0, 0, 0, 0.5));
+                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            } else {
+                gc.setFill(Color.BLACK);
+                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                drawLogo(conf, scaleRatio);
+            }
         } else {
-            gc.setFill(Color.BLACK);
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            drawLogo(conf, scaleRatio);
+            // just apply a semi transparent dark overlay while dragging so tiles remain readable.
+            if (interactionHandler.isCanvasClicked()) {
+                gc.setFill(new Color(0, 0, 0, 0.4));
+                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            }
         }
         drawFireflyText();
         gc.setFill(Color.GREEN);
@@ -822,6 +845,27 @@ public class TestCanvas {
         }
     }
 
+    private void drawPippoCapture() {
+        javafx.scene.image.Image fresh = getLatestCaptureAsImage();
+        if (fresh != null) {
+            lastCaptureImage = fresh;
+        }
+        // If we still have no frame at all, leave the canvas as-is (do not clear it).
+        if (lastCaptureImage == null) {
+            return;
+        }
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        double ratio = 0.30;
+        double rectW = canvas.getWidth() * ratio;
+        double rectH = canvas.getHeight() * ratio;
+        double x = (canvas.getWidth() - rectW) / 2;
+        double y = (canvas.getHeight() - rectH) / 2;
+        gc.drawImage(lastCaptureImage, x, y, rectW, rectH);
+        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
+        gc.setLineWidth(1);
+        gc.strokeRect(x, y, rectW, rectH);
+    }
+
     public void updateStageBounds() {
         rleVisualMapHandler.updateStageBounds();
     }
@@ -836,6 +880,115 @@ public class TestCanvas {
 
     public void drawOverlayOnly() {
         rleVisualMapHandler.drawOverlayOnly();
+    }
+
+    /**
+     * Start a periodic refresh that redraws the latest GStreamer capture as the test canvas
+     * background. Needed because the capture is produced asynchronously after the stage is shown.
+     */
+    private void startCaptureBackgroundRefresh() {
+        if (!GuiSingleton.getInstance().isShowCapturedImage()) {
+            return;
+        }
+        if (captureBackgroundTimeline != null) {
+            captureBackgroundTimeline.stop();
+        }
+        // ~15 fps is enough to keep the background alive without wasting CPU
+        captureBackgroundTimeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(66), _ -> refreshCaptureBackground()));
+        captureBackgroundTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        captureBackgroundTimeline.play();
+    }
+
+    /**
+     * Redraw the canvas with the latest GStreamer capture frame.
+     */
+    private void refreshCaptureBackground() {
+        if (!GuiSingleton.getInstance().isShowCapturedImage()) {
+            return;
+        }
+        if (stage == null || canvas == null) {
+            return;
+        }
+        drawPippoCapture();
+    }
+
+    /**
+     * Build a JavaFX Image from the latest captured RGB frame exposed by the GStreamer grabber,
+     * so it can be drawn as the test canvas background. Returns null if no grabber/frame is available.
+     *
+     * @return the latest captured frame as a JavaFX Image, or null
+     */
+    private javafx.scene.image.Image getLatestCaptureAsImage() {
+        try {
+            // Read from the global singleton so the JavaFX thread always sees the same field
+            // the GStreamer thread writes. This is immune to pipeline restarts that swap the
+            // GStreamerGrabber instance held by GrabberManager.
+            ByteBuffer buf = GrabberSingleton.getInstance().latestRgbBufferSnapshot;
+            if (buf == null) {
+                // Fallback to the manager's grabber in case the singleton was never populated
+                // (e.g. very early startup before the first frame).
+                org.dpsoftware.grabber.GrabberManager manager = GuiSingleton.getInstance().getGrabberManager();
+                GStreamerGrabber grabber = (manager != null) ? manager.vc : null;
+                buf = (grabber != null) ? grabber.getLastRgbBufferSnapshot() : null;
+                if (buf == null && everCapturedFrame) {
+                    log.debug("GStreamer lastRgbBuffer lost: singleton=null, manager={}, managerHash={}, vcHash={}, singletonPublisherHash={}, singletonLatest={}",
+                            manager,
+                            (manager == null) ? "null" : System.identityHashCode(manager),
+                            (grabber == null) ? "null" : System.identityHashCode(grabber),
+                            GrabberSingleton.getInstance().lastPublisherHash,
+                            (GrabberSingleton.getInstance().latestRgbBuffer == null) ? "null" : GrabberSingleton.getInstance().latestRgbBuffer.remaining());
+                }
+                return null;
+            }
+            everCapturedFrame = true;
+            MainSingleton main = MainSingleton.getInstance();
+            int width = main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor();
+            int height = main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor();
+            if (buf.remaining() < (width * height * Integer.BYTES)) {
+                log.debug("GStreamer capture buffer too small: {} bytes, need {}", buf.remaining(), width * height * Integer.BYTES);
+                return null;
+            }
+            // The GStreamer pipeline produces BGRx (4 bytes per pixel, little-endian) for most capture methods,
+            // but RGBA (via d3d12convert) for WIN_USB_VIDEO. Read the bytes accordingly.
+            boolean isWinUsbVideo = main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.WIN_USB_VIDEO.name());
+            int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, buf.asIntBuffer());
+            int stridePixels = widthPlusStride - width;
+            int rowBytes = widthPlusStride * 4;
+            int[] argbArray = new int[width * height];
+            java.nio.ByteBuffer bgr = buf.order(java.nio.ByteOrder.nativeOrder());
+            int pixelIndex = 0;
+            for (int y = 0; y < height; y++) {
+                int rowStart = y * rowBytes;
+                for (int x = 0; x < width; x++) {
+                    int offset = rowStart + x * 4;
+                    int r, g, b;
+                    if (isWinUsbVideo) {
+                        r = bgr.get(offset) & 0xFF;
+                        g = bgr.get(offset + 1) & 0xFF;
+                        b = bgr.get(offset + 2) & 0xFF;
+                    } else {
+                        b = bgr.get(offset) & 0xFF;
+                        g = bgr.get(offset + 1) & 0xFF;
+                        r = bgr.get(offset + 2) & 0xFF;
+                    }
+                    argbArray[pixelIndex++] = (0xFF << 24) | (r << 16) | (g << 8) | b;
+                }
+                // skip padding bytes (stride)
+                bgr.position(rowStart + width * 4 + stridePixels * 4);
+            }
+            javafx.scene.image.WritableImage fxImage = new javafx.scene.image.WritableImage(width, height);
+            javafx.scene.image.PixelWriter writer = fxImage.getPixelWriter();
+            for (int i = 0; i < width * height; i++) {
+                int x = i % width;
+                int y = i / width;
+                writer.setArgb(x, y, argbArray[i]);
+            }
+            return fxImage;
+        } catch (Exception e) {
+            log.warn("Unable to read latest capture for test canvas background: {}", e.getMessage());
+            return null;
+        }
     }
 
 }

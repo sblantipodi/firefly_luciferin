@@ -91,6 +91,14 @@ public class GrabberSingleton {
     int currentSecondToken = 0;     // Number of frames already sent within the current second window
     long lastSecondMark = 0;        // Timestamp marking when the last 1-second block started
     long lastActualSendTime = 0;    // Timestamp of the last actual send operation
+    // Hold the latest RGB frame here (true singleton) so the GStreamer pipeline thread and the
+    // JavaFX render thread always see the same buffer, even after a pipeline restart creates a new
+    // GStreamerGrabber. TestCanvas reads this field and rgbFrame publishes to it, eliminating the
+    // "TestCanvas sees null while the pipeline is producing" race caused by two grabbers alive at once.
+    public volatile java.nio.ByteBuffer latestRgbBuffer;
+    public volatile java.nio.ByteBuffer latestRgbBufferSnapshot;
+    // Identity hash of the GStreamerGrabber that last published, for diagnostics.
+    public volatile int lastPublisherHash;
 
     public void resetFlowRamp() {
         flowStartTime = 0;

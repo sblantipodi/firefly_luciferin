@@ -720,6 +720,7 @@ public class ColorCorrectionDialogController {
         if (GuiSingleton.getInstance().rleVisualMapVisible) {
             testCanvas.stopOverlayOnlyMode();
             if (colorDialog != null) {
+                colorDialog.setAlwaysOnTop(true);
                 colorDialog.show();
             }
         } else {

@@ -625,10 +625,12 @@ public class GuiManager {
                 GuiSingleton.getInstance().colorDialog = stage;
                 stage.getProperties().put(Constants.FXML_COLOR_CORRECTION_DIALOG, controller);
                 GuiSingleton.getInstance().colorDialog.show();
+                stage.toFront();
                 Platform.runLater(() -> {
                     new TestCanvas().setDialogMargin(stage);
                     testCanvas.setDialogY((int) stage.getY());
                     stage.setAlwaysOnTop(true);
+                    stage.toFront();
                 });
             });
         });

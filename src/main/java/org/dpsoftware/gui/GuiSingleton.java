@@ -59,6 +59,9 @@ public class GuiSingleton {
     public boolean upgrade = false;
     public boolean rleVisualMapVisible;
     public Stage colorDialog;
+    // Grabber manager instance, used to read the latest captured RGB frame as a test canvas background
+    public volatile org.dpsoftware.grabber.GrabberManager grabberManager;
+    public boolean showCapturedImage = true;
 
 }
 
