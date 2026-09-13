@@ -500,15 +500,9 @@ public class GStreamerGrabber {
                         dispatchSimdStrategy(isBenchmarkingActive, height, widthPlusStride, memorySegment,
                                 SPECIES, vectorLength, xCoordinate, yCoordinate, pixelInUseX, pixelInUseY,
                                 rgbTotals, byteOrder);
-                        if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
-                            b = rgbTotals[0];
-                            g = rgbTotals[1];
-                            r = rgbTotals[2];
-                        } else {
-                            r = rgbTotals[0];
-                            g = rgbTotals[1];
-                            b = rgbTotals[2];
-                        }
+                        r = rgbTotals[0];
+                        g = rgbTotals[1];
+                        b = rgbTotals[2];
                         pickNumber = rgbTotals[3];
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive());
                     } else {
@@ -526,15 +520,9 @@ public class GStreamerGrabber {
                                 int offsetY = (yCoordinate + y);
                                 int bufferOffset = (Math.min(offsetX, widthPlusStride)) + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
                                 int rgb = rgbBuffer.get(Math.min(rgbBuffer.capacity() - 1, bufferOffset));
-                                if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
-                                    b += rgb >> 16 & 0xFF;
-                                    g += rgb >> 8 & 0xFF;
-                                    r += rgb & 0xFF;
-                                } else {
-                                    r += rgb >> 16 & 0xFF;
-                                    g += rgb >> 8 & 0xFF;
-                                    b += rgb & 0xFF;
-                                }
+                                r += rgb >> 16 & 0xFF;
+                                g += rgb >> 8 & 0xFF;
+                                b += rgb & 0xFF;
                                 pickNumber++;
                             }
                         }
