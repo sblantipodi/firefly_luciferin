@@ -439,7 +439,7 @@ public class NetworkSingleton {
             groupsSum += (qty * val);
         }
         if (GrabberSingleton.getInstance().isLosslessCompressionLog()) {
-            log.debug(visual.toString());
+            log.trace(visual.toString());
             visual = new StringBuilder();
             visual.append("[")
                     .append("LEDs: ")
@@ -451,7 +451,7 @@ public class NetworkSingleton {
                     .append(", Leaders: ")
                     .append(leadersCount)
                     .append("]");
-            log.debug(visual.toString());
+            log.trace(visual.toString());
         }
 
         lastRleEntries = getInstance().getRleMapInUse();
