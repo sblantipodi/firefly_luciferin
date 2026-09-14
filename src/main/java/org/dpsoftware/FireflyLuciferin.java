@@ -33,6 +33,7 @@ import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.network.McpServer;
@@ -352,6 +353,7 @@ public class FireflyLuciferin extends Application {
                 || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name()))
                 || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
             grabberManager.launchAdvancedGrabber(imageProcessor);
+            GuiSingleton.getInstance().setGrabberManager(grabberManager);
         } else { // Standard Producers
             grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);
         }

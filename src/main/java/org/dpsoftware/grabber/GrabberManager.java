@@ -58,7 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GrabberManager {
 
     public Bin bin;
-    GStreamerGrabber vc;
+    public GStreamerGrabber vc;
     private boolean linuxPingUnavailable = false;
 
     /**
@@ -116,9 +116,13 @@ public class GrabberManager {
         Gst.getExecutor().scheduleAtFixedRate(() -> {
             if (!ManagerSingleton.getInstance().pipelineStopping && main.RUNNING && main.FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
-                if (GrabberSingleton.getInstance().pipe == null || !GrabberSingleton.getInstance().pipe.isPlaying() || pipelineRetry.get() >= 2) {
+                boolean pipeNull = GrabberSingleton.getInstance().pipe == null;
+                boolean notPlaying = !pipeNull && !GrabberSingleton.getInstance().pipe.isPlaying();
+                boolean tooManyRetries = pipelineRetry.get() >= 2;
+                log.info("Watchdog tick #{}: pipeNull={}, notPlaying={}, tooManyRetries={}", pipelineRetry.get(), pipeNull, notPlaying, tooManyRetries);
+                if (pipeNull || notPlaying || tooManyRetries) {
                     if (GrabberSingleton.getInstance().pipe != null) {
-                        log.info("Restarting pipeline");
+                        log.info("Restarting pipeline (reason={})", (pipeNull ? "pipeNull" : (notPlaying ? "notPlaying" : "tooManyRetries")));
                         GrabberSingleton.getInstance().pipe.stop();
                         restartCounter.getAndIncrement();
                         if (restartCounter.get() >= Constants.MAX_PIPELINE_RESTARTS) {
@@ -179,7 +183,7 @@ public class GrabberManager {
      */
     private void disposePipeline() {
         if (GrabberSingleton.getInstance().pipe != null && !GrabberSingleton.getInstance().pipe.isPlaying() && !ManagerSingleton.getInstance().pipelineStarting) {
-            log.info("Free up system memory");
+            log.info("Dispose pipeline: releasing bin and pipeline (this clears lastRgbBuffer)");
             Gst.invokeLater(bin::dispose);
             Gst.invokeLater(vc.videosink::dispose);
             Gst.invokeLater(vc.getElement()::dispose);

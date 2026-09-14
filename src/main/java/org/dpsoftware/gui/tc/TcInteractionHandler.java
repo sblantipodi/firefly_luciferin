@@ -240,6 +240,19 @@ public class TcInteractionHandler {
             tc.drawTestShapes(conf, saturation);
             drawSelectionOverlay(conf);
             FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
+            // In showCapturedImage mode both stages are alwaysOnTop=true. Clicking the canvas makes the OS
+            // promote TestCanvas to the head of the TOPMOST Z-group, pushing colorDialog behind.
+            // Re-assert colorDialog's Z position by toggling alwaysOnTop: this calls
+            // SetWindowPos(HWND_TOPMOST, SWP_NOACTIVATE) which changes Z-order without
+            // transferring keyboard focus unlike toFront() which calls SetForegroundWindow().
+            if (GuiSingleton.getInstance().isShowCapturedImage()) {
+                Stage colorDialog = GuiSingleton.getInstance().colorDialog;
+                if (colorDialog != null && colorDialog.isShowing()) {
+                    colorDialog.setAlwaysOnTop(false);
+                    colorDialog.setAlwaysOnTop(true);
+                }
+                tc.getCanvas().requestFocus();
+            }
         });
     }
 
