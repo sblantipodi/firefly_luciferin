@@ -255,7 +255,7 @@ public class UdpClient {
                 total +
                 "] -> " +
                 groups;
-        log.debug(formatted);
+        log.trace(formatted);
     }
 
     /**
