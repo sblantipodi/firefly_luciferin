@@ -313,7 +313,7 @@ public class DisplayManager {
                         log.debug("An external device found: {}", node.get("FriendlyName").asText());
                     }
                 } catch (JsonProcessingException e) {
-                    log.error("Failed to parse external devices JSON", e);
+                    log.debug("No USB capture device found.");
                 }
                 Platform.runLater(() -> onComplete.accept(extSrcFriendlyNames));
             }, 10);
