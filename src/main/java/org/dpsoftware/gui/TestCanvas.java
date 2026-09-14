@@ -167,7 +167,7 @@ public class TestCanvas {
         stage.initOwner(settingStage);
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.NONE);
-        stage.setAlwaysOnTop(GuiSingleton.getInstance().isShowCapturedImage());
+        stage.setAlwaysOnTop(GuiSingleton.getInstance().isShowLiveCapture());
         interactionHandler = new TcInteractionHandler(this);
         rleVisualMapHandler = new RleVisualMapHandler(this);
         interactionHandler.manageCanvasKeyPressed(0);
@@ -201,8 +201,8 @@ public class TestCanvas {
     public void bringToFront() {
         if (stage != null) {
             stage.setIconified(false);
-            stage.setAlwaysOnTop(GuiSingleton.getInstance().isShowCapturedImage());
-            if (!GuiSingleton.getInstance().isShowCapturedImage()) {
+            stage.setAlwaysOnTop(GuiSingleton.getInstance().isShowLiveCapture());
+            if (!GuiSingleton.getInstance().isShowLiveCapture()) {
                 stage.toFront();
             }
         }
@@ -854,8 +854,8 @@ public class TestCanvas {
             rleVisualMapHandler.drawOverlayOnly();
             return;
         }
-        if (GuiSingleton.getInstance().isShowCapturedImage()) {
-            drawPippoCapture();
+        if (GuiSingleton.getInstance().isShowLiveCapture()) {
+            drawLiveCapture();
             // fall through: tiles are drawn on top of the capture background below
         }
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
@@ -870,7 +870,7 @@ public class TestCanvas {
         }
         ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
         int scaleRatio = conf.getOsScaling();
-        if (!GuiSingleton.getInstance().isShowCapturedImage()) {
+        if (!GuiSingleton.getInstance().isShowLiveCapture()) {
             // Normal mode: clear the canvas and fill with a black background.
             gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
             if (interactionHandler.isCanvasClicked()) {
@@ -914,7 +914,10 @@ public class TestCanvas {
         }
     }
 
-    private void drawPippoCapture() {
+    /**
+     * Draw live capture video from screen capture or USB Video
+     */
+    private void drawLiveCapture() {
         javafx.scene.image.Image fresh = getLatestCaptureAsImage();
         if (fresh != null) {
             lastCaptureImage = fresh;
@@ -930,9 +933,16 @@ public class TestCanvas {
         double x = (canvas.getWidth() - rectW) / 2;
         double y = (canvas.getHeight() - rectH) / 2;
         gc.drawImage(lastCaptureImage, x, y, rectW, rectH);
-        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
-        gc.setLineWidth(1);
-        gc.strokeRect(x, y, rectW, rectH);
+        // Soft glowing border: layered strokes from wide/transparent to thin/bright
+        Color baseBorder = Color.rgb(80, 220, 255);
+        double[] offsets = {6, 4, 2};
+        double[] widths = {8, 5, 2};
+        double[] alphas = {0.12, 0.30, 0.85};
+        for (int i = 0; i < offsets.length; i++) {
+            gc.setStroke(baseBorder.deriveColor(0, 0, 1, alphas[i]));
+            gc.setLineWidth(widths[i]);
+            gc.strokeRect(x - offsets[i], y - offsets[i], rectW + offsets[i] * 2, rectH + offsets[i] * 2);
+        }
     }
 
     public void updateStageBounds() {
@@ -956,7 +966,7 @@ public class TestCanvas {
      * background. Needed because the capture is produced asynchronously after the stage is shown.
      */
     private void startCaptureBackgroundRefresh() {
-        if (!GuiSingleton.getInstance().isShowCapturedImage()) {
+        if (!GuiSingleton.getInstance().isShowLiveCapture()) {
             return;
         }
         if (captureBackgroundTimeline != null) {
@@ -973,13 +983,13 @@ public class TestCanvas {
      * Redraw the canvas with the latest GStreamer capture frame.
      */
     private void refreshCaptureBackground() {
-        if (!GuiSingleton.getInstance().isShowCapturedImage()) {
+        if (!GuiSingleton.getInstance().isShowLiveCapture()) {
             return;
         }
         if (stage == null || canvas == null) {
             return;
         }
-        drawPippoCapture();
+        drawLiveCapture();
     }
 
     /**
