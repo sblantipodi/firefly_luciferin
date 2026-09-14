@@ -598,7 +598,7 @@ public class GuiManager {
         Platform.runLater(() -> {
             TestCanvas previous = GuiSingleton.getInstance().testCanvas;
             TestCanvas testCanvas;
-            if (previous != null && previous.getStage() != null && previous.getCanvas() != null) {
+            if (!GuiSingleton.getInstance().rleVisualMapVisible && previous != null && previous.getStage() != null && previous.getCanvas() != null) {
                 // Reuse the existing canvas/scene/stage to avoid repeatedly tearing down and re creating JavaFX scenes
                 // (which can orphan the NGCanvas in the render graph and exhaust the Prism texture pool).
                 testCanvas = previous;
