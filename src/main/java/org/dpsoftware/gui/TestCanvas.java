@@ -418,6 +418,75 @@ public class TestCanvas {
     }
 
     /**
+     * Stop the capture background timeline without touching the stage.
+     * Must be called before the canvas is re created so a stale timeline
+     * keeps drawing into an orphaned canvas.
+     */
+    public void stopCaptureBackgroundRefresh() {
+        if (captureBackgroundTimeline != null) {
+            captureBackgroundTimeline.stop();
+            captureBackgroundTimeline = null;
+        }
+    }
+
+    /**
+     * Stop the capture background timeline and exit overlay only mode without
+     * touching the stage. The new canvas re enters these states in
+     * {@code buildAndShowTestImage}. This prevents the old timeline from
+     * drawing into a stage that is about to be hidden/re-created.
+     */
+    public void stopForRecreate() {
+        stopCaptureBackgroundRefresh();
+        if (rleVisualMapHandler != null) {
+            rleVisualMapHandler.stopOverlayOnlyMode();
+        }
+    }
+
+    /**
+     * Re attach a fresh TestCanvas state onto the existing stage/scene/canvas
+     * instead of creating a new one. This avoids repeatedly tearing down and
+     * re creating JavaFX scenes, which can orphan the NGCanvas in the render
+     * graph and exhaust the Prism texture pool.
+     *
+     * @param interactionHandler  interaction handler to install
+     * @param rleVisualMapHandler RLE visual map handler to install
+     * @param conf                config to redraw the test shapes with
+     */
+    public void refreshExisting(TcInteractionHandler interactionHandler, RleVisualMapHandler rleVisualMapHandler, Configuration conf) {
+        this.interactionHandler = interactionHandler;
+        this.rleVisualMapHandler = rleVisualMapHandler;
+        // Re read the config from disk so configHistory holds the original (saved) state,
+        // not the in memory modified one. This ensures close() discards unsaved changes.
+        StorageManager sm = new StorageManager();
+        this.configHistory = new ArrayList<>();
+        this.configHistory.add(sm.readProfileInUseConfig());
+        // Re register keyboard listeners on the reused canvas (same as buildAndShowTestImage)
+        interactionHandler.manageCanvasKeyPressed(0);
+        // Reset the canvas to a clean black background before redrawing
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        gc.setFill(Color.BLACK);
+        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawTestShapes(conf, 0);
+        // Re position the stage on the correct monitor (same logic as buildAndShowTestImage)
+        int index = 0;
+        DisplayManager displayManager = new DisplayManager();
+        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
+            if (index == MainSingleton.getInstance().config.getMonitorNumber()) {
+                stage.setX(displayInfo.getMinX());
+                stage.setY(displayInfo.getMinY());
+                stage.setWidth(displayInfo.getWidth());
+                stage.setHeight(displayInfo.getHeight());
+                canvas.setWidth(displayInfo.getWidth());
+                canvas.setHeight(displayInfo.getHeight());
+            }
+            index++;
+        }
+        startCaptureBackgroundRefresh();
+        stage.show();
+        bringToFront();
+    }
+
+    /**
      * Draw tile
      *
      * @param conf             stored config
@@ -946,7 +1015,7 @@ public class TestCanvas {
             int width = main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor();
             int height = main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor();
             if (buf.remaining() < (width * height * Integer.BYTES)) {
-                log.debug("GStreamer capture buffer too small: {} bytes, need {}", buf.remaining(), width * height * Integer.BYTES);
+                log.trace("GStreamer capture buffer too small: {} bytes, need {}", buf.remaining(), width * height * Integer.BYTES);
                 return null;
             }
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, buf.asIntBuffer());
