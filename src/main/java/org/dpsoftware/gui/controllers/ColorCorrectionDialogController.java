@@ -106,7 +106,7 @@ public class ColorCorrectionDialogController {
     @FXML
     public Button overlayBtn;
     @FXML
-    public Button captureImageBtn;
+    public Button liveCaptureBtn;
     @FXML
     public Button tooltipBtn;
     TestCanvas testCanvas;
@@ -741,11 +741,11 @@ public class ColorCorrectionDialogController {
     }
 
     /**
-     * Show capture image
+     * Show live capture image from screen capture or USB video
      */
     @FXML
-    public void showCaptureImage(InputEvent e) {
-        GuiSingleton.getInstance().setShowCapturedImage(!GuiSingleton.getInstance().isShowCapturedImage());
+    public void showLivevCapture(InputEvent e) {
+        GuiSingleton.getInstance().setShowLiveCapture(!GuiSingleton.getInstance().isShowLiveCapture());
         stopLatencyTest();
         // Stop the capture timeline and exit overlay only mode, then hide the canvas stage
         // (do not close it: closing it mid render frame orphans the NGCanvas and exhausts the Prism texture pool).
