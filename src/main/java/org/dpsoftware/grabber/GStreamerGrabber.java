@@ -220,29 +220,34 @@ public class GStreamerGrabber {
      * @param rgbBuffer rgb int buffer
      */
     private void intBufferRgbToImage(int width, int height, ByteBuffer rgbBuffer) {
-        int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer.asIntBuffer());
-        int bytesPerRow = widthPlusStride * 4;
-        int stridePixels = widthPlusStride - width;
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        int[] rgbArray = new int[width * height];
-        rgbBuffer.order(java.nio.ByteOrder.nativeOrder());
-        int pixelIndex = 0;
-        for (int y = 0; y < height; y++) {
-            int rowStart = y * bytesPerRow;
-            for (int x = 0; x < width; x++) {
-                int offset = rowStart + x * 4;
-                int b = rgbBuffer.get(offset) & 0xFF;
-                int g = rgbBuffer.get(offset + 1) & 0xFF;
-                int r = rgbBuffer.get(offset + 2) & 0xFF;
-                rgbArray[pixelIndex++] = (0xFF << 24) | (r << 16) | (g << 8) | b;
-            }
-            // skip padding bytes (stride)
-            rgbBuffer.position(rowStart + width * 4 + stridePixels * 4);
-        }
-        img.setRGB(0, 0, width, height, rgbArray, 0, width);
         long now = System.currentTimeMillis();
         if (now - lastCaptureTime >= 5000) {
             lastCaptureTime = now;
+            int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer.asIntBuffer());
+            int bytesPerRow = widthPlusStride * 4;
+            int stridePixels = widthPlusStride - width;
+            BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            int[] rgbArray = new int[width * height];
+            rgbBuffer.order(java.nio.ByteOrder.nativeOrder());
+            int pixelIndex = 0;
+            for (int y = 0; y < height; y++) {
+                int rowStart = y * bytesPerRow;
+                for (int x = 0; x < width; x++) {
+                    int offset = rowStart + x * 4;
+                    int b = rgbBuffer.get(offset) & 0xFF;
+                    int g = rgbBuffer.get(offset + 1) & 0xFF;
+                    int r = rgbBuffer.get(offset + 2) & 0xFF;
+                    // TODO
+//                    rgbArray[pixelIndex++] = (0xFF << 24) | (r << 16) | (g << 8) | b;
+                    //
+                    int[] tonedMappedColor = CubeLutToneMap.lookup(r, g, b);
+                    rgbArray[pixelIndex++] = (0xFF << 24) | (tonedMappedColor[0] << 16) | (tonedMappedColor[1] << 8) | tonedMappedColor[2];
+                    //
+                }
+                // skip padding bytes (stride)
+                rgbBuffer.position(rowStart + width * 4 + stridePixels * 4);
+            }
+            img.setRGB(0, 0, width, height, rgbArray, 0, width);
             try {
                 ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION,
                         new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.GSTREAMER_SCREENSHOT));
