@@ -53,6 +53,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
@@ -65,7 +66,6 @@ import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.nio.ByteBuffer;
-import org.dpsoftware.grabber.GrabberSingleton;
 import java.util.*;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
@@ -949,9 +949,6 @@ public class TestCanvas {
                 log.debug("GStreamer capture buffer too small: {} bytes, need {}", buf.remaining(), width * height * Integer.BYTES);
                 return null;
             }
-            // The GStreamer pipeline produces BGRx (4 bytes per pixel, little-endian) for most capture methods,
-            // but RGBA (via d3d12convert) for WIN_USB_VIDEO. Read the bytes accordingly.
-            boolean isWinUsbVideo = main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.WIN_USB_VIDEO.name());
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, buf.asIntBuffer());
             int stridePixels = widthPlusStride - width;
             int rowBytes = widthPlusStride * 4;
@@ -963,15 +960,9 @@ public class TestCanvas {
                 for (int x = 0; x < width; x++) {
                     int offset = rowStart + x * 4;
                     int r, g, b;
-                    if (isWinUsbVideo) {
-                        r = bgr.get(offset) & 0xFF;
-                        g = bgr.get(offset + 1) & 0xFF;
-                        b = bgr.get(offset + 2) & 0xFF;
-                    } else {
-                        b = bgr.get(offset) & 0xFF;
-                        g = bgr.get(offset + 1) & 0xFF;
-                        r = bgr.get(offset + 2) & 0xFF;
-                    }
+                    b = bgr.get(offset) & 0xFF;
+                    g = bgr.get(offset + 1) & 0xFF;
+                    r = bgr.get(offset + 2) & 0xFF;
                     argbArray[pixelIndex++] = (0xFF << 24) | (r << 16) | (g << 8) | b;
                 }
                 // skip padding bytes (stride)
