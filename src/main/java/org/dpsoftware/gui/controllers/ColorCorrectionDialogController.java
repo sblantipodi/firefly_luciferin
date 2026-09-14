@@ -106,6 +106,8 @@ public class ColorCorrectionDialogController {
     @FXML
     public Button overlayBtn;
     @FXML
+    public Button captureImageBtn;
+    @FXML
     public Button tooltipBtn;
     TestCanvas testCanvas;
     boolean useHalfSaturation = false;
