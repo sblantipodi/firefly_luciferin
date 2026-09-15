@@ -237,12 +237,9 @@ public class GStreamerGrabber {
                     int b = rgbBuffer.get(offset) & 0xFF;
                     int g = rgbBuffer.get(offset + 1) & 0xFF;
                     int r = rgbBuffer.get(offset + 2) & 0xFF;
-                    // TODO
-//                    rgbArray[pixelIndex++] = (0xFF << 24) | (r << 16) | (g << 8) | b;
-                    //
+                    // HDR to SDR tone mapping via 3D LUT
                     int[] tonedMappedColor = CubeLutToneMap.lookup(r, g, b);
                     rgbArray[pixelIndex++] = (0xFF << 24) | (tonedMappedColor[0] << 16) | (tonedMappedColor[1] << 8) | tonedMappedColor[2];
-                    //
                 }
                 // skip padding bytes (stride)
                 rgbBuffer.position(rowStart + width * 4 + stridePixels * 4);

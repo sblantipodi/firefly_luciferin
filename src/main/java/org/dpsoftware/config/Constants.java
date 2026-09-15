@@ -37,6 +37,7 @@ public class Constants {
     public static final String FIRMWARE_NAME = "Glow Worm Luciferin";
     public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
     public static final Color DEFAULT_COLOR = Color.rgb(255, 82, 0);
+    public static final String DEFAULT_CUBE_LUT = "1000nits_HDR-to-SDR.cube";
     public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
     public static final String DEFAULT_BAUD_RATE = Enums.BaudRate.BAUD_RATE_500000.getBaudRate();
     public static final String DEFAULT_FRAMERATE = "30";
@@ -191,6 +192,7 @@ public class Constants {
     public static final String FXML_PROFILE_DIALOG = "profileDialog";
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
     public static final String FXML_GAMMA_DIALOG = "gammaDialog";
+    public static final String FXML_DISPLAY_DIALOG = "displayDialog";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
     public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
@@ -218,6 +220,7 @@ public class Constants {
     public static final String TOPIC_FIREFLY_LUCIFERIN_EFFECT = "lights/glowwormluciferin/effectToFf";
     public static final String TOPIC_FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
     public static final String TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET = "lights/firelyluciferin/profile/set";
+    public static final String TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET = "lights/firelyluciferin/cubeLut/set";
     // No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
     public static final String TOPIC_GLOW_WORM_FIRM_CONFIG = "lights/glowwormluciferin/firmwareconfig";
     public static final String TOPIC_UNSUBSCRIBE_STREAM = "lights/glowwormluciferin/unsubscribe";
@@ -276,6 +279,7 @@ public class Constants {
     public static final String LED_NUM = "\"lednum\":";
     public static final String STREAM = "\"stream\":[";
     public static final String MQTT_GAMMA = "gamma";
+    public static final String MQTT_CUBE_LUT = "cubeLut";
     public static final String MQTT_FRAMERATE = "framerate";
     public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
     public static final String MQTT_DISCOVERY_TOPIC = "homeassistant";
@@ -571,6 +575,7 @@ public class Constants {
     public static final String TOOLTIP_DEV_NAME = "fxml.mqtttab.improv.devicename";
     public static final String TOOLTIP_ETHERNET = "fxml.mqtttab.improv.ethernet";
     public static final String TOOLTIP_IMPROV_CONTEXT = "fxml.mqtttab.improv.context";
+    public static final String DISABLED = "Disabled";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";

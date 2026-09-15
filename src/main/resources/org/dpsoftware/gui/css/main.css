@@ -283,3 +283,11 @@
 .tray_menu_item_border { color: #808080FF; }
 .tray_background { color: #F4F4F4FF; }
 .tray_separator { color: #D7D7D7FF; }
+
+.combo-box > .list-cell {
+    -fx-padding: 3 0 3 6;
+}
+
+#monitorNumber .arrow-button {
+    -fx-padding: 0.2em 0.6em 0.2em 0.5em;
+}

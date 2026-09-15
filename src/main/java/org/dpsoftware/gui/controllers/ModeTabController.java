@@ -74,6 +74,8 @@ public class ModeTabController {
     @FXML
     public Button saveSettingsButton;
     @FXML
+    public Button displayDialogBtn;
+    @FXML
     public ComboBox<String> simdOption;
     @FXML
     public RadioButton firmTypeFull;
@@ -649,4 +651,15 @@ public class ModeTabController {
         SettingsController.addTextFieldListener(screenHeight, false);
         SettingsController.addTextFieldListener(numberOfThreads, false);
     }
+
+    /**
+     * Show gamma dialog
+     */
+    @FXML
+    public void openDisplayDialog() {
+        if (MainSingleton.getInstance().guiManager != null) {
+            MainSingleton.getInstance().guiManager.showDisplayDialog(settingsController);
+        }
+    }
+
 }
