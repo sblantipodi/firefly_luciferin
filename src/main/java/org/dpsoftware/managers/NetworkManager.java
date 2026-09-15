@@ -33,6 +33,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.CubeLutToneMap;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.NetworkTabController;
@@ -457,6 +458,8 @@ public class NetworkManager implements MqttCallback {
             case Constants.HTTP_SET_LDR -> topic = Constants.HTTP_SET_LDR.replace(gwBaseTopic, defaultTopic);
             case Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET ->
                     topic = Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET ->
+                    topic = Constants.TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET.replace(fireflyBaseTopic, defaultFireflyTopic);
         }
         return topic;
     }
@@ -612,6 +615,32 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
+     * Manage cube LUT topic. The payload is the LUT filename (or JSON with a
+     * {@code cublut} field). The LUT is reloaded at runtime via
+     * {@link CubeLutToneMap#refresh()} so the change applies without a restart.
+     *
+     * @param message mqtt message
+     */
+    private void manageCubeLut(String message) {
+        if (MainSingleton.getInstance().config != null) {
+            String lutName = message;
+            try {
+                JsonNode node = CommonUtility.JSON_MAPPER.readTree(message);
+                if (node.isObject() && node.get(Constants.MQTT_CUBE_LUT) != null) {
+                    lutName = node.get(Constants.MQTT_CUBE_LUT).asText();
+                }
+            } catch (IOException ignored) {
+                // Plain-text payload (the LUT filename itself).
+            }
+            final String lut = (lutName == null || lutName.isBlank()) ? Constants.DEFAULT_CUBE_LUT : lutName;
+            CommonUtility.delayMilliseconds(() -> {
+                MainSingleton.getInstance().config.setCubeLut(lut);
+                CubeLutToneMap.refresh();
+            }, 200);
+        }
+    }
+
+    /**
      * Manage firmware config topic
      * No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
      *
@@ -708,6 +737,7 @@ public class NetworkManager implements MqttCallback {
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_ASPECT_RATIO));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET));
         ManagerSingleton.getInstance().client.subscribe(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG);
     }
 
@@ -740,6 +770,8 @@ public class NetworkManager implements MqttCallback {
             manageEffect(message.toString());
         } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET))) {
             manageProfile(message.toString());
+        } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET))) {
+            manageCubeLut(message.toString());
         } else if (topic.equals(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG)) {
             manageFirmwareConfig(message.toString());
         }
