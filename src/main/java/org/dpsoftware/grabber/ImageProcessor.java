@@ -174,6 +174,14 @@ public class ImageProcessor {
                 (float) g / pickNumber,
                 (float) b / pickNumber
         );
+        // TODO
+        // HDR to SDR tone mapping via 3D LUT before applying SDR corrections
+        int[] sdr = CubeLutToneMap.lookup(
+                (int) Math.clamp(adjusted.r(), 0, 255),
+                (int) Math.clamp(adjusted.g(), 0, 255),
+                (int) Math.clamp(adjusted.b(), 0, 255)
+        );
+        adjusted = new ColorFloat(sdr[0], sdr[1], sdr[2]);
         // Saturate colors and shift bits if needed, apply HSL correcction
         adjusted = manageColorsFloat(adjusted);
         // Apply gamma correction
