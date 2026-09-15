@@ -245,7 +245,7 @@ public class TcInteractionHandler {
             // Re-assert colorDialog's Z position by toggling alwaysOnTop: this calls
             // SetWindowPos(HWND_TOPMOST, SWP_NOACTIVATE) which changes Z-order without
             // transferring keyboard focus unlike toFront() which calls SetForegroundWindow().
-            if (GuiSingleton.getInstance().isShowCapturedImage()) {
+            if (GuiSingleton.getInstance().isShowLiveCapture()) {
                 Stage colorDialog = GuiSingleton.getInstance().colorDialog;
                 if (colorDialog != null && colorDialog.isShowing()) {
                     colorDialog.setAlwaysOnTop(false);
