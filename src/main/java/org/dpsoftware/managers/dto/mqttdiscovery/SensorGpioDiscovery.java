@@ -47,9 +47,9 @@ public class SensorGpioDiscovery extends DeviceDiscovery implements DiscoveryObj
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("GPIO");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
-        this.valueTemplate = "{{ value_json.gpio if value_json.gpio > 0 else states('sensor." + this.uniqueId.toLowerCase() + "') }}";
+        this.valueTemplate = "{{ value_json.gpio if value_json.gpio >= 0 else states('sensor." + this.uniqueId.toLowerCase() + "') }}";
         this.unitOfMeasurement = "";
         this.icon = "mdi:chip";
         return CommonUtility.toJsonString(this);

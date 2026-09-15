@@ -21,8 +21,11 @@
 */
 package org.dpsoftware.managers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
+import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import lombok.NoArgsConstructor;
@@ -35,6 +38,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.util.Comparator.comparing;
 
@@ -128,8 +132,8 @@ public class DisplayManager {
     private List<DisplayInfo> getScreensWithJavaFX() {
         List<DisplayInfo> displayInfoList = new ArrayList<>();
         for (Screen screen : Screen.getScreens()) {
-            Rectangle2D visualBounds = screen.getBounds();
             Rectangle2D bounds = screen.getBounds();
+            Rectangle2D visualBounds = screen.getVisualBounds();
             DisplayInfo displayInfo = getDisplayInfo(screen, bounds, visualBounds);
             displayInfoList.add(displayInfo);
         }
@@ -286,4 +290,43 @@ public class DisplayManager {
         }
         return displayName;
     }
+
+    /**
+     * Detects and sets up an external device by retrieving its friendly name for video capture.
+     */
+    public void getExtVideoCaptureDevices(Consumer<List<String>> onComplete) {
+        if (NativeExecutor.isWindows()) {
+            CommonUtility.delayMilliseconds(() -> {
+                List<String> extSrcFriendlyNames = new ArrayList<>();
+                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_GET_EXT_SRC};
+                List<String> rawOutput = NativeExecutor.runNative(cmd, Constants.CMD_WAIT_DELAY);
+                String json = String.join(" ", rawOutput);
+                try {
+                    JsonNode node = CommonUtility.JSON_MAPPER.readTree(json);
+                    if (node.isArray()) {
+                        for (JsonNode item : node) {
+                            extSrcFriendlyNames.add(item.get("FriendlyName").asText());
+                            log.debug("External device: {}", item.get("FriendlyName").asText());
+                        }
+                    } else {
+                        extSrcFriendlyNames.add(node.get("FriendlyName").asText());
+                        log.debug("An external device found: {}", node.get("FriendlyName").asText());
+                    }
+                } catch (JsonProcessingException e) {
+                    log.debug("No USB capture device found.");
+                }
+                Platform.runLater(() -> onComplete.accept(extSrcFriendlyNames));
+            }, 10);
+        } else {
+            CommonUtility.delayMilliseconds(() -> {
+                List<String> rawOutput = NativeExecutor.runNative(Constants.CMD_USB_DEVIE_CHECK, Constants.CMD_WAIT_DELAY);
+                List<String> videoDevices = rawOutput.stream()
+                        .filter(line -> line.startsWith("/dev/video"))
+                        .toList();
+                Platform.runLater(() -> onComplete.accept(videoDevices));
+            }, 10);
+        }
+        onComplete.accept(new ArrayList<>());
+    }
+
 }

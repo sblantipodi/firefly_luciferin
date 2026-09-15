@@ -58,7 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GrabberManager {
 
     public Bin bin;
-    GStreamerGrabber vc;
+    public GStreamerGrabber vc;
     private boolean linuxPingUnavailable = false;
 
     /**
@@ -102,6 +102,7 @@ public class GrabberManager {
      * @param imageProcessor image processor utility
      */
     public void launchAdvancedGrabber(ImageProcessor imageProcessor) {
+        MainSingleton main = MainSingleton.getInstance();
         AtomicInteger restartCounter = new AtomicInteger();
         imageProcessor.initGStreamerLibraryPaths();
         //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
@@ -113,11 +114,15 @@ public class GrabberManager {
         }
         String finalLinuxParams = linuxParams;
         Gst.getExecutor().scheduleAtFixedRate(() -> {
-            if (!ManagerSingleton.getInstance().pipelineStopping && MainSingleton.getInstance().RUNNING && MainSingleton.getInstance().FPS_PRODUCER_COUNTER == 0) {
+            if (!ManagerSingleton.getInstance().pipelineStopping && main.RUNNING && main.FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
-                if (GrabberSingleton.getInstance().pipe == null || !GrabberSingleton.getInstance().pipe.isPlaying() || pipelineRetry.get() >= 2) {
+                boolean pipeNull = GrabberSingleton.getInstance().pipe == null;
+                boolean notPlaying = !pipeNull && !GrabberSingleton.getInstance().pipe.isPlaying();
+                boolean tooManyRetries = pipelineRetry.get() >= 2;
+                log.info("Watchdog tick #{}: pipeNull={}, notPlaying={}, tooManyRetries={}", pipelineRetry.get(), pipeNull, notPlaying, tooManyRetries);
+                if (pipeNull || notPlaying || tooManyRetries) {
                     if (GrabberSingleton.getInstance().pipe != null) {
-                        log.info("Restarting pipeline");
+                        log.info("Restarting pipeline (reason={})", (pipeNull ? "pipeNull" : (notPlaying ? "notPlaying" : "tooManyRetries")));
                         GrabberSingleton.getInstance().pipe.stop();
                         restartCounter.getAndIncrement();
                         if (restartCounter.get() >= Constants.MAX_PIPELINE_RESTARTS) {
@@ -130,32 +135,41 @@ public class GrabberManager {
                         GrabberSingleton.getInstance().pipe = new Pipeline();
                         if (NativeExecutor.isWindows()) {
                             DisplayManager displayManager = new DisplayManager();
-                            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
-                            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11.replace("{0}", monitorNativePeer), true);
+                            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(main.getConfig().getMonitorNumber()).getNativePeer());
+                            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11).replace("{0}", monitorNativePeer), true);
+                            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
+                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12).replace("{0}", monitorNativePeer), true);
                             } else {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12.replace("{0}", monitorNativePeer), true);
+                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC).replace("{0}", main.getConfig().getExtSrcFriendlyName()), true);
                             }
                         } else if (NativeExecutor.isLinux()) {
                             int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
                             String runtimeParams = finalLinuxParams
+                                    .replace("{0}", main.getConfig().getExtSrcFriendlyName())
                                     .replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime))
                                     .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
                             bin = Gst.parseBinFromDescription(runtimeParams, true);
                         } else {
-                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
+                            bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_MAC), true);
                         }
                     }
                     vc = new GStreamerGrabber();
                     GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
                     Pipeline.linkMany(bin, vc.getElement());
-                    JFrame f = new JFrame(Constants.SCREEN_GRABBER);
-                    f.add(vc);
-                    vc.setPreferredSize(new Dimension(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getScreenResY()));
-                    f.pack();
-                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    GrabberSingleton.getInstance().pipe.play();
-                    f.setVisible(false);
+                    if (!MainSingleton.getInstance().isHeadlessMode()) {
+                        JFrame f = new JFrame(Constants.SCREEN_GRABBER);
+                        JPanel panel = new JPanel();
+                        panel.setPreferredSize(new Dimension(main.getConfig().getScreenResX(), main.getConfig().getScreenResY()));
+                        panel.setBackground(Color.BLACK);
+                        f.add(panel);
+                        f.pack();
+                        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        GrabberSingleton.getInstance().pipe.play();
+                        f.setVisible(false);
+                    } else {
+                        GrabberSingleton.getInstance().pipe.play();
+                    }
                 }
             } else {
                 pipelineRetry.set(0);
@@ -169,7 +183,7 @@ public class GrabberManager {
      */
     private void disposePipeline() {
         if (GrabberSingleton.getInstance().pipe != null && !GrabberSingleton.getInstance().pipe.isPlaying() && !ManagerSingleton.getInstance().pipelineStarting) {
-            log.info("Free up system memory");
+            log.info("Dispose pipeline: releasing bin and pipeline (this clears lastRgbBuffer)");
             Gst.invokeLater(bin::dispose);
             Gst.invokeLater(vc.videosink::dispose);
             Gst.invokeLater(vc.getElement()::dispose);
@@ -224,13 +238,20 @@ public class GrabberManager {
     }
 
     /**
-     * Calculate Screen Capture Framerate and how fast your microcontroller can consume it
+     * It creates background tasks that runs every 5 seconds.
+     * - Calculate Screen Capture Framerate and how fast your microcontroller can consume it.
+     * - Check if HDR is ON to enable dynamic gamma calculation.
      */
-    public void getFPS() {
+    public void createBackgroundTasks() {
         AtomicInteger framerateAlert = new AtomicInteger();
         AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
+            boolean isHdrActive = NativeExecutor.isHdrActive();
+            if (isHdrActive != MainSingleton.getInstance().isHdrActive()) {
+                MainSingleton.getInstance().setHdrActive(isHdrActive);
+                log.info("HDR is {}", MainSingleton.getInstance().isHdrActive() ? "ON" : "OFF");
+            }
             if (MainSingleton.getInstance().FPS_PRODUCER_COUNTER > 0 || MainSingleton.getInstance().FPS_CONSUMER_COUNTER > 0) {
                 if (CommonUtility.isSingleDeviceOtherInstance() && MainSingleton.getInstance().config.getEffect().contains(Constants.MUSIC_MODE)) {
                     MainSingleton.getInstance().FPS_PRODUCER = MainSingleton.getInstance().FPS_GW_CONSUMER;
@@ -254,6 +275,10 @@ public class GrabberManager {
                     mqttFramerateDto.setAspectRatio(MainSingleton.getInstance().config.isAutoDetectBlackBars() ?
                             CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS) : MainSingleton.getInstance().config.getDefaultLedMatrix());
                     mqttFramerateDto.setGamma(String.valueOf(MainSingleton.getInstance().config.getGamma()));
+                    String adaptiveGamma = String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
+                    if (NativeExecutor.isWindows())
+                        adaptiveGamma += " (" + (MainSingleton.getInstance().hdrActive ? Constants.HDR : Constants.SDR) + ")";
+                    mqttFramerateDto.setAdaptiveGamma(adaptiveGamma);
                     mqttFramerateDto.setSmoothingLvl((Enums.Ema.findByValue(MainSingleton.getInstance().config.getEmaAlpha()).getBaseI18n()));
                     mqttFramerateDto.setFrameGen((Enums.FrameGeneration.findByValue(MainSingleton.getInstance().config.getFrameInsertionTarget()).getBaseI18n()));
                     mqttFramerateDto.setProfile(Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg) ?

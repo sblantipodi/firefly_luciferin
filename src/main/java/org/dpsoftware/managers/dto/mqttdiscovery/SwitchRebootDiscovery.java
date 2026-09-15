@@ -50,7 +50,7 @@ public class SwitchRebootDiscovery extends DeviceDiscovery implements DiscoveryO
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Reboot Glow Worm");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "stat/" + MainSingleton.getInstance().config.getMqttTopic() + "/reboot";
         this.commandTopic = "cmnd/" + MainSingleton.getInstance().config.getMqttTopic() + "/reboot";
         this.qos = 1;

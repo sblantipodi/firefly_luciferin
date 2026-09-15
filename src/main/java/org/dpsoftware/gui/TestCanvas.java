@@ -52,15 +52,20 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.gui.tc.RleVisualMapHandler;
+import org.dpsoftware.gui.tc.TcInteractionHandler;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.ColorRGBW;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
@@ -81,7 +86,7 @@ public class TestCanvas {
     public boolean tooltipVisible;
     GraphicsContext gc;
     Canvas canvas;
-    Stage stage;
+    public Stage stage;
     double stageX;
     double stageY;
     int imageHeight, itemsPositionY;
@@ -89,9 +94,42 @@ public class TestCanvas {
     private int lineWidth;
     private ColorCorrectionDialogController colorCorrectionDialogController;
     private TcInteractionHandler interactionHandler;
+    private RleVisualMapHandler rleVisualMapHandler;
+    private javafx.animation.Timeline captureBackgroundTimeline;
+    // Last successfully decoded GStreamer frame kept so the canvas never goes blank between refreshes
+    private javafx.scene.image.Image lastCaptureImage;
     private List<Configuration> configHistory;
     private int configHistoryIdx = 1;
     private int dialogY;
+    private boolean rleVisualMapVisible;
+    // True once the GStreamer pipeline has produced at least one frame; avoids logging during warm up
+    private boolean everCapturedFrame;
+
+    /**
+     * Forwarding getters/setters for RLE overlay state (owned by {@link RleVisualMapHandler}).
+     * Kept here so that {@link TcInteractionHandler} and other callers continue to work without changes.
+     */
+    public Rectangle2D getRleOverlayXBounds() {
+        return rleVisualMapHandler != null ? rleVisualMapHandler.getRleOverlayXBounds() : null;
+    }
+
+    public Rectangle2D getRleOverlayPanelBounds() {
+        return rleVisualMapHandler != null ? rleVisualMapHandler.getRleOverlayPanelBounds() : null;
+    }
+
+    public double getRleOverlayYOffset() {
+        return rleVisualMapHandler != null ? rleVisualMapHandler.getRleOverlayYOffset() : 0;
+    }
+
+    public void setRleOverlayYOffset(double offset) {
+        if (rleVisualMapHandler != null) {
+            rleVisualMapHandler.setRleOverlayYOffset(offset);
+        }
+    }
+
+    public boolean isRleOverlayOnlyMode() {
+        return rleVisualMapHandler != null && rleVisualMapHandler.isRleOverlayOnlyMode();
+    }
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
@@ -128,12 +166,14 @@ public class TestCanvas {
         stage = new Stage();
         stage.initOwner(settingStage);
         stage.initStyle(StageStyle.TRANSPARENT);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setAlwaysOnTop(false);
+        stage.initModality(Modality.NONE);
+        stage.setAlwaysOnTop(GuiSingleton.getInstance().isShowLiveCapture());
         interactionHandler = new TcInteractionHandler(this);
+        rleVisualMapHandler = new RleVisualMapHandler(this);
         interactionHandler.manageCanvasKeyPressed(0);
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, 0);
+        startCaptureBackgroundRefresh();
         root.getChildren().add(canvas);
         stage.setScene(s);
         int index = 0;
@@ -156,12 +196,15 @@ public class TestCanvas {
 
     /**
      * Keep the test image canvas above regular application windows.
+     * In ShowCapturedImage mode the stage is {@code alwaysOnTop}, so {@code toFront()} is not needed.
      */
     public void bringToFront() {
         if (stage != null) {
             stage.setIconified(false);
-            stage.setAlwaysOnTop(false);
-            stage.toFront();
+            stage.setAlwaysOnTop(GuiSingleton.getInstance().isShowLiveCapture());
+            if (!GuiSingleton.getInstance().isShowLiveCapture()) {
+                stage.toFront();
+            }
         }
     }
 
@@ -239,17 +282,6 @@ public class TestCanvas {
         if (stage != null) {
             colorCorrectionDialogController = (ColorCorrectionDialogController) stage.getProperties().get(Constants.FXML_COLOR_CORRECTION_DIALOG);
         }
-    }
-
-    /**
-     * Hide test image canvas
-     */
-    public void hideCanvas() {
-        stage.setFullScreen(false);
-        stage.hide();
-        stage.setX(stageX);
-        stage.setY(stageY);
-        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
     }
 
     /**
@@ -373,57 +405,85 @@ public class TestCanvas {
         gc.fillText(text, x, y);
     }
 
-    /**
-     * DisplayInfo a canvas, useful to test LED matrix
-     *
-     * @param conf       stored config
-     * @param saturation use full or half saturation, this is influenced by the combo box
+    /*
+     * Hide test image canvas
      */
-    public void drawTestShapes(Configuration conf, int saturation) {
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-        float saturationToUse;
-        switch (saturation) {
-            case 1 -> saturationToUse = 0.75F;
-            case 2 -> saturationToUse = 0.50F;
-            case 3 -> saturationToUse = 0.25F;
-            case 4 -> saturationToUse = 0.15F;
-            case 5 -> saturationToUse = 0.99F;
-            default -> saturationToUse = 1.0F;
+    public void hideCanvas() {
+        rleVisualMapHandler.stopOverlayOnlyMode();
+        stage.setFullScreen(false);
+        stage.hide();
+        stage.setX(stageX);
+        stage.setY(stageY);
+        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+    }
+
+    /**
+     * Stop the capture background timeline without touching the stage.
+     * Must be called before the canvas is re created so a stale timeline
+     * keeps drawing into an orphaned canvas.
+     */
+    public void stopCaptureBackgroundRefresh() {
+        if (captureBackgroundTimeline != null) {
+            captureBackgroundTimeline.stop();
+            captureBackgroundTimeline = null;
         }
-        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
+    }
+
+    /**
+     * Stop the capture background timeline and exit overlay only mode without
+     * touching the stage. The new canvas re enters these states in
+     * {@code buildAndShowTestImage}. This prevents the old timeline from
+     * drawing into a stage that is about to be hidden/re-created.
+     */
+    public void stopForRecreate() {
+        stopCaptureBackgroundRefresh();
+        if (rleVisualMapHandler != null) {
+            rleVisualMapHandler.stopOverlayOnlyMode();
+        }
+    }
+
+    /**
+     * Re attach a fresh TestCanvas state onto the existing stage/scene/canvas
+     * instead of creating a new one. This avoids repeatedly tearing down and
+     * re creating JavaFX scenes, which can orphan the NGCanvas in the render
+     * graph and exhaust the Prism texture pool.
+     *
+     * @param interactionHandler  interaction handler to install
+     * @param rleVisualMapHandler RLE visual map handler to install
+     * @param conf                config to redraw the test shapes with
+     */
+    public void refreshExisting(TcInteractionHandler interactionHandler, RleVisualMapHandler rleVisualMapHandler, Configuration conf) {
+        this.interactionHandler = interactionHandler;
+        this.rleVisualMapHandler = rleVisualMapHandler;
+        // Re read the config from disk so configHistory holds the original (saved) state,
+        // not the in memory modified one. This ensures close() discards unsaved changes.
+        StorageManager sm = new StorageManager();
+        this.configHistory = new ArrayList<>();
+        this.configHistory.add(sm.readProfileInUseConfig());
+        // Re register keyboard listeners on the reused canvas (same as buildAndShowTestImage)
+        interactionHandler.manageCanvasKeyPressed(0);
+        // Reset the canvas to a clean black background before redrawing
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        int scaleRatio = conf.getOsScaling();
-        // 50% opacity if dragging
-        if (interactionHandler.isCanvasClicked()) {
-            drawLogo(conf, scaleRatio);
-            gc.setFill(Color.BLACK);
-            gc.setFill(new Color(0, 0, 0, 0.5));
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        } else {
-            gc.setFill(Color.BLACK);
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            drawLogo(conf, scaleRatio);
-        }
-        drawFireflyText();
-        gc.setFill(Color.GREEN);
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(INITIAL_TILE_DISTANCE);
-        gc.stroke();
-        List<Integer> numbersList = new ArrayList<>();
-        ledMatrix.forEach((key, coordinate) -> {
-            if (!coordinate.isGroupedLed()) {
-                String ledNum = drawNumLabel(conf, key);
-                numbersList.add(Integer.parseInt(ledNum.replace("#", "")));
+        gc.setFill(Color.BLACK);
+        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawTestShapes(conf, 0);
+        // Re position the stage on the correct monitor (same logic as buildAndShowTestImage)
+        int index = 0;
+        DisplayManager displayManager = new DisplayManager();
+        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
+            if (index == MainSingleton.getInstance().config.getMonitorNumber()) {
+                stage.setX(displayInfo.getMinX());
+                stage.setY(displayInfo.getMinY());
+                stage.setWidth(displayInfo.getWidth());
+                stage.setHeight(displayInfo.getHeight());
+                canvas.setWidth(displayInfo.getWidth());
+                canvas.setHeight(displayInfo.getHeight());
             }
-        });
-        Collections.sort(numbersList);
-        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
-        interactionHandler.enableDragging(conf, ledMatrix, saturation);
-        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
-        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
-        if (tooltipVisible) {
-            drawTooltip(gc);
+            index++;
         }
+        startCaptureBackgroundRefresh();
+        stage.show();
+        bringToFront();
     }
 
     /**
@@ -579,6 +639,35 @@ public class TestCanvas {
     }
 
     /**
+     * Draw a circular close button with an "X" glyph, used both by the tooltip overlay
+     * and by the RLE visual map overlay so both share the exact same look and feel.
+     *
+     * @param x    top-left x position of the button
+     * @param y    top-left y position of the button
+     * @param size button width/height (square)
+     * @return the bounds of the drawn button, useful for hit-testing clicks
+     */
+    public Rectangle2D drawCloseButton(double x, double y, double size) {
+        LinearGradient closeBtnGradient = new LinearGradient(
+                0, y, 0, y + size, false, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.rgb(50, 50, 50)),
+                new Stop(1, Color.rgb(20, 20, 20))
+        );
+        gc.setFill(closeBtnGradient);
+        gc.fillRoundRect(x, y, size, size, 4, 4);
+        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
+        gc.setLineWidth(1);
+        gc.strokeRoundRect(x, y, size, size, 4, 4);
+        // Draw "X"
+        gc.setStroke(Color.rgb(255, 255, 255, 0.9));
+        gc.setLineWidth(2);
+        double margin = size * (4.0 / 18.0);
+        gc.strokeLine(x + margin, y + margin, x + size - margin, y + size - margin);
+        gc.strokeLine(x + margin, y + size - margin, x + size - margin, y + margin);
+        return new Rectangle2D(x, y, size, size);
+    }
+
+    /**
      * Draw tooltip
      *
      * @param gc gc
@@ -625,25 +714,7 @@ public class TestCanvas {
         double closeBtnSize = 18;
         double closeBtnX = x + boxWidth - closeBtnSize - 6;
         double closeBtnY = y + 6;
-        LinearGradient closeBtnGradient = new LinearGradient(
-                0, closeBtnY, 0, closeBtnY + closeBtnSize, false, CycleMethod.NO_CYCLE,
-                new Stop(0, Color.rgb(50, 50, 50)),
-                new Stop(1, Color.rgb(20, 20, 20))
-        );
-        gc.setFill(closeBtnGradient);
-        gc.fillRoundRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize, 4, 4);
-        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
-        gc.setLineWidth(1);
-        gc.strokeRoundRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize, 4, 4);
-        // Draw "X"
-        gc.setStroke(Color.rgb(255, 255, 255, 0.9));
-        gc.setLineWidth(2);
-        double margin = 4;
-        gc.strokeLine(closeBtnX + margin, closeBtnY + margin,
-                closeBtnX + closeBtnSize - margin, closeBtnY + closeBtnSize - margin);
-        gc.strokeLine(closeBtnX + margin, closeBtnY + closeBtnSize - margin,
-                closeBtnX + closeBtnSize - margin, closeBtnY + margin);
-        this.closeBtnBounds = new Rectangle2D(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize);
+        this.closeBtnBounds = drawCloseButton(closeBtnX, closeBtnY, closeBtnSize);
         double textY = y + padding + (boxHeight - 2 * padding - textHeight) / 2 + lineHeights[0] / 2;
         for (int i = 0; i < lines.length; i++) {
             gc.setFill(Color.WHITE);
@@ -662,7 +733,7 @@ public class TestCanvas {
      * @param zoneName zone name
      * @return new led coordinate
      */
-    LEDCoordinate getLedCoordinate(LEDCoordinate c, String zoneName) {
+    public LEDCoordinate getLedCoordinate(LEDCoordinate c, String zoneName) {
         int canvasWidth = (int) canvas.getWidth();
         int canvasHeight = (int) canvas.getHeight();
         int newX;
@@ -769,6 +840,224 @@ public class TestCanvas {
         }
         if (MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemsPositionY += rowHeight;
+        }
+    }
+
+    /**
+     * DisplayInfo a canvas, useful to test LED matrix
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    public void drawTestShapes(Configuration conf, int saturation) {
+        if (isRleOverlayOnlyMode()) {
+            rleVisualMapHandler.drawOverlayOnly();
+            return;
+        }
+        if (GuiSingleton.getInstance().isShowLiveCapture()) {
+            drawLiveCapture();
+            // fall through: tiles are drawn on top of the capture background below
+        }
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+        float saturationToUse;
+        switch (saturation) {
+            case 1 -> saturationToUse = 0.75F;
+            case 2 -> saturationToUse = 0.50F;
+            case 3 -> saturationToUse = 0.25F;
+            case 4 -> saturationToUse = 0.15F;
+            case 5 -> saturationToUse = 0.99F;
+            default -> saturationToUse = 1.0F;
+        }
+        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
+        int scaleRatio = conf.getOsScaling();
+        if (!GuiSingleton.getInstance().isShowLiveCapture()) {
+            // Normal mode: clear the canvas and fill with a black background.
+            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            if (interactionHandler.isCanvasClicked()) {
+                drawLogo(conf, scaleRatio);
+                gc.setFill(new Color(0, 0, 0, 0.5));
+                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            } else {
+                gc.setFill(Color.BLACK);
+                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                drawLogo(conf, scaleRatio);
+            }
+        } else {
+            // just apply a semi transparent dark overlay while dragging so tiles remain readable.
+            if (interactionHandler.isCanvasClicked()) {
+                gc.setFill(new Color(0, 0, 0, 0.4));
+                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            }
+        }
+        drawFireflyText();
+        gc.setFill(Color.GREEN);
+        gc.setStroke(Color.BLUE);
+        gc.setLineWidth(INITIAL_TILE_DISTANCE);
+        gc.stroke();
+        List<Integer> numbersList = new ArrayList<>();
+        ledMatrix.forEach((key, coordinate) -> {
+            if (!coordinate.isGroupedLed()) {
+                String ledNum = drawNumLabel(conf, key);
+                numbersList.add(Integer.parseInt(ledNum.replace("#", "")));
+            }
+        });
+        Collections.sort(numbersList);
+        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
+        interactionHandler.enableDragging(conf, ledMatrix, saturation);
+        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
+        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
+        if (tooltipVisible) {
+            drawTooltip(gc);
+        }
+        if (rleVisualMapVisible) {
+            rleVisualMapHandler.drawRleVisualMap();
+        }
+    }
+
+    /**
+     * Draw live capture video from screen capture or USB Video
+     */
+    private void drawLiveCapture() {
+        javafx.scene.image.Image fresh = getLatestCaptureAsImage();
+        if (fresh != null) {
+            lastCaptureImage = fresh;
+        }
+        // If we still have no frame at all, leave the canvas as-is (do not clear it).
+        if (lastCaptureImage == null) {
+            return;
+        }
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        double ratio = 0.30;
+        double rectW = canvas.getWidth() * ratio;
+        double rectH = canvas.getHeight() * ratio;
+        double x = (canvas.getWidth() - rectW) / 2;
+        double y = (canvas.getHeight() - rectH) / 2;
+        gc.drawImage(lastCaptureImage, x, y, rectW, rectH);
+        // Soft glowing border: layered strokes from wide/transparent to thin/bright
+        Color baseBorder = Color.rgb(80, 220, 255);
+        double[] offsets = {6, 4, 2};
+        double[] widths = {8, 5, 2};
+        double[] alphas = {0.12, 0.30, 0.85};
+        for (int i = 0; i < offsets.length; i++) {
+            gc.setStroke(baseBorder.deriveColor(0, 0, 1, alphas[i]));
+            gc.setLineWidth(widths[i]);
+            gc.strokeRect(x - offsets[i], y - offsets[i], rectW + offsets[i] * 2, rectH + offsets[i] * 2);
+        }
+    }
+
+    public void updateStageBounds() {
+        rleVisualMapHandler.updateStageBounds();
+    }
+
+    public void startOverlayOnlyMode() {
+        rleVisualMapHandler.startOverlayOnlyMode();
+    }
+
+    public void stopOverlayOnlyMode() {
+        rleVisualMapHandler.stopOverlayOnlyMode();
+    }
+
+    public void drawOverlayOnly() {
+        rleVisualMapHandler.drawOverlayOnly();
+    }
+
+    /**
+     * Start a periodic refresh that redraws the latest GStreamer capture as the test canvas
+     * background. Needed because the capture is produced asynchronously after the stage is shown.
+     */
+    private void startCaptureBackgroundRefresh() {
+        if (!GuiSingleton.getInstance().isShowLiveCapture()) {
+            return;
+        }
+        if (captureBackgroundTimeline != null) {
+            captureBackgroundTimeline.stop();
+        }
+        // ~15 fps is enough to keep the background alive without wasting CPU
+        captureBackgroundTimeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(66), _ -> refreshCaptureBackground()));
+        captureBackgroundTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        captureBackgroundTimeline.play();
+    }
+
+    /**
+     * Redraw the canvas with the latest GStreamer capture frame.
+     */
+    private void refreshCaptureBackground() {
+        if (!GuiSingleton.getInstance().isShowLiveCapture()) {
+            return;
+        }
+        if (stage == null || canvas == null) {
+            return;
+        }
+        drawLiveCapture();
+    }
+
+    /**
+     * Build a JavaFX Image from the latest captured RGB frame exposed by the GStreamer grabber,
+     * so it can be drawn as the test canvas background. Returns null if no grabber/frame is available.
+     *
+     * @return the latest captured frame as a JavaFX Image, or null
+     */
+    private javafx.scene.image.Image getLatestCaptureAsImage() {
+        try {
+            // Read from the global singleton so the JavaFX thread always sees the same field
+            // the GStreamer thread writes. This is immune to pipeline restarts that swap the
+            // GStreamerGrabber instance held by GrabberManager.
+            ByteBuffer buf = GrabberSingleton.getInstance().latestRgbBufferSnapshot;
+            if (buf == null) {
+                // Fallback to the manager's grabber in case the singleton was never populated
+                // (e.g. very early startup before the first frame).
+                org.dpsoftware.grabber.GrabberManager manager = GuiSingleton.getInstance().getGrabberManager();
+                GStreamerGrabber grabber = (manager != null) ? manager.vc : null;
+                buf = (grabber != null) ? grabber.getLastRgbBufferSnapshot() : null;
+                if (buf == null && everCapturedFrame) {
+                    log.debug("GStreamer lastRgbBuffer lost: singleton=null, manager={}, managerHash={}, vcHash={}, singletonPublisherHash={}, singletonLatest={}",
+                            manager,
+                            (manager == null) ? "null" : System.identityHashCode(manager),
+                            (grabber == null) ? "null" : System.identityHashCode(grabber),
+                            GrabberSingleton.getInstance().lastPublisherHash,
+                            (GrabberSingleton.getInstance().latestRgbBuffer == null) ? "null" : GrabberSingleton.getInstance().latestRgbBuffer.remaining());
+                }
+                return null;
+            }
+            everCapturedFrame = true;
+            MainSingleton main = MainSingleton.getInstance();
+            int width = main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor();
+            int height = main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor();
+            if (buf.remaining() < (width * height * Integer.BYTES)) {
+                log.trace("GStreamer capture buffer too small: {} bytes, need {}", buf.remaining(), width * height * Integer.BYTES);
+                return null;
+            }
+            int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, buf.asIntBuffer());
+            int stridePixels = widthPlusStride - width;
+            int rowBytes = widthPlusStride * 4;
+            int[] argbArray = new int[width * height];
+            java.nio.ByteBuffer bgr = buf.order(java.nio.ByteOrder.nativeOrder());
+            int pixelIndex = 0;
+            for (int y = 0; y < height; y++) {
+                int rowStart = y * rowBytes;
+                for (int x = 0; x < width; x++) {
+                    int offset = rowStart + x * 4;
+                    int r, g, b;
+                    b = bgr.get(offset) & 0xFF;
+                    g = bgr.get(offset + 1) & 0xFF;
+                    r = bgr.get(offset + 2) & 0xFF;
+                    argbArray[pixelIndex++] = (0xFF << 24) | (r << 16) | (g << 8) | b;
+                }
+                // skip padding bytes (stride)
+                bgr.position(rowStart + width * 4 + stridePixels * 4);
+            }
+            javafx.scene.image.WritableImage fxImage = new javafx.scene.image.WritableImage(width, height);
+            javafx.scene.image.PixelWriter writer = fxImage.getPixelWriter();
+            for (int i = 0; i < width * height; i++) {
+                int x = i % width;
+                int y = i / width;
+                writer.setArgb(x, y, argbArray[i]);
+            }
+            return fxImage;
+        } catch (Exception e) {
+            log.warn("Unable to read latest capture for test canvas background: {}", e.getMessage());
+            return null;
         }
     }
 

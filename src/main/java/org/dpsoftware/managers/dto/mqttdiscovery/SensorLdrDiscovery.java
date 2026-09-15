@@ -47,7 +47,7 @@ public class SensorLdrDiscovery extends DeviceDiscovery implements DiscoveryObje
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("LDR");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.valueTemplate = "{{ value_json.ldr if value_json.ldr is defined else '0' }}";
         this.unitOfMeasurement = "%";

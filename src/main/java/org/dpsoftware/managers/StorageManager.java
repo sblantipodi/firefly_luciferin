@@ -141,14 +141,21 @@ public class StorageManager {
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
-        String filename = switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> Constants.CONFIG_FILENAME;
-            case 2 -> Constants.CONFIG_FILENAME_2;
-            case 3 -> Constants.CONFIG_FILENAME_3;
-            default -> "";
-        };
+        String filename;
         if (forceFilename != null) {
             filename = forceFilename;
+        } else if (MainSingleton.getInstance().profileArg != null
+                && !MainSingleton.getInstance().profileArg.isEmpty()
+                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)
+                && !CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)) {
+            filename = getProfileFileName(MainSingleton.getInstance().profileArg);
+        } else {
+            filename = switch (MainSingleton.getInstance().whoAmI) {
+                case 1 -> Constants.CONFIG_FILENAME;
+                case 2 -> Constants.CONFIG_FILENAME_2;
+                case 3 -> Constants.CONFIG_FILENAME_3;
+                default -> "";
+            };
         }
         Configuration currentConfig = readConfigFile(filename);
         if (currentConfig != null) {
@@ -265,6 +272,8 @@ public class StorageManager {
             if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
             if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
                 restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
+            if (!defaultConfig.getExtSrcFriendlyName().equals(profileConfig.getExtSrcFriendlyName()))
+                restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
                 restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
             if (profileConfig.getOutputDevice() != null && (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice())
@@ -326,10 +335,11 @@ public class StorageManager {
         if (config == null) {
             try {
                 MainSingleton.getInstance().guiManager = new GuiManager(false);
-                MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
+                }
                 config = readProfileInUseConfig();
-            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
-                     IllegalAccessException e) {
+            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -397,6 +407,7 @@ public class StorageManager {
         writeToStorage = configFileUpgrader.updatePrevious2237(config, writeToStorage); // Version <= 2.23.7
         writeToStorage = configFileUpgrader.updatePrevious2256(config, writeToStorage); // Version <= 2.25.6
         writeToStorage = configFileUpgrader.updatePrevious2284(config, writeToStorage); // Version <= 2.28.4
+        writeToStorage = configFileUpgrader.updatePrevious2295(config, writeToStorage); // Version <= 2.29.5
         return writeToStorage;
     }
 

@@ -89,7 +89,9 @@ public class Configuration implements Cloneable {
     // MQTT WiFi Config params
     private boolean fullFirmware = false;
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
-    private double gamma;
+    private double gamma = Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma());
+    private String gammaLevel = Enums.GammaLevel.LOW.getBaseI18n();
+    private boolean enableAutomaticGamma = true;
     private String gapTypeSide = Constants.GAP_TYPE_DEFAULT_SIDE;
     private String gapTypeTopBottom = Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM;
     private String grabberAreaTopBottom = Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT;
@@ -102,6 +104,7 @@ public class Configuration implements Cloneable {
     private int ledStartOffset = 0;
     private int leftLed;
     private int monitorNumber = 1;
+    private String extSrcFriendlyName = "";
     private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
     private String mqttPwd = "";
@@ -164,6 +167,7 @@ public class Configuration implements Cloneable {
     private List<String> profileProcesses = new ArrayList<>();
     boolean checkFullScreen = false;
     int resamplingFactor = Constants.RESAMPLING_FACTOR;
+    boolean useLosslessCompression = Constants.USE_LOSSLESS_COMPRESSION;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
@@ -227,12 +231,19 @@ public class Configuration implements Cloneable {
     public enum CaptureMethod {
         CPU("CPU"),
         WinAPI("WinAPI"),
-        DDUPL_DX11("DDUPL (DX11)"),
-        DDUPL_DX12("DDUPL (DX12)"),
-        XIMAGESRC("XIMAGESRC"),
-        XIMAGESRC_NVIDIA("XIMAGESRC (NVIDIA)"),
-        PIPEWIREXDG("PIPEWIREXDG"),
-        PIPEWIREXDG_NVIDIA("PIPEWIREXDG (NVIDIA)"),
+        DDUPL_DX11("DX11 GPU"),
+        DDUPL_DX12("DX12 GPU"),
+        WIN_USB_VIDEO("USB VIDEO"),
+        XIMAGESRC("CPU only"),
+        XIMAGESRC_NVIDIA("NVIDIA GPU"),
+        PIPEWIREXDG("CPU only"),
+        PIPEWIREXDG_OPENGL("OpenGL GPU"),
+        PIPEWIREXDG_NVIDIA("NVIDIA GPU"),
+        PIPEWIREXDG_AMD_INTEL("AMD/INTEL GPU"),
+        USB_VIDEO("CPU only"),
+        USB_VIDEO_OPENGL("OpenGL GPU"),
+        USB_VIDEO_NVIDIA("NVIDIA GPU"),
+        USB_VIDEO_AMD_INTEL("AMD/INTEL GPU"),
         AVFVIDEOSRC("AVFVIDEOSRC");
         private final String captureMethod;
 
