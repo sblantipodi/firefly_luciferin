@@ -556,7 +556,7 @@ public class GStreamerGrabber {
             }
             // The RGB snapshot is only consumed by the TestCanvas background when showCapturedImage
             // is true, so skip the per frame copy entirely when it is not needed.
-            if (GuiSingleton.getInstance().isShowCapturedImage()) {
+            if (GuiSingleton.getInstance().isShowLiveCapture()) {
                 rawBuffer.rewind();
                 ByteBuffer bufferCopy = rawBuffer.slice();
                 bufferCopy.rewind();

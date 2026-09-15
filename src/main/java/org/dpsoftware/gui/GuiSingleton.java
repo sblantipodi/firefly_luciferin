@@ -64,7 +64,7 @@ public class GuiSingleton {
     public TestCanvas testCanvas;
     // Grabber manager instance, used to read the latest captured RGB frame as a test canvas background
     public volatile org.dpsoftware.grabber.GrabberManager grabberManager;
-    public boolean showCapturedImage = false;
+    public boolean showLiveCapture = false;
 
 }
 
