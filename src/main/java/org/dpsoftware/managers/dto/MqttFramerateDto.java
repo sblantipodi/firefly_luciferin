@@ -46,5 +46,6 @@ public class MqttFramerateDto {
     private String smoothingLvl;
     private String frameGen;
     private String profile;
+    private String cubeLut;
 
 }

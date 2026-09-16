@@ -283,6 +283,7 @@ public class GrabberManager {
                     mqttFramerateDto.setFrameGen((Enums.FrameGeneration.findByValue(MainSingleton.getInstance().config.getFrameInsertionTarget()).getBaseI18n()));
                     mqttFramerateDto.setProfile(Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg) ?
                             CommonUtility.getWord(Constants.DEFAULT) : MainSingleton.getInstance().profileArg);
+                    mqttFramerateDto.setCubeLut(MainSingleton.getInstance().config.getCubeLut());
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE),
                             CommonUtility.toJsonString(mqttFramerateDto));
                 }

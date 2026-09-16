@@ -23,6 +23,7 @@ package org.dpsoftware.grabber;
 
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,9 +52,9 @@ class ImageProcessorColorTest {
         mockedInstance.config.setGamma(2.2);
         mockedInstance.config.setEnableAutomaticGamma(false);
         mockedInstance.config.setLuminosityThreshold(0);
-        mockedInstance.config.setNightLight("Disabled");
+        mockedInstance.config.setNightLight(Constants.DISABLED);
         mockedInstance.config.setBrightnessLimiter(1.0f);
-        mockedInstance.config.setSmoothingType("Disabled");
+        mockedInstance.config.setSmoothingType(Constants.DISABLED);
         mockedMainSingleton = Mockito.mockStatic(MainSingleton.class);
         mockedMainSingleton.when(MainSingleton::getInstance).thenReturn(mockedInstance);
     }
