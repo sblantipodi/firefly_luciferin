@@ -114,6 +114,8 @@ public class SettingsController {
     @FXML
     private GammaDialogController gammaDialogController;
     @FXML
+    private DisplayDialogController displayDialogController;
+    @FXML
     private ImprovDialogController improvDialogController;
     @FXML
     private ProfileDialogController profileDialogController;
@@ -931,6 +933,9 @@ public class SettingsController {
             if (gammaDialogController != null) {
                 gammaDialogController.initDefaultValues();
             }
+            if (displayDialogController != null) {
+                displayDialogController.initDefaultValues();
+            }
             if (improvDialogController != null) {
                 improvDialogController.initDefaultValues();
             }
@@ -960,6 +965,9 @@ public class SettingsController {
         }
         if (gammaDialogController != null) {
             gammaDialogController.save(config);
+        }
+        if (displayDialogController != null) {
+            displayDialogController.save(config);
         }
         if (improvDialogController != null) {
             improvDialogController.save();
@@ -1164,6 +1172,15 @@ public class SettingsController {
      */
     public void injectGammaController(GammaDialogController gammaDialogController) {
         this.gammaDialogController = gammaDialogController;
+    }
+
+    /**
+     * Inject display dialogue controller into the main controller
+     *
+     * @param displayDialogController dialog controller
+     */
+    public void injectDisplayController(DisplayDialogController displayDialogController) {
+        this.displayDialogController = displayDialogController;
     }
 
     /**

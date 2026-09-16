@@ -52,6 +52,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.CubeLutToneMap;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
@@ -1011,12 +1012,7 @@ public class TestCanvas {
                 GStreamerGrabber grabber = (manager != null) ? manager.vc : null;
                 buf = (grabber != null) ? grabber.getLastRgbBufferSnapshot() : null;
                 if (buf == null && everCapturedFrame) {
-                    log.debug("GStreamer lastRgbBuffer lost: singleton=null, manager={}, managerHash={}, vcHash={}, singletonPublisherHash={}, singletonLatest={}",
-                            manager,
-                            (manager == null) ? "null" : System.identityHashCode(manager),
-                            (grabber == null) ? "null" : System.identityHashCode(grabber),
-                            GrabberSingleton.getInstance().lastPublisherHash,
-                            (GrabberSingleton.getInstance().latestRgbBuffer == null) ? "null" : GrabberSingleton.getInstance().latestRgbBuffer.remaining());
+                    log.debug("GStreamer lastRgbBuffer lost: singleton=null, manager={}, managerHash={}, vcHash={}, singletonPublisherHash={}, singletonLatest={}", manager, (manager == null) ? "null" : System.identityHashCode(manager), (grabber == null) ? "null" : System.identityHashCode(grabber), GrabberSingleton.getInstance().lastPublisherHash, (GrabberSingleton.getInstance().latestRgbBuffer == null) ? "null" : GrabberSingleton.getInstance().latestRgbBuffer.remaining());
                 }
                 return null;
             }
@@ -1042,7 +1038,9 @@ public class TestCanvas {
                     b = bgr.get(offset) & 0xFF;
                     g = bgr.get(offset + 1) & 0xFF;
                     r = bgr.get(offset + 2) & 0xFF;
-                    argbArray[pixelIndex++] = (0xFF << 24) | (r << 16) | (g << 8) | b;
+                    // HDR to SDR tone mapping via 3D LUT
+                    int[] tonedMappedColor = CubeLutToneMap.lookup(r, g, b);
+                    argbArray[pixelIndex++] = (0xFF << 24) | (tonedMappedColor[0] << 16) | (tonedMappedColor[1] << 8) | tonedMappedColor[2];
                 }
                 // skip padding bytes (stride)
                 bgr.position(rowStart + width * 4 + stridePixels * 4);

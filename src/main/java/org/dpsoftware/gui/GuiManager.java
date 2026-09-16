@@ -723,6 +723,13 @@ public class GuiManager {
             } else {
                 ((GammaDialogController) controller).initDefaultValues();
             }
+        } else if (classForCast == DisplayDialogController.class) {
+            ((DisplayDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((DisplayDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((DisplayDialogController) controller).initDefaultValues();
+            }
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
             ((SatellitesDialogController) controller).setTooltips();
@@ -828,6 +835,22 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_GAMMA_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(GammaDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show display dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showDisplayDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_DISPLAY_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(DisplayDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
