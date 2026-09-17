@@ -41,6 +41,7 @@ import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.network.tcpUdp.UdpServer;
+import org.dpsoftware.network.web.ConfigServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,7 @@ public class FireflyLuciferin extends Application {
     // MQTT
     NetworkManager networkManager = null;
     private final McpServer mcpServer = new McpServer();
+    private final ConfigServer configServer = new ConfigServer();
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
@@ -279,6 +281,7 @@ public class FireflyLuciferin extends Application {
         setRuntimeLogLevel();
         if (main.whoAmI == 1) {
             mcpServer.start();
+            configServer.start();
         }
         // Manage tray icon and framerate dialog
         main.guiManager = new GuiManager(true);
