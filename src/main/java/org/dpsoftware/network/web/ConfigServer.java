@@ -461,6 +461,7 @@ public class ConfigServer {
                 server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(this::handleEnableScreenshot, POST_METHOD));
                 server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(this::handleListProfiles, GET_METHOD));
                 server.createContext(Constants.ACTIVATE_PROFILE_ENDPOINT, withGuard(this::handleActivateProfile, POST_METHOD));
+                server.createContext(Constants.COMBO_CHANGE_ENDPOINT, withGuard(this::handleComboChange, POST_METHOD));
                 server.createContext("/", withGuard(this::handleRoot, GET_METHOD));
                 server.setExecutor(Executors.newCachedThreadPool(runnable -> {
                     Thread thread = new Thread(runnable, "firefly-config-server");
@@ -568,6 +569,27 @@ public class ConfigServer {
         try (OutputStream responseBody = exchange.getResponseBody()) {
             responseBody.write(responseBytes);
         }
+    }
+
+    /**
+     * Handle POST /comboChange, logging the name and value of a web page select change.
+     * Expected JSON body: {"comboName": "effect", "value": "Solid"}.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleComboChange(HttpExchange exchange) throws IOException {
+        JsonNode payload;
+        try (InputStream requestBody = exchange.getRequestBody()) {
+            payload = CommonUtility.JSON_MAPPER.readTree(requestBody);
+        } catch (IOException e) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            return;
+        }
+        String comboName = payload.has("comboName") ? payload.get("comboName").asText() : "unknown";
+        String value = payload.has("value") ? payload.get("value").asText() : "";
+        log.info("Web combo change: {} = {}", comboName, value);
+        sendJson(exchange, HttpURLConnection.HTTP_OK, JSON_OK);
     }
 
     /**
