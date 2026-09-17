@@ -288,7 +288,7 @@ function buildFieldHtml(f) {
         return '<div class="form-text">' + f.note + '</div>';
     }
     if (f.type === 'checkbox') {
-        return '<div class="form-check"><input type="checkbox" class="form-check-input" id="' + f.id + '"><label class="form-check-label" for="' + f.id + '">' + f.label + '</label></div>';
+        return '<div class="form-check d-flex flex-column align-items-start ps-0"><label class="form-check-label mb-1" for="' + f.id + '">' + f.label + '</label><input type="checkbox" class="form-check-input mt-0 ms-0" id="' + f.id + '"></div>';
     }
     if (f.type === 'select') {
         var opts = optionsFor(f).map(function (o) {
@@ -310,9 +310,7 @@ function buildSubAccordionsHtml(section, subIdx) {
         html += '<h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sub-' + section.id + '-' + sub.id + '" aria-expanded="false" aria-controls="sub-' + section.id + '-' + sub.id + '">' + sub.title + '</button></h3>';
         html += '<div id="sub-' + section.id + '-' + sub.id + '" class="accordion-collapse collapse" data-bs-parent="#subAccordion-' + section.id + '">';
         html += '<div class="accordion-body">';
-        sub.fields.forEach(function (f) {
-            html += buildFieldHtml(f);
-        });
+        html += buildFieldsGrid(sub.fields);
         html += '</div></div></div>';
     });
     html += '</div>';
@@ -520,6 +518,19 @@ function initColorPicker() {
     }
 }
 
+function buildFieldsGrid(fields) {
+    var hasFullWidth = fields.some(function (f) {
+        return f.id === 'devicesContent';
+    });
+    var html = '<div class="row g-3">';
+    fields.forEach(function (f) {
+        var colClass = (f.id === 'devicesContent') ? 'col-12' : 'col-12 col-md-6 col-lg-3';
+        html += '<div class="' + colClass + '">' + buildFieldHtml(f) + '</div>';
+    });
+    html += '</div>';
+    return html;
+}
+
 function buildForm() {
     var html = '<div class="row"><div class="col margin-2">';
     html += buildPickerHtml();
@@ -533,9 +544,7 @@ function buildForm() {
         if (s.fields.length === 0) {
             html += '<span class="text-muted">Coming soon</span>';
         } else {
-            s.fields.forEach(function (f) {
-                html += buildFieldHtml(f);
-            });
+            html += buildFieldsGrid(s.fields);
         }
         html += buildSubAccordionsHtml(s, idx);
         html += '</div></div></div>';
@@ -811,7 +820,7 @@ function showToast(message, contextClass) {
 
 $(function () {
     var br = '<br class="d-sm-none">';
-    $('#subtitle').html('Bias Lighting and Ambient Light software' + br + 'designed for' + br + 'Glow Worm Luciferin firmware');
+    $('#subtitle').html('Bias Lighting and Ambient Light software' + br + ' designed for ' + br + 'Glow Worm Luciferin firmware');
     fetchJson('getFieldOptions').then(function (opts) {
         fieldOptions = opts || {};
         buildForm();
