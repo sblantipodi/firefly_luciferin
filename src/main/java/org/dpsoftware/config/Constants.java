@@ -848,6 +848,9 @@ public class Constants {
     public static final int MCP_DEFAULT_PORT = 33555;
     // Config HTTP endpoint
     public static final String CONFIG_ENDPOINT = "/getConfig";
+    public static final String GET_DEVICES_ENDPOINT = "/getDevices";
+    public static final String FIELD_OPTIONS_ENDPOINT = "/getFieldOptions";
+    public static final String DEVICE_PREFS_ENDPOINT = "/devicePrefs";
     public static final String SET_CONFIG_ENDPOINT = "/setConfig";
     public static final String SET_CONFIG_PAGE_ENDPOINT = "/setConfigPage";
     public static final String SET_CONFIG_PAGE_JS_ENDPOINT = "/setConfig.js";
