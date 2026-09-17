@@ -93,10 +93,12 @@
     exports org.dpsoftware.managers.dto.mqttdiscovery;
     exports org.dpsoftware.utilities;
     exports org.dpsoftware.network;
+    exports org.dpsoftware.network.web;
     exports org.dpsoftware.gui.tc;
 
     opens org.dpsoftware.audio to javafx.fxml, javafx.web;
     opens org.dpsoftware.grabber to javafx.fxml, javafx.web;
     exports org.dpsoftware.gui.trayicon;
     opens org.dpsoftware.gui.trayicon to javafx.fxml, javafx.web;
+    opens org.dpsoftware.network.web;
 }

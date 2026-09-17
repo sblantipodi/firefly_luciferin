@@ -846,6 +846,12 @@ public class Constants {
     public static final String MCP_JSONRPC_VERSION = "2.0";
     public static final String MCP_PROTOCOL_VERSION = "2025-11-25";
     public static final int MCP_DEFAULT_PORT = 33555;
+    // Config HTTP endpoint
+    public static final String CONFIG_ENDPOINT = "/getConfig";
+    public static final String SET_CONFIG_ENDPOINT = "/setConfig";
+    public static final String SET_CONFIG_PAGE_ENDPOINT = "/setConfigPage";
+    public static final String SET_CONFIG_PAGE_JS_ENDPOINT = "/setConfig.js";
+    public static final int CONFIG_SERVER_DEFAULT_PORT = 33556;
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
