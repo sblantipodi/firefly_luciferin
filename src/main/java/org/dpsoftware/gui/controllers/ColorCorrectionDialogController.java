@@ -752,6 +752,9 @@ public class ColorCorrectionDialogController {
         // The new canvas reuses the same stage via show().
         testCanvas.stopForRecreate();
         testCanvas.stage.hide();
+        if (!MainSingleton.getInstance().RUNNING) {
+            PipelineManager.restartCapture(CommonUtility::run);
+        }
         CommonUtility.delayMilliseconds(() -> MainSingleton.getInstance().guiManager.showColorCorrectionDialog(settingsController, e), 100);
     }
 

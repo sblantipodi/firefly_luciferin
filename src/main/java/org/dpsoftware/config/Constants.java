@@ -858,6 +858,8 @@ public class Constants {
     public static final String SET_CONFIG_PAGE_JS_ENDPOINT = "/setConfig.js";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
     public static final String SCREENSHOT_ENABLE_ENDPOINT = "/screenshot/enable";
+    public static final String LIST_PROFILES_ENDPOINT = "/listProfiles";
+    public static final String ACTIVATE_PROFILE_ENDPOINT = "/activateProfile";
     public static final int CONFIG_SERVER_DEFAULT_PORT = 33556;
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
