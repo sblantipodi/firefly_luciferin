@@ -32,6 +32,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.CubeLutToneMap;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.controllers.DisplayDialogController;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.DeviceDto;
@@ -572,8 +573,8 @@ public class ConfigServer {
     }
 
     /**
-     * Handle POST /comboChange, logging the name and value of a web page select change.
-     * Expected JSON body: {"comboName": "effect", "value": "Solid"}.
+     * Handle POST /comboChange, applying the web page select change to the running configuration.
+     * Expected JSON body: {"comboName": "cubeLut", "value": "HDR2SDR_tonemap_LUT_1.cube"}.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -586,10 +587,31 @@ public class ConfigServer {
             sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
             return;
         }
-        String comboName = payload.has("comboName") ? payload.get("comboName").asText() : "unknown";
+        String comboName = payload.has("comboName") ? payload.get("comboName").asText() : "";
         String value = payload.has("value") ? payload.get("value").asText() : "";
         log.info("Web combo change: {} = {}", comboName, value);
+        applyComboChange(comboName, value);
         sendJson(exchange, HttpURLConnection.HTTP_OK, JSON_OK);
+    }
+
+    /**
+     * Apply a combo change to the running configuration on the JavaFX thread.
+     *
+     * @param comboName the name of the combo box that changed
+     * @param value     the newly selected value
+     */
+    private void applyComboChange(String comboName, String value) {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+        switch (comboName) {
+            case "cubeLut" -> CommonUtility.delayMilliseconds(() -> {
+                DisplayDialogController.handleCubeLutCombo(value);
+            }, 200);
+            default -> {
+                // Not yet wired
+            }
+        }
     }
 
     /**
