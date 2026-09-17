@@ -141,12 +141,22 @@ public class GrabberManager {
                             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
                                 bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12).replace("{0}", monitorNativePeer), true);
                             } else {
-                                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC).replace("{0}", main.getConfig().getExtSrcFriendlyName()), true);
+                                if (main.getConfig().getExtSrcFriendlyName() == null || main.getConfig().getExtSrcFriendlyName().isEmpty()) {
+                                    bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC).replace("device-name=\"{0}\"", ""), true);
+                                } else {
+                                    bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC).replace("{0}", main.getConfig().getExtSrcFriendlyName()), true);
+                                }
                             }
                         } else if (NativeExecutor.isLinux()) {
                             int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
+                            String friendlyName;
+                            if (main.getConfig().getExtSrcFriendlyName() != null && !main.getConfig().getExtSrcFriendlyName().isEmpty()) {
+                                friendlyName = "device=" + main.getConfig().getExtSrcFriendlyName();
+                            } else {
+                                friendlyName = "";
+                            }
                             String runtimeParams = finalLinuxParams
-                                    .replace("{0}", main.getConfig().getExtSrcFriendlyName())
+                                    .replace("device={0}", friendlyName)
                                     .replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime))
                                     .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
                             bin = Gst.parseBinFromDescription(runtimeParams, true);

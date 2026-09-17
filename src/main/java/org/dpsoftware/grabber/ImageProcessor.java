@@ -85,8 +85,12 @@ public class ImageProcessor {
         }
         if (initLedMatrix) {
             GrabberSingleton.getInstance().ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
-            GrabberSingleton.getInstance().rect = new Rectangle(new Dimension((MainSingleton.getInstance().config.getScreenResX() * 100) / MainSingleton.getInstance().config.getOsScaling(),
-                    (MainSingleton.getInstance().config.getScreenResY() * 100) / MainSingleton.getInstance().config.getOsScaling()));
+            if (MainSingleton.getInstance().isHeadlessMode() && MainSingleton.getInstance().config.getOsScaling() == 0) {
+                GrabberSingleton.getInstance().rect = new Rectangle(new Dimension(1920, 1080));
+            } else {
+                GrabberSingleton.getInstance().rect = new Rectangle(new Dimension((MainSingleton.getInstance().config.getScreenResX() * 100) / MainSingleton.getInstance().config.getOsScaling(),
+                        (MainSingleton.getInstance().config.getScreenResY() * 100) / MainSingleton.getInstance().config.getOsScaling()));
+            }
         }
     }
 
