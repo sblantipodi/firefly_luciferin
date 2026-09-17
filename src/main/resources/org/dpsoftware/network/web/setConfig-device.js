@@ -3,6 +3,7 @@ var deviceState = {on: true, effect: 'Solid', whitetemp: 65, brightness: 255};
 var lastColor = {r: 255, g: 38, b: 0};
 var deviceReachable = false;
 var pollTimer = null;
+var outputDeviceTouched = false;
 
 var PICKER_EFFECT_TO_CONFIG = {
     'Solid': 'Solid',
@@ -246,6 +247,15 @@ function initColorPicker() {
             syncDeviceFromPrefs();
         };
     }
+    var outputDeviceEl = document.getElementById('outputDevice');
+    if (outputDeviceEl && outputDeviceEl.tagName === 'SELECT') {
+        outputDeviceEl.addEventListener('change', function () {
+            outputDeviceTouched = true;
+            deviceIp = null;
+            resolveDeviceIp();
+            syncDeviceFromPrefs();
+        });
+    }
 }
 
 function renderOutputDeviceSuggestions() {
@@ -257,7 +267,8 @@ function renderOutputDeviceSuggestions() {
     var names = devices.map(function (d) {
         return d.deviceName;
     }).filter(Boolean);
-    var current = (window.__lastConfig && window.__lastConfig.outputDevice) || el.value;
+    var preserved = outputDeviceTouched ? el.value : null;
+    var current = preserved || (window.__lastConfig && window.__lastConfig.outputDevice) || el.value;
     var html = '';
     names.forEach(function (name) {
         html += '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
@@ -328,6 +339,11 @@ function renderDevices(devices) {
 }
 
 function applyAutoOutputDevice() {
+    if (outputDeviceTouched) {
+        deviceIp = null;
+        resolveDeviceIp();
+        return;
+    }
     var cfg = window.__lastConfig;
     if (!cfg) {
         return;
