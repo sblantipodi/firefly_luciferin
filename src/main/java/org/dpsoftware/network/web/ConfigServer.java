@@ -74,6 +74,9 @@ public class ConfigServer {
      * Settings page JavaScript resource, co-located in this package.
      */
     private static final String SET_CONFIG_PAGE_JS_RESOURCE = "setConfig.js";
+    private static final String SET_CONFIG_CORE_JS_RESOURCE = "setConfig-core.js";
+    private static final String SET_CONFIG_DEVICE_JS_RESOURCE = "setConfig-device.js";
+    private static final String SET_CONFIG_UI_JS_RESOURCE = "setConfig-ui.js";
     private final StorageManager storageManager = new StorageManager();
     private final List<HttpServer> httpServers = new java.util.ArrayList<>();
     private final Predicate<String> GET_METHOD = method -> method.equalsIgnoreCase("GET");
@@ -448,6 +451,9 @@ public class ConfigServer {
                 server.createContext(Constants.FIELD_OPTIONS_ENDPOINT, withGuard(this::handleGetFieldOptions, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_PAGE_ENDPOINT, withGuard(this::handleSetConfigPage, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_PAGE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_CORE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_DEVICE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_UI_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(this::handleDevicePrefs, GET_METHOD));
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
@@ -575,13 +581,25 @@ public class ConfigServer {
     }
 
     /**
-     * Handle GET /setConfig.js, serving the JavaScript that drives the settings page.
+     * Handle GET requests for the settings page JavaScript files.
+     * Serves setConfig.js, setConfig-core.js, setConfig-device.js, setConfig-ui.js.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
      */
     private void handleSetConfigPageJs(HttpExchange exchange) throws IOException {
-        sendResource(exchange, SET_CONFIG_PAGE_JS_RESOURCE, "application/javascript; charset=utf-8");
+        String path = exchange.getRequestURI().getPath();
+        String resource;
+        if (path.endsWith("setConfig-core.js")) {
+            resource = SET_CONFIG_CORE_JS_RESOURCE;
+        } else if (path.endsWith("setConfig-device.js")) {
+            resource = SET_CONFIG_DEVICE_JS_RESOURCE;
+        } else if (path.endsWith("setConfig-ui.js")) {
+            resource = SET_CONFIG_UI_JS_RESOURCE;
+        } else {
+            resource = SET_CONFIG_PAGE_JS_RESOURCE;
+        }
+        sendResource(exchange, resource, "application/javascript; charset=utf-8");
     }
 
     /**
@@ -726,6 +744,8 @@ public class ConfigServer {
         String path = exchange.getRequestURI().getPath();
         if (path == null || path.equals("/") || path.isEmpty()) {
             handleSetConfigPage(exchange);
+        } else if (path.endsWith(".js")) {
+            handleSetConfigPageJs(exchange);
         } else {
             byte[] responseBytes = ("Not found: " + path).getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
