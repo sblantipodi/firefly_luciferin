@@ -251,6 +251,30 @@ public class Configuration implements Cloneable {
         CaptureMethod(String captureMethod) {
             this.captureMethod = captureMethod;
         }
+
+        public static CaptureMethod defaultForOs() {
+            if (NativeExecutor.isWindows()) {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    return DDUPL_DX12;
+                } else {
+                    return WIN_USB_VIDEO;
+                }
+            } else if (NativeExecutor.isMac()) {
+                return AVFVIDEOSRC;
+            } else if (NativeExecutor.isWayland()) {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    return PIPEWIREXDG;
+                } else {
+                    return USB_VIDEO;
+                }
+            } else {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    return XIMAGESRC;
+                } else {
+                    return USB_VIDEO;
+                }
+            }
+        }
     }
 
 }

@@ -409,7 +409,9 @@ public class ModeTabController {
             }
         } else {
             if (newVal != null && !newVal.equals(oldVal)) {
-                settingsController.currentConfig.setExtSrcFriendlyName(monitorNumber.getValue());
+                if (settingsController.currentConfig != null) {
+                    settingsController.currentConfig.setExtSrcFriendlyName(monitorNumber.getValue());
+                }
                 settingsController.initCaptureMethods();
                 setCaptureMethodUsbVideo();
             }
@@ -420,17 +422,7 @@ public class ModeTabController {
      * Set the default capture method for the current OS (display capture)
      */
     void setCaptureMethod() {
-        Configuration.CaptureMethod newMethod;
-        if (NativeExecutor.isWindows()) {
-            newMethod = Configuration.CaptureMethod.DDUPL_DX12;
-        } else if (NativeExecutor.isMac()) {
-            newMethod = Configuration.CaptureMethod.AVFVIDEOSRC;
-        } else if (NativeExecutor.isWayland()) {
-            newMethod = Configuration.CaptureMethod.PIPEWIREXDG;
-        } else {
-            newMethod = Configuration.CaptureMethod.XIMAGESRC;
-        }
-        applyCaptureMethod(newMethod);
+        applyCaptureMethod(Configuration.CaptureMethod.defaultForOs());
     }
 
     /**
