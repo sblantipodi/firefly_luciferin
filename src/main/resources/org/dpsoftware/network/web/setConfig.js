@@ -60,7 +60,7 @@ var sections = [
         subAccordions: [
             {
                 id: 'display', title: 'Display', fields: [
-                    {id: 'cubeLut', label: '3D LUT (color tone map)', type: 'text', numeric: false}
+                    {id: 'cubeLut', label: '3D LUT (color tone map)', type: 'select'}
                 ]
             }
         ]
@@ -310,7 +310,8 @@ function buildPickerHtml() {
     var toggleClass = deviceState.on ? 'btn-primary' : 'btn-outline-primary';
     return '<div class="row mb-3 align-items-start justify-content-center"><div class="col-12 col-sm-8 col-md-6 col-lg-4 text-center"><div style="max-width: 288px; margin: 0 auto;"><div id="picker"></div></div>' +
         '<div class="form-group mt-2"><select id="effectSelect" class="form-select w-100">' + opts + '</select></div>' +
-        '<div class="form-group mt-2"><button id="toggleLED" type="button" class="btn ' + toggleClass + ' w-100">' + toggleLabel + '</button></div>' +
+        '<div class="form-group mt-2"><button id="toggleLED" type="button" class="btn ' + toggleClass + ' w-100" style="color:#fff">' + toggleLabel + '</button></div>' +
+        '<div id="activeProfile" class="text-center text-muted small mt-1"></div>' +
         '</div></div></div>';
 }
 
@@ -323,19 +324,21 @@ function applyPrefs(prefs) {
     }
     setToggleUi(prefs.toggle === '1');
     if (prefs.effect) {
-        deviceState.effect = prefs.effect;
+        // Normalize the device technical state "GlowWormWifi" to the real effect value "Bias light".
+        var effect = PICKER_EFFECT_TO_CONFIG[prefs.effect] || prefs.effect;
+        deviceState.effect = effect;
         var sel = document.getElementById('effectSelect');
         if (sel) {
             var existing = Array.prototype.find.call(sel.options, function (o) {
-                return o.value === prefs.effect;
+                return o.value === effect;
             });
             if (!existing) {
                 var opt = document.createElement('option');
-                opt.value = prefs.effect;
-                opt.textContent = prefs.effect;
+                opt.value = effect;
+                opt.textContent = effect;
                 sel.appendChild(opt);
             }
-            sel.value = prefs.effect;
+            sel.value = effect;
         }
     }
     if (prefs.whiteTemp != null && prefs.whiteTemp !== '') {
@@ -393,8 +396,11 @@ function setToggleUi(on) {
     toggle.classList.toggle('btn-outline-primary', !on);
     if (on) {
         toggle.style.backgroundColor = 'orange';
+        toggle.style.color = '#fff';
     } else {
         toggle.style.backgroundColor = 'lightgrey';
+        // "Turn ON" label in white.
+        toggle.style.color = '#fff';
     }
 }
 
@@ -486,8 +492,11 @@ function buildForm() {
         html += '</div></div></div>';
     });
     html += '</div>';
-    html += '<div class="mt-3"><button type="button" class="btn btn-orange w-100" style="margin-bottom: 100px;" onclick="saveForm()"> SAVE SETTINGS</button></div></form></div></div>';
-    $('.container').html(html);
+    html += '<div class="text-center py-2"><button type="button" id="showLivePreview" class="btn btn-sm" style="background-color:lightgrey;border:0;color:#fff;font-weight:bold">Show Live Preview</button></div>';
+    html += '<div class="text-center py-2"><img id="screenshot" alt="Captured frame (TRACE)" style="max-width:100%;border:1px solid #ccc;display:none"></div>';
+    html += '<div class="mt-3"><button type="button" class="btn btn-orange w-100" onclick="saveForm()"> SAVE SETTINGS</button></div>';
+    html += '<div class="text-center text-muted py-3"><span id="fpsCounter"></span></div></form></div></div>';
+    $('.container-fluid + .container').html(html);
 }
 
 function fillField(f, cfg) {
@@ -510,6 +519,8 @@ function fillField(f, cfg) {
         var el = document.getElementById(f.id);
         if (el.tagName === 'SELECT') {
             var val = String(value);
+            // Normalize the device technical state "GlowWormWifi" to the real effect value "Bias light".
+            val = PICKER_EFFECT_TO_CONFIG[val] || val;
             var present = Array.prototype.some.call(el.options, function (o) {
                 return o.value === val;
             });
@@ -660,7 +671,37 @@ function renderDevices(devices) {
     el.innerHTML = html;
 }
 
+var PICKER_EFFECT_TO_CONFIG = {
+    'Solid': 'Solid',
+    'Fire': 'Fire',
+    'Twinkle': 'Twinkle',
+    'Bpm': 'Bpm',
+    'Rainbow': 'Rainbow',
+    'Slow rainbow': 'Slow rainbow',
+    'Chase rainbow': 'Chase rainbow',
+    'Solid rainbow': 'Solid rainbow',
+    'Random colors': 'Random colors',
+    'Rainbow colors': 'Rainbow colors',
+    'Meteor': 'Meteor',
+    'Color waterfall': 'Color waterfall',
+    'Random marquee': 'Random marquee',
+    'Rainbow marquee': 'Rainbow marquee',
+    'Pulsing rainbow': 'Pulsing rainbow',
+    'Christmas': 'Christmas',
+    'Bias light': 'Bias light',
+    // "GlowWormWifi" is the device-side technical state for the Bias Light effect; map it back so the
+    // select shows Bias light and the config stores the real effect value.
+    'GlowWormWifi': 'Bias light',
+    'Music mode (VU Meter)': 'Music mode (VU Meter)',
+    'Music mode (Stereo VU Meter)': 'Music mode (Stereo VU Meter)',
+    'Music mode (Screen capture)': 'Music mode (Screen capture)',
+    'Music mode (Rainbow music)': 'Music mode (Rainbow music)'
+};
+
 function saveForm() {
+    if (!confirm('Luciferin needs to restart to apply these settings. Proceed?')) {
+        return;
+    }
     var payload;
     try {
         payload = collectPayload();
@@ -669,6 +710,14 @@ function saveForm() {
         console.error('collectPayload failed', e);
         return;
     }
+    // Persist the state of the top device picker (effectSelect) into the config effect field.
+    // Its labels are the English effect i18n values, the same format the config effect field stores.
+    var effectSelect = document.getElementById('effectSelect');
+    if (effectSelect && effectSelect.value) {
+        payload.effect = PICKER_EFFECT_TO_CONFIG[effectSelect.value] || effectSelect.value;
+    }
+    // Persist the color picker selection into the config colorChooser field (format "255,g,b,255").
+    payload.colorChooser = '255,' + lastColor.g + ',' + lastColor.b + ',255';
     var body = JSON.stringify(payload);
     console.log('saveForm POST setConfig, body length', body.length);
     fetch('setConfig', {
@@ -704,13 +753,130 @@ $(function () {
         fieldOptions = opts || {};
         buildForm();
         initColorPicker();
+        wireLivePreviewButton();
         return fetchJson('getConfig');
     }).then(function (cfg) {
         window.__lastConfig = cfg || {};
         fillForm(cfg);
+        var profile = cfg && cfg.activeProfile;
+        var profileEl = document.getElementById('activeProfile');
+        if (profileEl) {
+            profileEl.textContent = profile ? ('Profile: ' + profile) : '';
+        }
         syncDeviceFromPrefs();
     }).catch(function (err) {
         showToast('Unable to load settings: ' + err.message, 'bg-danger text-white');
     });
     refreshDevices();
+    pollFps();
+    setInterval(pollFps, 1000);
 });
+
+function wireLivePreviewButton() {
+    var showBtn = document.getElementById('showLivePreview');
+    if (!showBtn) {
+        return;
+    }
+    showBtn.addEventListener('click', function () {
+        // Toggle: when the preview is on, ask the server to turn it off; when off, turn it on.
+        var turningOn = !livePreviewOn;
+        var url = turningOn ? 'screenshot/enable' : 'screenshot/enable?disable=true';
+        fetch(url, {method: 'POST'}).then(function (r) {
+            if (!r.ok) {
+                throw new Error('HTTP ' + r.status);
+            }
+            return r.json();
+        }).then(function () {
+            setLivePreview(turningOn);
+        }).catch(function (err) {
+            showToast('Unable to toggle live preview: ' + err.message, 'bg-danger text-white');
+        });
+    });
+}
+
+function pollFps() {
+    fetchJson('fps').then(function (fps) {
+        var el = document.getElementById('fpsCounter');
+        if (el) {
+            el.textContent = 'Firefly ' + Number(fps.producing).toFixed(0) + ' FPS / GlowWorm ' + Number(fps.consuming).toFixed(0) + ' FPS';
+        }
+    }).catch(function () {
+        var el = document.getElementById('fpsCounter');
+        if (el) {
+            el.textContent = '';
+        }
+    });
+}
+
+var livePreviewOn = false;
+var livePreviewTimer = null;
+
+function setLivePreview(on) {
+    livePreviewOn = on;
+    var btn = document.getElementById('showLivePreview');
+    if (btn) {
+        if (on) {
+            // "Hide Live Preview": fully green (filled), no outline, dark text for contrast.
+            btn.textContent = 'Hide Live Preview';
+            btn.classList.remove('btn-outline-success');
+            btn.style.backgroundColor = '#28a745';
+            btn.style.border = '0';
+            btn.style.color = '#fff';
+            btn.style.fontWeight = 'bold';
+        } else {
+            // "Show Live Preview": light grey (like "Turn ON"), no coloured border, white bold text.
+            btn.textContent = 'Show Live Preview';
+            btn.style.backgroundColor = 'lightgrey';
+            btn.style.border = '0';
+            btn.style.color = '#fff';
+            btn.style.fontWeight = 'bold';
+        }
+    }
+    var img = document.getElementById('screenshot');
+    if (img) {
+        img.style.display = on ? 'inline-block' : 'none';
+        if (!on) {
+            // Clear the source to abort any in-flight image load so a delayed onload cannot
+            // re-show the frame after the preview has been switched off.
+            img.onload = null;
+            img.onerror = null;
+            img.src = '';
+        }
+    }
+    if (livePreviewTimer) {
+        clearInterval(livePreviewTimer);
+        livePreviewTimer = null;
+    }
+    if (on) {
+        pollScreenshot();
+        livePreviewTimer = setInterval(pollScreenshot, 500);
+    }
+}
+
+function pollScreenshot() {
+    // Ignore stray ticks: if the preview has been switched off, a delayed poll (or the load
+    // callback of an in-flight request) must not re-show the image.
+    if (!livePreviewOn) {
+        return;
+    }
+    var img = document.getElementById('screenshot');
+    if (!img) {
+        return;
+    }
+    // Cache-busting so the browser re-fetches the BMP (the grabber rewrites the same file path).
+    img.src = 'screenshot?t=' + Date.now();
+    img.onload = function () {
+        // Re-check: the preview may have been turned off while this request was in flight.
+        if (!livePreviewOn) {
+            return;
+        }
+        img.style.display = 'inline-block';
+    };
+    img.onerror = function () {
+        // 404 while no frame is captured yet; the button stays ON and polling continues.
+        if (!livePreviewOn) {
+            return;
+        }
+        img.style.display = 'none';
+    };
+}

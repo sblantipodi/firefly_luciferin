@@ -107,6 +107,7 @@ public class Constants {
     public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
     public static final String FIRMWARE_FILENAME_PATTERN = "glob:*.{bin}";
     public static final String FIRMWARE_COMPRESSED_FILENAME_PATTERN = "glob:*.{gz}";
+    public static final String SCREENSHOT_IMAGE_FILENAME_PATTERN = "glob:*.{bmp,png}";
     public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
     public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build/";
     public static final String GITHUB_RELEASES_FIRMWARE_BETA = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build_beta";
@@ -851,9 +852,12 @@ public class Constants {
     public static final String GET_DEVICES_ENDPOINT = "/getDevices";
     public static final String FIELD_OPTIONS_ENDPOINT = "/getFieldOptions";
     public static final String DEVICE_PREFS_ENDPOINT = "/devicePrefs";
+    public static final String FPS_ENDPOINT = "/fps";
     public static final String SET_CONFIG_ENDPOINT = "/setConfig";
     public static final String SET_CONFIG_PAGE_ENDPOINT = "/setConfigPage";
     public static final String SET_CONFIG_PAGE_JS_ENDPOINT = "/setConfig.js";
+    public static final String SCREENSHOT_ENDPOINT = "/screenshot";
+    public static final String SCREENSHOT_ENABLE_ENDPOINT = "/screenshot/enable";
     public static final int CONFIG_SERVER_DEFAULT_PORT = 33556;
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
