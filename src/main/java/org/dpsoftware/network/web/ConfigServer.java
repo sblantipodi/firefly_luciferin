@@ -189,7 +189,7 @@ public class ConfigServer {
     private static FieldOptions effectOptions() {
         Set<String> pinned = Set.of("Solid", "Bias light");
         List<String> rest = Arrays.stream(Enums.Effect.values())
-                .map(e -> e.getBaseI18n())
+                .map(LocalizedEnum::getBaseI18n)
                 .filter(v -> !pinned.contains(v))
                 .sorted()
                 .toList();
