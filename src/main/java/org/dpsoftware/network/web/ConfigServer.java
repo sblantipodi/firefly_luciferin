@@ -27,10 +27,10 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.*;
+import org.dpsoftware.grabber.CubeLutToneMap;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.DeviceDto;
@@ -76,6 +76,20 @@ public class ConfigServer {
     private final List<HttpServer> httpServers = new java.util.ArrayList<>();
     private final Predicate<String> GET_METHOD = method -> method.equalsIgnoreCase("GET");
     private final Predicate<String> POST_METHOD = method -> method.equalsIgnoreCase("POST");
+    /**
+     * Idle timeout, in milliseconds, after which the live preview is automatically turned off.
+     */
+    private static final int LIVE_PREVIEW_IDLE_MILLIS = 30000;
+    /**
+     * Wall-clock milliseconds of the most recent {@code GET /screenshot}; refreshed by
+     * {@link #handleGetScreenshot}. The live preview watchdog reads it to detect an idle client.
+     */
+    private volatile long lastScreenshotGetMillis = 0L;
+    /**
+     * Watchdog thread that turns off the live capture flag when no {@code GET /screenshot} has
+     * arrived for more than {@value #LIVE_PREVIEW_IDLE_MILLIS} ms.
+     */
+    private Thread livePreviewWatchdog;
 
     /**
      * Collect the addresses to bind: loopback (127.0.0.1) plus every non-link-local IPv4 interface address.
@@ -118,23 +132,6 @@ public class ConfigServer {
     }
 
     /**
-     * Extract a query parameter value from a URL query string.
-     *
-     * @param query the query string (without the leading '?')
-     * @param name  the parameter name
-     * @return the value or {@code null} when absent
-     */
-    private static String queryParam(String query, String name) {
-        for (String pair : query.split("&")) {
-            int eq = pair.indexOf('=');
-            if (eq > 0 && pair.substring(0, eq).equals(name)) {
-                return pair.substring(eq + 1);
-            }
-        }
-        return null;
-    }
-
-    /**
      * Build the map of possible values for every configuration field that is backed by an enum,
      * using the enums as the single source of truth (no value list is duplicated in the client).
      * Each entry exposes the value to persist and the English display label, plus the value type
@@ -160,7 +157,7 @@ public class ConfigServer {
         options.put("smoothingType", localized(Enums.Smoothing.class));
         options.put("streamType", new FieldOptions(Arrays.stream(Enums.StreamType.values())
                 .map(s -> new FieldOptions.Option(s.getStreamType(), s.getStreamType())).toList(), "string"));
-        options.put("effect", localized(Enums.Effect.class));
+        options.put("effect", effectOptions());
         options.put("colorMode", new FieldOptions(Arrays.stream(Enums.ColorMode.values())
                 .map(c -> new FieldOptions.Option(String.valueOf(c.ordinal() + 1), c.getBaseI18n())).toList(), "number"));
         options.put("gammaLevel", localized(Enums.GammaLevel.class));
@@ -172,7 +169,149 @@ public class ConfigServer {
                 new FieldOptions.Option("1", "Disabled"),
                 new FieldOptions.Option("2", "Dual display"),
                 new FieldOptions.Option("3", "Triple display")), "number"));
+        // 3D LUT (color tone map) options, the available .cube LUTs (classpath + config dir) with
+        // "Disabled" pinned at the top, the same list the JavaFX combo box is populated with.
+        options.put("cubeLut", new FieldOptions(CubeLutToneMap.listAvailableLuts().stream()
+                .map(name -> new FieldOptions.Option(name, name)).toList(), "string"));
         return options;
+    }
+
+    /**
+     * Effect options with "Solid" and "Bias light" pinned at the top, the remaining effects sorted alphabetically.
+     *
+     * @return the field options for the effect field
+     */
+    private static FieldOptions effectOptions() {
+        Set<String> pinned = Set.of("Solid", "Bias light");
+        List<String> rest = Arrays.stream(Enums.Effect.values())
+                .map(e -> e.getBaseI18n())
+                .filter(v -> !pinned.contains(v))
+                .sorted()
+                .toList();
+        List<FieldOptions.Option> opts = new ArrayList<>();
+        pinned.stream().sorted().forEach(v -> opts.add(new FieldOptions.Option(v, v)));
+        rest.forEach(v -> opts.add(new FieldOptions.Option(v, v)));
+        return new FieldOptions(opts, "string");
+    }
+
+    /**
+     * Handle GET /fps, exposing the current producing and consuming framerate.
+     * Read-only, the values are the live counters kept in {@link MainSingleton}.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleGetFps(HttpExchange exchange) throws IOException {
+        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(new FpsDto(
+                MainSingleton.getInstance().FPS_PRODUCER,
+                MainSingleton.getInstance().FPS_GW_CONSUMER));
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(responseBytes);
+        }
+    }
+
+    /**
+     * Handle GET /screenshot, serving the last captured frame BMP saved by the grabber
+     * (written by {@code intBufferRgbToImage} when the runtime log level is TRACE).
+     * The file is read from the config path; a 404 is returned when it does not exist yet
+     * so the client can keep retrying until a frame is captured.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleGetScreenshot(HttpExchange exchange) throws IOException {
+        // A client is actively pulling frames: refresh the idle timestamp so the watchdog does
+        // not turn off the live preview while the page is polling.
+        lastScreenshotGetMillis = System.currentTimeMillis();
+        java.io.File bmp = new java.io.File(InstanceConfigurer.getConfigPath(), Constants.GSTREAMER_SCREENSHOT);
+        if (!bmp.exists() || !bmp.isFile()) {
+            sendError(exchange, HttpURLConnection.HTTP_NOT_FOUND, "Screenshot not available");
+            return;
+        }
+        byte[] imageBytes = java.nio.file.Files.readAllBytes(bmp.toPath());
+        exchange.getResponseHeaders().set("Content-Type", "image/bmp");
+        exchange.getResponseHeaders().set("Cache-Control", "no-store");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, imageBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(imageBytes);
+        }
+    }
+
+    /**
+     * Handle POST /screenshot/enable, toggling the live capture flag so the grabber starts (or
+     * stops) writing the live preview BMP (see {@code GStreamerGrabber.rgbFrame}, which writes the
+     * frame when either the log level is TRACE or {@code showLiveCapture} is true). The flag is a
+     * runtime-only toggle on {@link GuiSingleton}; it does not change the persisted configuration
+     * nor the runtime log level. The {@code disable} query parameter, when set to true, turns the
+     * preview off (showLiveCapture=false); otherwise it is turned on (showLiveCapture=true).
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleEnableScreenshot(HttpExchange exchange) throws IOException {
+        String query = exchange.getRequestURI().getQuery();
+        boolean disable = query != null && "true".equalsIgnoreCase(queryParam(query, "disable"));
+        boolean on = !disable;
+        GuiSingleton.getInstance().setShowLiveCapture(on);
+        if (on) {
+            startLivePreviewWatchdog();
+        } else {
+            stopLivePreviewWatchdog();
+        }
+        log.info("Live preview toggled: showLiveCapture set to {}", on);
+        sendJson(exchange, HttpURLConnection.HTTP_OK, "{\"status\":\"OK\"}");
+    }
+
+    /**
+     * Start the idle watchdog that automatically turns off the live capture flag when no
+     * {@code GET /screenshot} has arrived for more than {@value #LIVE_PREVIEW_IDLE_MILLIS} ms.
+     * Any previously running watchdog is stopped first, so the method is safe to call again while
+     * one is already running (it restarts the idle timer).
+     */
+    private synchronized void startLivePreviewWatchdog() {
+        stopLivePreviewWatchdog();
+        lastScreenshotGetMillis = System.currentTimeMillis();
+        livePreviewWatchdog = new Thread(() -> {
+            while (true) {
+                CommonUtility.sleepMilliseconds(LIVE_PREVIEW_IDLE_MILLIS);
+                if (System.currentTimeMillis() - lastScreenshotGetMillis > LIVE_PREVIEW_IDLE_MILLIS) {
+                    log.info("Live preview idle for more than {} ms, turning showLiveCapture off", LIVE_PREVIEW_IDLE_MILLIS);
+                    GuiSingleton.getInstance().setShowLiveCapture(false);
+                    return;
+                }
+            }
+        }, "live-preview-watchdog");
+        livePreviewWatchdog.setDaemon(true);
+        livePreviewWatchdog.start();
+    }
+
+    /**
+     * Extract a query parameter value from a URL query string.
+     *
+     * @param query the query string (without the leading '?')
+     * @param name  the parameter name
+     * @return the value or {@code null} when absent
+     */
+    private static String queryParam(String query, String name) {
+        for (String pair : query.split("&")) {
+            int eq = pair.indexOf('=');
+            if (eq > 0 && pair.substring(0, eq).equals(name)) {
+                return pair.substring(eq + 1);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Stop the live preview watchdog, if any is running.
+     */
+    private synchronized void stopLivePreviewWatchdog() {
+        if (livePreviewWatchdog != null) {
+            livePreviewWatchdog.interrupt();
+            livePreviewWatchdog = null;
+        }
     }
 
     /**
@@ -182,7 +321,8 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void handleGetConfig(HttpExchange exchange) throws IOException {
-        Configuration config = storageManager.readConfigFile(Constants.CONFIG_FILENAME);
+        // Expose the config of the profile in use (or the main config when no profile is set).
+        Configuration config = storageManager.readProfileInUseConfig();
         if (config == null) {
             sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
             return;
@@ -200,6 +340,13 @@ public class ConfigServer {
     private void sendConfiguration(HttpExchange exchange, Configuration config) throws IOException {
         ObjectNode configNode = CommonUtility.JSON_MAPPER.valueToTree(config);
         EXCLUDED_FIELDS.forEach(configNode::remove);
+        // Expose the active profile (when a non-default profile is in use) so the client can show it.
+        String profileArg = MainSingleton.getInstance().profileArg;
+        if (profileArg != null && !profileArg.isEmpty()
+                && !Constants.DEFAULT.equals(profileArg)
+                && !CommonUtility.getWord(Constants.DEFAULT).equals(profileArg)) {
+            configNode.put("activeProfile", profileArg);
+        }
         byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(configNode);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
@@ -244,6 +391,9 @@ public class ConfigServer {
                 server.createContext(Constants.SET_CONFIG_PAGE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(this::handleDevicePrefs, GET_METHOD));
+                server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
+                server.createContext(Constants.SCREENSHOT_ENDPOINT, withGuard(this::handleGetScreenshot, GET_METHOD));
+                server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(this::handleEnableScreenshot, POST_METHOD));
                 server.createContext("/", withGuard(this::handleRoot, GET_METHOD));
                 server.setExecutor(Executors.newCachedThreadPool(runnable -> {
                     Thread thread = new Thread(runnable, "firefly-config-server");
@@ -262,6 +412,49 @@ public class ConfigServer {
             stop();
             log.warn("Unable to start config server: {}", e.getMessage());
         }
+    }
+
+    /**
+     * Handle POST /setConfig, taking a JSON payload with some configuration parameters,
+     * merging it into the saved configuration (the excluded fields are preserved) and persisting it.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleSetConfig(HttpExchange exchange) throws IOException {
+        JsonNode payload;
+        try (InputStream requestBody = exchange.getRequestBody()) {
+            payload = CommonUtility.JSON_MAPPER.readTree(requestBody);
+        } catch (IOException e) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            return;
+        }
+        if (payload == null || payload.isNull() || !payload.isObject()) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Payload must be a JSON object");
+            return;
+        }
+        log.info("setConfig payload received: {}", CommonUtility.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
+        // Read the config of the profile in use (or the main config when no profile is set).
+        Configuration config = storageManager.readProfileInUseConfig();
+        if (config == null) {
+            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
+            return;
+        }
+        ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(config);
+        mergePayload(payload, configTree);
+        Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
+        try {
+            // Persist into the profile in use (or the main config when no profile is set); null lets
+            // writeConfig pick the right file based on profileArg and whoAmI.
+            storageManager.writeConfig(updatedConfig, null);
+        } catch (IOException e) {
+            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save configuration: " + e.getMessage());
+            return;
+        }
+        log.info("Configuration updated via setConfig endpoint");
+        sendJson(exchange, HttpURLConnection.HTTP_OK, "{\"status\":\"OK\"}");
+        // Restart Firefly with the profile in use (if any) and preserving headless mode.
+        NativeExecutor.restartNativeInstanceWithCurrentProfile();
     }
 
     /**
@@ -331,41 +524,29 @@ public class ConfigServer {
     }
 
     /**
-     * Handle POST /setConfig, taking a JSON payload with some configuration parameters,
-     * merging it into the saved configuration (the excluded fields are preserved) and persisting it.
+     * Read a class relative resource and send it as the HTTP response body.
      *
-     * @param exchange the HTTP exchange containing the request and response
-     * @throws IOException when the response cannot be written
+     * @param exchange the HTTP exchange to send the response on
+     * @param resource the class relative resource name
+     * @param mimeType the response MIME type
+     * @throws IOException when the resource is missing or the response cannot be written
      */
-    private void handleSetConfig(HttpExchange exchange) throws IOException {
-        JsonNode payload;
-        try (InputStream requestBody = exchange.getRequestBody()) {
-            payload = CommonUtility.JSON_MAPPER.readTree(requestBody);
-        } catch (IOException e) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
-            return;
+    private void sendResource(HttpExchange exchange, String resource, String mimeType) throws IOException {
+        try (InputStream resourceStream = getClass().getResourceAsStream(resource)) {
+            if (resourceStream == null) {
+                sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Resource not found: " + resource);
+                return;
+            }
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            resourceStream.transferTo(buffer);
+            byte[] responseBytes = buffer.toByteArray();
+            exchange.getResponseHeaders().set("Content-Type", mimeType);
+            exchange.getResponseHeaders().set("Cache-Control", "no-store");
+            exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+            try (OutputStream responseBody = exchange.getResponseBody()) {
+                responseBody.write(responseBytes);
+            }
         }
-        if (payload == null || payload.isNull() || !payload.isObject()) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Payload must be a JSON object");
-            return;
-        }
-        log.info("setConfig payload received: {}", CommonUtility.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
-        Configuration config = storageManager.readConfigFile(Constants.CONFIG_FILENAME);
-        if (config == null) {
-            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
-            return;
-        }
-        ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(config);
-        mergePayload(payload, configTree);
-        Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
-        try {
-            storageManager.writeConfig(updatedConfig, Constants.CONFIG_FILENAME);
-        } catch (IOException e) {
-            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save configuration: " + e.getMessage());
-            return;
-        }
-        log.info("Configuration updated via setConfig endpoint");
-        sendJson(exchange, HttpURLConnection.HTTP_OK, "{\"status\":\"OK\"}");
     }
 
     /**
@@ -418,28 +599,9 @@ public class ConfigServer {
     }
 
     /**
-     * Read a class relative resource and send it as the HTTP response body.
-     *
-     * @param exchange the HTTP exchange to send the response on
-     * @param resource the class relative resource name
-     * @param mimeType the response MIME type
-     * @throws IOException when the resource is missing or the response cannot be written
-     */
-    private void sendResource(HttpExchange exchange, String resource, String mimeType) throws IOException {
-        try (InputStream resourceStream = getClass().getResourceAsStream(resource)) {
-            if (resourceStream == null) {
-                sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Resource not found: " + resource);
-                return;
-            }
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            resourceStream.transferTo(buffer);
-            byte[] responseBytes = buffer.toByteArray();
-            exchange.getResponseHeaders().set("Content-Type", mimeType);
-            exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-            try (OutputStream responseBody = exchange.getResponseBody()) {
-                responseBody.write(responseBytes);
-            }
-        }
+         * Plain data holder for the current framerate counters, JSON friendly.
+         */
+        private record FpsDto(float producing, float consuming) {
     }
 
     /**
