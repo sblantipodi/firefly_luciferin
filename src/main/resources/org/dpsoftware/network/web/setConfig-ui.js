@@ -10,9 +10,19 @@ function notifyComboChange(name, value) {
 function wireSelectChangeListeners() {
     document.querySelectorAll('select').forEach(function (el) {
         el.addEventListener('change', function () {
-            notifyComboChange(el.id, el.value);
+            var value = el.value;
+            if (el.id === 'effect') {
+                value = effectValueToEnglish(value);
+            }
+            notifyComboChange(el.id, value);
         });
     });
+    var toggleLed = document.getElementById('toggleLed');
+    if (toggleLed) {
+        toggleLed.addEventListener('change', function () {
+            notifyComboChange('toggleLed', toggleLed.checked);
+        });
+    }
 }
 
 function showToast(message, contextClass) {
@@ -163,8 +173,14 @@ function pollFps() {
 $(function () {
     var br = '<br class="d-sm-none">';
     $('#subtitle').html('Bias Lighting and Ambient Light software' + br + ' designed for ' + br + 'Glow Worm Luciferin firmware');
-    fetchJson('getFieldOptions').then(function (opts) {
-        fieldOptions = opts || {};
+    fetchJson('sectionTitles').then(function (titles) {
+        sectionTitles = titles || {};
+    }).catch(function () {
+    }).then(function () {
+        return fetchJson('getFieldOptions');
+    }).then(function (data) {
+        fieldOptions = (data && data.options) || {};
+        fieldLabels = (data && data.labels) || {};
         buildForm();
         initColorPicker();
         wireLivePreviewButton();

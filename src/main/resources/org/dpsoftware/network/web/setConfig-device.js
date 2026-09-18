@@ -1,34 +1,9 @@
 var deviceIp = null;
-var deviceState = {on: true, effect: 'Solid', whitetemp: 65, brightness: 255};
+var deviceState = {on: true, effect: null, whitetemp: 65, brightness: 255};
 var lastColor = {r: 255, g: 38, b: 0};
 var deviceReachable = false;
 var pollTimer = null;
 var outputDeviceTouched = false;
-
-var PICKER_EFFECT_TO_CONFIG = {
-    'Solid': 'Solid',
-    'Fire': 'Fire',
-    'Twinkle': 'Twinkle',
-    'Bpm': 'Bpm',
-    'Rainbow': 'Rainbow',
-    'Slow rainbow': 'Slow rainbow',
-    'Chase rainbow': 'Chase rainbow',
-    'Solid rainbow': 'Solid rainbow',
-    'Random colors': 'Random colors',
-    'Rainbow colors': 'Rainbow colors',
-    'Meteor': 'Meteor',
-    'Color waterfall': 'Color waterfall',
-    'Random marquee': 'Random marquee',
-    'Rainbow marquee': 'Rainbow marquee',
-    'Pulsing rainbow': 'Pulsing rainbow',
-    'Christmas': 'Christmas',
-    'Bias light': 'Bias light',
-    'GlowWormWifi': 'Bias light',
-    'Music mode (VU Meter)': 'Music mode (VU Meter)',
-    'Music mode (Stereo VU Meter)': 'Music mode (Stereo VU Meter)',
-    'Music mode (Screen capture)': 'Music mode (Screen capture)',
-    'Music mode (Rainbow music)': 'Music mode (Rainbow music)'
-};
 
 var DEVICE_COLUMNS = [
     {key: 'deviceName', label: 'Name'},
@@ -85,11 +60,11 @@ function resolveDeviceIp() {
 }
 
 function buildPickerHtml() {
-    var effects = ['Solid', 'Fire', 'Twinkle', 'Bpm', 'Rainbow', 'Slow rainbow', 'Chase rainbow', 'Solid rainbow', 'Random colors', 'Rainbow colors', 'Meteor', 'Color waterfall', 'Random marquee', 'Rainbow marquee', 'Pulsing rainbow', 'Christmas', 'Bias light', 'Music mode (VU Meter)', 'Music mode (Stereo VU Meter)', 'Music mode (Screen capture)', 'Music mode (Rainbow music)'];
-    var opts = effects.map(function (e) {
-        return '<option value="' + e + '"' + (deviceState.effect === e ? ' selected' : '') + '>' + e + '</option>';
+    var effectOpts = (fieldOptions && fieldOptions.effect) ? fieldOptions.effect.options : [];
+    var opts = effectOpts.map(function (o) {
+        return '<option value="' + escapeHtml(o.value) + '"' + (deviceState.effect === o.value ? ' selected' : '') + '>' + escapeHtml(o.label) + '</option>';
     }).join('');
-    var toggleLabel = deviceState.on ? 'Turn OFF' : 'Turn ON';
+    var toggleLabel = deviceState.on ? (fieldLabels.turnLedOff || 'Turn OFF') : (fieldLabels.turnLedOn || 'Turn ON');
     var toggleClass = deviceState.on ? 'btn-primary' : 'btn-outline-primary';
     return '<div class="row mb-3 align-items-start justify-content-center"><div class="col-12 col-sm-8 col-md-6 col-lg-4 text-center"><div style="max-width: 288px; margin: 0 auto;"><div id="picker"></div></div>' +
         '<div class="form-group mt-2"><select id="effectSelect" class="form-select w-100">' + opts + '</select></div>' +
@@ -98,13 +73,49 @@ function buildPickerHtml() {
         '</div></div></div>';
 }
 
+function effectValueToEnglish(value) {
+    if (value == null) {
+        return value;
+    }
+    var opts = (fieldOptions && fieldOptions.effect) ? fieldOptions.effect.options : [];
+    for (var i = 0; i < opts.length; i++) {
+        if (opts[i].value === value) {
+            return opts[i].label;
+        }
+    }
+    return value;
+}
+
+function effectEnglishToValue(english) {
+    if (english == null) {
+        return english;
+    }
+    var opts = (fieldOptions && fieldOptions.effect) ? fieldOptions.effect.options : [];
+    for (var i = 0; i < opts.length; i++) {
+        if (opts[i].label === english) {
+            return opts[i].value;
+        }
+    }
+    return english;
+}
+
+function effectValueForLabel(label) {
+    var opts = (fieldOptions && fieldOptions.effect) ? fieldOptions.effect.options : [];
+    for (var i = 0; i < opts.length; i++) {
+        if (opts[i].label === label) {
+            return opts[i].value;
+        }
+    }
+    return label;
+}
+
 function applyPrefs(prefs) {
     if (!prefs) {
         return;
     }
     setToggleUi(prefs.toggle === '1');
     if (prefs.effect) {
-        var effect = PICKER_EFFECT_TO_CONFIG[prefs.effect] || prefs.effect;
+        var effect = effectEnglishToValue(prefs.effect);
         deviceState.effect = effect;
         var sel = document.getElementById('effectSelect');
         if (sel) {
@@ -114,10 +125,23 @@ function applyPrefs(prefs) {
             if (!existing) {
                 var opt = document.createElement('option');
                 opt.value = effect;
-                opt.textContent = effect;
+                opt.textContent = effectValueToEnglish(effect);
                 sel.appendChild(opt);
             }
             sel.value = effect;
+        }
+        var formSelect = document.getElementById('effect');
+        if (formSelect) {
+            var formExisting = Array.prototype.find.call(formSelect.options, function (o) {
+                return o.value === effect;
+            });
+            if (!formExisting) {
+                var formOpt = document.createElement('option');
+                formOpt.value = effect;
+                formOpt.textContent = effectValueToEnglish(effect);
+                formSelect.appendChild(formOpt);
+            }
+            formSelect.value = effect;
         }
     }
     if (prefs.whiteTemp != null && prefs.whiteTemp !== '') {
@@ -172,18 +196,21 @@ function schedulePoll() {
 function setToggleUi(on) {
     deviceState.on = on;
     var toggle = document.getElementById('toggleLED');
-    if (!toggle) {
-        return;
+    if (toggle) {
+        toggle.textContent = on ? (fieldLabels.turnLedOff || 'Turn OFF') : (fieldLabels.turnLedOn || 'Turn ON');
+        toggle.classList.toggle('btn-primary', on);
+        toggle.classList.toggle('btn-outline-primary', !on);
+        if (on) {
+            toggle.style.backgroundColor = 'orange';
+            toggle.style.color = '#fff';
+        } else {
+            toggle.style.backgroundColor = 'lightgrey';
+            toggle.style.color = '#fff';
+        }
     }
-    toggle.textContent = on ? 'Turn OFF' : 'Turn ON';
-    toggle.classList.toggle('btn-primary', on);
-    toggle.classList.toggle('btn-outline-primary', !on);
-    if (on) {
-        toggle.style.backgroundColor = 'orange';
-        toggle.style.color = '#fff';
-    } else {
-        toggle.style.backgroundColor = 'lightgrey';
-        toggle.style.color = '#fff';
+    var formCheckbox = document.getElementById('toggleLed');
+    if (formCheckbox) {
+        formCheckbox.checked = on;
     }
 }
 
@@ -204,7 +231,7 @@ function sendToDevice(payload, successMsg) {
 function buildPayload() {
     return {
         state: deviceState.on ? 'ON' : 'OFF',
-        effect: deviceState.effect,
+        effect: effectValueToEnglish(deviceState.effect),
         color: lastColor,
         whitetemp: deviceState.whitetemp
     };
@@ -222,10 +249,11 @@ function initColorPicker() {
     window.__colorPicker = colorPicker;
     colorPicker.on(['input:end'], function (color) {
         lastColor = color.rgb;
-        deviceState.effect = 'Solid';
+        var solidValue = effectValueForLabel('Solid');
+        deviceState.effect = solidValue;
         var sel = document.getElementById('effectSelect');
         if (sel) {
-            sel.value = 'Solid';
+            sel.value = solidValue;
         }
         sendToDevice(buildPayload(), 'Color sent to device');
         syncDeviceFromPrefs();
