@@ -66,7 +66,7 @@ var sections = [
         ]
     },
     {
-        id: 'network', title: 'Network (MQTT)', fields: [
+        id: 'network', title: 'Network', fields: [
             {id: 'mqttEnable', label: 'Enable MQTT', type: 'checkbox', numeric: false},
             {id: 'wirelessStream', label: 'Wireless stream', type: 'checkbox', numeric: false},
             {id: 'streamType', label: 'Stream type', type: 'select'},
@@ -203,6 +203,55 @@ var sections = [
         ]
     }
 ];
+
+function buildProfilesAccordion() {
+    var activeProfile = (window.__lastConfig && window.__lastConfig.activeProfile) ? window.__lastConfig.activeProfile : '';
+    var html = '<div class="accordion-item">';
+    html += '<h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section-profiles" aria-expanded="false" aria-controls="section-profiles">Profiles</button></h2>';
+    html += '<div id="section-profiles" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">';
+    html += '<div class="accordion-body">';
+    html += '<div id="profilesList" class="list-group mb-2"></div>';
+    html += '<div class="form-text text-muted">Click a profile name to activate it. Firefly will restart with the selected profile.</div>';
+    html += '</div></div></div>';
+    return html;
+}
+
+function renderProfiles(data) {
+    var container = document.getElementById('profilesList');
+    if (!container) {
+        return;
+    }
+    var profiles = data.profiles || [];
+    var activeProfile = data.activeProfile || '';
+    if (profiles.length === 0) {
+        container.innerHTML = '<div class="text-muted">No profiles available</div>';
+        return;
+    }
+    var html = '';
+    profiles.forEach(function (p) {
+        var isActive = p === activeProfile;
+        var badge = isActive ? ' <span class="badge bg-success">active</span>' : '';
+        html += '<button type="button" class="list-group-item list-group-item-action" onclick="activateProfile(\'' + escapeHtml(p) + '\')">' + escapeHtml(p) + badge + '</button>';
+    });
+    container.innerHTML = html;
+}
+
+function activateProfile(name) {
+    var confirmMsg = 'Activate profile "' + name + '"? Firefly will restart.';
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    fetch('activateProfile?name=' + encodeURIComponent(name), {method: 'POST'}).then(function (r) {
+        if (!r.ok) {
+            return r.text().then(function (t) {
+                throw new Error(t || r.statusText);
+            });
+        }
+        showToast('Activating profile: ' + name, 'bg-info text-white');
+    }).catch(function (err) {
+        showToast('Unable to activate profile: ' + err.message, 'bg-danger text-white');
+    });
+}
 
 function fetchJson(url, options) {
     return fetch(url, options).then(function (r) {
@@ -491,6 +540,7 @@ function buildForm() {
         html += buildSubAccordionsHtml(s, idx);
         html += '</div></div></div>';
     });
+    html += buildProfilesAccordion();
     html += '</div>';
     html += '<div class="text-center py-2"><button type="button" id="showLivePreview" class="btn btn-sm" style="background-color:lightgrey;border:0;color:#fff;font-weight:bold">Show Live Preview</button></div>';
     html += '<div class="text-center py-2"><img id="screenshot" alt="Captured frame (TRACE)" style="max-width:100%;border:1px solid #ccc;display:none"></div>';
@@ -764,6 +814,9 @@ $(function () {
             profileEl.textContent = profile ? ('Profile: ' + profile) : '';
         }
         syncDeviceFromPrefs();
+        return fetchJson('listProfiles');
+    }).then(function (profilesData) {
+        renderProfiles(profilesData);
     }).catch(function (err) {
         showToast('Unable to load settings: ' + err.message, 'bg-danger text-white');
     });

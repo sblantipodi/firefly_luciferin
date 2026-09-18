@@ -32,6 +32,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.CubeLutToneMap;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.DeviceDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -61,6 +62,7 @@ public class ConfigServer {
      * Configuration fields to strip from the JSON payload, they are huge and not useful to a client.
      */
     private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix");
+    private static final String JSON_OK = "{\"status\":\"OK\"}";
     /**
      * Settings web page resource, co-located in this package ({@code org.dpsoftware.network.web}).
      * <p>
@@ -256,12 +258,15 @@ public class ConfigServer {
         boolean on = !disable;
         GuiSingleton.getInstance().setShowLiveCapture(on);
         if (on) {
+            if (!MainSingleton.getInstance().RUNNING) {
+                PipelineManager.restartCapture(CommonUtility::run);
+            }
             startLivePreviewWatchdog();
         } else {
             stopLivePreviewWatchdog();
         }
         log.info("Live preview toggled: showLiveCapture set to {}", on);
-        sendJson(exchange, HttpURLConnection.HTTP_OK, "{\"status\":\"OK\"}");
+        sendJson(exchange, HttpURLConnection.HTTP_OK, JSON_OK);
     }
 
     /**
@@ -302,6 +307,60 @@ public class ConfigServer {
             }
         }
         return null;
+    }
+
+    /**
+     * Handle GET /listProfiles, exposing the list of profile names available for this instance
+     * (read from the config directory via {@link StorageManager#listProfilesForThisInstance()}).
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleListProfiles(HttpExchange exchange) throws IOException {
+        List<String> profiles = new ArrayList<>(new LinkedHashSet<>(storageManager.listProfilesForThisInstance()));
+        profiles.removeIf(p -> CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH).equals(p));
+        profiles.addFirst(CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH));
+        String profileArg = MainSingleton.getInstance().profileArg;
+        String activeProfile;
+        if (profileArg == null || profileArg.isEmpty()
+                || Constants.DEFAULT.equals(profileArg)
+                || CommonUtility.getWord(Constants.DEFAULT).equals(profileArg)) {
+            activeProfile = CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH);
+        } else {
+            activeProfile = profileArg;
+        }
+        ObjectNode node = CommonUtility.JSON_MAPPER.createObjectNode();
+        node.putPOJO("profiles", profiles);
+        node.put("activeProfile", activeProfile);
+        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(node);
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(responseBytes);
+        }
+    }
+
+    /**
+     * Handle POST /activateProfile?name=<profile>, activating a profile by restarting the native
+     * instance with it. When {@code name} is absent or empty the current (default) profile is used.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleActivateProfile(HttpExchange exchange) throws IOException {
+        String query = exchange.getRequestURI().getQuery();
+        String name = query != null ? queryParam(query, "name") : null;
+        if (name == null || name.isEmpty()) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or empty name parameter");
+            return;
+        }
+        // When "Default" is selected, restart without a profile (null) so the main config is used.
+        sendJson(exchange, HttpURLConnection.HTTP_OK, JSON_OK);
+        if (name.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            NativeExecutor.restartNativeInstance(Constants.DEFAULT);
+        } else {
+            NativeExecutor.restartNativeInstance(name);
+        }
     }
 
     /**
@@ -394,6 +453,8 @@ public class ConfigServer {
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENDPOINT, withGuard(this::handleGetScreenshot, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(this::handleEnableScreenshot, POST_METHOD));
+                server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(this::handleListProfiles, GET_METHOD));
+                server.createContext(Constants.ACTIVATE_PROFILE_ENDPOINT, withGuard(this::handleActivateProfile, POST_METHOD));
                 server.createContext("/", withGuard(this::handleRoot, GET_METHOD));
                 server.setExecutor(Executors.newCachedThreadPool(runnable -> {
                     Thread thread = new Thread(runnable, "firefly-config-server");
@@ -452,7 +513,7 @@ public class ConfigServer {
             return;
         }
         log.info("Configuration updated via setConfig endpoint");
-        sendJson(exchange, HttpURLConnection.HTTP_OK, "{\"status\":\"OK\"}");
+        sendJson(exchange, HttpURLConnection.HTTP_OK, JSON_OK);
         // Restart Firefly with the profile in use (if any) and preserving headless mode.
         NativeExecutor.restartNativeInstanceWithCurrentProfile();
     }
