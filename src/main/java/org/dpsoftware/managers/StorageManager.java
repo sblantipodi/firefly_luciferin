@@ -26,12 +26,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -337,12 +341,81 @@ public class StorageManager {
                 MainSingleton.getInstance().guiManager = new GuiManager(false);
                 if (!MainSingleton.getInstance().isHeadlessMode()) {
                     MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
+                    config = readProfileInUseConfig();
+                } else {
+                    config = setDefaultsForHeadlessMode();
                 }
-                config = readProfileInUseConfig();
             } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                log.error("Failed to create default configuration in headless mode", e);
                 throw new RuntimeException(e);
             }
         }
+        return config;
+    }
+
+    /**
+     * Set defaults for headless mode
+     */
+    private Configuration setDefaultsForHeadlessMode() throws IOException {
+        Configuration config;
+        log.info("No config file found in headless mode, creating default configuration");
+        Configuration defaultConfig = new Configuration();
+        defaultConfig.setLedMatrix(new LinkedHashMap<>());
+        defaultConfig.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+        defaultConfig.setTheme(Enums.Theme.CLASSIC.getBaseI18n());
+        defaultConfig.setCaptureMethod(Configuration.CaptureMethod.defaultForOs().name());
+        defaultConfig.setFullFirmware(true);
+        defaultConfig.setWirelessStream(true);
+        defaultConfig.setLanguage("English");
+        defaultConfig.setConfigVersion(MainSingleton.getInstance().version);
+        defaultConfig.setScreenResX(1920);
+        defaultConfig.setScreenResY(1080);
+        defaultConfig.setOsScaling(100);
+        defaultConfig.setNumberOfCPUThreads(1);
+        defaultConfig.setTopLed(10);
+        defaultConfig.setLeftLed(10);
+        defaultConfig.setRightLed(10);
+        defaultConfig.setBottomLeftLed(10);
+        defaultConfig.setBottomRightLed(10);
+        defaultConfig.setBottomRowLed(20);
+        defaultConfig.setBrightness(255);
+        defaultConfig.setColorChooser("255,82,0,255");
+        defaultConfig.setOrientation(Enums.Orientation.CLOCKWISE.getBaseI18n());
+        defaultConfig.setOutputDevice(Constants.SERIAL_PORT_AUTO);
+        defaultConfig.setStaticGlowWormIp(Constants.DASH);
+        defaultConfig.setMonitorNumber(0);
+        defaultConfig.setPowerSaving("30 minutes");
+        defaultConfig.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + Constants.DEFAULT_MQTT_HOST + ":" + Constants.DEFAULT_MQTT_PORT);
+        defaultConfig.setMqttTopic(Constants.MQTT_BASE_TOPIC);
+        defaultConfig.setSmoothingType(Enums.Smoothing.DISABLED.getBaseI18n());
+        defaultConfig.setFrameInsertionTarget(0);
+        defaultConfig.setEmaAlpha(0.0F);
+        if (defaultConfig.isFullFirmware()) {
+            defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_115200.getBaudRate());
+        } else {
+            defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_500000.getBaudRate());
+        }
+        defaultConfig.setHueMap(ColorCorrectionDialogController.initHSLMap());
+        try {
+            LEDCoordinate ledCoordinate = new LEDCoordinate();
+            LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(defaultConfig.getScreenResX(),
+                    defaultConfig.getScreenResY(), defaultConfig.getBottomRightLed(), defaultConfig.getRightLed(), defaultConfig.getTopLed(),
+                    defaultConfig.getLeftLed(), defaultConfig.getBottomLeftLed(), defaultConfig.getBottomRowLed(),
+                    defaultConfig.getSplitBottomMargin(), defaultConfig.getGrabberAreaTopBottom(), defaultConfig.getGrabberSide(),
+                    defaultConfig.getGapTypeTopBottom(), defaultConfig.getGapTypeSide(), defaultConfig.getGroupBy());
+            LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
+            defaultConfig.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, false));
+            LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
+            defaultConfig.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, false));
+            LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
+            defaultConfig.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, false));
+        } catch (CloneNotSupportedException e) {
+            log.info(e.getMessage());
+        }
+        writeConfig(defaultConfig, null);
+        config = readProfileInUseConfig();
         return config;
     }
 

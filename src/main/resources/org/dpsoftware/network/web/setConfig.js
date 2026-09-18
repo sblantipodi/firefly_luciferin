@@ -178,7 +178,6 @@ var sections = [
         subAccordions: [
             {
                 id: 'connectedDevices', title: 'Connected devices', fields: [
-                    {id: 'devicesToolbar', label: '', type: 'note', note: ''},
                     {id: 'devicesContent', label: '', type: 'note', note: 'Loading devices…'}
                 ]
             },
@@ -282,9 +281,6 @@ function selectType(f) {
 }
 
 function buildFieldHtml(f) {
-    if (f.id === 'devicesToolbar') {
-        return '<div class="d-flex justify-content-between align-items-center mb-2"><span class="text-muted small">Currently connected devices (read-only)</span> <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshDevices()">Refresh</button></div>';
-    }
     if (f.id === 'devicesContent') {
         return '<div id="devicesTable" class="table-responsive"></div>';
     }
@@ -340,8 +336,9 @@ function resolveDeviceIp() {
     if (!out || !window.__devices || !window.__devices.length) {
         return null;
     }
+    var auto = String(out).toUpperCase() === 'AUTO';
     var match = window.__devices.find(function (d) {
-        return (d.deviceName && out && d.deviceName === out) || (d.deviceIP && out && d.deviceIP === out);
+        return auto ? true : ((d.deviceName && d.deviceName === out) || (d.deviceIP && d.deviceIP === out));
     });
     if (match && match.deviceIP) {
         deviceIp = match.deviceIP;
@@ -431,7 +428,10 @@ function schedulePoll() {
         clearInterval(pollTimer);
         pollTimer = null;
     }
-    pollTimer = setInterval(syncDeviceFromPrefs, 5000);
+    pollTimer = setInterval(function () {
+        syncDeviceFromPrefs();
+        refreshDevices();
+    }, 5000);
 }
 
 function setToggleUi(on) {
@@ -678,8 +678,7 @@ var DEVICE_COLUMNS = [
     {key: 'ldrValue', label: 'LDR'},
     {key: 'ldrPin', label: 'LDR GPIO'},
     {key: 'relayPin', label: 'Relay GPIO'},
-    {key: 'sbPin', label: 'Button GPIO'},
-    {key: 'lastSeen', label: 'Last seen'}
+    {key: 'sbPin', label: 'Button GPIO'}
 ];
 
 function escapeHtml(v) {
@@ -687,7 +686,10 @@ function escapeHtml(v) {
 }
 
 function refreshDevices() {
-    fetchJson('getDevices').then(renderDevices).catch(function (err) {
+    fetchJson('getDevices').then(function (devices) {
+        renderDevices(devices);
+        applyAutoOutputDevice();
+    }).catch(function (err) {
         document.getElementById('devicesTable').innerHTML = '<span class="text-danger">Unable to load devices: ' + escapeHtml(err.message) + '</span>';
     });
 }
@@ -707,12 +709,23 @@ function renderDevices(devices) {
         html += '<th>' + c.label + '</th>';
     });
     html += '</tr></thead><tbody>';
+    var ipRe = /^(\d{1,3}\.){3}\d{1,3}$/;
     devices.forEach(function (d) {
         html += '<tr>';
         DEVICE_COLUMNS.forEach(function (c) {
             var v = d[c.key];
             var isBool = (typeof v === 'boolean');
-            var text = isBool ? (v ? '✔' : '') : (v == null || v === '' ? '—' : escapeHtml(v));
+            var text;
+            if (isBool) {
+                text = v ? '✔' : '';
+            } else if (v == null || v === '') {
+                text = '—';
+            } else if (c.key === 'deviceIP' && ipRe.test(String(v))) {
+                var ip = escapeHtml(String(v));
+                text = '<a href="http://' + ip + '" target="_blank" rel="noopener">' + ip + '</a>';
+            } else {
+                text = escapeHtml(v);
+            }
             html += '<td>' + text + '</td>';
         });
         html += '</tr>';
@@ -808,6 +821,7 @@ $(function () {
     }).then(function (cfg) {
         window.__lastConfig = cfg || {};
         fillForm(cfg);
+        applyAutoOutputDevice();
         var profile = cfg && cfg.activeProfile;
         var profileEl = document.getElementById('activeProfile');
         if (profileEl) {
@@ -824,6 +838,27 @@ $(function () {
     pollFps();
     setInterval(pollFps, 1000);
 });
+
+function applyAutoOutputDevice() {
+    var cfg = window.__lastConfig;
+    var out = cfg && cfg.outputDevice;
+    if (!out || String(out).toUpperCase() !== 'AUTO') {
+        return;
+    }
+    var devices = window.__devices || [];
+    var first = devices[0];
+    if (!first || !first.deviceName) {
+        return;
+    }
+    var el = document.getElementById('outputDevice');
+    if (el) {
+        el.value = first.deviceName;
+    }
+    // Refresh the device IP resolution so the syncDeviceFromPrefs polling
+    // targets the resolved device instead of the literal "AUTO".
+    deviceIp = null;
+    resolveDeviceIp();
+}
 
 function wireLivePreviewButton() {
     var showBtn = document.getElementById('showLivePreview');
