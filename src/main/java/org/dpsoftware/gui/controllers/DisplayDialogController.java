@@ -103,13 +103,22 @@ public class DisplayDialogController {
     }
 
     /**
+     * Handle cube lut combo change, methos used by the Web Server too
+     *
+     * @param value lut filename
+     */
+    public static void handleCubeLutCombo(String value) {
+        MainSingleton.getInstance().config.setCubeLut(value);
+        CubeLutToneMap.refresh();
+    }
+
+    /**
      * Toggle combo box based on checkbox state
      */
     private void toggleValues() {
 //        gammaLevel.setDisable(!enableAutomaticGammaCheck.isSelected());
         log.info("3D LUT changed: " + cubeLutCombo.getValue());
-        MainSingleton.getInstance().config.setCubeLut(cubeLutCombo.getValue());
-        CubeLutToneMap.refresh();
+        handleCubeLutCombo(cubeLutCombo.getValue());
     }
 
     /**
