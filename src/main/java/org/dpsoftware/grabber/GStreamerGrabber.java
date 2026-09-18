@@ -230,9 +230,10 @@ public class GStreamerGrabber {
             BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             int[] rgbArray = new int[width * height];
             rgbBuffer.order(java.nio.ByteOrder.nativeOrder());
+            int bufferLimit = rgbBuffer.limit();
             int pixelIndex = 0;
             for (int y = 0; y < height; y++) {
-                int rowStart = y * bytesPerRow;
+                int rowStart = Math.min(y * bytesPerRow, bufferLimit - width * 4);
                 for (int x = 0; x < width; x++) {
                     int offset = rowStart + x * 4;
                     int b = rgbBuffer.get(offset) & 0xFF;
@@ -243,7 +244,7 @@ public class GStreamerGrabber {
                     rgbArray[pixelIndex++] = (0xFF << 24) | (tonedMappedColor[0] << 16) | (tonedMappedColor[1] << 8) | tonedMappedColor[2];
                 }
                 // skip padding bytes (stride)
-                rgbBuffer.position(rowStart + width * 4 + stridePixels * 4);
+                rgbBuffer.position(Math.min(rowStart + width * 4 + stridePixels * 4, bufferLimit));
             }
             img.setRGB(0, 0, width, height, rgbArray, 0, width);
             try {
@@ -463,7 +464,7 @@ public class GStreamerGrabber {
          */
         private ColorFloat[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
             ColorFloat[] leds = new ColorFloat[ledMatrix.size()];
-            int[] rgbTotals = (reusableRgbTotals != null) ? reusableRgbTotals : new int[4];
+            int[] rgbTotals = reusableRgbTotals;
             MainSingleton main = MainSingleton.getInstance();
             if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
                 SimdBenchmark.startSimdTime = System.nanoTime();

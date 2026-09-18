@@ -52,7 +52,6 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
@@ -60,6 +59,7 @@ import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.tc.RleVisualMapHandler;
 import org.dpsoftware.gui.tc.TcInteractionHandler;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.ColorRGBW;
@@ -1029,9 +1029,10 @@ public class TestCanvas {
             int rowBytes = widthPlusStride * 4;
             int[] argbArray = new int[width * height];
             java.nio.ByteBuffer bgr = buf.order(java.nio.ByteOrder.nativeOrder());
+            int bufferLimit = bgr.limit();
             int pixelIndex = 0;
             for (int y = 0; y < height; y++) {
-                int rowStart = y * rowBytes;
+                int rowStart = Math.min(y * rowBytes, bufferLimit - width * 4);
                 for (int x = 0; x < width; x++) {
                     int offset = rowStart + x * 4;
                     int r, g, b;
@@ -1043,7 +1044,7 @@ public class TestCanvas {
                     argbArray[pixelIndex++] = (0xFF << 24) | (tonedMappedColor[0] << 16) | (tonedMappedColor[1] << 8) | tonedMappedColor[2];
                 }
                 // skip padding bytes (stride)
-                bgr.position(rowStart + width * 4 + stridePixels * 4);
+                bgr.position(Math.min(rowStart + width * 4 + stridePixels * 4, bufferLimit));
             }
             javafx.scene.image.WritableImage fxImage = new javafx.scene.image.WritableImage(width, height);
             javafx.scene.image.PixelWriter writer = fxImage.getPixelWriter();
