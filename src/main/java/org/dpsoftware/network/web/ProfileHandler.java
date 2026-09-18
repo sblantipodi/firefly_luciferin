@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -119,40 +118,6 @@ public class ProfileHandler {
         } else {
             NativeExecutor.restartNativeInstance("\"" + name + "\"");
         }
-    }
-
-    /**
-     * Handle POST /addProfile?name=<profile>, copying the current in-use configuration into a new
-     * profile file. When {@code name} is absent or empty a 400 error is returned.
-     *
-     * @param exchange the HTTP exchange containing the request and response
-     * @throws IOException when the response cannot be written
-     */
-    public void handleAddProfile(HttpExchange exchange) throws IOException {
-        String name = queryNameParam(exchange);
-        if (name == null || name.isEmpty()) {
-            sendMissingNameError(exchange);
-            return;
-        }
-        Configuration config = storageManager.readProfileInUseConfig();
-        if (config == null) {
-            sendInternalError(exchange, "Configuration not found");
-            return;
-        }
-        int whoAmI = MainSingleton.getInstance().whoAmI;
-        String filename;
-        if (name.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            filename = whoAmI == 2 ? Constants.CONFIG_FILENAME_2 : whoAmI == 3 ? Constants.CONFIG_FILENAME_3 : Constants.CONFIG_FILENAME;
-        } else {
-            filename = whoAmI + "_" + name + Constants.YAML_EXTENSION;
-        }
-        try {
-            storageManager.writeConfig(config, filename);
-        } catch (IOException e) {
-            sendInternalError(exchange, "Unable to save profile: " + e.getMessage());
-            return;
-        }
-        sendOkJson(exchange);
     }
 
     /**
