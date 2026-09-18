@@ -158,6 +158,27 @@ public class ConfigServer {
     }
 
     /**
+     * Handle POST /addProfile?name=<profile>, copying the current in-use configuration into a new profile file.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleAddProfile(HttpExchange exchange) throws IOException {
+        profileHandler.handleAddProfile(exchange);
+    }
+
+    /**
+     * Handle POST /removeProfile?name=<profile>, deleting the profile file. The default and active
+     * profiles cannot be removed.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleRemoveProfile(HttpExchange exchange) throws IOException {
+        profileHandler.handleRemoveProfile(exchange);
+    }
+
+    /**
      * Handle POST /setConfig, taking a JSON payload with some configuration parameters,
      * merging it into the saved configuration (the excluded fields are preserved) and persisting it.
      *
@@ -302,6 +323,8 @@ public class ConfigServer {
                 server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(livePreviewWebHandler::handleEnableScreenshot, POST_METHOD));
                 server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(this::handleListProfiles, GET_METHOD));
                 server.createContext(Constants.ACTIVATE_PROFILE_ENDPOINT, withGuard(this::handleActivateProfile, POST_METHOD));
+                server.createContext(Constants.ADD_PROFILE_ENDPOINT, withGuard(this::handleAddProfile, POST_METHOD));
+                server.createContext(Constants.REMOVE_PROFILE_ENDPOINT, withGuard(this::handleRemoveProfile, POST_METHOD));
                 server.createContext(Constants.COMBO_CHANGE_ENDPOINT, withGuard(this::handleComboChange, POST_METHOD));
                 server.createContext(Constants.SECTION_TITLES_ENDPOINT, withGuard(this::handleGetSectionTitles, GET_METHOD));
                 server.createContext("/", withGuard(webResourceServer::handleRoot, GET_METHOD));
