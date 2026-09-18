@@ -23,7 +23,6 @@ var sections = [
             {id: 'outputDevice', label: 'Output device (serial port)', type: 'text', numeric: false},
             {id: 'baudRate', label: 'Baud rate', type: 'select'},
             {id: 'staticGlowWormIp', label: 'Glow Worm IP', type: 'text', numeric: false},
-            {id: 'fullFirmware', label: 'Full firmware', type: 'checkbox', numeric: false},
             {id: 'desiredFramerate', label: 'Capture framerate (FPS)', type: 'select'},
             {id: 'smoothingType', label: 'Smoothing type', type: 'select'},
             {
@@ -43,7 +42,6 @@ var sections = [
                 max: 120
             },
             {id: 'emaAlpha', label: 'EMA alpha', type: 'number', numeric: true, step: '0.05', min: 0, max: 1},
-            {id: 'numberOfCPUThreads', label: '# of CPU threads', type: 'number', numeric: true, min: 1, max: 64},
             {id: 'simdAvx', label: 'CPU extensions (AVX)', type: 'select'},
             {id: 'resamplingFactor', label: 'Resampling factor (scaling/quality)', type: 'select'},
             {id: 'captureMethod', label: 'Capture method', type: 'text', numeric: false},
@@ -54,7 +52,6 @@ var sections = [
             {id: 'defaultLedMatrix', label: 'Aspect ratio (LED matrix)', type: 'select'},
             {id: 'autoDetectBlackBars', label: 'Auto detect black bars', type: 'checkbox', numeric: false},
             {id: 'algo', label: 'Algorithm', type: 'select'},
-            {id: 'theme', label: 'Theme', type: 'select'},
             {id: 'language', label: 'Language', type: 'select'}
         ],
         subAccordions: [
