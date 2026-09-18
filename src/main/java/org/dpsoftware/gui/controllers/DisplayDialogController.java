@@ -24,7 +24,6 @@ package org.dpsoftware.gui.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -42,8 +41,6 @@ import java.util.List;
 @Slf4j
 public class DisplayDialogController {
 
-    @FXML
-    public CheckBox enableAutomaticGammaCheck;
     @FXML
     public ComboBox<String> cubeLutCombo;
     @FXML
@@ -82,7 +79,6 @@ public class DisplayDialogController {
      * Init default values
      */
     public void initDefaultValues() {
-        enableAutomaticGammaCheck.setSelected(true);
 //        gammaLevel.setValue(Constants.DEFAULT_CUBE_LUT);
     }
 
@@ -92,7 +88,6 @@ public class DisplayDialogController {
      * @param currentConfig current configuration
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        enableAutomaticGammaCheck.setSelected(currentConfig.isEnableAutomaticGamma());
         List<String> luts = CubeLutToneMap.listAvailableLuts();
         cubeLutCombo.getItems().setAll(luts);
         String current = MainSingleton.getInstance().config.getCubeLut();

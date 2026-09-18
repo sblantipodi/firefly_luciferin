@@ -503,12 +503,11 @@ public class StorageManager {
                 }
             }
             Path rootDir = Paths.get(path);
-            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
-            if (!firmwareFiles.isEmpty()) {
-                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
-            }
-            for (String firmwareFilename : firmwareFiles) {
-                File fileToDelete = new File(path + File.separator + firmwareFilename);
+            List<String> tempFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
+            tempFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            tempFiles.addAll(searchFilesWithWc(rootDir, Constants.SCREENSHOT_IMAGE_FILENAME_PATTERN));
+            for (String tempFilename : tempFiles) {
+                File fileToDelete = new File(path + File.separator + tempFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();
             }
         } catch (IOException e) {

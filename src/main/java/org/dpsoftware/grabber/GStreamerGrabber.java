@@ -221,7 +221,7 @@ public class GStreamerGrabber {
      */
     private void intBufferRgbToImage(int width, int height, ByteBuffer rgbBuffer) {
         long now = System.currentTimeMillis();
-        if (now - lastCaptureTime >= 5000) {
+        if (now - lastCaptureTime >= 500) {
             lastCaptureTime = now;
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer.asIntBuffer());
             int bytesPerRow = widthPlusStride * 4;
@@ -586,7 +586,7 @@ public class GStreamerGrabber {
                 }
             }
             try {
-                if (log.isTraceEnabled()) {
+                if (log.isTraceEnabled() || GuiSingleton.getInstance().isShowLiveCapture()) {
                     intBufferRgbToImage(width, height, rawBuffer);
                 }
                 // Process zones and calculate avg colors

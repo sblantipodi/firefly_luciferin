@@ -961,6 +961,7 @@ public class ColorCorrectionDialogController {
         testCanvas.hideCanvas();
         Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
         settingsStage.setAlwaysOnTop(false);
+        GuiSingleton.getInstance().setShowLiveCapture(false);
         CommonUtility.closeCurrentStage(e);
     }
 
