@@ -178,19 +178,26 @@ public class ConfigServer {
         }
         log.info("setConfig payload received: {}", CommonUtility.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
         // Read the config of the profile in use (or the main config when no profile is set).
-        Configuration config = storageManager.readProfileInUseConfig();
-        if (config == null) {
+        Configuration savedConfig = storageManager.readProfileInUseConfig();
+        if (savedConfig == null) {
             sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
             return;
         }
-        ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(config);
+        ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(savedConfig);
         mergePayload(payload, configTree);
         Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
+        // Mirror the GUI save behavior: the LED matrix is only regenerated when a matrix
+        // parameter actually changed, otherwise the saved matrix is preserved.
+        if (updatedConfig.ledMatrixParamsChanged(savedConfig)) {
+            updatedConfig.regenerateLedMatrix();
+        }
         try {
             // Persist into the profile in use (or the main config when no profile is set); null lets
             // writeConfig pick the right file based on profileArg and whoAmI.
             updatedConfig.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, updatedConfig.getEffect()).getBaseI18n());
             storageManager.writeConfig(updatedConfig, null);
+            // Write the other monitor config files (multi-monitor) regenerating their matrices.
+            storageManager.writeOtherMonitorConfigs(updatedConfig);
         } catch (IOException e) {
             sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save configuration: " + e.getMessage());
             return;

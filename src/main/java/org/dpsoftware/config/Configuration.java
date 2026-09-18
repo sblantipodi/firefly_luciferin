@@ -33,6 +33,7 @@ import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
+import org.dpsoftware.managers.dto.LedMatrixInfo;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -192,6 +193,42 @@ public class Configuration implements Cloneable {
 
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    /**
+     * Regenerate the LED matrix from the current LED parameters, replacing any existing matrix.
+     */
+    public void regenerateLedMatrix() {
+        LedMatrixInfo info = new LedMatrixInfo(screenResX, screenResY, bottomRightLed, rightLed,
+                topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomMargin, grabberAreaTopBottom,
+                grabberSide, gapTypeTopBottom, gapTypeSide, groupBy);
+        Map<Enums.AspectRatio, LinkedHashMap<Integer, LEDCoordinate>> matrices = LEDCoordinate.initializeAllMatrices(info);
+        this.ledMatrix = new LinkedHashMap<>();
+        matrices.forEach((ratio, matrix) -> this.ledMatrix.put(ratio.getBaseI18n(), matrix));
+    }
+
+    /**
+     * Check if any LED matrix parameter changed between the saved config and the new one.
+     *
+     * @param other the configuration to compare against (usually the previously saved one)
+     * @return true if any parameter used to build the LED matrix differs
+     */
+    public boolean ledMatrixParamsChanged(Configuration other) {
+        return other.getTopLed() != topLed
+                || other.getLeftLed() != leftLed
+                || other.getBottomLeftLed() != bottomLeftLed
+                || other.getBottomRightLed() != bottomRightLed
+                || other.getRightLed() != rightLed
+                || other.getBottomRowLed() != bottomRowLed
+                || !other.getGrabberSide().equals(grabberSide)
+                || !other.getGrabberAreaTopBottom().equals(grabberAreaTopBottom)
+                || !other.getGapTypeSide().equals(gapTypeSide)
+                || !other.getGapTypeTopBottom().equals(gapTypeTopBottom)
+                || !other.getSplitBottomMargin().equals(splitBottomMargin)
+                || other.getGroupBy() != groupBy
+                || other.getScreenResX() != screenResX
+                || other.getScreenResY() != screenResY
+                || other.getOsScaling() != osScaling;
     }
 
     /**

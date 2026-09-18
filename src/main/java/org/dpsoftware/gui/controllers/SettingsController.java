@@ -50,7 +50,6 @@ import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.HSLColor;
-import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -338,32 +337,19 @@ public class SettingsController {
      */
     @FXML
     public void save(InputEvent e, String profileName) {
-        LEDCoordinate ledCoordinate = new LEDCoordinate();
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
-                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
-                Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
-                Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomMargin.getValue(), ledsConfigTabController.grabberAreaTopBottom.getValue(),
-                ledsConfigTabController.grabberSide.getValue(), ledsConfigTabController.gapTypeTopBottom.getValue(), ledsConfigTabController.gapTypeSide.getValue(), ledsConfigTabController.groupBy.getValue());
         try {
             resetLedMatrixWithConditions();
-            LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-            LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, false);
-            LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, false);
-            LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, false);
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
             Configuration config;
             if (MainSingleton.getInstance().config != null) {
                 config = new StorageManager().readProfileInUseConfig();
                 config.setHueMap(hueMap);
-                config.setLedMatrix(new LinkedHashMap<>());
-                config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledFullScreenMatrix);
-                config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledLetterboxMatrix);
-                config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), fitToScreenMatrix);
                 config.setRuntimeLogLevel(MainSingleton.getInstance().config.getRuntimeLogLevel());
+                // Carry the in-memory LED matrices (incl. tile positions moved in the GUI)
+                // onto the disk-loaded config so they are preserved, not regenerated, on save.
+                config.setLedMatrix(MainSingleton.getInstance().config.getLedMatrix());
             } else {
-                config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
+                config = new Configuration(null, null, null, hueMap);
             }
             ledsConfigTabController.save(config);
             modeTabController.save(config);
@@ -372,6 +358,18 @@ public class SettingsController {
             devicesTabController.save(config);
             saveDialogues(config);
             setCaptureMethod(config);
+            Map<String, LinkedHashMap<Integer, LEDCoordinate>> inMemoryMatrices = MainSingleton.getInstance().config != null
+                    ? MainSingleton.getInstance().config.getLedMatrix() : null;
+            config.regenerateLedMatrix();
+            // Restore the in-memory matrices (incl. tile positions moved in the GUI) so the
+            // regenerated matrices are preserved, not overwritten, on save.
+            if (inMemoryMatrices != null) {
+                inMemoryMatrices.forEach((key, matrix) -> {
+                    if (matrix != null && !matrix.isEmpty()) {
+                        config.getLedMatrix().put(key, matrix);
+                    }
+                });
+            }
             config.setConfigVersion(MainSingleton.getInstance().version);
             boolean firstStartup = MainSingleton.getInstance().config == null;
             if (config.isFullFirmware() && !config.isMqttEnable() && firstStartup) {
@@ -748,18 +746,7 @@ public class SettingsController {
         tempConfiguration.setScreenResX((int) (screenInfo.width * scaleX));
         tempConfiguration.setScreenResY((int) (screenInfo.height * scaleY));
         tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
-        config.getLedMatrix().clear();
-        LEDCoordinate ledCoordinate = new LEDCoordinate();
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(tempConfiguration.getScreenResX(),
-                tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin(), ledsConfigTabController.grabberAreaTopBottom.getValue(), ledsConfigTabController.grabberSide.getValue(),
-                ledsConfigTabController.gapTypeTopBottom.getValue(), ledsConfigTabController.gapTypeSide.getValue(), ledsConfigTabController.groupBy.getValue());
-        LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, false));
-        LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, false));
-        LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, false));
+        tempConfiguration.regenerateLedMatrix();
         sm.writeConfig(tempConfiguration, filename);
     }
 
@@ -1235,22 +1222,25 @@ public class SettingsController {
      * Conditions to reset the led matrix
      */
     private void resetLedMatrixWithConditions() {
-        if (MainSingleton.getInstance().config != null) {
-            if (Integer.parseInt(ledsConfigTabController.topLed.getText()) != MainSingleton.getInstance().config.getTopLed()
-                    || Integer.parseInt(ledsConfigTabController.leftLed.getText()) != MainSingleton.getInstance().config.getLeftLed()
-                    || Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()) != MainSingleton.getInstance().config.getBottomLeftLed()
-                    || Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()) != MainSingleton.getInstance().config.getBottomRightLed()
-                    || Integer.parseInt(ledsConfigTabController.rightLed.getText()) != MainSingleton.getInstance().config.getRightLed()
-                    || Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()) != MainSingleton.getInstance().config.getBottomRowLed()
-                    || !ledsConfigTabController.grabberSide.getValue().equals(MainSingleton.getInstance().config.getGrabberSide())
-                    || !ledsConfigTabController.grabberAreaTopBottom.getValue().equals(MainSingleton.getInstance().config.getGrabberAreaTopBottom())
-                    || !ledsConfigTabController.gapTypeSide.getValue().equals(MainSingleton.getInstance().config.getGapTypeSide())
-                    || !ledsConfigTabController.gapTypeTopBottom.getValue().equals(MainSingleton.getInstance().config.getGapTypeTopBottom())
-                    || !ledsConfigTabController.splitBottomMargin.getValue().equals(MainSingleton.getInstance().config.getSplitBottomMargin())
-                    || ledsConfigTabController.groupBy.getValue() != MainSingleton.getInstance().config.getGroupBy()
-                    || Integer.parseInt(modeTabController.screenWidth.getText()) != MainSingleton.getInstance().config.getScreenResX()
-                    || Integer.parseInt(modeTabController.screenHeight.getText()) != MainSingleton.getInstance().config.getScreenResY()
-                    || Integer.parseInt((modeTabController.scaling.getValue()).replace(Constants.PERCENT, "")) != MainSingleton.getInstance().config.getOsScaling()) {
+        Configuration currentConfig = MainSingleton.getInstance().config;
+        if (currentConfig != null) {
+            Configuration guiConfig = new Configuration();
+            guiConfig.setTopLed(Integer.parseInt(ledsConfigTabController.topLed.getText()));
+            guiConfig.setLeftLed(Integer.parseInt(ledsConfigTabController.leftLed.getText()));
+            guiConfig.setBottomLeftLed(Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()));
+            guiConfig.setBottomRightLed(Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()));
+            guiConfig.setRightLed(Integer.parseInt(ledsConfigTabController.rightLed.getText()));
+            guiConfig.setBottomRowLed(Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()));
+            guiConfig.setGrabberSide(ledsConfigTabController.grabberSide.getValue());
+            guiConfig.setGrabberAreaTopBottom(ledsConfigTabController.grabberAreaTopBottom.getValue());
+            guiConfig.setGapTypeSide(ledsConfigTabController.gapTypeSide.getValue());
+            guiConfig.setGapTypeTopBottom(ledsConfigTabController.gapTypeTopBottom.getValue());
+            guiConfig.setSplitBottomMargin(ledsConfigTabController.splitBottomMargin.getValue());
+            guiConfig.setGroupBy(ledsConfigTabController.groupBy.getValue());
+            guiConfig.setScreenResX(Integer.parseInt(modeTabController.screenWidth.getText()));
+            guiConfig.setScreenResY(Integer.parseInt(modeTabController.screenHeight.getText()));
+            guiConfig.setOsScaling(Integer.parseInt(modeTabController.scaling.getValue().replace(Constants.PERCENT, "")));
+            if (currentConfig.ledMatrixParamsChanged(guiConfig)) {
                 resetLedMatrix();
             }
         }
@@ -1260,25 +1250,22 @@ public class SettingsController {
      * Reset LED matrix
      */
     public void resetLedMatrix() {
-        LEDCoordinate ledCoordinate = new LEDCoordinate();
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
-                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
-                Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
-                Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomMargin.getValue(), ledsConfigTabController.grabberAreaTopBottom.getValue(),
-                ledsConfigTabController.grabberSide.getValue(), ledsConfigTabController.gapTypeTopBottom.getValue(), ledsConfigTabController.gapTypeSide.getValue(), ledsConfigTabController.groupBy.getValue());
-        LedMatrixInfo ledMatrixInfoFullScreen = null;
-        LedMatrixInfo ledMatrixInfoLetterbox = null;
-        LedMatrixInfo ledMatrixInfoPillarbox = null;
-        try {
-            ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-            ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-        } catch (CloneNotSupportedException e) {
-            log.error(e.getMessage());
-        }
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, true));
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, true));
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, true));
+        Configuration config = MainSingleton.getInstance().config;
+        config.setScreenResX(Integer.parseInt(modeTabController.screenWidth.getText()));
+        config.setScreenResY(Integer.parseInt(modeTabController.screenHeight.getText()));
+        config.setBottomRightLed(Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()));
+        config.setRightLed(Integer.parseInt(ledsConfigTabController.rightLed.getText()));
+        config.setTopLed(Integer.parseInt(ledsConfigTabController.topLed.getText()));
+        config.setLeftLed(Integer.parseInt(ledsConfigTabController.leftLed.getText()));
+        config.setBottomLeftLed(Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()));
+        config.setBottomRowLed(Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()));
+        config.setSplitBottomMargin(ledsConfigTabController.splitBottomMargin.getValue());
+        config.setGrabberAreaTopBottom(ledsConfigTabController.grabberAreaTopBottom.getValue());
+        config.setGrabberSide(ledsConfigTabController.grabberSide.getValue());
+        config.setGapTypeTopBottom(ledsConfigTabController.gapTypeTopBottom.getValue());
+        config.setGapTypeSide(ledsConfigTabController.gapTypeSide.getValue());
+        config.setGroupBy(ledsConfigTabController.groupBy.getValue());
+        config.regenerateLedMatrix();
         FireflyLuciferin.setLedNumber(currentConfig.getDefaultLedMatrix());
     }
 
