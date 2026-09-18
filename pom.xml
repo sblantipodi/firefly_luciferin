@@ -31,6 +31,7 @@
         <jserialcomm.version>2.11.4</jserialcomm.version>
         <jackson.version>2.22.2</jackson.version>
         <lombok.version>1.18.48</lombok.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
         <jna.version>5.19.1</jna.version>
         <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
@@ -143,6 +144,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>${jna.version}</version>
@@ -224,6 +231,32 @@
             <groupId>com.github.hypfvieh</groupId>
             <artifactId>dbus-java-transport-junixsocket</artifactId>
             <version>${dbus.java.version}</version>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${byte-buddy.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

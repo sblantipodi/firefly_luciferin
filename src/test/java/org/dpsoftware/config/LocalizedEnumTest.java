@@ -64,9 +64,8 @@ class LocalizedEnumTest {
 
     @Test
     void fromBaseStr_nullInputThrowsNpe() {
-        // Production code does not guard against null — delegates to String.equalsIgnoreCase
-        assertThrows(NullPointerException.class, () ->
-                LocalizedEnum.fromBaseStr(Enums.Theme.class, null));
+        // Production code does not guard against null delegates to String.equalsIgnoreCase
+        assertThrows(NullPointerException.class, () -> LocalizedEnum.fromBaseStr(Enums.Theme.class, null));
     }
 
     @Test

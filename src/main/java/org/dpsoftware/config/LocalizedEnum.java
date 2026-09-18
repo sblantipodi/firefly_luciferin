@@ -41,9 +41,6 @@ public interface LocalizedEnum {
      * @return specific enum
      */
     static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString, boolean baseValue) {
-        if (enumValueString == null) {
-            return null;
-        }
         return Arrays.stream(enumClass.getEnumConstants())
                 .filter(genericEnum -> enumValueString.equalsIgnoreCase(baseValue ? genericEnum.getBaseI18n() : genericEnum.getI18n()))
                 .findFirst()
