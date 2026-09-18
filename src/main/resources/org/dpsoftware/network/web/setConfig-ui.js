@@ -1,3 +1,20 @@
+function notifyComboChange(name, value) {
+    fetch('comboChange', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({comboName: name, value: value})
+    }).catch(function () {
+    });
+}
+
+function wireSelectChangeListeners() {
+    document.querySelectorAll('select').forEach(function (el) {
+        el.addEventListener('change', function () {
+            notifyComboChange(el.id, el.value);
+        });
+    });
+}
+
 function showToast(message, contextClass) {
     if (!document.getElementById('toastContainer')) {
         document.body.insertAdjacentHTML('beforeend', '<div id="toastContainer" style="position:relative;"><div style="position:absolute;top:0;right:0;"></div></div>');
@@ -151,6 +168,7 @@ $(function () {
         buildForm();
         initColorPicker();
         wireLivePreviewButton();
+        wireSelectChangeListeners();
         return fetchJson('getConfig');
     }).then(function (cfg) {
         window.__lastConfig = cfg || {};
