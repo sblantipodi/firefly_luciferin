@@ -864,6 +864,7 @@ public class Constants {
     public static final String LIST_PROFILES_ENDPOINT = "/listProfiles";
     public static final String ACTIVATE_PROFILE_ENDPOINT = "/activateProfile";
     public static final String COMBO_CHANGE_ENDPOINT = "/comboChange";
+    public static final String SECTION_TITLES_ENDPOINT = "/sectionTitles";
     public static final int CONFIG_SERVER_DEFAULT_PORT = 33556;
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
