@@ -33,7 +33,7 @@ import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.CubeLutToneMap;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
-import org.dpsoftware.managers.ManagerSingleton;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.DeviceDto;
@@ -203,7 +203,7 @@ public class ConfigServer {
     }
 
     private static FieldOptions.Option effectOption(String i18nKey) {
-        return new FieldOptions.Option(i18nKey, CommonUtility.getWord(i18nKey));
+        return new FieldOptions.Option(CommonUtility.getWord(i18nKey), CommonUtility.getWord(i18nKey));
     }
 
     /**
@@ -555,6 +555,7 @@ public class ConfigServer {
         try {
             // Persist into the profile in use (or the main config when no profile is set); null lets
             // writeConfig pick the right file based on profileArg and whoAmI.
+            updatedConfig.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, updatedConfig.getEffect()).getBaseI18n());
             storageManager.writeConfig(updatedConfig, null);
         } catch (IOException e) {
             sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save configuration: " + e.getMessage());
@@ -751,15 +752,13 @@ public class ConfigServer {
                             MainSingleton.getInstance().config.setResamplingFactor(rf.getResamplingFactorValue()));
                 }
             }, 200);
-            case "effect" -> {
+            case "effectSelect" -> {
                 String finalNewVal = LocalizedEnum.fromStr(Enums.Effect.class, valueText).getBaseI18n();
-                MainSingleton.getInstance().config.setEffect(finalNewVal);
-                ManagerSingleton.getInstance().lastEffectInUse = finalNewVal;
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+                NetworkManager.setEffect(finalNewVal);
             }
             case "toggleLed" -> {
                 boolean on;
-                if (value != null && value.isBoolean()) {
+                if (value.isBoolean()) {
                     on = value.asBoolean();
                 } else {
                     on = Boolean.parseBoolean(valueText);
@@ -928,7 +927,18 @@ public class ConfigServer {
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
             HttpRequest request = HttpRequest.newBuilder(URI.create("http://" + ip + "/prefs")).timeout(Duration.ofSeconds(2)).GET().build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            byte[] responseBytes = response.body().getBytes(StandardCharsets.UTF_8);
+            String body = response.body();
+            try {
+                JsonNode prefsNode = CommonUtility.JSON_MAPPER.readTree(body);
+                if (prefsNode.isObject()) {
+                    ((ObjectNode) prefsNode).put("effect", LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get("effect").asText()).getI18n());
+                    ((ObjectNode) prefsNode).put("ffeffect", LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get("ffeffect").asText()).getI18n());
+                    body = CommonUtility.JSON_MAPPER.writeValueAsString(prefsNode);
+                }
+            } catch (Exception e) {
+                log.warn("Device prefs response is not valid JSON: {}", e.getMessage());
+            }
+            byte[] responseBytes = body.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
             exchange.sendResponseHeaders(response.statusCode(), responseBytes.length);
             try (OutputStream responseBody = exchange.getResponseBody()) {

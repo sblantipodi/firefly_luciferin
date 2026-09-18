@@ -528,7 +528,7 @@ public class NetworkManager implements MqttCallback {
     /**
      * Set effect
      */
-    private static void setEffect(String message) {
+    public static void setEffect(String message) {
         String previousEffect = MainSingleton.getInstance().config.getEffect();
         MainSingleton.getInstance().config.setEffect(message);
         CommonUtility.sleepMilliseconds(200);
@@ -543,10 +543,10 @@ public class NetworkManager implements MqttCallback {
         } else {
             if (MainSingleton.getInstance().RUNNING) {
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-                MainSingleton.getInstance().config.setEffect(message);
-                MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
-                CommonUtility.turnOnLEDs();
             }
+            MainSingleton.getInstance().config.setEffect(message);
+            MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
+            CommonUtility.turnOnLEDs();
         }
     }
 

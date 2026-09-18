@@ -189,19 +189,6 @@ function selectType(f) {
     return (fieldOptions && fieldOptions[f.id]) ? fieldOptions[f.id].type : (f.numeric ? 'number' : 'string');
 }
 
-function effectEnglishToValue(english) {
-    if (english == null) {
-        return english;
-    }
-    var opts = (fieldOptions && fieldOptions.effect) ? fieldOptions.effect.options : [];
-    for (var i = 0; i < opts.length; i++) {
-        if (opts[i].label === english) {
-            return opts[i].value;
-        }
-    }
-    return english;
-}
-
 function fieldLabel(f) {
     return (fieldLabels[f.id] != null) ? fieldLabels[f.id] : f.label;
 }
@@ -327,7 +314,6 @@ function fillField(f, cfg) {
         var el = document.getElementById(f.id);
         if (el.tagName === 'SELECT') {
             var val = String(value);
-            val = effectEnglishToValue(val);
             var present = Array.prototype.some.call(el.options, function (o) {
                 return o.value === val;
             });
@@ -380,11 +366,7 @@ function collectField(f, payload) {
         if (sel === '') {
             return;
         }
-        if (f.id === 'effect') {
-            payload.effect = effectValueToEnglish(sel);
-        } else {
-            payload[f.id] = (selectType(f) === 'number') ? Number(sel) : sel;
-        }
+        payload[f.id] = (selectType(f) === 'number') ? Number(sel) : sel;
     } else if (f.numeric) {
         var num = el.value;
         if (num !== '') {
