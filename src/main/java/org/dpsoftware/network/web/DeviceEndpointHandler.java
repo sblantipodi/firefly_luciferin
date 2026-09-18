@@ -111,8 +111,8 @@ public class DeviceEndpointHandler {
                 JsonNode prefsNode = CommonUtility.JSON_MAPPER.readTree(body);
                 if (prefsNode.isObject()) {
                     if (Constants.STATE_ON_GLOWWORMWIFI.equalsIgnoreCase(prefsNode.get("effect").asText())) {
-                        ((ObjectNode) prefsNode).put("effect", Enums.Effect.BIAS_LIGHT.getBaseI18n());
-                        ((ObjectNode) prefsNode).put("ffeffect", Enums.Effect.BIAS_LIGHT.getBaseI18n());
+                        ((ObjectNode) prefsNode).put("effect", Enums.Effect.BIAS_LIGHT.getI18n());
+                        ((ObjectNode) prefsNode).put("ffeffect", Enums.Effect.BIAS_LIGHT.getI18n());
                     } else {
                         ((ObjectNode) prefsNode).put("effect", LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get("effect").asText()).getI18n());
                         ((ObjectNode) prefsNode).put("ffeffect", LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get("ffeffect").asText()).getI18n());
