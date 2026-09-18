@@ -31,6 +31,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.*;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.PipelineManager;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;

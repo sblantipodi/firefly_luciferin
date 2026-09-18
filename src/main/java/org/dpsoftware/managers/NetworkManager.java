@@ -33,7 +33,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.CubeLutToneMap;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.NetworkTabController;

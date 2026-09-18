@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.dpsoftware.grabber;
+package org.dpsoftware.lut;
 
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
@@ -223,7 +223,7 @@ class CubeLutToneMapTest {
     void listAvailableLuts_returnsResourceLuts() {
         java.util.List<String> luts = CubeLutToneMap.listAvailableLuts();
         assertNotNull(luts, "listAvailableLuts must not return null");
-        assertFalse(luts.isEmpty(), "At least the bundled cube_lut resources should be listed");
+        assertFalse(luts.isEmpty(), "At least the bundled LUT resources should be listed");
         // Bundled resources are listed with their full filenames.
         assertTrue(luts.contains("1000nits_HDR-to-SDR.cube"),
                 "Bundled default LUT should be listed, got: " + luts);
