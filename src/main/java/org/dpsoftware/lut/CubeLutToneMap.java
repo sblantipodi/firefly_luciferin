@@ -231,41 +231,39 @@ public final class CubeLutToneMap {
         if (lutName == null) {
             return;
         }
-        float[] tmpLut = null;
-        int tmpSize = 0;
         try {
+            // Resolve the LUT stream: classpath resource first, then the co-located
+            // file in the package (JPMS module mode, where the classloader does not
+            // resolve resources from the classpath), then the user config location.
             String resourcePath = CUBE_LUT_RESOURCE + "/" + lutName;
-            try (InputStream in = CubeLutToneMap.class.getResourceAsStream(resourcePath)) {
-                if (in != null) {
-                    parseCube(in);
-                    return;
-                }
-                // Fallback for JPMS module mode, where the classloader does not
-                // resolve resources from the classpath: read the co-located .cube
-                // file directly from the package directory.
+            InputStream in = CubeLutToneMap.class.getResourceAsStream(resourcePath);
+            if (in == null) {
                 File pkgFile = resolveCoLocatedLutFile(lutName);
                 if (pkgFile != null && pkgFile.exists()) {
-                    try (InputStream fileIn = new FileInputStream(pkgFile)) {
-                        parseCube(fileIn);
-                        return;
-                    }
+                    in = new FileInputStream(pkgFile);
                 }
-                // Last resort: the user-configurable location.
+            }
+            if (in == null) {
                 File dir = new File(InstanceConfigurer.getConfigPath());
                 File localFile = new File(dir, CUBE_LUT_DIR + File.separator + lutName);
                 if (localFile.exists()) {
-                    parseCube(new FileInputStream(localFile));
-                    tmpLut = parsedLut;
-                    tmpSize = parsedSize;
+                    in = new FileInputStream(localFile);
                 }
             }
+            if (in == null) {
+                log.warn("Cube LUT '{}' not found on classpath, in package dir, or in config path", lutName);
+                return;
+            }
+            try (InputStream stream = in) {
+                parseCube(stream);
+            }
+            lut = parsedLut;
+            size = parsedSize;
+            loadedLutName = lutName;
+            log.info("Loaded cube LUT '{}' ({}x{}x{})", lutName, size, size, size);
         } catch (Exception e) {
             // LUT unavailable or unreadable; retain the previous LUT (identity if none).
-        }
-        if (tmpLut != null) {
-            lut = tmpLut;
-            size = tmpSize;
-            loadedLutName = lutName;
+            log.warn("Failed to load cube LUT '{}': {}", lutName, e.getMessage());
         }
     }
 
