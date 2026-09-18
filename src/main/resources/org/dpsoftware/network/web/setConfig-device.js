@@ -66,9 +66,9 @@ function buildPickerHtml() {
     }).join('');
     var toggleLabel = deviceState.on ? (fieldLabels.turnLedOff || 'Turn OFF') : (fieldLabels.turnLedOn || 'Turn ON');
     var toggleClass = deviceState.on ? 'btn-primary' : 'btn-outline-primary';
-    return '<div class="row mb-3 align-items-start justify-content-center"><div class="col-12 col-sm-8 col-md-6 col-lg-4 text-center"><div style="max-width: 288px; margin: 0 auto;"><div id="picker"></div></div>' +
+    return '<div class="row mb-3 align-items-start justify-content-center"><div class="col-12 col-sm-8 col-md-6 col-lg-4 text-center"><div id="picker"></div>' +
         '<div class="form-group mt-2"><select id="effectSelect" class="form-select w-100">' + opts + '</select></div>' +
-        '<div class="form-group mt-2"><button id="toggleLED" type="button" class="btn ' + toggleClass + ' w-100" style="color:#fff">' + toggleLabel + '</button></div>' +
+        '<div class="form-group mt-2"><button id="toggleLED" type="button" class="btn ' + toggleClass + ' w-100">' + toggleLabel + '</button></div>' +
         '<div id="activeProfile" class="text-center text-muted small mt-1"></div>' +
         '</div></div></div>';
 }

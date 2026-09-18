@@ -1,0 +1,101 @@
+/*
+  setConfig.css
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/* Layout helper: the Bootstrap .col has no margin, the form wrapper expects one. */
+.margin-2 {
+    margin: 2rem 1rem;
+}
+
+/* Save button color, not provided by Bootstrap. */
+.btn-orange {
+    background-color: #f98012;
+    border-color: #f98012;
+    color: #fff;
+}
+
+/* Color picker, fixed width to match the iro picker size. */
+#picker {
+    max-width: 288px;
+    margin: 0 auto;
+}
+
+/* Toggle LED button, text color (the background is set at runtime by JS). */
+#toggleLED {
+    color: #fff;
+}
+
+/* Live preview button, base (off) state: light grey. The .active class (added by
+   JS while the preview is running) turns it green, the :hover states darken a bit. */
+#showLivePreview {
+    background-color: lightgrey;
+    border: 0;
+    color: #fff;
+    font-weight: bold;
+}
+
+#showLivePreview:hover {
+    background-color: #b3b3b3;
+}
+
+#showLivePreview.active {
+    background-color: #28a745;
+}
+
+#showLivePreview.active:hover {
+    background-color: #1e7e34;
+}
+
+/* Captured frame, hidden until the live preview is enabled. */
+#screenshot {
+    max-width: 100%;
+    border: 1px solid #ccc;
+    display: none;
+}
+
+/* Toasts, positioned so they do not cover the form. */
+#toastContainer {
+    position: relative;
+}
+
+#toastContainer .toast {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1051;
+}
+
+#toggleLED {
+    font-size: 1.8rem;
+    font-weight: bold;
+    background: lightgrey;
+    border-color: lightgrey;
+}
+
+#toggleLED:hover {
+    background-color: #c6c6c6 !important;
+    border-color: #c6c6c6 !important;
+}
+
+#toggleLED.active:hover {
+    background-color: darkorange !important;
+    border-color: darkorange !important;
+}
