@@ -608,6 +608,17 @@ public class ConfigServer {
             case "cubeLut" -> CommonUtility.delayMilliseconds(() -> {
                 DisplayDialogController.handleCubeLutCombo(value);
             }, 200);
+            case "desiredFramerate" -> CommonUtility.delayMilliseconds(() -> {
+                MainSingleton.getInstance().config.setDesiredFramerate(value);
+                PipelineManager.restartCapture(CommonUtility::run);
+            }, 200);
+            case "resamplingFactor" -> CommonUtility.delayMilliseconds(() -> {
+                Enums.ResamplingFactor rf = Enums.ResamplingFactor.findByValue(Integer.parseInt(value));
+                if (rf != null) {
+                    PipelineManager.restartCapture(CommonUtility::run, () ->
+                            MainSingleton.getInstance().config.setResamplingFactor(rf.getResamplingFactorValue()));
+                }
+            }, 200);
             default -> {
                 // Not yet wired
             }
