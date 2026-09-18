@@ -136,6 +136,7 @@ public final class WebFieldNames {
     // --- device /prefs JSON keys ---
     public static final String PREFS_EFFECT = "effect";
     public static final String PREFS_FF_EFFECT = "ffeffect";
+    public static final String PREFS_NULL_VALUE = "null";
     private WebFieldNames() {
     }
 }
