@@ -33,6 +33,7 @@ import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.CubeLutToneMap;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
+import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.DeviceDto;
@@ -188,16 +189,21 @@ public class ConfigServer {
      * @return the field options for the effect field
      */
     private static FieldOptions effectOptions() {
-        Set<String> pinned = Set.of("Solid", "Bias light");
-        List<String> rest = Arrays.stream(Enums.Effect.values())
-                .map(LocalizedEnum::getBaseI18n)
-                .filter(v -> !pinned.contains(v))
-                .sorted()
+        Set<String> pinned = Set.of(Enums.Effect.SOLID.getValue(), Enums.Effect.BIAS_LIGHT.getValue());
+        List<Enums.Effect> rest = Arrays.stream(Enums.Effect.values())
+                .filter(e -> !pinned.contains(e.getValue()))
+                .sorted(Comparator.comparing(LocalizedEnum::getI18n))
                 .toList();
         List<FieldOptions.Option> opts = new ArrayList<>();
-        pinned.stream().sorted().forEach(v -> opts.add(new FieldOptions.Option(v, v)));
-        rest.forEach(v -> opts.add(new FieldOptions.Option(v, v)));
+        pinned.stream()
+                .sorted(Comparator.comparing(CommonUtility::getWord))
+                .forEach(key -> opts.add(effectOption(key)));
+        rest.forEach(e -> opts.add(effectOption(e.getValue())));
         return new FieldOptions(opts, "string");
+    }
+
+    private static FieldOptions.Option effectOption(String i18nKey) {
+        return new FieldOptions.Option(i18nKey, CommonUtility.getWord(i18nKey));
     }
 
     /**
@@ -434,53 +440,87 @@ public class ConfigServer {
     }
 
     /**
-     * Start the config HTTP endpoint on the loopback address and every non-link-local local IPv4 interface.
-     * A separate {@link HttpServer} is created per interface because the JDK {@code HttpServer} can only
-     * bind to a single {@link InetSocketAddress} at a time. Link-local (169.254.x.x) and site-local
-     * multicast addresses are skipped so the endpoint is not exposed on Wi-Fi/Bluetooth ad-hoc networks.
+     * Build the map of localized labels for every configuration field, using the current application locale.
+     *
+     * @return map of configuration field name to its localized label
      */
-    @SuppressWarnings("all")
-    public void start() {
-        if (!httpServers.isEmpty()) {
-            return;
-        }
-        try {
-            for (InetAddress address : localBindAddresses()) {
-                HttpServer server = HttpServer.create(new InetSocketAddress(address, Constants.CONFIG_SERVER_DEFAULT_PORT), 0);
-                server.createContext(Constants.CONFIG_ENDPOINT, withGuard(this::handleGetConfig, GET_METHOD));
-                server.createContext(Constants.GET_DEVICES_ENDPOINT, withGuard(this::handleGetDevices, GET_METHOD));
-                server.createContext(Constants.FIELD_OPTIONS_ENDPOINT, withGuard(this::handleGetFieldOptions, GET_METHOD));
-                server.createContext(Constants.SET_CONFIG_PAGE_ENDPOINT, withGuard(this::handleSetConfigPage, GET_METHOD));
-                server.createContext(Constants.SET_CONFIG_PAGE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
-                server.createContext(Constants.SET_CONFIG_CORE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
-                server.createContext(Constants.SET_CONFIG_DEVICE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
-                server.createContext(Constants.SET_CONFIG_UI_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
-                server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
-                server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(this::handleDevicePrefs, GET_METHOD));
-                server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
-                server.createContext(Constants.SCREENSHOT_ENDPOINT, withGuard(this::handleGetScreenshot, GET_METHOD));
-                server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(this::handleEnableScreenshot, POST_METHOD));
-                server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(this::handleListProfiles, GET_METHOD));
-                server.createContext(Constants.ACTIVATE_PROFILE_ENDPOINT, withGuard(this::handleActivateProfile, POST_METHOD));
-                server.createContext(Constants.COMBO_CHANGE_ENDPOINT, withGuard(this::handleComboChange, POST_METHOD));
-                server.createContext("/", withGuard(this::handleRoot, GET_METHOD));
-                server.setExecutor(Executors.newCachedThreadPool(runnable -> {
-                    Thread thread = new Thread(runnable, "firefly-config-server");
-                    thread.setDaemon(true);
-                    return thread;
-                }));
-                server.start();
-                httpServers.add(server);
-                log.info("Config server listening on http://{}:{}", address.getHostAddress(), Constants.CONFIG_SERVER_DEFAULT_PORT);
-            }
-            if (httpServers.isEmpty()) {
-                log.warn("No local interface found, config server not started");
-            }
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-config-shutdown"));
-        } catch (IOException e) {
-            stop();
-            log.warn("Unable to start config server: {}", e.getMessage());
-        }
+    private static Map<String, String> getFieldLabels() {
+        Map<String, String> labels = new LinkedHashMap<>();
+        labels.put("topLed", CommonUtility.getWord("fxml.ledsconfigtab.toprow"));
+        labels.put("leftLed", CommonUtility.getWord("fxml.ledsconfigtab.leftcol"));
+        labels.put("rightLed", CommonUtility.getWord("fxml.ledsconfigtab.rightcol"));
+        labels.put("bottomLeftLed", CommonUtility.getWord("fxml.ledsconfigtab.bottomleft"));
+        labels.put("bottomRightLed", CommonUtility.getWord("fxml.ledsconfigtab.bottomright"));
+        labels.put("bottomRowLed", CommonUtility.getWord("fxml.ledsconfigtab.bottomrow"));
+        labels.put("ledStartOffset", CommonUtility.getWord("fxml.ledsconfigtab.firstled"));
+        labels.put("orientation", CommonUtility.getWord("fxml.ledsconfigtab.orientation"));
+        labels.put("groupBy", CommonUtility.getWord("fxml.ledsconfigtab.group.by"));
+        labels.put("splitBottomMargin", CommonUtility.getWord("fxml.ledsconfigtab.splitbottomrow"));
+        labels.put("grabberAreaTopBottom", CommonUtility.getWord("fxml.ledsconfigtab.grabberArea"));
+        labels.put("grabberSide", CommonUtility.getWord("fxml.ledsconfigtab.grabberArea"));
+        labels.put("gapTypeTopBottom", CommonUtility.getWord("fxml.ledsconfigtab.gapType"));
+        labels.put("gapTypeSide", CommonUtility.getWord("fxml.ledsconfigtab.gapType"));
+        labels.put("outputDevice", CommonUtility.getWord("fxml.modetab.outputdevice"));
+        labels.put("baudRate", CommonUtility.getWord("fxml.modetab.baudrate"));
+        labels.put("staticGlowWormIp", CommonUtility.getWord("fxml.modetab.serialport"));
+        labels.put("desiredFramerate", CommonUtility.getWord("fxml.misctab.captureframerate"));
+        labels.put("smoothingType", CommonUtility.getWord("fxml.dialog.smoothing.type"));
+        labels.put("smoothingTargetFramerate", CommonUtility.getWord("fxml.dialog.smoothing.target.framerate"));
+        labels.put("frameInsertionTarget", CommonUtility.getWord("fxml.dialog.smoothing.frameinsertion"));
+        labels.put("emaAlpha", CommonUtility.getWord("fxml.dialog.smoothing.emaalpha"));
+        labels.put("simdAvx", CommonUtility.getWord("fxml.modetab.simdavx"));
+        labels.put("resamplingFactor", CommonUtility.getWord("fxml.modetab.scaling"));
+        labels.put("captureMethod", CommonUtility.getWord("fxml.modetab.capturemethod"));
+        labels.put("monitorNumber", CommonUtility.getWord("fxml.modetab.binddisplay"));
+        labels.put("screenResX", CommonUtility.getWord("fxml.modetab.screenresolution"));
+        labels.put("screenResY", CommonUtility.getWord("fxml.modetab.screenresolution"));
+        labels.put("osScaling", CommonUtility.getWord("fxml.modetab.os.scaling"));
+        labels.put("defaultLedMatrix", CommonUtility.getWord("fxml.modetab.aspectratio"));
+        labels.put("autoDetectBlackBars", CommonUtility.getWord("fxml.modetab.autodetect"));
+        labels.put("algo", CommonUtility.getWord("fxml.modetab.algo"));
+        labels.put("language", CommonUtility.getWord("fxml.misctab.language"));
+        labels.put("mqttEnable", CommonUtility.getWord("fxml.mqtttab.enablemqtt"));
+        labels.put("wirelessStream", CommonUtility.getWord("fxml.mqtttab.wirelessstream"));
+        labels.put("streamType", CommonUtility.getWord("fxml.mqtttab.streamtype"));
+        labels.put("mqttServer", CommonUtility.getWord("fxml.mqtttab.mqttserverhost"));
+        labels.put("mqttTopic", CommonUtility.getWord("fxml.mqtttab.mqttbasetopic"));
+        labels.put("mqttDiscoveryTopic", CommonUtility.getWord("fxml.mqtttab.mqttdiscoverytopic"));
+        labels.put("mqttUsername", CommonUtility.getWord("fxml.mqtttab.mqttusername"));
+        labels.put("mqttPwd", CommonUtility.getWord("fxml.mqtttab.mqttpwd"));
+        labels.put("effect", CommonUtility.getWord("fxml.misctab.effect"));
+        labels.put("colorMode", CommonUtility.getWord("fxml.devicestab.colormode"));
+        labels.put("gamma", CommonUtility.getWord("fxml.misctab.gamma"));
+        labels.put("whiteTemperature", CommonUtility.getWord("fxml.misctab.whitetemp"));
+        labels.put("brightness", CommonUtility.getWord("fxml.misctab.brightness"));
+        labels.put("nightModeFrom", CommonUtility.getWord("fxml.misctab.nightmode.from"));
+        labels.put("nightModeTo", CommonUtility.getWord("fxml.misctab.nightmode.to"));
+        labels.put("nightModeBrightness", CommonUtility.getWord("fxml.misctab.nightmode.brightness"));
+        labels.put("toggleLed", CommonUtility.getWord("fxml.misctab.ledcontrol"));
+        labels.put("startWithSystem", CommonUtility.getWord("fxml.misctab.runlogin"));
+        labels.put("runtimeLogLevel", CommonUtility.getWord("fxml.misctab.runtimelog"));
+        labels.put("cubeLut", CommonUtility.getWord("fxml.misctab.cubeLut"));
+        labels.put("nightLight", CommonUtility.getWord("fxml.eyecare.night.light"));
+        labels.put("nightLightLvl", CommonUtility.getWord("fxml.eyecare.nightlight.level"));
+        labels.put("luminosityThreshold", CommonUtility.getWord("fxml.eyecare.luminosity.threshold"));
+        labels.put("brightnessLimiter", CommonUtility.getWord("fxml.eyecare.brightness.limiter"));
+        labels.put("enableAutomaticGamma", CommonUtility.getWord("fxml.gamma.enable.automatic"));
+        labels.put("gammaLevel", CommonUtility.getWord("fxml.gamma.level"));
+        labels.put("checkFullScreen", CommonUtility.getWord("fxml.profile.fullscreen.cb"));
+        labels.put("gpuThreshold", CommonUtility.getWord("fxml.profile.gpu"));
+        labels.put("cpuThreshold", CommonUtility.getWord("fxml.profile.cpu"));
+        labels.put("profileProcess1", CommonUtility.getWord("fxml.profile.process1"));
+        labels.put("profileProcess2", CommonUtility.getWord("fxml.profile.process2"));
+        labels.put("profileProcess3", CommonUtility.getWord("fxml.profile.process3"));
+        labels.put("powerSaving", CommonUtility.getWord("fxml.devicestab.power.saving"));
+        labels.put("multiMonitor", CommonUtility.getWord("fxml.devicestab.multi.monitor"));
+        labels.put("multiScreenSingleDevice", CommonUtility.getWord("fxml.devicestab.single.device"));
+        labels.put("checkForUpdates", CommonUtility.getWord("fxml.devicestab.check.updates"));
+        labels.put("syncCheck", CommonUtility.getWord("fxml.devicestab.sync.check"));
+        labels.put("enableLDR", CommonUtility.getWord("fxml.eyecare.enableldr"));
+        labels.put("ldrInterval", CommonUtility.getWord("fxml.eyecare.ldr.interval"));
+        labels.put("ldrMin", CommonUtility.getWord("fxml.eyecare.ldr.min.bright"));
+        labels.put("ldrTurnOff", CommonUtility.getWord("fxml.eyecare.ldr.turnoff"));
+        return labels;
     }
 
     /**
@@ -557,6 +597,57 @@ public class ConfigServer {
     }
 
     /**
+     * Start the config HTTP endpoint on the loopback address and every non-link-local local IPv4 interface.
+     * A separate {@link HttpServer} is created per interface because the JDK {@code HttpServer} can only
+     * bind to a single {@link InetSocketAddress} at a time. Link-local (169.254.x.x) and site-local
+     * multicast addresses are skipped so the endpoint is not exposed on Wi-Fi/Bluetooth ad-hoc networks.
+     */
+    @SuppressWarnings("all")
+    public void start() {
+        if (!httpServers.isEmpty()) {
+            return;
+        }
+        try {
+            for (InetAddress address : localBindAddresses()) {
+                HttpServer server = HttpServer.create(new InetSocketAddress(address, Constants.CONFIG_SERVER_DEFAULT_PORT), 0);
+                server.createContext(Constants.CONFIG_ENDPOINT, withGuard(this::handleGetConfig, GET_METHOD));
+                server.createContext(Constants.GET_DEVICES_ENDPOINT, withGuard(this::handleGetDevices, GET_METHOD));
+                server.createContext(Constants.FIELD_OPTIONS_ENDPOINT, withGuard(this::handleGetFieldOptions, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_PAGE_ENDPOINT, withGuard(this::handleSetConfigPage, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_PAGE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_CORE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_DEVICE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_UI_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
+                server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(this::handleDevicePrefs, GET_METHOD));
+                server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
+                server.createContext(Constants.SCREENSHOT_ENDPOINT, withGuard(this::handleGetScreenshot, GET_METHOD));
+                server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(this::handleEnableScreenshot, POST_METHOD));
+                server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(this::handleListProfiles, GET_METHOD));
+                server.createContext(Constants.ACTIVATE_PROFILE_ENDPOINT, withGuard(this::handleActivateProfile, POST_METHOD));
+                server.createContext(Constants.COMBO_CHANGE_ENDPOINT, withGuard(this::handleComboChange, POST_METHOD));
+                server.createContext(Constants.SECTION_TITLES_ENDPOINT, withGuard(this::handleGetSectionTitles, GET_METHOD));
+                server.createContext("/", withGuard(this::handleRoot, GET_METHOD));
+                server.setExecutor(Executors.newCachedThreadPool(runnable -> {
+                    Thread thread = new Thread(runnable, "firefly-config-server");
+                    thread.setDaemon(true);
+                    return thread;
+                }));
+                server.start();
+                httpServers.add(server);
+                log.info("Config server listening on http://{}:{}", address.getHostAddress(), Constants.CONFIG_SERVER_DEFAULT_PORT);
+            }
+            if (httpServers.isEmpty()) {
+                log.warn("No local interface found, config server not started");
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-config-shutdown"));
+        } catch (IOException e) {
+            stop();
+            log.warn("Unable to start config server: {}", e.getMessage());
+        }
+    }
+
+    /**
      * Handle GET /getFieldOptions, exposing the possible values for every configuration field backed by an enum.
      * Read-only, the options are derived from the enums (single source of truth, no client-side duplication).
      *
@@ -564,7 +655,47 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void handleGetFieldOptions(HttpExchange exchange) throws IOException {
-        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(getFieldOptions());
+        ObjectNode response = CommonUtility.JSON_MAPPER.createObjectNode();
+        response.set("options", CommonUtility.JSON_MAPPER.valueToTree(getFieldOptions()));
+        Map<String, String> labels = getFieldLabels();
+        labels.put("toggleLed", CommonUtility.getWord(
+                MainSingleton.getInstance().config.isToggleLed()
+                        ? Constants.TURN_LED_OFF : Constants.TURN_LED_ON));
+        labels.put("turnLedOn", CommonUtility.getWord(Constants.TURN_LED_ON));
+        labels.put("turnLedOff", CommonUtility.getWord(Constants.TURN_LED_OFF));
+        response.set("labels", CommonUtility.JSON_MAPPER.valueToTree(labels));
+        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(response);
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(responseBytes);
+        }
+    }
+
+    /**
+     * Handle GET /sectionTitles, returning the localized titles for every section and sub-accordion.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleGetSectionTitles(HttpExchange exchange) throws IOException {
+        Map<String, String> titles = new LinkedHashMap<>();
+        titles.put("leds", CommonUtility.getWord("fxml.setting.ledsconfig"));
+        titles.put("mode", CommonUtility.getWord("fxml.setting.mode"));
+        titles.put("network", CommonUtility.getWord("fxml.setting.wifimqtt"));
+        titles.put("misc", CommonUtility.getWord("fxml.setting.misc"));
+        titles.put("devices", CommonUtility.getWord("fxml.setting.devices"));
+        titles.put("ldr", CommonUtility.getWord("fxml.setting.ldr"));
+        titles.put("display", CommonUtility.getWord("fxml.ledsconfigtab.display"));
+        titles.put("colorCorr", CommonUtility.getWord("fxml.misctab.colorcorrection"));
+        titles.put("eyeCare", CommonUtility.getWord("fxml.misctab.eyecare"));
+        titles.put("gamma", CommonUtility.getWord("fxml.misctab.gamma"));
+        titles.put("profile", CommonUtility.getWord("fxml.misctab.profiles"));
+        titles.put("smoothing", CommonUtility.getWord("fxml.dialog.smoothing.title"));
+        titles.put("connectedDevices", CommonUtility.getWord("fxml.devicestab.connected.devices"));
+        titles.put("satellites", CommonUtility.getWord("fxml.devicestab.satellites"));
+        ObjectNode response = CommonUtility.JSON_MAPPER.valueToTree(titles);
+        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(response);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
         try (OutputStream responseBody = exchange.getResponseBody()) {
@@ -588,9 +719,9 @@ public class ConfigServer {
             return;
         }
         String comboName = payload.has("comboName") ? payload.get("comboName").asText() : "";
-        String value = payload.has("value") ? payload.get("value").asText() : "";
-        log.info("Web combo change: {} = {}", comboName, value);
-        applyComboChange(comboName, value);
+        JsonNode valueNode = payload.has("value") ? payload.get("value") : null;
+        log.info("Web combo change: {} = {}", comboName, valueNode);
+        applyComboChange(comboName, valueNode);
         sendJson(exchange, HttpURLConnection.HTTP_OK, JSON_OK);
     }
 
@@ -598,27 +729,50 @@ public class ConfigServer {
      * Apply a combo change to the running configuration on the JavaFX thread.
      *
      * @param comboName the name of the combo box that changed
-     * @param value     the newly selected value
+     * @param value     the newly selected value, as a JSON node (string or boolean)
      */
-    private void applyComboChange(String comboName, String value) {
-        if (value == null || value.isEmpty()) {
+    private void applyComboChange(String comboName, JsonNode value) {
+        String valueText = value != null ? value.asText() : "";
+        if (valueText == null || valueText.isEmpty()) {
             return;
         }
         switch (comboName) {
             case "cubeLut" -> CommonUtility.delayMilliseconds(() -> {
-                DisplayDialogController.handleCubeLutCombo(value);
+                DisplayDialogController.handleCubeLutCombo(valueText);
             }, 200);
             case "desiredFramerate" -> CommonUtility.delayMilliseconds(() -> {
-                MainSingleton.getInstance().config.setDesiredFramerate(value);
+                MainSingleton.getInstance().config.setDesiredFramerate(valueText);
                 PipelineManager.restartCapture(CommonUtility::run);
             }, 200);
             case "resamplingFactor" -> CommonUtility.delayMilliseconds(() -> {
-                Enums.ResamplingFactor rf = Enums.ResamplingFactor.findByValue(Integer.parseInt(value));
+                Enums.ResamplingFactor rf = Enums.ResamplingFactor.findByValue(Integer.parseInt(valueText));
                 if (rf != null) {
                     PipelineManager.restartCapture(CommonUtility::run, () ->
                             MainSingleton.getInstance().config.setResamplingFactor(rf.getResamplingFactorValue()));
                 }
             }, 200);
+            case "effect" -> {
+                String finalNewVal = LocalizedEnum.fromStr(Enums.Effect.class, valueText).getBaseI18n();
+                MainSingleton.getInstance().config.setEffect(finalNewVal);
+                ManagerSingleton.getInstance().lastEffectInUse = finalNewVal;
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+            }
+            case "toggleLed" -> {
+                boolean on;
+                if (value != null && value.isBoolean()) {
+                    on = value.asBoolean();
+                } else {
+                    on = Boolean.parseBoolean(valueText);
+                }
+                CommonUtility.delayMilliseconds(() -> {
+                    MainSingleton.getInstance().config.setToggleLed(on);
+                    if (on) {
+                        CommonUtility.turnOnLEDs();
+                    } else {
+                        CommonUtility.turnOffLEDs(MainSingleton.getInstance().config);
+                    }
+                }, 200);
+            }
             default -> {
                 // Not yet wired
             }
