@@ -100,7 +100,7 @@ function setLivePreview(on) {
     }
     var img = document.getElementById('screenshot');
     if (img) {
-        img.style.display = on ? 'inline-block' : 'none';
+        img.classList.toggle('show', on);
         if (!on) {
             img.onload = null;
             img.onerror = null;
@@ -127,16 +127,12 @@ function pollScreenshot() {
     }
     img.src = 'screenshot?t=' + Date.now();
     img.onload = function () {
-        if (!livePreviewOn) {
-            return;
+        if (livePreviewOn) {
+            img.classList.add('show');
         }
-        img.style.display = 'inline-block';
     };
     img.onerror = function () {
-        if (!livePreviewOn) {
-            return;
-        }
-        img.style.display = 'none';
+        img.classList.remove('show');
     };
 }
 

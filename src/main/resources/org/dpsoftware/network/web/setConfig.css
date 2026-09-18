@@ -64,11 +64,15 @@
     background-color: #1e7e34;
 }
 
-/* Captured frame, hidden until the live preview is enabled. */
+/* Captured frame, hidden until the live preview is enabled (the .show class is toggled by JS). */
 #screenshot {
     max-width: 100%;
     border: 1px solid #ccc;
     display: none;
+}
+
+#screenshot.show {
+    display: inline-block;
 }
 
 /* Toasts, positioned so they do not cover the form. */
@@ -86,8 +90,15 @@
 #toggleLED {
     font-size: 1.8rem;
     font-weight: bold;
+    color: #fff;
     background: lightgrey;
     border-color: lightgrey;
+}
+
+#toggleLED.active {
+    color: #fff;
+    background: orange;
+    border-color: orange;
 }
 
 #toggleLED:hover {
