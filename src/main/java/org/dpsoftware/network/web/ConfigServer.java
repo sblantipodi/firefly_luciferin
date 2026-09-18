@@ -29,17 +29,24 @@ import com.sun.net.httpserver.HttpServer;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.dto.DeviceDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
@@ -66,43 +73,106 @@ public class ConfigServer {
      */
     private static final String SET_CONFIG_PAGE_JS_RESOURCE = "setConfig.js";
     private final StorageManager storageManager = new StorageManager();
-    private HttpServer httpServer;
+    private final List<HttpServer> httpServers = new java.util.ArrayList<>();
+    private final Predicate<String> GET_METHOD = method -> method.equalsIgnoreCase("GET");
+    private final Predicate<String> POST_METHOD = method -> method.equalsIgnoreCase("POST");
 
     /**
-     * Start the config HTTP endpoint on localhost.
+     * Collect the addresses to bind: loopback (127.0.0.1) plus every non-link-local IPv4 interface address.
+     * Link-local (169.254.x.x) addresses are excluded to avoid exposing the endpoint on ad-hoc Wi-Fi or
+     * Bluetooth networks; multicast and IPv6 addresses are skipped as well.
+     *
+     * @return the set of addresses to bind, ordered (loopback first)
      */
-    @SuppressWarnings("all")
-    public void start() {
-        if (httpServer != null) {
-            return;
+    private static Set<InetAddress> localBindAddresses() {
+        Set<InetAddress> addresses = new LinkedHashSet<>();
+        try {
+            addresses.add(InetAddress.getLoopbackAddress());
+        } catch (Exception ignored) {
         }
         try {
-            httpServer = HttpServer.create(new InetSocketAddress(Constants.MSG_SERVER_HOST, Constants.CONFIG_SERVER_DEFAULT_PORT), 0);
-            httpServer.createContext(Constants.CONFIG_ENDPOINT, withGuard(this::handleGetConfig, method -> method.equalsIgnoreCase("GET")));
-            httpServer.createContext(Constants.SET_CONFIG_PAGE_ENDPOINT, withGuard(this::handleSetConfigPage, method -> method.equalsIgnoreCase("GET")));
-            httpServer.createContext(Constants.SET_CONFIG_PAGE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, method -> method.equalsIgnoreCase("GET")));
-            httpServer.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, method -> method.equalsIgnoreCase("POST")));
-            httpServer.setExecutor(Executors.newCachedThreadPool(runnable -> {
-                Thread thread = new Thread(runnable, "firefly-config-server");
-                thread.setDaemon(true);
-                return thread;
-            }));
-            httpServer.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-config-shutdown"));
-            log.info("Config server listening on http://{}:{}{}", Constants.MSG_SERVER_HOST, Constants.CONFIG_SERVER_DEFAULT_PORT, Constants.CONFIG_ENDPOINT);
-        } catch (IOException e) {
-            log.warn("Unable to start config server: {}", e.getMessage());
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (!networkInterface.isUp() || networkInterface.isLoopback() || networkInterface.isVirtual()) {
+                    continue;
+                }
+                Enumeration<InetAddress> addressesEnum = networkInterface.getInetAddresses();
+                while (addressesEnum.hasMoreElements()) {
+                    InetAddress address = addressesEnum.nextElement();
+                    if (address.isLoopbackAddress()) {
+                        continue;
+                    }
+                    String host = address.getHostAddress();
+                    // Skip IPv6, link-local (169.254.x.x) and any multicast
+                    if (host.contains(":") || host.startsWith("169.254.") || address.isMulticastAddress()) {
+                        continue;
+                    }
+                    addresses.add(address);
+                }
+            }
+        } catch (SocketException e) {
+            log.warn("Unable to enumerate network interfaces: {}", e.getMessage());
         }
+        return addresses;
     }
 
     /**
-     * Stop the config endpoint.
+     * Extract a query parameter value from a URL query string.
+     *
+     * @param query the query string (without the leading '?')
+     * @param name  the parameter name
+     * @return the value or {@code null} when absent
      */
-    public void stop() {
-        if (httpServer != null) {
-            httpServer.stop(0);
-            httpServer = null;
+    private static String queryParam(String query, String name) {
+        for (String pair : query.split("&")) {
+            int eq = pair.indexOf('=');
+            if (eq > 0 && pair.substring(0, eq).equals(name)) {
+                return pair.substring(eq + 1);
+            }
         }
+        return null;
+    }
+
+    /**
+     * Build the map of possible values for every configuration field that is backed by an enum,
+     * using the enums as the single source of truth (no value list is duplicated in the client).
+     * Each entry exposes the value to persist and the English display label, plus the value type
+     * so the client can cast it correctly.
+     *
+     * @return map of configuration field name to its possible values
+     */
+    private static Map<String, FieldOptions> getFieldOptions() {
+        Map<String, FieldOptions> options = new LinkedHashMap<>();
+        options.put("orientation", localized(Enums.Orientation.class));
+        options.put("defaultLedMatrix", localized(Enums.AspectRatio.class));
+        options.put("baudRate", new FieldOptions(Arrays.stream(Enums.BaudRate.values())
+                .map(b -> new FieldOptions.Option(b.getBaudRate(), b.getBaudRate())).toList(), "string"));
+        options.put("desiredFramerate", new FieldOptions(Arrays.stream(Enums.Framerate.values())
+                .map(f -> new FieldOptions.Option(f.getBaseI18n(), f.getBaseI18n())).toList(), "string"));
+        options.put("simdAvx", new FieldOptions(Arrays.stream(Enums.SimdAvxOption.values())
+                .map(s -> new FieldOptions.Option(String.valueOf(s.getSimdOptionNumeric()), s.getBaseI18n())).toList(), "number"));
+        options.put("resamplingFactor", new FieldOptions(Arrays.stream(Enums.ResamplingFactor.values())
+                .map(r -> new FieldOptions.Option(String.valueOf(r.getResamplingFactorValue()), r.getBaseI18n())).toList(), "number"));
+        options.put("algo", localized(Enums.Algo.class));
+        options.put("theme", localized(Enums.Theme.class));
+        options.put("language", localized(Enums.Language.class));
+        options.put("smoothingType", localized(Enums.Smoothing.class));
+        options.put("streamType", new FieldOptions(Arrays.stream(Enums.StreamType.values())
+                .map(s -> new FieldOptions.Option(s.getStreamType(), s.getStreamType())).toList(), "string"));
+        options.put("effect", localized(Enums.Effect.class));
+        options.put("colorMode", new FieldOptions(Arrays.stream(Enums.ColorMode.values())
+                .map(c -> new FieldOptions.Option(String.valueOf(c.ordinal() + 1), c.getBaseI18n())).toList(), "number"));
+        options.put("gammaLevel", localized(Enums.GammaLevel.class));
+        options.put("nightLight", localized(Enums.NightLight.class));
+        options.put("brightnessLimiter", new FieldOptions(Arrays.stream(Enums.BrightnessLimiter.values())
+                .map(b -> new FieldOptions.Option(String.valueOf(b.getBrightnessLimitFloat()), b.getBaseI18n())).toList(), "number"));
+        options.put("powerSaving", localized(Enums.PowerSaving.class));
+        options.put("multiMonitor", new FieldOptions(List.of(
+                new FieldOptions.Option("1", "Disabled"),
+                new FieldOptions.Option("2", "Dual display"),
+                new FieldOptions.Option("3", "Triple display")), "number"));
+        return options;
     }
 
     /**
@@ -131,6 +201,108 @@ public class ConfigServer {
         ObjectNode configNode = CommonUtility.JSON_MAPPER.valueToTree(config);
         EXCLUDED_FIELDS.forEach(configNode::remove);
         byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(configNode);
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(responseBytes);
+        }
+    }
+
+    /**
+     * Build {@link FieldOptions} for a localized enum, using its base (English) i18n value to persist
+     * and its English i18n text as label.
+     *
+     * @param enumClass the localized enum class
+     * @param <E>       the localized enum type
+     * @return the field options
+     */
+    private static <E extends Enum<E> & LocalizedEnum> FieldOptions localized(Class<E> enumClass) {
+        List<FieldOptions.Option> opts = Arrays.stream(enumClass.getEnumConstants())
+                .map(e -> new FieldOptions.Option(e.getBaseI18n(), e.getBaseI18n()))
+                .toList();
+        return new FieldOptions(opts, "string");
+    }
+
+    /**
+     * Start the config HTTP endpoint on the loopback address and every non-link-local local IPv4 interface.
+     * A separate {@link HttpServer} is created per interface because the JDK {@code HttpServer} can only
+     * bind to a single {@link InetSocketAddress} at a time. Link-local (169.254.x.x) and site-local
+     * multicast addresses are skipped so the endpoint is not exposed on Wi-Fi/Bluetooth ad-hoc networks.
+     */
+    @SuppressWarnings("all")
+    public void start() {
+        if (!httpServers.isEmpty()) {
+            return;
+        }
+        try {
+            for (InetAddress address : localBindAddresses()) {
+                HttpServer server = HttpServer.create(new InetSocketAddress(address, Constants.CONFIG_SERVER_DEFAULT_PORT), 0);
+                server.createContext(Constants.CONFIG_ENDPOINT, withGuard(this::handleGetConfig, GET_METHOD));
+                server.createContext(Constants.GET_DEVICES_ENDPOINT, withGuard(this::handleGetDevices, GET_METHOD));
+                server.createContext(Constants.FIELD_OPTIONS_ENDPOINT, withGuard(this::handleGetFieldOptions, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_PAGE_ENDPOINT, withGuard(this::handleSetConfigPage, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_PAGE_JS_ENDPOINT, withGuard(this::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
+                server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(this::handleDevicePrefs, GET_METHOD));
+                server.createContext("/", withGuard(this::handleRoot, GET_METHOD));
+                server.setExecutor(Executors.newCachedThreadPool(runnable -> {
+                    Thread thread = new Thread(runnable, "firefly-config-server");
+                    thread.setDaemon(true);
+                    return thread;
+                }));
+                server.start();
+                httpServers.add(server);
+                log.info("Config server listening on http://{}:{}", address.getHostAddress(), Constants.CONFIG_SERVER_DEFAULT_PORT);
+            }
+            if (httpServers.isEmpty()) {
+                log.warn("No local interface found, config server not started");
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-config-shutdown"));
+        } catch (IOException e) {
+            stop();
+            log.warn("Unable to start config server: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Stop the config endpoint on every bound interface.
+     */
+    public void stop() {
+        httpServers.forEach(server -> {
+            try {
+                server.stop(0);
+            } catch (Exception ignored) {
+            }
+        });
+        httpServers.clear();
+    }
+
+    /**
+     * Handle GET /getDevices, exposing the currently connected devices (in-memory device table) as JSON.
+     * Read-only, the connected devices are a runtime state and cannot be persisted.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleGetDevices(HttpExchange exchange) throws IOException {
+        List<DeviceDto> devices = DeviceDto.fromDevices(GuiSingleton.getInstance().getDeviceTableData());
+        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(devices);
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(responseBytes);
+        }
+    }
+
+    /**
+     * Handle GET /getFieldOptions, exposing the possible values for every configuration field backed by an enum.
+     * Read-only, the options are derived from the enums (single source of truth, no client-side duplication).
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleGetFieldOptions(HttpExchange exchange) throws IOException {
+        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(getFieldOptions());
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
         try (OutputStream responseBody = exchange.getResponseBody()) {
@@ -288,6 +460,60 @@ public class ConfigServer {
     }
 
     /**
+     * Handle GET /devicePrefs?ip=<addr>, proxying the device {@code /prefs} endpoint server-side.
+     * The device firmware does not send CORS headers, so the browser cannot read {@code /prefs} directly;
+     * this endpoint fetches it from the JVM (no CORS) and returns the JSON to the client.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleDevicePrefs(HttpExchange exchange) throws IOException {
+        String query = exchange.getRequestURI().getQuery();
+        String ip = query == null ? null : queryParam(query, "ip");
+        if (ip == null || !ip.matches("\\d{1,3}(\\.\\d{1,3}){3}")) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or invalid ip parameter");
+            return;
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
+            HttpRequest request = HttpRequest.newBuilder(URI.create("http://" + ip + "/prefs")).timeout(Duration.ofSeconds(2)).GET().build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            byte[] responseBytes = response.body().getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+            exchange.sendResponseHeaders(response.statusCode(), responseBytes.length);
+            try (OutputStream responseBody = exchange.getResponseBody()) {
+                responseBody.write(responseBytes);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Interrupted");
+        } catch (Exception e) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_GATEWAY, "Device unreachable: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle GET / (and any unknown path), serving the settings page.
+     * The other endpoints are matched by their specific contexts before falling back to this root context.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    private void handleRoot(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        if (path == null || path.equals("/") || path.isEmpty()) {
+            handleSetConfigPage(exchange);
+        } else {
+            byte[] responseBytes = ("Not found: " + path).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+            exchange.sendResponseHeaders(HttpURLConnection.HTTP_NOT_FOUND, responseBytes.length);
+            try (OutputStream responseBody = exchange.getResponseBody()) {
+                responseBody.write(responseBytes);
+            }
+        }
+    }
+
+    /**
      * Human readable description of the method allowed by a guard predicate.
      *
      * @param methodAllowed the predicate deciding which method the handler accepts
@@ -301,6 +527,20 @@ public class ConfigServer {
         }
         return "GET";
     }
+
+    /**
+         * Possible values for a single configuration field, exposed to the web settings page.
+         * The {@code value} is the exact value to persist (English i18n string for localized enums,
+         * or the numeric value for numeric enums) and the {@code label} is the human readable English text.
+         */
+        private record FieldOptions(List<Option> options, String type) {
+
+        /**
+         * A single selectable value.
+         */
+        private record Option(String value, String label) {
+            }
+        }
 
     /**
      * Send a plain text error response and close the exchange.
