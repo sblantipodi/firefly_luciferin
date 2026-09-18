@@ -370,8 +370,8 @@ public class ConfigServer {
             sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
             return;
         }
-        String comboName = payload.has("comboName") ? payload.get("comboName").asText() : "";
-        JsonNode valueNode = payload.has("value") ? payload.get("value") : null;
+        String comboName = payload.has(WebFieldNames.COMBO_NAME) ? payload.get(WebFieldNames.COMBO_NAME).asText() : "";
+        JsonNode valueNode = payload.has(WebFieldNames.VALUE) ? payload.get(WebFieldNames.VALUE) : null;
         log.info("Web combo change: {} = {}", comboName, valueNode);
         applyComboChange(comboName, valueNode);
         sendOkJson(exchange);
@@ -389,24 +389,31 @@ public class ConfigServer {
             return;
         }
         switch (comboName) {
-            case "cubeLut" ->
+            case WebFieldNames.CUBE_LUT ->
                     CommonUtility.delayMilliseconds(() -> DisplayDialogController.handleCubeLutCombo(valueText), 200);
-            case "desiredFramerate" -> CommonUtility.delayMilliseconds(() -> {
+            case WebFieldNames.DESIRED_FRAMERATE -> CommonUtility.delayMilliseconds(() -> {
                 MainSingleton.getInstance().config.setDesiredFramerate(valueText);
                 PipelineManager.restartCapture(CommonUtility::run);
             }, 200);
-            case "resamplingFactor" -> CommonUtility.delayMilliseconds(() -> {
+            case WebFieldNames.RESAMPLING_FACTOR -> CommonUtility.delayMilliseconds(() -> {
                 Enums.ResamplingFactor rf = Enums.ResamplingFactor.findByValue(Integer.parseInt(valueText));
                 if (rf != null) {
                     PipelineManager.restartCapture(CommonUtility::run, () ->
                             MainSingleton.getInstance().config.setResamplingFactor(rf.getResamplingFactorValue()));
                 }
             }, 200);
-            case "effectSelect" -> {
-                String finalNewVal = LocalizedEnum.fromStr(Enums.Effect.class, valueText).getBaseI18n();
-                NetworkManager.setEffect(finalNewVal);
+            case WebFieldNames.EFFECT_SELECT -> {
+                // effectSelect options use the base i18n key as value (see FieldOptions.effectOptions);
+                // fall back to the localized label for back-compat with older clients.
+                Enums.Effect effect = LocalizedEnum.fromBaseStr(Enums.Effect.class, valueText);
+                if (effect == null) {
+                    effect = LocalizedEnum.fromStr(Enums.Effect.class, valueText);
+                }
+                if (effect != null) {
+                    NetworkManager.setEffect(effect.getBaseI18n());
+                }
             }
-            case "toggleLed" -> {
+            case WebFieldNames.TOGGLE_LED -> {
                 boolean on;
                 if (value.isBoolean()) {
                     on = value.asBoolean();

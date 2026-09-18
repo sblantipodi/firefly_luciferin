@@ -110,12 +110,14 @@ public class DeviceEndpointHandler {
             try {
                 JsonNode prefsNode = CommonUtility.JSON_MAPPER.readTree(body);
                 if (prefsNode.isObject()) {
-                    if (Constants.STATE_ON_GLOWWORMWIFI.equalsIgnoreCase(prefsNode.get("effect").asText())) {
-                        ((ObjectNode) prefsNode).put("effect", Enums.Effect.BIAS_LIGHT.getI18n());
-                        ((ObjectNode) prefsNode).put("ffeffect", Enums.Effect.BIAS_LIGHT.getI18n());
+                    String effectKey = WebFieldNames.PREFS_EFFECT;
+                    String ffEffectKey = WebFieldNames.PREFS_FF_EFFECT;
+                    if (Constants.STATE_ON_GLOWWORMWIFI.equalsIgnoreCase(prefsNode.get(effectKey).asText())) {
+                        ((ObjectNode) prefsNode).put(effectKey, Enums.Effect.BIAS_LIGHT.getI18n());
+                        ((ObjectNode) prefsNode).put(ffEffectKey, Enums.Effect.BIAS_LIGHT.getI18n());
                     } else {
-                        ((ObjectNode) prefsNode).put("effect", LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get("effect").asText()).getI18n());
-                        ((ObjectNode) prefsNode).put("ffeffect", LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get("ffeffect").asText()).getI18n());
+                        ((ObjectNode) prefsNode).put(effectKey, LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get(effectKey).asText()).getI18n());
+                        ((ObjectNode) prefsNode).put(ffEffectKey, LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get(ffEffectKey).asText()).getI18n());
                     }
                     body = CommonUtility.JSON_MAPPER.writeValueAsString(prefsNode);
                 }
