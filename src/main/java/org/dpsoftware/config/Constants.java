@@ -194,6 +194,8 @@ public class Constants {
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
     public static final String FXML_GAMMA_DIALOG = "gammaDialog";
     public static final String FXML_DISPLAY_DIALOG = "displayDialog";
+    // File used to save the profile in use for systemctl when running headless
+    public static final String PROFILE_IN_USE_FILENAME = "ProfileInUse";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
     public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
