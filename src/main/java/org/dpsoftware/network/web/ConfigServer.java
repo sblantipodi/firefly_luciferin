@@ -367,9 +367,9 @@ public class ConfigServer {
         // When "Default" is selected, restart without a profile (null) so the main config is used.
         sendJson(exchange, HttpURLConnection.HTTP_OK, JSON_OK);
         if (name.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            NativeExecutor.restartNativeInstance(Constants.DEFAULT);
+            NativeExecutor.restartNativeInstance("\"" + Constants.DEFAULT + "\"");
         } else {
-            NativeExecutor.restartNativeInstance(name);
+            NativeExecutor.restartNativeInstance("\"" + name + "\"");
         }
     }
 
