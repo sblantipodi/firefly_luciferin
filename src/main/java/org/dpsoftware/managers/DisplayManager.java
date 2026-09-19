@@ -65,8 +65,6 @@ public class DisplayManager {
         displayInfo.setScaleY(gd.getDefaultConfiguration().getDefaultTransform().getScaleY());
         displayInfo.setMinX(bounds.getMinX());
         displayInfo.setMinY(bounds.getMinY());
-        displayInfo.setBoundsMinX(bounds.getMinX());
-        displayInfo.setBoundsMinY(bounds.getMinY());
         displayInfo.setMaxX(bounds.getMaxX());
         displayInfo.setMaxY(bounds.getMaxY());
         return displayInfo;
@@ -120,8 +118,6 @@ public class DisplayManager {
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setWidth(displayInfoListAwt.get(i).getWidth());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMinX(displayInfoListAwt.get(i).getMinX());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMinY(displayInfoListAwt.get(i).getMinY());
-            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setBoundsMinX(displayInfoListAwt.get(i).getBoundsMinX());
-            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setBoundsMinY(displayInfoListAwt.get(i).getBoundsMinY());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMaxX(displayInfoListAwt.get(i).getMaxX());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMaxY(displayInfoListAwt.get(i).getMaxY());
         }
@@ -161,8 +157,6 @@ public class DisplayManager {
         displayInfo.setScaleY(screen.getOutputScaleY());
         displayInfo.setMinX(visualBounds.getMinX());
         displayInfo.setMinY(visualBounds.getMinY());
-        displayInfo.setBoundsMinX(bounds.getMinX());
-        displayInfo.setBoundsMinY(bounds.getMinY());
         displayInfo.setMaxX(visualBounds.getMaxX());
         displayInfo.setMaxY(visualBounds.getMaxY());
         return displayInfo;

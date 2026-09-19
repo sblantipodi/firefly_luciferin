@@ -72,9 +72,6 @@
     requires jdk.management;
     requires jdk.compiler;
     requires javafx.graphics;
-    requires jakarta.websocket;
-    requires org.glassfish.tyrus.server;
-    requires org.glassfish.tyrus.container.grizzly.server;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;

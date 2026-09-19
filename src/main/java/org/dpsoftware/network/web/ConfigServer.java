@@ -33,8 +33,6 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.GStreamerGrabber;
-import org.dpsoftware.grabber.WebRtcStreamer;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
@@ -73,10 +71,8 @@ public class ConfigServer {
     private static final String JSON_OK = "{\"status\":\"OK\"}";
     private final StorageManager storageManager = new StorageManager();
     private final List<HttpServer> httpServers = new ArrayList<>();
-    private final WebRtcStreamer webRtcStreamer = new WebRtcStreamer();
-    private final WebRtcSignalingServer webRtcSignalingServer = new WebRtcSignalingServer(webRtcStreamer);
     private final WebResourceServer webResourceServer = new WebResourceServer();
-    private final LivePreviewWebHandler livePreviewWebHandler = new LivePreviewWebHandler(webRtcSignalingServer);
+    private final LivePreviewWebHandler livePreviewWebHandler = new LivePreviewWebHandler();
     private final ProfileHandler profileHandler = new ProfileHandler();
     private final DeviceEndpointHandler deviceEndpointHandler = new DeviceEndpointHandler();
     private final Predicate<String> GET_METHOD = method -> method.equalsIgnoreCase("GET");
@@ -338,10 +334,6 @@ public class ConfigServer {
         });
         httpServers.clear();
         livePreviewWebHandler.stopLivePreviewWatchdog();
-        GStreamerGrabber.webRtcStreamer = null;
-        GStreamerGrabber.imageLivePreviewFallback = false;
-        webRtcStreamer.stop();
-        webRtcSignalingServer.stop();
     }
 
     /**
@@ -378,7 +370,6 @@ public class ConfigServer {
                 server.createContext(Constants.SET_CONFIG_DEVICE_JS_ENDPOINT, withGuard(webResourceServer::handleSetConfigPageJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_UI_JS_ENDPOINT, withGuard(webResourceServer::handleSetConfigPageJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_CSS_ENDPOINT, withGuard(webResourceServer::handleSetConfigCss, GET_METHOD));
-                server.createContext(Constants.WEBRTC_PREVIEW_JS_ENDPOINT, withGuard(webResourceServer::handleWebrtcPreviewJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(deviceEndpointHandler::handleDevicePrefs, GET_METHOD));
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
@@ -403,7 +394,6 @@ public class ConfigServer {
             if (httpServers.isEmpty()) {
                 log.warn("No local interface found, config server not started");
             }
-            GStreamerGrabber.webRtcStreamer = webRtcStreamer;
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-config-shutdown"));
         } catch (IOException e) {
             stop();
