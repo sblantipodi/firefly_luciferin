@@ -136,13 +136,6 @@ function setToggleUi(on) {
         toggle.classList.toggle('btn-primary', on);
         toggle.classList.toggle('btn-outline-primary', !on);
         toggle.classList.toggle('active', on);
-        if (on) {
-            toggle.style.backgroundColor = 'orange';
-            toggle.style.color = '#fff';
-        } else {
-            toggle.style.backgroundColor = 'lightgrey';
-            toggle.style.color = '#fff';
-        }
     }
     var formCheckbox = document.getElementById('toggleLed');
     if (formCheckbox) {
