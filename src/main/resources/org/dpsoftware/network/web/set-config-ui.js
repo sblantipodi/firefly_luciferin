@@ -229,7 +229,6 @@ function poll() {
         }
         if (!serverOnline) {
             serverOnline = true;
-            document.body.classList.remove('server-down');
             hideOfflineOverlay();
             showToast('Firefly Luciferin is online again', 'bg-success text-white');
         }
@@ -240,7 +239,6 @@ function poll() {
         }
         if (serverOnline) {
             serverOnline = false;
-            document.body.classList.add('server-down');
             showOfflineOverlay();
         }
     });
@@ -255,13 +253,13 @@ function showOfflineOverlay() {
         overlay.innerHTML = '<div class="offline-overlay-content">Firefly Luciferin is offline or restarting</div>';
         document.body.appendChild(overlay);
     }
-    overlay.classList.add('show');
+    overlay.style.display = 'flex';
 }
 
 function hideOfflineOverlay() {
     var overlay = document.getElementById('offlineOverlay');
     if (overlay) {
-        overlay.classList.remove('show');
+        overlay.style.display = 'none';
     }
 }
 
