@@ -137,8 +137,22 @@ function wireLivePreviewButton() {
     if (!showBtn) {
         return;
     }
+    var useWebrtc = (typeof window.webrtcPreview === 'object' && window.webrtcPreview !== null);
     showBtn.addEventListener('click', function () {
         var turningOn = !livePreviewOn;
+        if (useWebrtc) {
+            if (turningOn) {
+                window.webrtcPreview.start().then(function (mode) {
+                    setLivePreview(true, mode === 'webrtc');
+                }).catch(function (err) {
+                    showToast('Unable to start live preview: ' + err.message, 'bg-danger text-white');
+                });
+            } else {
+                window.webrtcPreview.stop();
+                setLivePreview(false, true);
+            }
+            return;
+        }
         var url = turningOn ? 'screenshot/enable' : 'screenshot/enable?disable=true';
         fetch(url, {method: 'POST'}).then(function (r) {
             if (!r.ok) {
@@ -146,14 +160,14 @@ function wireLivePreviewButton() {
             }
             return r.json();
         }).then(function () {
-            setLivePreview(turningOn);
+            setLivePreview(turningOn, false);
         }).catch(function (err) {
             showToast('Unable to toggle live preview: ' + err.message, 'bg-danger text-white');
         });
     });
 }
 
-function setLivePreview(on) {
+function setLivePreview(on, useWebrtc) {
     livePreviewOn = on;
     var btn = document.getElementById('showLivePreview');
     if (btn) {
@@ -162,18 +176,25 @@ function setLivePreview(on) {
     }
     var img = document.getElementById('screenshot');
     if (img) {
-        img.classList.toggle('show', on);
-        if (!on) {
+        img.classList.toggle('show', on && !useWebrtc);
+        if (!on || useWebrtc) {
             img.onload = null;
             img.onerror = null;
             img.src = '';
         }
     }
+    if (useWebrtc && window.webrtcPreview) {
+        window.webrtcPreview.showVideo(on);
+    }
+    var fallbackNotice = document.getElementById('livePreviewFallbackNotice');
+    if (fallbackNotice) {
+        fallbackNotice.classList.toggle('show', on && !useWebrtc);
+    }
     if (livePreviewTimer) {
         clearInterval(livePreviewTimer);
         livePreviewTimer = null;
     }
-    if (on) {
+    if (on && !useWebrtc) {
         pollScreenshot();
         livePreviewTimer = setInterval(pollScreenshot, 500);
     }

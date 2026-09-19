@@ -220,7 +220,7 @@ public class TestCanvas {
         for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
             if (index == MainSingleton.getInstance().config.getMonitorNumber()) {
                 CommonUtility.toJsonString(displayInfo);
-                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
+                stage.setX((displayInfo.getBoundsMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
                 stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateDialogY(stage));
             }
             index++;

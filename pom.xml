@@ -39,6 +39,7 @@
         <slf4j.version>2.0.19</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.2.1</dbus.java.version>
+        <tyrus.version>2.2.2</tyrus.version>
         <junit.version>5.12.1</junit.version>
         <mockito.version>5.17.0</mockito.version>
         <byte-buddy.version>1.17.5</byte-buddy.version>
@@ -186,6 +187,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-grizzly-server</artifactId>
+            <version>${tyrus.version}</version>
         </dependency>
 
         <dependency>
