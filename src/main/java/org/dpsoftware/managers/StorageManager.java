@@ -113,8 +113,6 @@ public class StorageManager {
         }
     }
 
-
-
     /**
      * Copy file (FileInputStream) to GZIPOutputStream
      *
