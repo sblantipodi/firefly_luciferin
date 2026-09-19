@@ -21,7 +21,7 @@
 */
 package org.dpsoftware.managers;
 
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
@@ -40,34 +40,34 @@ class PipelineManagerHelperTest {
 
     @Test
     void getPipeline_returnsDefaultWhenCustomIsNull() {
-        if (Constants.CUSTOM_GSTREAMER_PIPELINE == null) {
+        if (EnvConstants.CUSTOM_GSTREAMER_PIPELINE == null) {
             String defaultPipeline = "my-pipeline";
             assertEquals(defaultPipeline, PipelineManager.getPipeline(defaultPipeline));
         } else {
             // Custom is set in this environment — verify it takes precedence
-            assertEquals(Constants.CUSTOM_GSTREAMER_PIPELINE,
+            assertEquals(EnvConstants.CUSTOM_GSTREAMER_PIPELINE,
                     PipelineManager.getPipeline("should-be-ignored"));
         }
     }
 
     @Test
     void getCap_returnsDefaultWhenCustomIsNull() {
-        if (Constants.CUSTOM_GSTREAMER_CAPS == null) {
+        if (EnvConstants.CUSTOM_GSTREAMER_CAPS == null) {
             String defaultCap = "video/x-raw";
             assertEquals(defaultCap, PipelineManager.getCap(defaultCap));
         } else {
-            assertEquals(Constants.CUSTOM_GSTREAMER_CAPS,
+            assertEquals(EnvConstants.CUSTOM_GSTREAMER_CAPS,
                     PipelineManager.getCap("should-be-ignored"));
         }
     }
 
     @Test
     void getBo_returnsDefaultWhenCustomIsNull() {
-        if (Constants.CUSTOM_GSTREAMER_BO == null) {
+        if (EnvConstants.CUSTOM_GSTREAMER_BO == null) {
             String defaultBo = "my-bo";
             assertEquals(defaultBo, PipelineManager.getBo(defaultBo));
         } else {
-            assertEquals(Constants.CUSTOM_GSTREAMER_BO,
+            assertEquals(EnvConstants.CUSTOM_GSTREAMER_BO,
                     PipelineManager.getBo("should-be-ignored"));
         }
     }
@@ -77,20 +77,20 @@ class PipelineManagerHelperTest {
         // Result should always match: custom if non-null, else the default passed in
         String defaultVal = "default-pipeline";
         String result = PipelineManager.getPipeline(defaultVal);
-        assertEquals(Objects.requireNonNullElse(Constants.CUSTOM_GSTREAMER_PIPELINE, defaultVal), result);
+        assertEquals(Objects.requireNonNullElse(EnvConstants.CUSTOM_GSTREAMER_PIPELINE, defaultVal), result);
     }
 
     @Test
     void getCap_consistentWithConstant() {
         String defaultVal = "default-cap";
         String result = PipelineManager.getCap(defaultVal);
-        assertEquals(Objects.requireNonNullElse(Constants.CUSTOM_GSTREAMER_CAPS, defaultVal), result);
+        assertEquals(Objects.requireNonNullElse(EnvConstants.CUSTOM_GSTREAMER_CAPS, defaultVal), result);
     }
 
     @Test
     void getBo_consistentWithConstant() {
         String defaultVal = "default-bo";
         String result = PipelineManager.getBo(defaultVal);
-        assertEquals(Objects.requireNonNullElse(Constants.CUSTOM_GSTREAMER_BO, defaultVal), result);
+        assertEquals(Objects.requireNonNullElse(EnvConstants.CUSTOM_GSTREAMER_BO, defaultVal), result);
     }
 }
