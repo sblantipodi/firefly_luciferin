@@ -258,7 +258,8 @@ function buildProfilesAccordion() {
     html += '<div id="section-profiles" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">';
     html += '<div class="accordion-body">';
     html += '<div id="profilesList" class="list-group mb-2"></div>';
-    html += '<div class="form-text text-muted">Click a profile name to activate it. Firefly will restart with the selected profile.</div>';
+    html += '<div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="newProfileName" placeholder="New profile name"><button type="button" class="btn btn-orange btn-sm" onclick="addProfile()">Add</button></div>';
+    html += '<div class="form-text text-muted">Click a profile name to activate it. Firefly will restart with the selected profile. Add a new profile to copy the current configuration under a new name.</div>';
     html += '</div></div></div>';
     return html;
 }

@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -121,6 +122,89 @@ public class ProfileHandler {
     }
 
     /**
+     * Handle POST /addProfile?name=<profile>, copying the current in-use configuration into a new
+     * profile file. When {@code name} is absent or empty a 400 error is returned.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    public void handleAddProfile(HttpExchange exchange) throws IOException {
+        String name = queryNameParam(exchange);
+        if (name == null || name.isEmpty()) {
+            sendMissingNameError(exchange);
+            return;
+        }
+        Configuration config = storageManager.readProfileInUseConfig();
+        if (config == null) {
+            sendInternalError(exchange, "Configuration not found");
+            return;
+        }
+        int whoAmI = MainSingleton.getInstance().whoAmI;
+        String filename;
+        if (name.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            filename = whoAmI == 2 ? Constants.CONFIG_FILENAME_2 : whoAmI == 3 ? Constants.CONFIG_FILENAME_3 : Constants.CONFIG_FILENAME;
+        } else {
+            filename = whoAmI + "_" + name + Constants.YAML_EXTENSION;
+        }
+        try {
+            storageManager.writeConfig(config, filename);
+        } catch (IOException e) {
+            sendInternalError(exchange, "Unable to save profile: " + e.getMessage());
+            return;
+        }
+        sendOkJson(exchange);
+    }
+
+    /**
+     * Handle POST /removeProfile?name=<profile>, deleting the profile file. The default profile and
+     * the currently active profile cannot be removed; a 400 error is returned in that case.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
+     */
+    public void handleRemoveProfile(HttpExchange exchange) throws IOException {
+        String name = queryNameParam(exchange);
+        if (name == null || name.isEmpty()) {
+            sendMissingNameError(exchange);
+            return;
+        }
+        String defaultWord = CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH);
+        String profileArg = MainSingleton.getInstance().profileArg;
+        String activeProfile;
+        if (profileArg == null || profileArg.isEmpty() || Constants.DEFAULT.equals(profileArg) || CommonUtility.getWord(Constants.DEFAULT).equals(profileArg)) {
+            activeProfile = defaultWord;
+        } else {
+            activeProfile = profileArg;
+        }
+        if (name.equals(defaultWord) || name.equals(activeProfile)) {
+            sendBadRequest(exchange, "Cannot remove the " + (name.equals(defaultWord) ? "default" : "active") + " profile");
+            return;
+        }
+        boolean deleted = storageManager.deleteProfile(name);
+        if (!deleted) {
+            sendInternalError(exchange, "Unable to delete profile: " + name);
+            return;
+        }
+        sendOkJson(exchange);
+    }
+
+    /**
+     * Send a plain text internal server error response.
+     *
+     * @param exchange the HTTP exchange to reply on
+     * @param message  the human-readable error description
+     * @throws IOException when the response cannot be written
+     */
+    private void sendInternalError(HttpExchange exchange, String message) throws IOException {
+        byte[] responseBytes = message.getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, responseBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(responseBytes);
+        }
+    }
+
+    /**
      * Send a JSON {@code OK} response.
      *
      * @param exchange the HTTP exchange to send the response on
@@ -142,7 +226,18 @@ public class ProfileHandler {
      * @throws IOException when the response cannot be written
      */
     private void sendMissingNameError(HttpExchange exchange) throws IOException {
-        byte[] responseBytes = "Missing or empty name parameter".getBytes(StandardCharsets.UTF_8);
+        sendBadRequest(exchange, "Missing or empty name parameter");
+    }
+
+    /**
+     * Send a 400 plain text error response with a custom message.
+     *
+     * @param exchange the HTTP exchange to reply on
+     * @param message  the human-readable error description
+     * @throws IOException when the response cannot be written
+     */
+    private void sendBadRequest(HttpExchange exchange, String message) throws IOException {
+        byte[] responseBytes = message.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_REQUEST, responseBytes.length);
         try (OutputStream responseBody = exchange.getResponseBody()) {

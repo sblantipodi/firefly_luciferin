@@ -41,11 +41,18 @@ function renderProfiles(data) {
         container.innerHTML = '<div class="text-muted">No profiles available</div>';
         return;
     }
+    var defaultName = 'Default';
     var html = '';
     profiles.forEach(function (p) {
         var isActive = p === activeProfile;
         var badge = isActive ? ' <span class="badge bg-success">active</span>' : '';
-        html += '<button type="button" class="list-group-item list-group-item-action" onclick="activateProfile(\'' + escapeHtml(p) + '\')">' + escapeHtml(p) + badge + '</button>';
+        var deleteBtn = (p !== defaultName && !isActive)
+            ? ' <button type="button" class="btn btn-sm btn-outline-danger float-end" title="Remove profile" onclick="event.stopPropagation();removeProfile(\'' + escapeHtml(p) + '\')">&times;</button>'
+            : '';
+        html += '<div class="list-group-item d-flex justify-content-between align-items-center">' +
+            '<button type="button" class="list-group-item-action flex-grow-0 text-start" style="background:none;border:none;padding:0" onclick="activateProfile(\'' + escapeHtml(p) + '\')">' + escapeHtml(p) + badge + '</button>' +
+            deleteBtn +
+            '</div>';
     });
     container.innerHTML = html;
 }
@@ -64,6 +71,48 @@ function activateProfile(name) {
         showToast('Activating profile: ' + name, 'bg-info text-white');
     }).catch(function (err) {
         showToast('Unable to activate profile: ' + err.message, 'bg-danger text-white');
+    });
+}
+
+function addProfile() {
+    var name = document.getElementById('newProfileName').value.trim();
+    if (!name) {
+        showToast('Enter a profile name', 'bg-warning text-dark');
+        return;
+    }
+    fetch('addProfile?name=' + encodeURIComponent(name), {method: 'POST'}).then(function (r) {
+        if (!r.ok) {
+            return r.text().then(function (t) {
+                throw new Error(t || r.statusText);
+            });
+        }
+        showToast('Profile "' + name + '" added', 'bg-success text-white');
+        document.getElementById('newProfileName').value = '';
+        return fetchJson('listProfiles');
+    }).then(function (data) {
+        renderProfiles(data);
+    }).catch(function (err) {
+        showToast('Unable to add profile: ' + err.message, 'bg-danger text-white');
+    });
+}
+
+function removeProfile(name) {
+    var confirmMsg = 'Remove profile "' + name + '"? This cannot be undone.';
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    fetch('removeProfile?name=' + encodeURIComponent(name), {method: 'POST'}).then(function (r) {
+        if (!r.ok) {
+            return r.text().then(function (t) {
+                throw new Error(t || r.statusText);
+            });
+        }
+        showToast('Profile "' + name + '" removed', 'bg-success text-white');
+        return fetchJson('listProfiles');
+    }).then(function (data) {
+        renderProfiles(data);
+    }).catch(function (err) {
+        showToast('Unable to remove profile: ' + err.message, 'bg-danger text-white');
     });
 }
 

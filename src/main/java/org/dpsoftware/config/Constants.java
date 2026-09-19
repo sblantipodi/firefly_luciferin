@@ -866,6 +866,8 @@ public class Constants {
     public static final String SCREENSHOT_ENABLE_ENDPOINT = "/screenshot/enable";
     public static final String LIST_PROFILES_ENDPOINT = "/listProfiles";
     public static final String ACTIVATE_PROFILE_ENDPOINT = "/activateProfile";
+    public static final String ADD_PROFILE_ENDPOINT = "/addProfile";
+    public static final String REMOVE_PROFILE_ENDPOINT = "/removeProfile";
     public static final String COMBO_CHANGE_ENDPOINT = "/comboChange";
     public static final String SECTION_TITLES_ENDPOINT = "/sectionTitles";
     public static final int CONFIG_SERVER_DEFAULT_PORT = 33556;
