@@ -229,7 +229,10 @@ public class WebRtcStreamer {
         int sourceRowBytes = widthPlusStride * bytesPerPixel;
         int packedFrameBytes = packedRowBytes * height;
         boolean hasStride = widthPlusStride > width;
-        if (source.remaining() < packedFrameBytes || (hasStride && source.remaining() < sourceRowBytes * height)) {
+        // The last row only needs its visible pixels: mapped capture buffers may omit its
+        // trailing padding. Check the end of the last row we copy, not stride * height.
+        long requiredSourceBytes = (long) (height - 1) * sourceRowBytes + packedRowBytes;
+        if (source.remaining() < packedFrameBytes || (hasStride && source.remaining() < requiredSourceBytes)) {
             log.warn("Skipping WebRTC frame with invalid buffer size: {} bytes for {}x{} (stride {} pixels)",
                     source.remaining(), width, height, widthPlusStride);
             return;
