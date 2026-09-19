@@ -26,17 +26,23 @@
 }
 
 body.server-down {
-    filter: grayscale(1);
     pointer-events: none;
+}
+
+/* Do not filter <body>: CSS filters create a containing block for fixed descendants.
+ * On mobile Chrome that makes #offlineOverlay fixed to the scrollable body rather than
+ * the visual viewport. The overlay is appended directly to body, so exclude it. */
+body.server-down > :not(#offlineOverlay) {
+    filter: grayscale(1);
 }
 
 .offline-overlay {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background: rgba(0, 0, 0, 0.5);
     z-index: 9999;
     justify-content: center;
@@ -94,6 +100,18 @@ body.server-down {
     background-color: #1e7e34;
 }
 
+/* WebRTC live preview video, hidden until the .show class is toggled by JS. */
+#webrtcPreview {
+    max-width: 100%;
+    border: 1px solid #ccc;
+    display: none;
+    background: #000;
+}
+
+#webrtcPreview.show {
+    display: inline-block;
+}
+
 /* Captured frame, hidden until the live preview is enabled (the .show class is toggled by JS). */
 #screenshot {
     max-width: 100%;
@@ -103,6 +121,22 @@ body.server-down {
 
 #screenshot.show {
     display: inline-block;
+}
+
+.live-preview-fallback-notice {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ffe69c;
+    border-radius: 0.25rem;
+    background: #fff3cd;
+    color: #664d03;
+    text-align: center;
+}
+
+.live-preview-fallback-notice.show {
+    display: block;
 }
 
 /* Toasts, positioned so they do not cover the form. */

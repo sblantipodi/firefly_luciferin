@@ -52,6 +52,7 @@ public class WebResourceServer {
     private static final String SET_CONFIG_DEVICE_JS_RESOURCE = "set-config-device.js";
     private static final String SET_CONFIG_UI_JS_RESOURCE = "set-config-ui.js";
     private static final String SET_CONFIG_CSS_RESOURCE = "set-config.css";
+    private static final String WEBRTC_PREVIEW_JS_RESOURCE = "webrtc-preview.js";
 
     /**
      * Handle GET /setConfigPage, serving the minimal HTML page that hosts the settings form.
@@ -93,6 +94,16 @@ public class WebResourceServer {
             resource = SET_CONFIG_PAGE_JS_RESOURCE;
         }
         sendResource(exchange, resource, "application/javascript; charset=utf-8");
+    }
+
+    /**
+     * Handle GET /webrtc-preview.js, serving the browser-side WebRTC live preview module.
+     *
+     * @param exchange the HTTP exchange to send the response on
+     * @throws IOException when the resource is missing or the response cannot be written
+     */
+    public void handleWebrtcPreviewJs(HttpExchange exchange) throws IOException {
+        sendResource(exchange, WEBRTC_PREVIEW_JS_RESOURCE, "application/javascript; charset=utf-8");
     }
 
     /**
