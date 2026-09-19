@@ -23,16 +23,16 @@ package org.dpsoftware.network.web;
 
 /**
  * Names of the configuration fields, section keys and request parameters exchanged between the
- * web settings page and the {@link ConfigServer} endpoints. The values are the exact JSON keys the
+ * web settings page and the ConfigServer endpoints. The values are the exact JSON keys the
  * client reads and writes, so they must stay stable; the constants only remove the string literals
  * scattered across the server side.
  */
 public final class WebFieldNames {
 
-    // --- comboChange request payload keys ---
+    // comboChange request payload keys
     public static final String COMBO_NAME = "comboName";
     public static final String VALUE = "value";
-    // --- LED configuration section fields ---
+    // LED configuration fields
     public static final String TOP_LED = "topLed";
     public static final String LEFT_LED = "leftLed";
     public static final String RIGHT_LED = "rightLed";
@@ -48,7 +48,7 @@ public final class WebFieldNames {
     public static final String GAP_TYPE_TOP_BOTTOM = "gapTypeTopBottom";
     public static final String GAP_TYPE_SIDE = "gapTypeSide";
     public static final String DEFAULT_LED_MATRIX = "defaultLedMatrix";
-    // --- mode / capture section fields ---
+    // Mode and capture fields
     public static final String OUTPUT_DEVICE = "outputDevice";
     public static final String BAUD_RATE = "baudRate";
     public static final String STATIC_GLOW_WORM_IP = "staticGlowWormIp";
@@ -67,7 +67,7 @@ public final class WebFieldNames {
     public static final String AUTO_DETECT_BLACK_BARS = "autoDetectBlackBars";
     public static final String ALGO = "algo";
     public static final String LANGUAGE = "language";
-    // --- MQTT section fields ---
+    // MQTT fields
     public static final String MQTT_ENABLE = "mqttEnable";
     public static final String WIRELESS_STREAM = "wirelessStream";
     public static final String STREAM_TYPE = "streamType";
@@ -76,7 +76,7 @@ public final class WebFieldNames {
     public static final String MQTT_DISCOVERY_TOPIC = "mqttDiscoveryTopic";
     public static final String MQTT_USERNAME = "mqttUsername";
     public static final String MQTT_PWD = "mqttPwd";
-    // --- misc section fields ---
+    // Miscellaneous fields
     public static final String EFFECT = "effect";
     public static final String COLOR_MODE = "colorMode";
     public static final String GAMMA = "gamma";
@@ -90,7 +90,7 @@ public final class WebFieldNames {
     public static final String RUNTIME_LOG_LEVEL = "runtimeLogLevel";
     public static final String CUBE_LUT = "cubeLut";
     public static final String THEME = "theme";
-    // --- eye-care section fields ---
+    // Eye care fields
     public static final String NIGHT_LIGHT = "nightLight";
     public static final String NIGHT_LIGHT_LVL = "nightLightLvl";
     public static final String LUMINOSITY_THRESHOLD = "luminosityThreshold";
@@ -101,20 +101,20 @@ public final class WebFieldNames {
     public static final String LDR_INTERVAL = "ldrInterval";
     public static final String LDR_MIN = "ldrMin";
     public static final String LDR_TURN_OFF = "ldrTurnOff";
-    // --- device section fields ---
+    // Device fields
     public static final String POWER_SAVING = "powerSaving";
     public static final String MULTI_MONITOR = "multiMonitor";
     public static final String MULTI_SCREEN_SINGLE_DEVICE = "multiScreenSingleDevice";
     public static final String CHECK_FOR_UPDATES = "checkForUpdates";
     public static final String SYNC_CHECK = "syncCheck";
-    // --- profile section fields ---
+    // Profile fields
     public static final String CHECK_FULL_SCREEN = "checkFullScreen";
     public static final String GPU_THRESHOLD = "gpuThreshold";
     public static final String CPU_THRESHOLD = "cpuThreshold";
     public static final String PROFILE_PROCESS_1 = "profileProcess1";
     public static final String PROFILE_PROCESS_2 = "profileProcess2";
     public static final String PROFILE_PROCESS_3 = "profileProcess3";
-    // --- section / sub-accordion titles ---
+    // Section titles
     public static final String SECTION_LEDS = "leds";
     public static final String SECTION_MODE = "mode";
     public static final String SECTION_NETWORK = "network";
@@ -129,11 +129,11 @@ public final class WebFieldNames {
     public static final String SECTION_SMOOTHING = "smoothing";
     public static final String SECTION_CONNECTED_DEVICES = "connectedDevices";
     public static final String SECTION_SATELLITES = "satellites";
-    // --- client widget ids ---
+    // Client widget IDs
     public static final String EFFECT_SELECT = "effectSelect";
     public static final String TURN_LED_ON = "turnLedOn";
     public static final String TURN_LED_OFF = "turnLedOff";
-    // --- device /prefs JSON keys ---
+    // Device preferences JSON keys
     public static final String PREFS_EFFECT = "effect";
     public static final String PREFS_FF_EFFECT = "ffeffect";
     public static final String PREFS_NULL_VALUE = "null";

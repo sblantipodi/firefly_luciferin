@@ -66,10 +66,7 @@ import java.util.function.Predicate;
 @Slf4j
 public class ConfigServer {
 
-    /**
-     * Configuration fields to strip from the JSON payload, they are huge and not useful to a client.
-     */
-    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix");
+    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix"); // Large client-irrelevant fields.
     private static final String JSON_OK = "{\"status\":\"OK\"}";
     private final StorageManager storageManager = new StorageManager();
     private final List<HttpServer> httpServers = new ArrayList<>();
@@ -82,13 +79,7 @@ public class ConfigServer {
     private final Predicate<String> GET_METHOD = method -> method.equalsIgnoreCase("GET");
     private final Predicate<String> POST_METHOD = method -> method.equalsIgnoreCase("POST");
 
-    /**
-     * Collect the addresses to bind: loopback (127.0.0.1) plus every non-link-local IPv4 interface address.
-     * Link-local (169.254.x.x) addresses are excluded to avoid exposing the endpoint on ad-hoc Wi-Fi or
-     * Bluetooth networks; multicast and IPv6 addresses are skipped as well.
-     *
-     * @return the set of addresses to bind, ordered (loopback first)
-     */
+    /** Returns loopback and active non link local IPv4 addresses. */
     private static Set<InetAddress> localBindAddresses() {
         Set<InetAddress> addresses = new LinkedHashSet<>();
         try {
@@ -109,7 +100,7 @@ public class ConfigServer {
                         continue;
                     }
                     String host = address.getHostAddress();
-                    // Skip IPv6, link-local (169.254.x.x) and any multicast
+                    // Skip IPv6, non link local and multicast addresses.
                     if (host.contains(":") || host.startsWith("169.254.") || address.isMulticastAddress()) {
                         continue;
                     }
@@ -151,8 +142,7 @@ public class ConfigServer {
     }
 
     /**
-     * Handle POST /activateProfile?name=<profile>, activating a profile by restarting the native
-     * instance with it. When {@code name} is absent or empty the current (default) profile is used.
+     * Activates the requested profile, or the default one when omitted.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -162,10 +152,7 @@ public class ConfigServer {
     }
 
     /**
-     * Handle POST /addProfile?name=<profile>, taking a JSON payload with configuration parameters
-     * (the same payload sent by the "Save Settings" button), merging it into the saved configuration
-     * and persisting it into the new profile file. No restart is triggered: the profile is created
-     * but not activated.
+     * Creates a profile from the supplied configuration without activating it.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -226,8 +213,7 @@ public class ConfigServer {
     }
 
     /**
-     * Handle POST /removeProfile?name=<profile>, deleting the profile file. The default and active
-     * profiles cannot be removed.
+     * Deletes an inactive, non-default profile.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -256,7 +242,7 @@ public class ConfigServer {
             return;
         }
         log.info("setConfig payload received: {}", CommonUtility.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
-        // Read the config of the profile in use (or the main config when no profile is set).
+        // Read the active or main configuration.
         Configuration savedConfig = storageManager.readProfileInUseConfig();
         if (savedConfig == null) {
             sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
@@ -265,14 +251,12 @@ public class ConfigServer {
         ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(savedConfig);
         mergePayload(payload, configTree);
         Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
-        // Mirror the GUI save behavior: the LED matrix is only regenerated when a matrix
-        // parameter actually changed, otherwise the saved matrix is preserved.
+        // Regenerate only when matrix parameters change.
         if (updatedConfig.ledMatrixParamsChanged(savedConfig)) {
             updatedConfig.regenerateLedMatrix();
         }
         try {
-            // Persist into the profile in use (or the main config when no profile is set); null lets
-            // writeConfig pick the right file based on profileArg and whoAmI.
+            // Persist to the active or main configuration.
             updatedConfig.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, updatedConfig.getEffect()).getBaseI18n());
             storageManager.writeConfig(updatedConfig, null);
         } catch (IOException e) {
@@ -281,7 +265,7 @@ public class ConfigServer {
         }
         log.info("Configuration updated via setConfig endpoint");
         sendOkJson(exchange);
-        // Restart Firefly with the profile in use (if any) and preserving headless mode.
+        // Restart with the active profile and headless mode.
         NativeExecutor.restartNativeInstanceWithCurrentProfile();
     }
 
@@ -292,7 +276,7 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void handleGetConfig(HttpExchange exchange) throws IOException {
-        // Expose the config of the profile in use (or the main config when no profile is set).
+        // Expose the active or main configuration.
         Configuration config = storageManager.readProfileInUseConfig();
         if (config == null) {
             sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
@@ -311,7 +295,7 @@ public class ConfigServer {
     private void sendConfiguration(HttpExchange exchange, Configuration config) throws IOException {
         ObjectNode configNode = CommonUtility.JSON_MAPPER.valueToTree(config);
         EXCLUDED_FIELDS.forEach(configNode::remove);
-        // Expose the active profile (when a non-default profile is in use) so the client can show it.
+        // Include the active non-default profile.
         String profileArg = MainSingleton.getInstance().profileArg;
         if (profileArg != null && !profileArg.isEmpty()
                 && !Constants.DEFAULT.equals(profileArg)
@@ -355,12 +339,7 @@ public class ConfigServer {
         deviceEndpointHandler.handleGetDevices(exchange);
     }
 
-    /**
-     * Start the config HTTP endpoint on the loopback address and every non-link-local local IPv4 interface.
-     * A separate {@link HttpServer} is created per interface because the JDK {@code HttpServer} can only
-     * bind to a single {@link InetSocketAddress} at a time. Link-local (169.254.x.x) and site-local
-     * multicast addresses are skipped so the endpoint is not exposed on Wi-Fi/Bluetooth ad-hoc networks.
-     */
+    /** Starts one server per loopback or active non link local IPv4 address. */
     @SuppressWarnings("all")
     public void start() {
         if (!httpServers.isEmpty()) {
@@ -449,8 +428,7 @@ public class ConfigServer {
     }
 
     /**
-     * Handle POST /comboChange, applying the web page select change to the running configuration.
-     * Expected JSON body: {"comboName": "cubeLut", "value": "HDR2SDR_tonemap_LUT_1.cube"}.
+     * Applies a select-field change to the running configuration.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -558,8 +536,7 @@ public class ConfigServer {
     }
 
     /**
-     * Wrap an HTTP handler enforcing the CORS preflight handling and a single allowed method.
-     * OPTIONS requests are answered with no content, disallowed methods are rejected with a 405.
+     * Wraps a handler with CORS and method validation.
      *
      * @param handler       the handler to guard
      * @param methodAllowed the predicate deciding which method the handler accepts

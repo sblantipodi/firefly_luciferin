@@ -31,19 +31,7 @@ import org.dpsoftware.grabber.WebRtcStreamer;
 import org.glassfish.tyrus.server.Server;
 
 
-/**
- * In-process WebSocket signaling server for the WebRTC live preview.
- * <p>
- * It binds a Tyrus {@link Server} on the dedicated WebRTC signaling port
- * ({@link org.dpsoftware.config.Constants#WEBRTC_SIGNALING_DEFAULT_PORT}, separate from the
- * {@link ConfigServer} port because two sockets cannot share a port) and exposes a single
- * {@code /webrtc} endpoint ({@link WebRtcSignalingEndpoint}). When a browser connects, the
- * server asks the {@link WebRtcStreamer} to (re)build its GStreamer {@code webrtcbin} pipeline
- * and relays the SDP/ICE messages between the browser and the pipeline.
- * <p>
- * Only one viewer is supported at a time: a new connection tears down the previous one, which
- * matches the "Show Live Preview" button being a single consumer.
- */
+/** WebRTC signaling server for one live-preview viewer. */
 @Slf4j
 public class WebRtcSignalingServer {
 
@@ -58,9 +46,7 @@ public class WebRtcSignalingServer {
     }
 
     /**
-     * Start the WebSocket signaling server on {@code port}. Safe to call multiple times; it is a
-     * no-op when the server is already running. The server binds the wildcard address so the
-     * preview is reachable from any local interface.
+     * Starts the server when it is not already running.
      *
      * @param port the port to listen on (the dedicated WebRTC signaling port)
      */
@@ -73,10 +59,7 @@ public class WebRtcSignalingServer {
         }
         try {
             WebRtcSignalingEndpoint.setServer(this);
-            // Tyrus treats the third argument as the context path that prefixes the endpoint
-            // declaration path. Passing an empty context path keeps the endpoint reachable at
-            // ws://<host>:<port>/webrtc exactly as the browser expects (otherwise it would land
-            // on /webrtc/webrtc and the handshake would fail with 404).
+            // Keep the endpoint path at /webrtc.
             server = new Server("0.0.0.0", port, "", null, WebRtcSignalingEndpoint.class);
             server.start();
             running = true;
@@ -87,8 +70,7 @@ public class WebRtcSignalingServer {
     }
 
     /**
-     * Return whether the local GStreamer installation has the WebRTC and NICE factories needed
-     * for the low-latency preview.
+     * Returns whether the required GStreamer WebRTC factories are available.
      *
      * @return {@code true} when browser WebRTC preview can be used
      */
@@ -115,13 +97,12 @@ public class WebRtcSignalingServer {
     }
 
     /**
-     * A browser opened the {@code /webrtc} socket. The streamer (re)starts its pipeline and will
-     * push the SDP offer back through this channel via {@link #sendToClient}.
+     * Starts streaming for a newly opened browser session.
      *
      * @param session the newly opened session
      */
     public void onClientConnected(Session session) {
-        // A new viewer supersedes any previous one: tear it down before registering the new one.
+        // Replace any previous viewer.
         Session previous = activeSession;
         activeSession = session;
         if (previous != null && !previous.getId().equals(session.getId())) {

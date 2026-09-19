@@ -30,24 +30,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Serves the static resources of the web settings page: the HTML page, its JavaScript files,
- * and the 404 fallback for unknown paths.
- * <p>
- * The resources are co-located in this package ({@code org.dpsoftware.network.web}).
- * The package is {@code opens} in the module descriptor so the class loader can read the
- * resources in JPMS module mode (a non opened package would be invisible to it).
- */
+/** Serves static resources for the settings page. */
 public class WebResourceServer {
 
-    /**
-     * Settings web page resource, co-located in this package.
-     */
-    private static final String SET_CONFIG_PAGE_RESOURCE = "set-config.html";
-    /**
-     * Settings page JavaScript resource, co-located in this package.
-     */
-    private static final String SET_CONFIG_PAGE_JS_RESOURCE = "set-config.js";
+    private static final String SET_CONFIG_PAGE_RESOURCE = "set-config.html"; // Settings page resource.
+    private static final String SET_CONFIG_PAGE_JS_RESOURCE = "set-config.js"; // Settings script resource.
     private static final String SET_CONFIG_CORE_JS_RESOURCE = "set-config-core.js";
     private static final String SET_CONFIG_DEVICE_JS_RESOURCE = "set-config-device.js";
     private static final String SET_CONFIG_UI_JS_RESOURCE = "set-config-ui.js";
@@ -55,7 +42,7 @@ public class WebResourceServer {
     private static final String WEBRTC_PREVIEW_JS_RESOURCE = "webrtc-preview.js";
 
     /**
-     * Handle GET /setConfigPage, serving the minimal HTML page that hosts the settings form.
+     * Serves the settings page.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -75,8 +62,7 @@ public class WebResourceServer {
     }
 
     /**
-     * Handle GET requests for the settings page JavaScript files.
-     * Serves setConfig.js, setConfig-core.js, setConfig-device.js, setConfig-ui.js.
+     * Serves settings JavaScript files.
      *
      * @param exchange the HTTP exchange to send the response on
      * @throws IOException when the response cannot be written
@@ -107,8 +93,7 @@ public class WebResourceServer {
     }
 
     /**
-     * Handle GET / (and any unknown path), serving the settings page.
-     * The other endpoints are matched by their specific contexts before falling back to this root context.
+     * Handles the root and static-resource fallback.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written

@@ -38,10 +38,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Handles the profile endpoints: exposing the list of available profiles and activating a
- * profile by restarting the native instance with it.
- */
+/** Handles profile listing, activation and deletion. */
 public class ProfileHandler {
 
     private static final String JSON_OK = "{\"status\":\"OK\"}";
@@ -68,8 +65,7 @@ public class ProfileHandler {
     }
 
     /**
-     * Handle GET /listProfiles, exposing the list of profile names available for this instance
-     * (read from the config directory via {@link StorageManager#listProfilesForThisInstance()}).
+     * Returns profile names for this instance.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -99,8 +95,7 @@ public class ProfileHandler {
     }
 
     /**
-     * Handle POST /activateProfile?name=<profile>, activating a profile by restarting the native
-     * instance with it. When {@code name} is absent or empty the current (default) profile is used.
+     * Activates the requested or default profile.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -111,7 +106,7 @@ public class ProfileHandler {
             sendMissingNameError(exchange);
             return;
         }
-        // When "Default" is selected, restart without a profile (null) so the main config is used.
+        // The default profile uses the main configuration.
         sendOkJson(exchange);
         if (name.equals(CommonUtility.getWord(Constants.DEFAULT))) {
             NativeExecutor.restartNativeInstance("\"" + Constants.DEFAULT + "\"");
@@ -121,8 +116,7 @@ public class ProfileHandler {
     }
 
     /**
-     * Handle POST /removeProfile?name=<profile>, deleting the profile file. The default profile and
-     * the currently active profile cannot be removed; a 400 error is returned in that case.
+     * Deletes an inactive, non-default profile.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
