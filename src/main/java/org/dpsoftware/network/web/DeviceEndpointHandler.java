@@ -117,7 +117,11 @@ public class DeviceEndpointHandler {
                         ((ObjectNode) prefsNode).put(ffEffectKey, Enums.Effect.BIAS_LIGHT.getI18n());
                     } else {
                         ((ObjectNode) prefsNode).put(effectKey, LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get(effectKey).asText()).getI18n());
-                        ((ObjectNode) prefsNode).put(ffEffectKey, LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get(ffEffectKey).asText()).getI18n());
+                        if (prefsNode.get(ffEffectKey).asText().equals(WebFieldNames.PREFS_NULL_VALUE)) {
+                            ((ObjectNode) prefsNode).remove(ffEffectKey);
+                        } else {
+                            ((ObjectNode) prefsNode).put(ffEffectKey, LocalizedEnum.fromBaseStr(Enums.Effect.class, prefsNode.get(ffEffectKey).asText()).getI18n());
+                        }
                     }
                     body = CommonUtility.JSON_MAPPER.writeValueAsString(prefsNode);
                 }
