@@ -401,6 +401,10 @@ function collectPayload() {
             });
         }
     });
+    if (payload.outputDevice && payload.staticGlowWormIp && payload.staticGlowWormIp !== 'Auto' && payload.staticGlowWormIp !== '-') {
+        payload.outputDevice = '-';
+    }
+    payload.colorChooser = lastColor.r + ',' + lastColor.g + ',' + lastColor.b + ',255';
     return payload;
 }
 
@@ -416,10 +420,6 @@ function saveForm() {
         console.error('collectPayload failed', e);
         return;
     }
-    if (payload.outputDevice && payload.staticGlowWormIp && payload.staticGlowWormIp !== 'Auto' && payload.staticGlowWormIp !== '-') {
-        payload.outputDevice = '-';
-    }
-    payload.colorChooser = '255,' + lastColor.g + ',' + lastColor.b + ',255';
     var body = JSON.stringify(payload);
     console.log('saveForm POST setConfig, body length', body.length);
     fetch('setConfig', {

@@ -158,13 +158,67 @@ public class ConfigServer {
     }
 
     /**
-     * Handle POST /addProfile?name=<profile>, copying the current in-use configuration into a new profile file.
+     * Handle POST /addProfile?name=<profile>, taking a JSON payload with configuration parameters
+     * (the same payload sent by the "Save Settings" button), merging it into the saved configuration
+     * and persisting it into the new profile file. No restart is triggered: the profile is created
+     * but not activated.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
      */
     private void handleAddProfile(HttpExchange exchange) throws IOException {
-        profileHandler.handleAddProfile(exchange);
+        String name = exchange.getRequestURI().getQuery();
+        String profileName = null;
+        if (name != null) {
+            for (String pair : name.split("&")) {
+                int eq = pair.indexOf('=');
+                if (eq > 0 && pair.substring(0, eq).equals("name")) {
+                    profileName = pair.substring(eq + 1);
+                }
+            }
+        }
+        if (profileName == null || profileName.isEmpty()) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or empty name parameter");
+            return;
+        }
+        JsonNode payload;
+        try (InputStream requestBody = exchange.getRequestBody()) {
+            payload = CommonUtility.JSON_MAPPER.readTree(requestBody);
+        } catch (IOException e) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            return;
+        }
+        if (payload == null || payload.isNull() || !payload.isObject()) {
+            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Payload must be a JSON object");
+            return;
+        }
+        Configuration savedConfig = storageManager.readProfileInUseConfig();
+        if (savedConfig == null) {
+            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
+            return;
+        }
+        ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(savedConfig);
+        mergePayload(payload, configTree);
+        Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
+        if (updatedConfig.ledMatrixParamsChanged(savedConfig)) {
+            updatedConfig.regenerateLedMatrix();
+        }
+        updatedConfig.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, updatedConfig.getEffect()).getBaseI18n());
+        int whoAmI = MainSingleton.getInstance().whoAmI;
+        String filename;
+        if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            filename = whoAmI == 2 ? Constants.CONFIG_FILENAME_2 : whoAmI == 3 ? Constants.CONFIG_FILENAME_3 : Constants.CONFIG_FILENAME;
+        } else {
+            filename = whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+        }
+        try {
+            storageManager.writeConfig(updatedConfig, filename);
+        } catch (IOException e) {
+            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save profile: " + e.getMessage());
+            return;
+        }
+        log.info("Profile created via addProfile endpoint: {}", filename);
+        sendOkJson(exchange);
     }
 
     /**

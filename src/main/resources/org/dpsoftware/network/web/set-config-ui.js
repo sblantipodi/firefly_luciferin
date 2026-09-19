@@ -80,7 +80,20 @@ function addProfile() {
         showToast('Enter a profile name', 'bg-warning text-dark');
         return;
     }
-    fetch('addProfile?name=' + encodeURIComponent(name), {method: 'POST'}).then(function (r) {
+    var payload;
+    try {
+        payload = collectPayload();
+    } catch (e) {
+        showToast('Collect error: ' + e.message, 'bg-danger text-white');
+        console.error('collectPayload failed', e);
+        return;
+    }
+    var body = JSON.stringify(payload);
+    fetch('addProfile?name=' + encodeURIComponent(name), {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: body
+    }).then(function (r) {
         if (!r.ok) {
             return r.text().then(function (t) {
                 throw new Error(t || r.statusText);
