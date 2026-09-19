@@ -10,11 +10,7 @@ function notifyComboChange(name, value) {
 function wireSelectChangeListeners() {
     document.querySelectorAll('select').forEach(function (el) {
         el.addEventListener('change', function () {
-            var value = el.value;
-            if (el.id === 'effect') {
-                value = effectValueToEnglish(value);
-            }
-            notifyComboChange(el.id, value);
+            notifyComboChange(el.id, el.value);
         });
     });
     var toggleLed = document.getElementById('toggleLed');
