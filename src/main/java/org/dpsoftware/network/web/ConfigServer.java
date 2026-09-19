@@ -289,6 +289,7 @@ public class ConfigServer {
                 server.createContext(Constants.SET_CONFIG_CORE_JS_ENDPOINT, withGuard(webResourceServer::handleSetConfigPageJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_DEVICE_JS_ENDPOINT, withGuard(webResourceServer::handleSetConfigPageJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_UI_JS_ENDPOINT, withGuard(webResourceServer::handleSetConfigPageJs, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_CSS_ENDPOINT, withGuard(webResourceServer::handleSetConfigCss, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(deviceEndpointHandler::handleDevicePrefs, GET_METHOD));
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));

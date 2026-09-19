@@ -23,10 +23,10 @@ function wireSelectChangeListeners() {
 
 function showToast(message, contextClass) {
     if (!document.getElementById('toastContainer')) {
-        document.body.insertAdjacentHTML('beforeend', '<div id="toastContainer" style="position:relative;"><div style="position:absolute;top:0;right:0;"></div></div>');
+        document.body.insertAdjacentHTML('beforeend', '<div id="toastContainer"><div></div></div>');
     }
     var container = document.getElementById('toastContainer').children[0];
-    container.insertAdjacentHTML('beforeend', '<div class="toast ' + contextClass + '" role="alert" aria-live="assertive" aria-atomic="true" style="position:fixed;bottom:10px;right:10px;z-index:1051;"><div class="toast-body">' + message + '</div></div>');
+    container.insertAdjacentHTML('beforeend', '<div class="toast ' + contextClass + '" role="alert" aria-live="assertive" aria-atomic="true"><div class="toast-body">' + message + '</div></div>');
     $($(container.lastElementChild)).toast('show');
 }
 
@@ -95,20 +95,8 @@ function setLivePreview(on) {
     livePreviewOn = on;
     var btn = document.getElementById('showLivePreview');
     if (btn) {
-        if (on) {
-            btn.textContent = 'Hide Live Preview';
-            btn.classList.remove('btn-outline-success');
-            btn.style.backgroundColor = '#28a745';
-            btn.style.border = '0';
-            btn.style.color = '#fff';
-            btn.style.fontWeight = 'bold';
-        } else {
-            btn.textContent = 'Show Live Preview';
-            btn.style.backgroundColor = 'lightgrey';
-            btn.style.border = '0';
-            btn.style.color = '#fff';
-            btn.style.fontWeight = 'bold';
-        }
+        btn.textContent = on ? 'Hide Live Preview' : 'Show Live Preview';
+        btn.classList.toggle('active', on);
     }
     var img = document.getElementById('screenshot');
     if (img) {

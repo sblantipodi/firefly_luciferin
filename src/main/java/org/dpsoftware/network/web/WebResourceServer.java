@@ -51,6 +51,7 @@ public class WebResourceServer {
     private static final String SET_CONFIG_CORE_JS_RESOURCE = "setConfig-core.js";
     private static final String SET_CONFIG_DEVICE_JS_RESOURCE = "setConfig-device.js";
     private static final String SET_CONFIG_UI_JS_RESOURCE = "setConfig-ui.js";
+    private static final String SET_CONFIG_CSS_RESOURCE = "setConfig.css";
 
     /**
      * Handle GET /setConfigPage, serving the minimal HTML page that hosts the settings form.
@@ -63,10 +64,20 @@ public class WebResourceServer {
     }
 
     /**
+     * Handle GET /setConfig.css, serving the settings page stylesheet.
+     *
+     * @param exchange the HTTP exchange to send the response on
+     * @throws IOException when the response cannot be written
+     */
+    public void handleSetConfigCss(HttpExchange exchange) throws IOException {
+        sendResource(exchange, SET_CONFIG_CSS_RESOURCE, "text/css; charset=utf-8");
+    }
+
+    /**
      * Handle GET requests for the settings page JavaScript files.
      * Serves setConfig.js, setConfig-core.js, setConfig-device.js, setConfig-ui.js.
      *
-     * @param exchange the HTTP exchange containing the request and response
+     * @param exchange the HTTP exchange to send the response on
      * @throws IOException when the response cannot be written
      */
     public void handleSetConfigPageJs(HttpExchange exchange) throws IOException {
@@ -97,6 +108,8 @@ public class WebResourceServer {
             handleSetConfigPage(exchange);
         } else if (path.endsWith(".js")) {
             handleSetConfigPageJs(exchange);
+        } else if (path.endsWith(".css")) {
+            handleSetConfigCss(exchange);
         } else {
             byte[] responseBytes = ("Not found: " + path).getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");

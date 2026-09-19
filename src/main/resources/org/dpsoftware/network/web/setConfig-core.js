@@ -283,8 +283,8 @@ function buildForm() {
     });
     html += buildProfilesAccordion();
     html += '</div>';
-    html += '<div class="text-center py-2"><button type="button" id="showLivePreview" class="btn btn-sm" style="background-color:lightgrey;border:0;color:#fff;font-weight:bold">Show Live Preview</button></div>';
-    html += '<div class="text-center py-2"><img id="screenshot" alt="Captured frame (TRACE)" style="max-width:100%;border:1px solid #ccc;display:none"></div>';
+    html += '<div class="text-center py-2"><button type="button" id="showLivePreview" class="btn btn-sm">Show Live Preview</button></div>';
+    html += '<div class="text-center py-2"><img id="screenshot" alt="Captured frame (TRACE)"></div>';
     html += '<div class="mt-3"><button type="button" class="btn btn-orange w-100" onclick="saveForm()"> SAVE SETTINGS</button></div>';
     html += '<div class="text-center text-muted py-3"><span id="fpsCounter"></span></div></form></div></div>';
     $('.container-fluid + .container').html(html);
