@@ -43,15 +43,15 @@ public class WebResourceServer {
     /**
      * Settings web page resource, co-located in this package.
      */
-    private static final String SET_CONFIG_PAGE_RESOURCE = "setConfig.html";
+    private static final String SET_CONFIG_PAGE_RESOURCE = "set-config.html";
     /**
      * Settings page JavaScript resource, co-located in this package.
      */
-    private static final String SET_CONFIG_PAGE_JS_RESOURCE = "setConfig.js";
-    private static final String SET_CONFIG_CORE_JS_RESOURCE = "setConfig-core.js";
-    private static final String SET_CONFIG_DEVICE_JS_RESOURCE = "setConfig-device.js";
-    private static final String SET_CONFIG_UI_JS_RESOURCE = "setConfig-ui.js";
-    private static final String SET_CONFIG_CSS_RESOURCE = "setConfig.css";
+    private static final String SET_CONFIG_PAGE_JS_RESOURCE = "set-config.js";
+    private static final String SET_CONFIG_CORE_JS_RESOURCE = "set-config-core.js";
+    private static final String SET_CONFIG_DEVICE_JS_RESOURCE = "set-config-device.js";
+    private static final String SET_CONFIG_UI_JS_RESOURCE = "set-config-ui.js";
+    private static final String SET_CONFIG_CSS_RESOURCE = "set-config.css";
 
     /**
      * Handle GET /setConfigPage, serving the minimal HTML page that hosts the settings form.
@@ -83,11 +83,11 @@ public class WebResourceServer {
     public void handleSetConfigPageJs(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String resource;
-        if (path.endsWith("setConfig-core.js")) {
+        if (path.endsWith("set-config-core.js")) {
             resource = SET_CONFIG_CORE_JS_RESOURCE;
-        } else if (path.endsWith("setConfig-device.js")) {
+        } else if (path.endsWith("set-config-device.js")) {
             resource = SET_CONFIG_DEVICE_JS_RESOURCE;
-        } else if (path.endsWith("setConfig-ui.js")) {
+        } else if (path.endsWith("set-config-ui.js")) {
             resource = SET_CONFIG_UI_JS_RESOURCE;
         } else {
             resource = SET_CONFIG_PAGE_JS_RESOURCE;
