@@ -25,6 +25,36 @@
     margin: 2rem 1rem;
 }
 
+body.server-down {
+    filter: grayscale(1);
+    pointer-events: none;
+}
+
+.offline-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.offline-overlay.show {
+    display: flex;
+}
+
+.offline-overlay-content {
+    background: #343a40;
+    color: #fff;
+    padding: 1.5rem 2.5rem;
+    border-radius: 0.5rem;
+    font-size: 1.25rem;
+}
+
 /* Save button color, not provided by Bootstrap. */
 .btn-orange {
     background-color: orange;
