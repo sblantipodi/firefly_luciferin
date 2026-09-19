@@ -399,10 +399,13 @@ public class FireflyLuciferin extends Application {
      * During the PC startup Firefly Luciferin starts, if it starts before that the network connection is established,
      * MQTT fails to connect, retry until we get a solid connection to the MQTT server.
      */
+    @SuppressWarnings("all")
     private void connectToMqttServer() {
         AtomicInteger retryCounter = new AtomicInteger();
         networkManager = new NetworkManager(false, retryCounter);
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        // The executor is intentionally not closed here: it runs a periodic MQTT retry task that self terminates
+        // via shutdown() when the connection is established. Using try with resources would close it immediately.
         executor.scheduleAtFixedRate(() -> {
             if (!networkManager.connected) {
                 log.info("MQTT retry");
