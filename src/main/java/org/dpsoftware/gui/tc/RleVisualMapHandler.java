@@ -117,13 +117,23 @@ public class RleVisualMapHandler {
     }
 
     /**
-     * Enter overlay-only mode: a periodic animation redraws only the RLE overlay on a black background.
+     * Enter overlay only mode: a periodic animation redraws only the RLE overlay on a black background.
      */
     public void startOverlayOnlyMode() {
         int minSpeed = Integer.parseInt(Constants.DEFAULT_FRAMERATE);
+        // On Linux, leaving full screen while the window is mapped lets the window manager restore its previous bounds
+        // over the panel position. Unmap it first and show it again only after configuring the overlay.
+        boolean remapStage = NativeExecutor.isLinux() && tc.getStage().isFullScreen() && tc.getStage().isShowing();
+        if (remapStage) {
+            tc.getStage().hide();
+            tc.getStage().setFullScreen(false);
+        }
         rleOverlayOnlyMode = true;
         updateStageBounds();
         tc.getStage().setAlwaysOnTop(true);
+        if (remapStage) {
+            tc.getStage().show();
+        }
         tc.getStage().toFront();
         if (rleOverlayAnimation != null) {
             rleOverlayAnimation.stop();
