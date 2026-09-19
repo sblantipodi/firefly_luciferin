@@ -260,7 +260,7 @@ public class WebRtcStreamer {
      * while converting GStreamer's parse error when the optional gstreamer1.0-nice package is
      * missing.
      *
-     * @return {@code true} when the local GStreamer installation can create a WebRTC pipeline
+     * @return true when the required WebRTC/NICE factories are registered
      */
     public boolean isSupported() {
         Boolean available = supported;
@@ -268,22 +268,26 @@ public class WebRtcStreamer {
             synchronized (this) {
                 available = supported;
                 if (available == null) {
-                    try {
-                        available = ElementFactory.find("webrtcbin") != null
-                                && ElementFactory.find("nicesrc") != null
-                                && ElementFactory.find("nicesink") != null;
-                    } catch (RuntimeException e) {
-                        // gst1-java can throw while wrapping a missing optional factory. This is an expected
-                        // capability check failure, never a reason to abort the HTTP request or the capture pipeline.
-                        available = false;
-                        log.debug("Unable to inspect WebRTC/NICE GStreamer factories: {}", e.toString());
+                    available = true;
+                    for (String factoryName : new String[]{"webrtcbin", "nicesrc", "nicesink"}) {
+                        try {
+                            if (ElementFactory.find(factoryName) == null) {
+                                available = false;
+                                log.info("Required GStreamer factory '{}' is unavailable", factoryName);
+                            }
+                        } catch (RuntimeException e) {
+                            // gst1-java can throw while wrapping a missing optional factory. Report the failing factory without assuming that the NICE plugin is missing.
+                            available = false;
+                            log.info("Unable to inspect required GStreamer factory '{}': {}", factoryName, e.toString());
+                            log.debug("GStreamer factory inspection failed for '{}'", factoryName, e);
+                        }
                     }
                     supported = available;
                 }
             }
         }
         if (!available && unsupportedLogged.compareAndSet(false, true)) {
-            log.info("WebRTC live preview is unavailable because the GStreamer NICE plugin is missing; using the image live preview instead");
+            log.info("WebRTC live preview is unavailable because required GStreamer factories are missing or could not be inspected; using the image live preview instead");
         }
         return available;
     }
