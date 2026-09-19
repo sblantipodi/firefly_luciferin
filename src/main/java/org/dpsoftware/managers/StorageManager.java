@@ -500,6 +500,54 @@ public class StorageManager {
     }
 
     /**
+     * Read the ProfileInUse file if it exists and return the profile name.
+     *
+     * @return the profile name read from the file, or null if the file doesn't exist or is empty
+     */
+    public static String readProfileInUseFile() {
+        try {
+            File profileInUseFile = new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.PROFILE_IN_USE_FILENAME);
+            if (profileInUseFile.exists()) {
+                String profileName = java.nio.file.Files.readString(profileInUseFile.toPath()).trim();
+                if (!profileName.isEmpty()) {
+                    log.debug("Using profile from ProfileInUse file: {}", profileName);
+                    return profileName;
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Failed to read ProfileInUse file: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Write the profile name to a plain text file inside the configuration path.
+     *
+     * @param profileName profile name to write
+     */
+    public void writeProfileInUseFile(String profileName) {
+        if (profileName != null && !profileName.isEmpty()) profileName = profileName.replace("\"", "");
+        try {
+            Path file = Paths.get(path, Constants.PROFILE_IN_USE_FILENAME);
+            Files.writeString(file, profileName, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+        } catch (IOException e) {
+            log.error("Failed to write profile in use file: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Delete the profile in use file.
+     */
+    public void deleteProfileInUseFile() {
+        try {
+            Path file = Paths.get(path, Constants.PROFILE_IN_USE_FILENAME);
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            log.error("Failed to delete profile in use file: {}", e.getMessage());
+        }
+    }
+
+    /**
      * In the programming realm, glob is a pattern with wildcards to match filenames.
      * Using glob patterns to filter a list of filenames for our example.
      * Using the popular wildcards “*” and “?”.
@@ -563,6 +611,7 @@ public class StorageManager {
                 File fileToDelete = new File(path + File.separator + tempFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();
             }
+            deleteProfileInUseFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

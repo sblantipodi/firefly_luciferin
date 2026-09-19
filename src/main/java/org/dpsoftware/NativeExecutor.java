@@ -34,6 +34,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
@@ -185,12 +186,16 @@ public final class NativeExecutor {
      * @param profileToUse restart with active profile if any
      */
     public static void restartNativeInstance(String profileToUse) {
+        MainSingleton main = MainSingleton.getInstance();
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
-            MainSingleton main = MainSingleton.getInstance();
             List<String> execCommand = new ArrayList<>();
             restartCmd(execCommand);
             execCommand.add(String.valueOf(main.whoAmI));
-            execCommand.add(profileToUse != null ? profileToUse : main.profileArg);
+            String effectiveProfile = profileToUse != null ? profileToUse : main.profileArg;
+            execCommand.add(effectiveProfile);
+            if (main.isHeadlessMode()) {
+                writeProfileFile(effectiveProfile);
+            }
             if (main.isHeadlessMode()) {
                 execCommand.add(Constants.HEADLESS_ARG);
             }
@@ -209,6 +214,17 @@ public final class NativeExecutor {
      */
     public static void restartNativeInstanceWithCurrentProfile() {
         NativeExecutor.restartNativeInstance(MainSingleton.getInstance().profileArg);
+    }
+
+    /**
+     * Writes the active profile name to a file if certain conditions are met.
+     *
+     * @param profileToUse write profilename to file, useful for systemctl restart
+     */
+    private static void writeProfileFile(String profileToUse) {
+        if (profileToUse != null && !profileToUse.isEmpty() && !Constants.DEFAULT.equals(profileToUse) && !CommonUtility.getWord(Constants.DEFAULT).equals(profileToUse)) {
+            new StorageManager().writeProfileInUseFile(profileToUse);
+        }
     }
 
     /**

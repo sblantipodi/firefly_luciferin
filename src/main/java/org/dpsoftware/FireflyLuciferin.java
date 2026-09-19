@@ -218,6 +218,11 @@ public class FireflyLuciferin extends Application {
         if (args != null && args.length > 1) {
             main.profileArg = args[1];
         }
+        String profileFromFile = StorageManager.readProfileInUseFile();
+        if (profileFromFile != null) {
+            log.debug("ProfileInUse file found, activating profile: {}", profileFromFile);
+            main.profileArg = profileFromFile;
+        }
     }
 
     /**
