@@ -174,7 +174,31 @@ public class FireflyLuciferin extends Application {
      */
     public static void main(String[] args) {
         MainSingleton main = MainSingleton.getInstance();
-        if (args != null && args.length > 0 && args[0] != null && args[0].equals(Constants.RESTART_DELAY)) {
+        manageStartupArgs(main, args);
+        moveToStandardDocsFolder();
+        NativeExecutor.createStartWMClass();
+        StorageManager sm = new StorageManager();
+        sm.deleteTempFiles();
+        launch(Objects.requireNonNull(args));
+    }
+
+    /**
+     * Parse the startup arguments and apply the related side effects:
+     * a single {@code -h} argument starts instance #1 with the default profile in headless mode,
+     * {@code RESTART_DELAY} as first arg is stripped and a delay is applied,
+     * {@code -h} as third arg enables headless mode,
+     * {@code args[0]} is the instance number ({@code whoAmI}) and disables instance spawning,
+     * {@code args[1]} is the profile to use, defaults to the default profile.
+     *
+     * @param main MainSingleton to set the parsed values on
+     * @param args startup arguments
+     */
+    static void manageStartupArgs(MainSingleton main, String[] args) {
+        if (args != null && args.length == 1 && Constants.HEADLESS_ARG.equals(args[0])) {
+            // Launched with a single -h: start instance #1 with the default profile, headless.
+            args = new String[]{"1", Constants.DEFAULT, Constants.HEADLESS_ARG};
+        }
+        if (args != null && args.length > 0 && Constants.RESTART_DELAY.equals(args[0])) {
             String[] newArray = new String[args.length - 1];
             System.arraycopy(args, 1, newArray, 0, newArray.length);
             args = newArray;
@@ -185,7 +209,6 @@ public class FireflyLuciferin extends Application {
             main.setHeadlessMode(true);
             System.setProperty("glass.platform", "Headless");
         }
-        moveToStandardDocsFolder();
         if (args != null && args.length > 0) {
             main.whoAmI = Integer.parseInt(args[0]);
             main.spawnInstances = false;
@@ -195,10 +218,6 @@ public class FireflyLuciferin extends Application {
         if (args != null && args.length > 1) {
             main.profileArg = args[1];
         }
-        NativeExecutor.createStartWMClass();
-        StorageManager sm = new StorageManager();
-        sm.deleteTempFiles();
-        launch(args);
     }
 
     /**
