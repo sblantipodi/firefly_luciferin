@@ -147,66 +147,22 @@ public class LEDCoordinate {
     }
 
     /**
-     * Init LED Matrixes
+     * Initialize the full, letterbox and pillarbox LED matrices from the given info.
      *
-     * @param aspectRatio    aspect ratio in use
-     * @param ledMatrixInfo  infos used to create the LED matrix
-     * @param forceNewMatrix use a previously initialized matrix
-     * @return
+     * @param info LED matrix info
+     * @return map of aspect ratio to generated matrix
      */
-    @SuppressWarnings({"All"})
-    public LinkedHashMap<Integer, LEDCoordinate> initializeLedMatrix(Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo, boolean forceNewMatrix) {
-        LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        if (MainSingleton.getInstance().config != null && !forceNewMatrix) {
-            if (MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n()) != null && !MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n()).isEmpty()) {
-                defaultLedMatrix = MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n());
-                return defaultLedMatrix;
-            }
+    public static Map<Enums.AspectRatio, LinkedHashMap<Integer, LEDCoordinate>> initializeAllMatrices(LedMatrixInfo info) {
+        Map<Enums.AspectRatio, LinkedHashMap<Integer, LEDCoordinate>> result = new LinkedHashMap<>();
+        try {
+            LEDCoordinate instance = new LEDCoordinate();
+            result.put(Enums.AspectRatio.FULLSCREEN, instance.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, (LedMatrixInfo) info.clone()));
+            result.put(Enums.AspectRatio.LETTERBOX, instance.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, (LedMatrixInfo) info.clone()));
+            result.put(Enums.AspectRatio.PILLARBOX, instance.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, (LedMatrixInfo) info.clone()));
+        } catch (CloneNotSupportedException e) {
+            log.error("Unable to clone LED matrix info: {}", e.getMessage());
         }
-        // Store original values before grouping them
-        ledMatrixInfo.setBottomRightLedOriginal(ledMatrixInfo.getBottomRightLed());
-        ledMatrixInfo.setRightLedOriginal(ledMatrixInfo.getRightLed());
-        ledMatrixInfo.setTopLedOriginal(ledMatrixInfo.getTopLed());
-        ledMatrixInfo.setLeftLedOriginal(ledMatrixInfo.getLeftLed());
-        ledMatrixInfo.setBottomLeftLedOriginal(ledMatrixInfo.getBottomLeftLed());
-        ledMatrixInfo.setBottomRowLedOriginal(ledMatrixInfo.getBottomRowLed());
-        CommonUtility.groupByCalc(ledMatrixInfo);
-        // Group default values
-        ledMatrixInfo.setBottomRightLed((int) Math.ceil(ledMatrixInfo.getBottomRightLed() / ledMatrixInfo.getGroupBy()));
-        ledMatrixInfo.setRightLed((int) Math.ceil(ledMatrixInfo.getRightLed() / ledMatrixInfo.getGroupBy()));
-        ledMatrixInfo.setTopLed((int) Math.ceil(ledMatrixInfo.getTopLed() / ledMatrixInfo.getGroupBy()));
-        ledMatrixInfo.setLeftLed((int) Math.ceil(ledMatrixInfo.getLeftLed() / ledMatrixInfo.getGroupBy()));
-        ledMatrixInfo.setBottomLeftLed((int) Math.ceil(ledMatrixInfo.getBottomLeftLed() / ledMatrixInfo.getGroupBy()));
-        ledMatrixInfo.setBottomRowLed((int) Math.ceil(ledMatrixInfo.getBottomRowLed() / ledMatrixInfo.getGroupBy()));
-        // Aspect ratio
-        var ledNum = 0;
-        if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
-            ledMatrixInfo.setLetterboxBorder(ledMatrixInfo.getScreenHeight() / Constants.LETTERBOX_RATIO);
-        } else if (aspectRatio == Enums.AspectRatio.PILLARBOX) {
-            ledMatrixInfo.setPillarboxBorder(calculateBorders(ledMatrixInfo.getScreenWidth(), ledMatrixInfo.getScreenHeight()));
-        }
-        ledMatrixInfo.setScreenWidth(ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getPillarboxBorder() * 2));
-        ledMatrixInfo.setScreenHeight(ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getLetterboxBorder() * 2));
-        ledMatrixInfo.setTopBottomAreaHeight((ledMatrixInfo.getScreenHeight() * Integer.parseInt(ledMatrixInfo.getGrabberTopBottom().replace(Constants.PERCENT, ""))) / 100);
-        ledMatrixInfo.setSideAreaWidth((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getGrabberSide().replace(Constants.PERCENT, ""))) / 100);
-        ledMatrixInfo.setSplitBottomMargin((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getSplitBottomRow().replace(Constants.PERCENT, ""))) / 100);
-        ledMatrixInfo.setCornerGapTopBottom((ledMatrixInfo.getScreenHeight() * Integer.parseInt(ledMatrixInfo.getGapTypeTopBottom().replace(Constants.PERCENT, ""))) / 100);
-        ledMatrixInfo.setCornerGapSide((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getGapTypeSide().replace(Constants.PERCENT, ""))) / 100);
-        if (ledMatrixInfo.getBottomRightLed() > 0 && CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
-            ledMatrixInfo.setBottomLedDistance((((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin()) / 2) / ledMatrixInfo.getBottomRightLed());
-        } else if (ledMatrixInfo.getBottomRowLed() > 0 && !CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
-            ledMatrixInfo.setBottomLedDistance((((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin())) / ledMatrixInfo.getBottomRowLed());
-        }
-        if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
-            ledNum = bottomRightLed(defaultLedMatrix, ledMatrixInfo, ledNum);
-        } else {
-            ledNum = bottomLed(defaultLedMatrix, ledMatrixInfo, ledNum);
-        }
-        ledNum = rightLed(defaultLedMatrix, ledMatrixInfo, ledNum);
-        ledNum = topLed(defaultLedMatrix, ledMatrixInfo, ledNum);
-        ledNum = leftLed(defaultLedMatrix, ledMatrixInfo, ledNum);
-        bottomLeft(defaultLedMatrix, ledMatrixInfo, ledNum);
-        return defaultLedMatrix;
+        return result;
     }
 
     /**
@@ -402,6 +358,62 @@ public class LEDCoordinate {
      * @param end   zone where satellite ends
      */
     public record getStartEndLeds(int start, int end) {
+    }
+
+    /**
+     * Init LED Matrixes
+     *
+     * @param aspectRatio   aspect ratio in use
+     * @param ledMatrixInfo infos used to create the LED matrix
+     * @return
+     */
+    @SuppressWarnings({"All"})
+    public LinkedHashMap<Integer, LEDCoordinate> initializeLedMatrix(Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
+        LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
+        // Store original values before grouping them
+        ledMatrixInfo.setBottomRightLedOriginal(ledMatrixInfo.getBottomRightLed());
+        ledMatrixInfo.setRightLedOriginal(ledMatrixInfo.getRightLed());
+        ledMatrixInfo.setTopLedOriginal(ledMatrixInfo.getTopLed());
+        ledMatrixInfo.setLeftLedOriginal(ledMatrixInfo.getLeftLed());
+        ledMatrixInfo.setBottomLeftLedOriginal(ledMatrixInfo.getBottomLeftLed());
+        ledMatrixInfo.setBottomRowLedOriginal(ledMatrixInfo.getBottomRowLed());
+        CommonUtility.groupByCalc(ledMatrixInfo);
+        // Group default values
+        ledMatrixInfo.setBottomRightLed((int) Math.ceil(ledMatrixInfo.getBottomRightLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setRightLed((int) Math.ceil(ledMatrixInfo.getRightLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setTopLed((int) Math.ceil(ledMatrixInfo.getTopLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setLeftLed((int) Math.ceil(ledMatrixInfo.getLeftLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setBottomLeftLed((int) Math.ceil(ledMatrixInfo.getBottomLeftLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setBottomRowLed((int) Math.ceil(ledMatrixInfo.getBottomRowLed() / ledMatrixInfo.getGroupBy()));
+        // Aspect ratio
+        var ledNum = 0;
+        if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
+            ledMatrixInfo.setLetterboxBorder(ledMatrixInfo.getScreenHeight() / Constants.LETTERBOX_RATIO);
+        } else if (aspectRatio == Enums.AspectRatio.PILLARBOX) {
+            ledMatrixInfo.setPillarboxBorder(calculateBorders(ledMatrixInfo.getScreenWidth(), ledMatrixInfo.getScreenHeight()));
+        }
+        ledMatrixInfo.setScreenWidth(ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getPillarboxBorder() * 2));
+        ledMatrixInfo.setScreenHeight(ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getLetterboxBorder() * 2));
+        ledMatrixInfo.setTopBottomAreaHeight((ledMatrixInfo.getScreenHeight() * Integer.parseInt(ledMatrixInfo.getGrabberTopBottom().replace(Constants.PERCENT, ""))) / 100);
+        ledMatrixInfo.setSideAreaWidth((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getGrabberSide().replace(Constants.PERCENT, ""))) / 100);
+        ledMatrixInfo.setSplitBottomMargin((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getSplitBottomRow().replace(Constants.PERCENT, ""))) / 100);
+        ledMatrixInfo.setCornerGapTopBottom((ledMatrixInfo.getScreenHeight() * Integer.parseInt(ledMatrixInfo.getGapTypeTopBottom().replace(Constants.PERCENT, ""))) / 100);
+        ledMatrixInfo.setCornerGapSide((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getGapTypeSide().replace(Constants.PERCENT, ""))) / 100);
+        if (ledMatrixInfo.getBottomRightLed() > 0 && CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
+            ledMatrixInfo.setBottomLedDistance((((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin()) / 2) / ledMatrixInfo.getBottomRightLed());
+        } else if (ledMatrixInfo.getBottomRowLed() > 0 && !CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
+            ledMatrixInfo.setBottomLedDistance((((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin())) / ledMatrixInfo.getBottomRowLed());
+        }
+        if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
+            ledNum = bottomRightLed(defaultLedMatrix, ledMatrixInfo, ledNum);
+        } else {
+            ledNum = bottomLed(defaultLedMatrix, ledMatrixInfo, ledNum);
+        }
+        ledNum = rightLed(defaultLedMatrix, ledMatrixInfo, ledNum);
+        ledNum = topLed(defaultLedMatrix, ledMatrixInfo, ledNum);
+        ledNum = leftLed(defaultLedMatrix, ledMatrixInfo, ledNum);
+        bottomLeft(defaultLedMatrix, ledMatrixInfo, ledNum);
+        return defaultLedMatrix;
     }
 
 }
