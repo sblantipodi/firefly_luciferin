@@ -25,6 +25,7 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.gui.GuiSingleton;
@@ -46,7 +47,7 @@ import java.nio.file.Files;
 public class LivePreviewWebHandler {
 
     private static final boolean FORCE_IMAGE_LIVE_PREVIEW = Boolean.parseBoolean( // Forces image preview.
-            System.getenv("LUCIFERIN_LIVE_PREVIEW_IMAGE"));
+            System.getenv(EnvConstants.LUCIFERIN_LIVE_PREVIEW_IMAGE));
     private static final String JSON_OK = "{\"status\":\"OK\"}";
     private static final String JSON_IMAGE_PREVIEW = "{\"status\":\"OK\",\"livePreviewMode\":\"image\"}";
     private static final String JSON_WEBRTC_PREVIEW = "{\"status\":\"OK\",\"livePreviewMode\":\"webrtc\"}";

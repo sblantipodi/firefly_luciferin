@@ -32,6 +32,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
@@ -1056,11 +1057,11 @@ public class ImageProcessor {
         if (NativeExecutor.isWindows()) {
             try {
                 Kernel32 k32 = Kernel32.INSTANCE;
-                String path = System.getenv(Constants.PATH);
+                String path = System.getenv(EnvConstants.PATH);
                 if (path == null || path.trim().isEmpty()) {
-                    k32.SetEnvironmentVariable(Constants.PATH, libPath);
+                    k32.SetEnvironmentVariable(EnvConstants.PATH, libPath);
                 } else {
-                    k32.SetEnvironmentVariable(Constants.PATH, libPath + File.pathSeparator + path);
+                    k32.SetEnvironmentVariable(EnvConstants.PATH, libPath + File.pathSeparator + path);
                 }
                 return;
             } catch (Throwable e) {
@@ -1078,18 +1079,18 @@ public class ImageProcessor {
             }
         } else if (NativeExecutor.isLinux() && MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
             try {
-                if (System.getenv(Constants.GST_GL_WINDOW) == null) {
+                if (System.getenv(EnvConstants.GST_GL_WINDOW) == null) {
                     if (MainSingleton.getInstance().isHeadlessMode()) {
-                        LinuxLibC.INSTANCE.setenv(Constants.GST_GL_WINDOW, Constants.SURFACELESS, 0);
+                        LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_WINDOW, Constants.SURFACELESS, 0);
                     } else {
-                        LinuxLibC.INSTANCE.setenv(Constants.GST_GL_WINDOW, Constants.X11, 0);
+                        LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_WINDOW, Constants.X11, 0);
                     }
                 }
-                if (System.getenv(Constants.GST_GL_PLATFORM) == null) {
+                if (System.getenv(EnvConstants.GST_GL_PLATFORM) == null) {
                     if (MainSingleton.getInstance().isHeadlessMode()) {
-                        LinuxLibC.INSTANCE.setenv(Constants.GST_GL_PLATFORM, Constants.EGL, 0);
+                        LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_PLATFORM, Constants.EGL, 0);
                     } else {
-                        LinuxLibC.INSTANCE.setenv(Constants.GST_GL_PLATFORM, Constants.GLX, 0);
+                        LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_PLATFORM, Constants.GLX, 0);
                     }
                 }
             } catch (Throwable t) {
