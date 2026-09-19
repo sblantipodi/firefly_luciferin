@@ -34,7 +34,6 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
-import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -138,74 +137,10 @@ public class StorageManager {
 
     /**
      * Write params inside the configuration file
-     *
-     * @param config        file
+     * @param config file
      * @param forceFilename where to write the config
      * @throws IOException can't write to file
      */
-    /**
-     * Write the config files for the other monitors (2 and 3) when multi-monitor is enabled,
-     * regenerating the LED matrix for each monitor's real resolution/scaling.
-     * <p>
-     * Mirrors the GUI save behavior: the matrix is rebuilt from the monitor's actual
-     * resolution/scaling (via {@link DisplayManager}) when available, otherwise it is
-     * regenerated with the resolution/scaling values already in the config.
-     *
-     * @param config the configuration to base the per-monitor configs on
-     * @throws IOException when a config file cannot be written
-     */
-    public void writeOtherMonitorConfigs(Configuration config) throws IOException {
-        if (config.getMultiMonitor() < 2) {
-            return;
-        }
-        List<DisplayInfo> displayList = null;
-        try {
-            displayList = new DisplayManager().getDisplayList();
-        } catch (Exception e) {
-            log.warn("Unable to enumerate displays, regenerating multi-monitor matrices with config values: {}", e.getMessage());
-        }
-        if (config.getMultiMonitor() >= 2) {
-            writeSingleMonitorConfig(config, Constants.CONFIG_FILENAME_2, 22, 1, displayList);
-        }
-        if (config.getMultiMonitor() >= 3) {
-            writeSingleMonitorConfig(config, Constants.CONFIG_FILENAME_3, 23, 2, displayList);
-        }
-    }
-
-    /**
-     * Write a single per-monitor config, cloning the main config and adapting
-     * output device, monitor number, resolution and scaling to the target monitor.
-     *
-     * @param config      the main configuration to clone
-     * @param filename    the config filename to write
-     * @param comPort     the serial port to assign to this instance
-     * @param monitorNum  the monitor index (0-based) to use for resolution/scaling
-     * @param displayList the available displays, or null when they could not be enumerated
-     * @throws IOException when the config file cannot be written
-     */
-    private void writeSingleMonitorConfig(Configuration config, String filename, int comPort, int monitorNum, List<DisplayInfo> displayList) throws IOException {
-        Configuration tempConfiguration;
-        try {
-            tempConfiguration = (Configuration) config.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new IOException("Unable to clone configuration for monitor config", e);
-        }
-        if (tempConfiguration.isFullFirmware() && !tempConfiguration.isMqttEnable() && tempConfiguration.getMultiMonitor() > 1) {
-            tempConfiguration.setOutputDevice(Constants.SERIAL_PORT_AUTO);
-        } else {
-            tempConfiguration.setOutputDevice(Constants.SERIAL_PORT_COM + comPort);
-        }
-        tempConfiguration.setMonitorNumber(monitorNum);
-        if (displayList != null && monitorNum < displayList.size()) {
-            DisplayInfo screenInfo = displayList.get(monitorNum);
-            tempConfiguration.setScreenResX((int) (screenInfo.getWidth() * screenInfo.getScaleX()));
-            tempConfiguration.setScreenResY((int) (screenInfo.getHeight() * screenInfo.getScaleY()));
-            tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
-        }
-        tempConfiguration.regenerateLedMatrix();
-        writeConfig(tempConfiguration, filename);
-    }
-
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
         String filename;
         if (forceFilename != null) {

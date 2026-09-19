@@ -196,8 +196,6 @@ public class ConfigServer {
             // writeConfig pick the right file based on profileArg and whoAmI.
             updatedConfig.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, updatedConfig.getEffect()).getBaseI18n());
             storageManager.writeConfig(updatedConfig, null);
-            // Write the other monitor config files (multi-monitor) regenerating their matrices.
-            storageManager.writeOtherMonitorConfigs(updatedConfig);
         } catch (IOException e) {
             sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save configuration: " + e.getMessage());
             return;
