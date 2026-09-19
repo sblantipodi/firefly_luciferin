@@ -48,7 +48,6 @@ import java.util.jar.JarFile;
 @Slf4j
 public final class CubeLutToneMap {
 
-    private static final String CUBE_LUT_RESOURCE = "lut";
     private static final String CUBE_LUT_DIR = "cube_lut";
 
     /**
@@ -232,10 +231,10 @@ public final class CubeLutToneMap {
             return;
         }
         try {
-            // Resolve the LUT stream: classpath resource first, then the co-located
-            // file in the package (JPMS module mode, where the classloader does not
-            // resolve resources from the classpath), then the user config location.
-            String resourcePath = CUBE_LUT_RESOURCE + "/" + lutName;
+            // Resolve the LUT stream: classpath resource first, then the co-located file in the package, then the user config location.
+            // The classloader lookup must use an absolute path rooted at the package
+            // of this class (org/dpsoftware/lut); a path relative to the class would not resolve to the co located resource.
+            String resourcePath = "/" + CubeLutToneMap.class.getPackageName().replace('.', '/') + "/" + lutName;
             InputStream in = CubeLutToneMap.class.getResourceAsStream(resourcePath);
             if (in == null) {
                 File pkgFile = resolveCoLocatedLutFile(lutName);
