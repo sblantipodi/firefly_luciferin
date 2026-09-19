@@ -30,8 +30,10 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -111,8 +113,6 @@ public class StorageManager {
         }
     }
 
-
-
     /**
      * Copy file (FileInputStream) to GZIPOutputStream
      *
@@ -135,20 +135,26 @@ public class StorageManager {
 
     /**
      * Write params inside the configuration file
-     *
-     * @param config        file
+     * @param config file
      * @param forceFilename where to write the config
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
-        String filename = switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> Constants.CONFIG_FILENAME;
-            case 2 -> Constants.CONFIG_FILENAME_2;
-            case 3 -> Constants.CONFIG_FILENAME_3;
-            default -> "";
-        };
+        String filename;
         if (forceFilename != null) {
             filename = forceFilename;
+        } else if (MainSingleton.getInstance().profileArg != null
+                && !MainSingleton.getInstance().profileArg.isEmpty()
+                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)
+                && !CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)) {
+            filename = getProfileFileName(MainSingleton.getInstance().profileArg);
+        } else {
+            filename = switch (MainSingleton.getInstance().whoAmI) {
+                case 1 -> Constants.CONFIG_FILENAME;
+                case 2 -> Constants.CONFIG_FILENAME_2;
+                case 3 -> Constants.CONFIG_FILENAME_3;
+                default -> "";
+            };
         }
         Configuration currentConfig = readConfigFile(filename);
         if (currentConfig != null) {
@@ -265,6 +271,8 @@ public class StorageManager {
             if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
             if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
                 restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
+            if (!defaultConfig.getExtSrcFriendlyName().equals(profileConfig.getExtSrcFriendlyName()))
+                restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
                 restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
             if (profileConfig.getOutputDevice() != null && (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice())
@@ -326,13 +334,68 @@ public class StorageManager {
         if (config == null) {
             try {
                 MainSingleton.getInstance().guiManager = new GuiManager(false);
-                MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
-                config = readProfileInUseConfig();
-            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
-                     IllegalAccessException e) {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
+                    config = readProfileInUseConfig();
+                } else {
+                    config = setDefaultsForHeadlessMode();
+                }
+            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                log.error("Failed to create default configuration in headless mode", e);
                 throw new RuntimeException(e);
             }
         }
+        return config;
+    }
+
+    /**
+     * Set defaults for headless mode
+     */
+    private Configuration setDefaultsForHeadlessMode() throws IOException {
+        Configuration config;
+        log.info("No config file found in headless mode, creating default configuration");
+        Configuration defaultConfig = new Configuration();
+        defaultConfig.setLedMatrix(new LinkedHashMap<>());
+        defaultConfig.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+        defaultConfig.setTheme(Enums.Theme.CLASSIC.getBaseI18n());
+        defaultConfig.setCaptureMethod(Configuration.CaptureMethod.defaultForOs().name());
+        defaultConfig.setFullFirmware(true);
+        defaultConfig.setWirelessStream(true);
+        defaultConfig.setLanguage("English");
+        defaultConfig.setConfigVersion(MainSingleton.getInstance().version);
+        defaultConfig.setScreenResX(1920);
+        defaultConfig.setScreenResY(1080);
+        defaultConfig.setOsScaling(100);
+        defaultConfig.setNumberOfCPUThreads(1);
+        defaultConfig.setTopLed(10);
+        defaultConfig.setLeftLed(10);
+        defaultConfig.setRightLed(10);
+        defaultConfig.setBottomLeftLed(10);
+        defaultConfig.setBottomRightLed(10);
+        defaultConfig.setBottomRowLed(20);
+        defaultConfig.setBrightness(255);
+        defaultConfig.setColorChooser("255,82,0,255");
+        defaultConfig.setOrientation(Enums.Orientation.CLOCKWISE.getBaseI18n());
+        defaultConfig.setOutputDevice(Constants.SERIAL_PORT_AUTO);
+        defaultConfig.setStaticGlowWormIp(Constants.DASH);
+        defaultConfig.setMonitorNumber(0);
+        defaultConfig.setPowerSaving("30 minutes");
+        defaultConfig.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + Constants.DEFAULT_MQTT_HOST + ":" + Constants.DEFAULT_MQTT_PORT);
+        defaultConfig.setMqttTopic(Constants.MQTT_BASE_TOPIC);
+        defaultConfig.setSmoothingType(Enums.Smoothing.DISABLED.getBaseI18n());
+        defaultConfig.setFrameInsertionTarget(0);
+        defaultConfig.setEmaAlpha(0.0F);
+        if (defaultConfig.isFullFirmware()) {
+            defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_115200.getBaudRate());
+        } else {
+            defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_500000.getBaudRate());
+        }
+        defaultConfig.setHueMap(ColorCorrectionDialogController.initHSLMap());
+        defaultConfig.regenerateLedMatrix();
+        writeConfig(defaultConfig, null);
+        config = readProfileInUseConfig();
         return config;
     }
 
@@ -397,6 +460,7 @@ public class StorageManager {
         writeToStorage = configFileUpgrader.updatePrevious2237(config, writeToStorage); // Version <= 2.23.7
         writeToStorage = configFileUpgrader.updatePrevious2256(config, writeToStorage); // Version <= 2.25.6
         writeToStorage = configFileUpgrader.updatePrevious2284(config, writeToStorage); // Version <= 2.28.4
+        writeToStorage = configFileUpgrader.updatePrevious2295(config, writeToStorage); // Version <= 2.29.5
         return writeToStorage;
     }
 
@@ -433,6 +497,54 @@ public class StorageManager {
      */
     public String getProfileFileName(String profileName) {
         return MainSingleton.getInstance().whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+    }
+
+    /**
+     * Read the ProfileInUse file if it exists and return the profile name.
+     *
+     * @return the profile name read from the file, or null if the file doesn't exist or is empty
+     */
+    public static String readProfileInUseFile() {
+        try {
+            File profileInUseFile = new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.PROFILE_IN_USE_FILENAME);
+            if (profileInUseFile.exists()) {
+                String profileName = java.nio.file.Files.readString(profileInUseFile.toPath()).trim();
+                if (!profileName.isEmpty()) {
+                    log.debug("Using profile from ProfileInUse file: {}", profileName);
+                    return profileName;
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Failed to read ProfileInUse file: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Write the profile name to a plain text file inside the configuration path.
+     *
+     * @param profileName profile name to write
+     */
+    public void writeProfileInUseFile(String profileName) {
+        if (profileName != null && !profileName.isEmpty()) profileName = profileName.replace("\"", "");
+        try {
+            Path file = Paths.get(path, Constants.PROFILE_IN_USE_FILENAME);
+            Files.writeString(file, profileName, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+        } catch (IOException e) {
+            log.error("Failed to write profile in use file: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Delete the profile in use file.
+     */
+    public void deleteProfileInUseFile() {
+        try {
+            Path file = Paths.get(path, Constants.PROFILE_IN_USE_FILENAME);
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            log.error("Failed to delete profile in use file: {}", e.getMessage());
+        }
     }
 
     /**
@@ -492,14 +604,14 @@ public class StorageManager {
                 }
             }
             Path rootDir = Paths.get(path);
-            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
-            if (!firmwareFiles.isEmpty()) {
-                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
-            }
-            for (String firmwareFilename : firmwareFiles) {
-                File fileToDelete = new File(path + File.separator + firmwareFilename);
+            List<String> tempFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
+            tempFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            tempFiles.addAll(searchFilesWithWc(rootDir, Constants.SCREENSHOT_IMAGE_FILENAME_PATTERN));
+            for (String tempFilename : tempFiles) {
+                File fileToDelete = new File(path + File.separator + tempFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();
             }
+            deleteProfileInUseFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

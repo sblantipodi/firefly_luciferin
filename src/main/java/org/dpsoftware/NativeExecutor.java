@@ -34,6 +34,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
@@ -144,6 +145,10 @@ public final class NativeExecutor {
         }
         restartCmd(execCommand);
         execCommand.add(String.valueOf(whoAmISupposedToBe));
+        execCommand.add(MainSingleton.getInstance().profileArg);
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            execCommand.add(Constants.HEADLESS_ARG);
+        }
         log.info("Spawning new instance");
         runNative(execCommand.toArray(String[]::new), 0);
     }
@@ -181,18 +186,24 @@ public final class NativeExecutor {
      * @param profileToUse restart with active profile if any
      */
     public static void restartNativeInstance(String profileToUse) {
+        MainSingleton main = MainSingleton.getInstance();
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
             List<String> execCommand = new ArrayList<>();
             restartCmd(execCommand);
-            execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
-            if (profileToUse != null) {
-                execCommand.add(profileToUse);
+            execCommand.add(String.valueOf(main.whoAmI));
+            String effectiveProfile = profileToUse != null ? profileToUse : main.profileArg;
+            execCommand.add(effectiveProfile);
+            if (main.isHeadlessMode()) {
+                writeProfileFile(effectiveProfile);
+            }
+            if (main.isHeadlessMode()) {
+                execCommand.add(Constants.HEADLESS_ARG);
             }
             log.info("Restarting instance");
             log.debug("Restart command: {}", execCommand);
             runNative(execCommand.toArray(String[]::new), 0);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
-                MainSingleton.getInstance().restartOnly = true;
+                main.restartOnly = true;
             }
             NativeExecutor.exit();
         }
@@ -202,10 +213,17 @@ public final class NativeExecutor {
      * Restart a native instance of Luciferin
      */
     public static void restartNativeInstanceWithCurrentProfile() {
-        if (MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
-            NativeExecutor.restartNativeInstance();
-        } else {
-            NativeExecutor.restartNativeInstance(MainSingleton.getInstance().profileArg);
+        NativeExecutor.restartNativeInstance(MainSingleton.getInstance().profileArg);
+    }
+
+    /**
+     * Writes the active profile name to a file if certain conditions are met.
+     *
+     * @param profileToUse write profilename to file, useful for systemctl restart
+     */
+    private static void writeProfileFile(String profileToUse) {
+        if (profileToUse != null && !profileToUse.isEmpty() && !Constants.DEFAULT.equals(profileToUse) && !CommonUtility.getWord(Constants.DEFAULT).equals(profileToUse)) {
+            new StorageManager().writeProfileInUseFile(profileToUse);
         }
     }
 
@@ -272,7 +290,7 @@ public final class NativeExecutor {
      * @return if it's Wayland
      */
     public static boolean isWayland() {
-        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
+        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_CHK) != null && System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
     }
 
     /**
@@ -308,7 +326,7 @@ public final class NativeExecutor {
      * @return if it's Snap
      */
     public static boolean isSnap() {
-        return System.getenv(Constants.SNAP_NAME) != null;
+        return System.getenv(Constants.SNAP_NAME) != null && System.getenv(Constants.SNAP_NAME).equals("fireflyluciferin");
     }
 
 
@@ -339,10 +357,13 @@ public final class NativeExecutor {
     public static boolean isSystemTraySupported() {
         boolean supported = false;
         Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
-        if (MainSingleton.getInstance() != null
-                && MainSingleton.getInstance().config != null
-                && MainSingleton.getInstance().config.getTrayPreference() != null) {
-            trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+        if (MainSingleton.getInstance() != null) {
+            if (MainSingleton.getInstance().isHeadlessMode()) {
+                return false;
+            }
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getTrayPreference() != null) {
+                trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+            }
         }
         switch (trayPreference) {
             case AUTO ->
@@ -478,6 +499,30 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if HDR is active
+     */
+    public static boolean isHdrActive() {
+        if (isWindows()) {
+            try {
+                String baseKey = Constants.REGISTRY_HDR_KEY_PATH;
+                String[] subKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, baseKey);
+                for (String monitorKey : subKeys) {
+                    String fullKey = baseKey + "\\" + monitorKey;
+                    if (Advapi32Util.registryValueExists(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL)) {
+                        int hdrEnabled = Advapi32Util.registryGetIntValue(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL);
+                        if (hdrEnabled == 1) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("HDR registry check failed", e);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Single Instruction Multiple Data - Advanced Vector Extensions
      * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
      */
@@ -517,23 +562,27 @@ public final class NativeExecutor {
                 nightLightEnabled = true;
             }
         } else if (NativeExecutor.isLinux()) {
-            try {
-                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-                Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
-                if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
-                    nightLightEnabled = true;
+            try (DBusConnection connection = DBusConnectionBuilder.forSessionBus().build()) {
+                try {
+                    Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
+                    if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
+                        nightLightEnabled = true;
+                    }
+                } catch (Exception e) {
+                    log.debug("KDE nightlight DBus check failed", e);
                 }
-                connection.close();
-            } catch (Exception ignored) {
-            }
-            try {
-                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-                Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
-                if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
-                    nightLightEnabled = true;
+                if (!nightLightEnabled) {
+                    try {
+                        Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
+                        if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
+                            nightLightEnabled = true;
+                        }
+                    } catch (Exception e) {
+                        log.debug("GNOME nightlight DBus check failed", e);
+                    }
                 }
-                connection.close();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.debug("DBus session bus connection failed", e);
             }
         }
         return nightLightEnabled;

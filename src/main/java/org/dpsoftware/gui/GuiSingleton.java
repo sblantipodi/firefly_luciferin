@@ -57,7 +57,14 @@ public class GuiSingleton {
     public ObservableList<Satellite> satellitesTableData = FXCollections.observableArrayList();
     public boolean firmTypeFull = false;
     public boolean upgrade = false;
-    Stage colorDialog;
+    public boolean rleVisualMapVisible;
+    public Stage colorDialog;
+    // Last TestCanvas instance, reused across toggles to avoid repeatedly tearing down and re-creating JavaFX scenes
+    // (orphaned NGCanvas in the render graph + Prism texture pool exhaustion).
+    public TestCanvas testCanvas;
+    // Grabber manager instance, used to read the latest captured RGB frame as a test canvas background
+    public volatile org.dpsoftware.grabber.GrabberManager grabberManager;
+    public boolean showLiveCapture = false;
 
 }
 

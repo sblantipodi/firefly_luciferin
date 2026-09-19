@@ -88,6 +88,7 @@ public class NetworkTabController {
         publishDiscoveryTopic(new SelectEmaDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectFrameGenDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectProfileDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectCubeLutDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorConsumingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorProducingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorVersionDiscovery(), createEntity);
@@ -104,6 +105,7 @@ public class NetworkTabController {
         publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorGpioDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorWiFiDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorGammaDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorLdrDiscovery(), createEntity);
     }
 

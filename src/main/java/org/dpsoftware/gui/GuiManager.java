@@ -47,8 +47,12 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.grabber.SimdBenchmark;
 import org.dpsoftware.gui.bindings.notify.LibNotify;
 import org.dpsoftware.gui.controllers.*;
+import org.dpsoftware.gui.tc.RleVisualMapHandler;
+import org.dpsoftware.gui.tc.TcInteractionHandler;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
 import org.dpsoftware.gui.trayicon.TrayIconAwt;
 import org.dpsoftware.gui.trayicon.TrayIconManager;
@@ -475,7 +479,7 @@ public class GuiManager {
      *
      * @param dialog in use
      */
-    void setDialogTheme(Dialog<String> dialog) {
+    public void setDialogTheme(Dialog<String> dialog) {
         setStylesheet(dialog.getDialogPane().getStylesheets(), null);
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
     }
@@ -572,7 +576,9 @@ public class GuiManager {
      * @param preloadFxml if true, it preload the fxml without showing it
      */
     public void showSettingsDialog(boolean preloadFxml) {
-        showStage(Constants.FXML_SETTINGS, preloadFxml, true);
+        if (!MainSingleton.getInstance().isHeadlessMode()) {
+            showStage(Constants.FXML_SETTINGS, preloadFxml, true);
+        }
     }
 
     /**
@@ -590,9 +596,36 @@ public class GuiManager {
      */
     public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
         Platform.runLater(() -> {
-            TestCanvas testCanvas = new TestCanvas();
-            testCanvas.buildAndShowTestImage(event);
+            TestCanvas previous = GuiSingleton.getInstance().testCanvas;
+            TestCanvas testCanvas;
+            if (!GuiSingleton.getInstance().rleVisualMapVisible && previous != null && previous.getStage() != null && previous.getCanvas() != null) {
+                // Reuse the existing canvas/scene/stage to avoid repeatedly tearing down and re creating JavaFX scenes
+                // (which can orphan the NGCanvas in the render graph and exhaust the Prism texture pool).
+                testCanvas = previous;
+                previous.refreshExisting(new TcInteractionHandler(previous), new RleVisualMapHandler(previous), MainSingleton.getInstance().config);
+            } else {
+                testCanvas = new TestCanvas();
+                testCanvas.buildAndShowTestImage(event);
+                GuiSingleton.getInstance().testCanvas = testCanvas;
+            }
             Platform.runLater(() -> {
+                // Reuse the existing dialog stage if it's still open, otherwise create a new one
+                Stage existingStage = GuiSingleton.getInstance().colorDialog;
+                if (existingStage != null && existingStage.isShowing()) {
+                    // Already open: just re inject and refresh
+                    ColorCorrectionDialogController existingController = (ColorCorrectionDialogController) existingStage.getProperties().get(Constants.FXML_COLOR_CORRECTION_DIALOG);
+                    if (existingController != null) {
+                        existingController.injectSettingsController(settingsController);
+                        existingController.injectTestCanvas(testCanvas);
+                        existingController.initValuesFromSettingsFile(testCanvas.getConfigHistory().getFirst());
+                        existingStage.toFront();
+                        return;
+                    }
+                }
+                // Close the old stage if it exists but is not showing
+                if (existingStage != null) {
+                    existingStage.close();
+                }
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_COLOR_CORRECTION_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 Parent root;
                 try {
@@ -603,28 +636,31 @@ public class GuiManager {
                 ColorCorrectionDialogController controller = fxmlLoader.getController();
                 controller.injectSettingsController(settingsController);
                 controller.injectTestCanvas(testCanvas);
-                controller.initValuesFromSettingsFile(MainSingleton.getInstance().config);
-                Stage stage = initStage(root);
-                stage.initStyle(StageStyle.TRANSPARENT);
-                stage.initModality(Modality.NONE);
-                stage.setAlwaysOnTop(true);
+                controller.initValuesFromSettingsFile(testCanvas.getConfigHistory().getFirst());
+                Stage newStage = initStage(root);
+                newStage.initStyle(StageStyle.TRANSPARENT);
+                newStage.initModality(Modality.NONE);
+                newStage.setAlwaysOnTop(true);
                 // Dialog drag support
+                final Stage finalStage = newStage;
                 final Delta dragDelta = new Delta();
                 root.setOnMousePressed(ev -> {
-                    dragDelta.x = stage.getX() - ev.getScreenX();
-                    dragDelta.y = stage.getY() - ev.getScreenY();
+                    dragDelta.x = finalStage.getX() - ev.getScreenX();
+                    dragDelta.y = finalStage.getY() - ev.getScreenY();
                 });
                 root.setOnMouseDragged(eve -> {
-                    stage.setX(eve.getScreenX() + dragDelta.x);
-                    stage.setY(eve.getScreenY() + dragDelta.y);
+                    finalStage.setX(eve.getScreenX() + dragDelta.x);
+                    finalStage.setY(eve.getScreenY() + dragDelta.y);
                 });
-                GuiSingleton.getInstance().colorDialog = stage;
-                stage.getProperties().put(Constants.FXML_COLOR_CORRECTION_DIALOG, controller);
-                GuiSingleton.getInstance().colorDialog.show();
+                GuiSingleton.getInstance().colorDialog = finalStage;
+                finalStage.getProperties().put(Constants.FXML_COLOR_CORRECTION_DIALOG, controller);
+                finalStage.show();
+                finalStage.toFront();
                 Platform.runLater(() -> {
-                    new TestCanvas().setDialogMargin(stage);
-                    testCanvas.setDialogY((int) stage.getY());
-                    stage.setAlwaysOnTop(true);
+                    new TestCanvas().setDialogMargin(finalStage);
+                    testCanvas.setDialogY((int) finalStage.getY());
+                    finalStage.setAlwaysOnTop(true);
+                    finalStage.toFront();
                 });
             });
         });
@@ -678,6 +714,21 @@ public class GuiManager {
                 ((SmoothingDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
             } else {
                 ((SmoothingDialogController) controller).initDefaultValues();
+            }
+        }
+        if (classForCast == GammaDialogController.class) {
+            ((GammaDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((GammaDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((GammaDialogController) controller).initDefaultValues();
+            }
+        } else if (classForCast == DisplayDialogController.class) {
+            ((DisplayDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((DisplayDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((DisplayDialogController) controller).initDefaultValues();
             }
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
@@ -768,6 +819,38 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SMOOTHING_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(SmoothingDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show gamma dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showGammaDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_GAMMA_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(GammaDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show display dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showDisplayDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_DISPLAY_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(DisplayDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
@@ -990,6 +1073,7 @@ public class GuiManager {
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
+        if (GrabberSingleton.getInstance() != null) GrabberSingleton.getInstance().resetFlowRamp();
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = getStateDto();
             if (NativeExecutor.isLinux()) {
@@ -1024,6 +1108,7 @@ public class GuiManager {
      * Start capturing threads
      */
     public void startCapturingThreads() {
+        SimdBenchmark.resetSimdBenchmark();
         if (!MainSingleton.getInstance().communicationError) {
             if (!MainSingleton.getInstance().RUNNING) {
                 trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
@@ -1061,6 +1146,9 @@ public class GuiManager {
      */
     // TODO prevent to launch 2 checks at the same time
     public void showSettingsAndCheckForUpgrade(boolean showChangelog) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            return;
+        }
         if (!NativeExecutor.isSystemTraySupported()) {
             showSettingsDialog(false);
         }

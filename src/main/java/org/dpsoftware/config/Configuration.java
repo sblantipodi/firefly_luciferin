@@ -33,6 +33,7 @@ import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
+import org.dpsoftware.managers.dto.LedMatrixInfo;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -89,7 +90,9 @@ public class Configuration implements Cloneable {
     // MQTT WiFi Config params
     private boolean fullFirmware = false;
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
-    private double gamma;
+    private double gamma = Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma());
+    private String gammaLevel = Enums.GammaLevel.LOW.getBaseI18n();
+    private boolean enableAutomaticGamma = true;
     private String gapTypeSide = Constants.GAP_TYPE_DEFAULT_SIDE;
     private String gapTypeTopBottom = Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM;
     private String grabberAreaTopBottom = Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT;
@@ -102,6 +105,7 @@ public class Configuration implements Cloneable {
     private int ledStartOffset = 0;
     private int leftLed;
     private int monitorNumber = 1;
+    private String extSrcFriendlyName = "";
     private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
     private String mqttPwd = "";
@@ -164,6 +168,8 @@ public class Configuration implements Cloneable {
     private List<String> profileProcesses = new ArrayList<>();
     boolean checkFullScreen = false;
     int resamplingFactor = Constants.RESAMPLING_FACTOR;
+    boolean useLosslessCompression = Constants.USE_LOSSLESS_COMPRESSION;
+    String cubeLut = Constants.DISABLED;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
@@ -187,6 +193,42 @@ public class Configuration implements Cloneable {
 
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    /**
+     * Regenerate the LED matrix from the current LED parameters, replacing any existing matrix.
+     */
+    public void regenerateLedMatrix() {
+        LedMatrixInfo info = new LedMatrixInfo(screenResX, screenResY, bottomRightLed, rightLed,
+                topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomMargin, grabberAreaTopBottom,
+                grabberSide, gapTypeTopBottom, gapTypeSide, groupBy);
+        Map<Enums.AspectRatio, LinkedHashMap<Integer, LEDCoordinate>> matrices = LEDCoordinate.initializeAllMatrices(info);
+        this.ledMatrix = new LinkedHashMap<>();
+        matrices.forEach((ratio, matrix) -> this.ledMatrix.put(ratio.getBaseI18n(), matrix));
+    }
+
+    /**
+     * Check if any LED matrix parameter changed between the saved config and the new one.
+     *
+     * @param other the configuration to compare against (usually the previously saved one)
+     * @return true if any parameter used to build the LED matrix differs
+     */
+    public boolean ledMatrixParamsChanged(Configuration other) {
+        return other.getTopLed() != topLed
+                || other.getLeftLed() != leftLed
+                || other.getBottomLeftLed() != bottomLeftLed
+                || other.getBottomRightLed() != bottomRightLed
+                || other.getRightLed() != rightLed
+                || other.getBottomRowLed() != bottomRowLed
+                || !other.getGrabberSide().equals(grabberSide)
+                || !other.getGrabberAreaTopBottom().equals(grabberAreaTopBottom)
+                || !other.getGapTypeSide().equals(gapTypeSide)
+                || !other.getGapTypeTopBottom().equals(gapTypeTopBottom)
+                || !other.getSplitBottomMargin().equals(splitBottomMargin)
+                || other.getGroupBy() != groupBy
+                || other.getScreenResX() != screenResX
+                || other.getScreenResY() != screenResY
+                || other.getOsScaling() != osScaling;
     }
 
     /**
@@ -227,17 +269,48 @@ public class Configuration implements Cloneable {
     public enum CaptureMethod {
         CPU("CPU"),
         WinAPI("WinAPI"),
-        DDUPL_DX11("DDUPL (DX11)"),
-        DDUPL_DX12("DDUPL (DX12)"),
-        XIMAGESRC("XIMAGESRC"),
-        XIMAGESRC_NVIDIA("XIMAGESRC (NVIDIA)"),
-        PIPEWIREXDG("PIPEWIREXDG"),
-        PIPEWIREXDG_NVIDIA("PIPEWIREXDG (NVIDIA)"),
+        DDUPL_DX11("DX11 GPU"),
+        DDUPL_DX12("DX12 GPU"),
+        WIN_USB_VIDEO("USB VIDEO"),
+        XIMAGESRC("CPU only"),
+        XIMAGESRC_NVIDIA("NVIDIA GPU"),
+        PIPEWIREXDG("CPU only"),
+        PIPEWIREXDG_OPENGL("OpenGL GPU"),
+        PIPEWIREXDG_NVIDIA("NVIDIA GPU"),
+        PIPEWIREXDG_AMD_INTEL("AMD/INTEL GPU"),
+        USB_VIDEO("CPU only"),
+        USB_VIDEO_OPENGL("OpenGL GPU"),
+        USB_VIDEO_NVIDIA("NVIDIA GPU"),
+        USB_VIDEO_AMD_INTEL("AMD/INTEL GPU"),
         AVFVIDEOSRC("AVFVIDEOSRC");
         private final String captureMethod;
 
         CaptureMethod(String captureMethod) {
             this.captureMethod = captureMethod;
+        }
+
+        public static CaptureMethod defaultForOs() {
+            if (NativeExecutor.isWindows()) {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    return DDUPL_DX12;
+                } else {
+                    return WIN_USB_VIDEO;
+                }
+            } else if (NativeExecutor.isMac()) {
+                return AVFVIDEOSRC;
+            } else if (NativeExecutor.isWayland()) {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    return PIPEWIREXDG;
+                } else {
+                    return USB_VIDEO;
+                }
+            } else {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    return XIMAGESRC;
+                } else {
+                    return USB_VIDEO;
+                }
+            }
         }
     }
 

@@ -24,13 +24,11 @@ package org.dpsoftware.managers;
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
-import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
@@ -229,7 +227,8 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
                 config.setLuminosityThreshold((Boolean) data.get("eyeCare") ? 1 : 0);
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.debug("Legacy config migration block failed, ignoring", e);
             }
         }
         return writeToStorage;
@@ -298,26 +297,30 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
     }
 
     /**
+     * Update configuration file previous than 2.29.5
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    boolean updatePrevious2295(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.29.5")) {
+            if (config.getUdpTrafficClass() != Constants.DEFAULT_UDP_TRAFFIC_CLASS) {
+                config.setUdpTrafficClass(Constants.DEFAULT_UDP_TRAFFIC_CLASS);
+            }
+            config.setGamma(Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma()));
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
      * Reconfigure LED matrix
      *
      * @param config app config params
      */
     private void configureLedMatrix(Configuration config) {
-        LEDCoordinate ledCoordinate = new LEDCoordinate();
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(config.getScreenResX(),
-                config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin(), config.getGrabberAreaTopBottom(), config.getGrabberSide(),
-                config.getGapTypeTopBottom(), config.getGapTypeSide(), config.getGroupBy());
-        try {
-            LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, false));
-            LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, false));
-            LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, false));
-        } catch (CloneNotSupportedException e) {
-            log.info(e.getMessage());
-        }
+        config.regenerateLedMatrix();
     }
 
 }

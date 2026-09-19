@@ -306,7 +306,8 @@ public class EyeCareDialogController {
                 GrabberSingleton.getInstance().setNightLightExecutor(Executors.newScheduledThreadPool(1));
                 GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.debug("Night light executor restart failed", e);
         }
     }
 

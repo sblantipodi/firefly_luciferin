@@ -27,6 +27,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.GridPane;
 import javafx.util.StringConverter;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
@@ -48,6 +49,7 @@ import java.util.Optional;
 /**
  * Mode Tab controller
  */
+@Slf4j
 public class ModeTabController {
 
     // FXML binding
@@ -71,6 +73,8 @@ public class ModeTabController {
     public Label comWirelessLabel;
     @FXML
     public Button saveSettingsButton;
+    @FXML
+    public Button displayDialogBtn;
     @FXML
     public ComboBox<String> simdOption;
     @FXML
@@ -98,6 +102,8 @@ public class ModeTabController {
     // Inject main controller
     @FXML
     private SettingsController settingsController;
+    private boolean updatingCaptureMethod;
+    private boolean refreshingMonitorValue;
 
     /**
      * Inject main controller containing the TabPane
@@ -143,22 +149,34 @@ public class ModeTabController {
         captureMethod.setConverter(new StringConverter<>() {
             @Override
             public String toString(Configuration.CaptureMethod object) {
-                return switch (object) {
-                    case CPU -> Configuration.CaptureMethod.CPU.name();
-                    case WinAPI -> Configuration.CaptureMethod.WinAPI.name();
-                    case DDUPL_DX11 -> Configuration.CaptureMethod.DDUPL_DX11.name();
-                    case DDUPL_DX12 -> Configuration.CaptureMethod.DDUPL_DX12.name();
-                    case XIMAGESRC -> Configuration.CaptureMethod.XIMAGESRC.name();
-                    case XIMAGESRC_NVIDIA -> Configuration.CaptureMethod.XIMAGESRC_NVIDIA.getCaptureMethod();
-                    case PIPEWIREXDG -> Configuration.CaptureMethod.PIPEWIREXDG.name();
-                    case PIPEWIREXDG_NVIDIA -> Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.getCaptureMethod();
-                    default -> null;
-                };
+                if (object != null) {
+                    return switch (object) {
+                        case CPU -> Configuration.CaptureMethod.CPU.getCaptureMethod();
+                        case WinAPI -> Configuration.CaptureMethod.WinAPI.getCaptureMethod();
+                        case DDUPL_DX11 -> Configuration.CaptureMethod.DDUPL_DX11.getCaptureMethod();
+                        case DDUPL_DX12 -> Configuration.CaptureMethod.DDUPL_DX12.getCaptureMethod();
+                        case WIN_USB_VIDEO -> Configuration.CaptureMethod.WIN_USB_VIDEO.getCaptureMethod();
+                        case XIMAGESRC -> Configuration.CaptureMethod.XIMAGESRC.getCaptureMethod();
+                        case XIMAGESRC_NVIDIA -> Configuration.CaptureMethod.XIMAGESRC_NVIDIA.getCaptureMethod();
+                        case PIPEWIREXDG -> Configuration.CaptureMethod.PIPEWIREXDG.getCaptureMethod();
+                        case PIPEWIREXDG_NVIDIA -> Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.getCaptureMethod();
+                        case PIPEWIREXDG_AMD_INTEL -> Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.getCaptureMethod();
+                        case PIPEWIREXDG_OPENGL -> Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.getCaptureMethod();
+                        case USB_VIDEO -> Configuration.CaptureMethod.USB_VIDEO.getCaptureMethod();
+                        case USB_VIDEO_OPENGL -> Configuration.CaptureMethod.USB_VIDEO_OPENGL.getCaptureMethod();
+                        case USB_VIDEO_NVIDIA -> Configuration.CaptureMethod.USB_VIDEO_NVIDIA.getCaptureMethod();
+                        case USB_VIDEO_AMD_INTEL -> Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.getCaptureMethod();
+                        default -> Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod()).getCaptureMethod();
+                    };
+                } else {
+                    return Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod()).getCaptureMethod();
+                }
             }
 
             @Override
             public Configuration.CaptureMethod fromString(String string) {
-                return null;
+                if (string == null || string.isEmpty()) return null;
+                else return Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod());
             }
         });
     }
@@ -311,13 +329,23 @@ public class ModeTabController {
         }
         algo.setValue(LocalizedEnum.fromBaseStr(Enums.Algo.class, currentConfig.getAlgo()).getI18n());
         monitorIndex = currentConfig.getMonitorNumber();
-        monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
+        refreshingMonitorValue = true;
+        try {
+            monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
+            if (!currentConfig.getExtSrcFriendlyName().isEmpty()) {
+                monitorNumber.setValue(currentConfig.getExtSrcFriendlyName());
+            }
+        } finally {
+            refreshingMonitorValue = false;
+        }
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         theme.setValue(LocalizedEnum.fromBaseStr(Enums.Theme.class, currentConfig.getTheme()).getI18n());
         language.setValue(LocalizedEnum.fromBaseStr(Enums.Language.class, currentConfig.getLanguage() == null ? MainSingleton.getInstance().config.getLanguage() : currentConfig.getLanguage()).getI18n());
         resetButton.setVisible(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG)
-                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA));
+                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA)
+                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL)
+                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL));
         simdOption.setValue(Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getI18n());
         evalutateSimdCpuThreadCombo();
     }
@@ -326,8 +354,9 @@ public class ModeTabController {
      * Show hide Simd Thread combos
      */
     private void evalutateSimdCpuThreadCombo() {
-        if (captureMethod.getValue().getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())
-                || captureMethod.getValue().getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) {
+        if (captureMethod.getValue() != null
+                && (captureMethod.getValue().getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())
+                || captureMethod.getValue().getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name()))) {
             simdAvxLabel.setVisible(false);
             simdOption.setVisible(false);
             cpuThreadsLabel.setVisible(true);
@@ -359,13 +388,77 @@ public class ModeTabController {
     }
 
     /**
-     * Manage monitor action
+     * Manage monitor selection change. The capture method is reset to the OS default
+     * only when the user actually picks a different monitor; a plain click that opens
+     * the combo (or any call with no value change) must not overwrite the capture
+     * method currently in use.
      */
     @FXML
-    private void monitorAction() {
+    private void monitorAction(String newVal, String oldVal) {
+        if (refreshingMonitorValue) {
+            return;
+        }
         monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
-        DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
-        setDispInfo(screenInfo);
+        if (monitorIndex >= 0 && monitorIndex < settingsController.displayManager.getDisplayList().size()) {
+            DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
+            setDispInfo(screenInfo);
+            if (newVal != null && !newVal.equals(oldVal)) {
+                settingsController.currentConfig.setExtSrcFriendlyName("");
+                settingsController.initCaptureMethods();
+                setCaptureMethod();
+            }
+        } else {
+            if (newVal != null && !newVal.equals(oldVal)) {
+                if (settingsController.currentConfig != null) {
+                    settingsController.currentConfig.setExtSrcFriendlyName(monitorNumber.getValue());
+                }
+                settingsController.initCaptureMethods();
+                setCaptureMethodUsbVideo();
+            }
+        }
+    }
+
+    /**
+     * Set the default capture method for the current OS (display capture)
+     */
+    void setCaptureMethod() {
+        applyCaptureMethod(Configuration.CaptureMethod.defaultForOs());
+    }
+
+    /**
+     * Set the default capture method for external USB video devices
+     */
+    void setCaptureMethodUsbVideo() {
+        Configuration.CaptureMethod newMethod;
+        if (NativeExecutor.isWindows()) {
+            newMethod = Configuration.CaptureMethod.WIN_USB_VIDEO;
+        } else if (NativeExecutor.isMac()) {
+            newMethod = Configuration.CaptureMethod.AVFVIDEOSRC;
+        } else {
+            newMethod = Configuration.CaptureMethod.USB_VIDEO;
+        }
+        applyCaptureMethod(newMethod);
+    }
+
+    /**
+     * Set capture method value, guarding against re-entrant calls and re-anchoring
+     * the visual selection if it was lost after the items list was cleared and re-populated.
+     */
+    private void applyCaptureMethod(Configuration.CaptureMethod newMethod) {
+        if (updatingCaptureMethod) {
+            return;
+        }
+        updatingCaptureMethod = true;
+        try {
+            captureMethod.setValue(newMethod);
+            if (captureMethod.getValue() != null
+                    && captureMethod.getSelectionModel().getSelectedIndex() < 0
+                    && newMethod.equals(captureMethod.getValue())) {
+                captureMethod.getSelectionModel().select(captureMethod.getItems().indexOf(newMethod));
+            }
+        } finally {
+            updatingCaptureMethod = false;
+        }
     }
 
     /**
@@ -379,14 +472,15 @@ public class ModeTabController {
         });
         firmTypeFull.setOnAction(_ -> firmTypeEvaluation());
         firmTypeLight.setOnAction(_ -> firmTypeEvaluation());
-        monitorNumber.valueProperty().addListener((_, _, _) -> monitorAction());
+        monitorNumber.setOnMouseClicked((_) -> monitorAction(null, null));
+        monitorNumber.valueProperty().addListener((_, newVal, oldVal) -> monitorAction(newVal, oldVal));
         serialPort.valueProperty().addListener((_, oldVal, newVal) -> {
             if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
                 settingsController.checkProfileDifferences();
             }
         });
         captureMethod.valueProperty().addListener((_, _, newVal) -> {
-            if (newVal.equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA) || newVal.equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA)) {
+            if (newVal != null && (newVal.equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA) || newVal.equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA))) {
                 List<String> scrProcess = NativeExecutor.runNative(Constants.CMD_CUDA_CHECK, Constants.CMD_WAIT_DELAY);
                 boolean pluginsFound = true;
                 for (String plugin : Constants.CUDA_REQUIRED_PLUGINS) {
@@ -478,7 +572,14 @@ public class ModeTabController {
         config.setDefaultLedMatrix(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) ?
                 Enums.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Enums.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)));
-        config.setMonitorNumber(monitorNumber.getSelectionModel().getSelectedIndex());
+        monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
+        if (monitorIndex >= 0 && monitorIndex < settingsController.displayManager.getDisplayList().size()) {
+            config.setMonitorNumber(monitorIndex);
+            config.setExtSrcFriendlyName("");
+        } else {
+            config.setMonitorNumber(0);
+            config.setExtSrcFriendlyName(monitorNumber.getValue());
+        }
         config.setBaudRate(baudRate.getValue());
         config.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, theme.getValue()).getBaseI18n());
         config.setLanguage(language.getValue());
@@ -542,4 +643,15 @@ public class ModeTabController {
         SettingsController.addTextFieldListener(screenHeight, false);
         SettingsController.addTextFieldListener(numberOfThreads, false);
     }
+
+    /**
+     * Show gamma dialog
+     */
+    @FXML
+    public void openDisplayDialog() {
+        if (MainSingleton.getInstance().guiManager != null) {
+            MainSingleton.getInstance().guiManager.showDisplayDialog(settingsController);
+        }
+    }
+
 }
