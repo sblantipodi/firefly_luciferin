@@ -36,6 +36,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.HSLColor;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 

@@ -92,6 +92,7 @@
     exports org.dpsoftware.managers.dto;
     exports org.dpsoftware.managers.dto.mqttdiscovery;
     exports org.dpsoftware.utilities;
+    exports org.dpsoftware.lut;
     exports org.dpsoftware.network;
     exports org.dpsoftware.network.web;
     exports org.dpsoftware.gui.tc;
@@ -101,4 +102,5 @@
     exports org.dpsoftware.gui.trayicon;
     opens org.dpsoftware.gui.trayicon to javafx.fxml, javafx.web;
     opens org.dpsoftware.network.web;
+    opens org.dpsoftware.lut;
 }

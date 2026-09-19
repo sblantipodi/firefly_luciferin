@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.grabber;
+package org.dpsoftware.lut;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -40,7 +40,7 @@ import java.util.jar.JarFile;
  * The LUT filename is read from the application configuration ({@code cubeLut}) at class initialization time
  * and can be changed at runtime via {@link #refresh()}.
  * The LUT is resolved from the following locations, in order:
- * - classpath resources directory {@code /cube_lut/}
+ * - classpath resources co-located in this package ({@code org.dpsoftware.lut})
  * - configuration path {@code <config>/cube_lut/}
  * If the LUT is not found in either location, or cannot be parsed, the tone mapper degrades gracefully
  * and {@link #lookup(int, int, int)} returns the input color unmodified.
@@ -48,7 +48,7 @@ import java.util.jar.JarFile;
 @Slf4j
 public final class CubeLutToneMap {
 
-    private static final String CUBE_LUT_RESOURCE = "/cube_lut/";
+    private static final String CUBE_LUT_RESOURCE = "lut";
     private static final String CUBE_LUT_DIR = "cube_lut";
 
     /**
@@ -104,7 +104,7 @@ public final class CubeLutToneMap {
      * List the filenames of the LUTs available to be loaded, using the same
      * resolution order as {@link #loadLut(String)}:
      * <ol>
-     *   <li>classpath resources directory {@code /cube_lut/}</li>
+     *   <li>classpath resources co-located in this package ({@code org.dpsoftware.lut})</li>
      *   <li>configuration path {@code <config>/cube_lut/}</li>
      * </ol>
      * Results are deduplicated (classpath entries take precedence) and sorted
@@ -129,38 +129,34 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * List LUT filenames found in the classpath {@code /cube_lut/} resources directory.
-     * Works both for directory based classpath entries and for jar entries.
+     * List LUT filenames found co-located in this package ({@code org.dpsoftware.lut}).
+     * The LUT files are packaged in the same package as this class and the package is
+     * {@code opens} in the module descriptor, so the classloader can read them in JPMS
+     * module mode as well (a non opened package would be invisible to it).
+     * <p>
+     * The lookup is performed by locating the class (jar or exploded classes directory)
+     * and scanning it for {@code .cube} entries in this package, which works both when the
+     * jar is on the classpath and when it is resolved as a named module.
      */
     private static List<String> listResourceLuts() {
         List<String> names = new ArrayList<>();
-        String dir = CUBE_LUT_RESOURCE.substring(1); // "cube_lut/"
         try {
-            Enumeration<URL> urls = CubeLutToneMap.class.getClassLoader().getResources(dir);
-            while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                if ("file".equalsIgnoreCase(url.getProtocol())) {
-                    File f = new File(url.getFile());
-                    File[] files = f.listFiles(x -> x.isFile() && x.getName().endsWith(".cube"));
-                    if (files != null) {
-                        for (File file : files) {
-                            names.add(file.getName());
-                        }
-                    }
-                } else if ("jar".equalsIgnoreCase(url.getProtocol())) {
-                    int sep = url.getFile().indexOf('!');
-                    String jarPath = sep > 0 ? url.getFile().substring(0, sep) : url.getFile();
-                    try (JarFile jar = new JarFile(new File(jarPath))) {
-                        Enumeration<JarEntry> entries = jar.entries();
-                        while (entries.hasMoreElements()) {
-                            String entryName = entries.nextElement().getName();
-                            if (entryName.startsWith(dir) && entryName.endsWith(".cube")) {
-                                String base = entryName.substring(dir.length());
-                                if (!base.contains("/")) {
-                                    names.add(base);
-                                }
-                            }
-                        }
+            URL codeSource = CubeLutToneMap.class.getProtectionDomain().getCodeSource().getLocation();
+            if (codeSource == null) {
+                return names;
+            }
+            String path = codeSource.getFile();
+            if (path.endsWith(".jar")) {
+                names.addAll(scanJarForCubeLuts(path));
+            } else {
+                // Exploded classes directory: the package directory is
+                // <codeSource>/<package-as-paths>.
+                File pkgDir = new File(new File(path),
+                        CubeLutToneMap.class.getPackageName().replace('.', File.separatorChar));
+                File[] files = pkgDir.listFiles(x -> x.isFile() && x.getName().endsWith(".cube"));
+                if (files != null) {
+                    for (File file : files) {
+                        names.add(file.getName());
                     }
                 }
             }
@@ -168,6 +164,30 @@ public final class CubeLutToneMap {
             log.warn("Failed to list cube LUT resources: {}", e.getMessage());
         }
         return names;
+    }
+
+    /**
+     * Scan the entries of the given jar file for {@code .cube} files co-located in this
+     * package ({@code org/dpsoftware/lut}) and return their base names.
+     */
+    private static List<String> scanJarForCubeLuts(String jarPath) {
+        List<String> found = new ArrayList<>();
+        String pkgDir = CubeLutToneMap.class.getPackageName().replace('.', '/') + "/";
+        try (JarFile jar = new JarFile(new File(jarPath))) {
+            Enumeration<JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                String entryName = entries.nextElement().getName();
+                if (entryName.startsWith(pkgDir) && entryName.endsWith(".cube")) {
+                    String base = entryName.substring(pkgDir.length());
+                    if (!base.contains("/")) {
+                        found.add(base);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to scan jar {} for cube LUTs: {}", jarPath, e.getMessage());
+        }
+        return found;
     }
 
     /**
@@ -214,18 +234,27 @@ public final class CubeLutToneMap {
         float[] tmpLut = null;
         int tmpSize = 0;
         try {
-            String resourcePath = CUBE_LUT_RESOURCE + lutName;
+            String resourcePath = CUBE_LUT_RESOURCE + "/" + lutName;
             try (InputStream in = CubeLutToneMap.class.getResourceAsStream(resourcePath)) {
-                if (in == null) {
-                    File dir = new File(InstanceConfigurer.getConfigPath());
-                    File localFile = new File(dir, CUBE_LUT_DIR + File.separator + lutName);
-                    if (localFile.exists()) {
-                        parseCube(new FileInputStream(localFile));
-                        tmpLut = parsedLut;
-                        tmpSize = parsedSize;
-                    }
-                } else {
+                if (in != null) {
                     parseCube(in);
+                    return;
+                }
+                // Fallback for JPMS module mode, where the classloader does not
+                // resolve resources from the classpath: read the co-located .cube
+                // file directly from the package directory.
+                File pkgFile = resolveCoLocatedLutFile(lutName);
+                if (pkgFile != null && pkgFile.exists()) {
+                    try (InputStream fileIn = new FileInputStream(pkgFile)) {
+                        parseCube(fileIn);
+                        return;
+                    }
+                }
+                // Last resort: the user-configurable location.
+                File dir = new File(InstanceConfigurer.getConfigPath());
+                File localFile = new File(dir, CUBE_LUT_DIR + File.separator + lutName);
+                if (localFile.exists()) {
+                    parseCube(new FileInputStream(localFile));
                     tmpLut = parsedLut;
                     tmpSize = parsedSize;
                 }
@@ -237,6 +266,26 @@ public final class CubeLutToneMap {
             lut = tmpLut;
             size = tmpSize;
             loadedLutName = lutName;
+        }
+    }
+
+    /**
+     * Resolve the {@code .cube} file co-located in this package on the filesystem, when the
+     * class was loaded from an exploded classes directory (e.g. the deployed
+     * {@code lib/app/classes} layout). Returns {@code null} when the class was loaded from a
+     * jar, in which case the LUT must be read through the classloader instead.
+     */
+    private static File resolveCoLocatedLutFile(String lutName) {
+        try {
+            URL codeSource = CubeLutToneMap.class.getProtectionDomain().getCodeSource().getLocation();
+            if (codeSource == null || codeSource.getFile().endsWith(".jar")) {
+                return null;
+            }
+            File pkgDir = new File(new File(codeSource.getFile()),
+                    CubeLutToneMap.class.getPackageName().replace('.', File.separatorChar));
+            return new File(pkgDir, lutName);
+        } catch (Exception e) {
+            return null;
         }
     }
 
