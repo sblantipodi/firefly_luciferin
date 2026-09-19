@@ -135,6 +135,7 @@ function setToggleUi(on) {
         toggle.textContent = on ? (fieldLabels.turnLedOff || 'Turn OFF') : (fieldLabels.turnLedOn || 'Turn ON');
         toggle.classList.toggle('btn-primary', on);
         toggle.classList.toggle('btn-outline-primary', !on);
+        toggle.classList.toggle('active', on);
         if (on) {
             toggle.style.backgroundColor = 'orange';
             toggle.style.color = '#fff';

@@ -27,8 +27,8 @@
 
 /* Save button color, not provided by Bootstrap. */
 .btn-orange {
-    background-color: #f98012;
-    border-color: #f98012;
+    background-color: orange;
+    border-color: orange;
     color: #fff;
 }
 
