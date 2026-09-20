@@ -83,6 +83,7 @@ public class TestCanvas {
     public final int MAX_TEXT_RESIZE_TRIGGER = 40;
     private final int INITIAL_TILE_DISTANCE = 10;
     private final int HISTORY_SIZE = 100;
+    private static final double LIVE_PREVIEW_RATIO = 0.30;
     public Rectangle2D closeBtnBounds;
     public boolean tooltipVisible;
     GraphicsContext gc;
@@ -188,9 +189,7 @@ public class TestCanvas {
             }
             index++;
         }
-        if (NativeExecutor.isLinux()) {
-            stage.setFullScreen(true);
-        }
+        configureStageBoundsForCurrentMode();
         stage.show();
         bringToFront();
     }
@@ -468,23 +467,34 @@ public class TestCanvas {
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         drawTestShapes(conf, 0);
-        // Re position the stage on the correct monitor (same logic as buildAndShowTestImage)
+        configureStageBoundsForCurrentMode();
+        startCaptureBackgroundRefresh();
+        stage.show();
+        bringToFront();
+    }
+
+    /**
+     * Size the canvas stage for the active mode.
+     */
+    private void configureStageBoundsForCurrentMode() {
         int index = 0;
         DisplayManager displayManager = new DisplayManager();
         for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
             if (index == MainSingleton.getInstance().config.getMonitorNumber()) {
-                stage.setX(displayInfo.getMinX());
-                stage.setY(displayInfo.getMinY());
-                stage.setWidth(displayInfo.getWidth());
-                stage.setHeight(displayInfo.getHeight());
-                canvas.setWidth(displayInfo.getWidth());
-                canvas.setHeight(displayInfo.getHeight());
+                boolean compactLinuxLivePreview = NativeExecutor.isLinux() && GuiSingleton.getInstance().isShowLiveCapture();
+                double width = compactLinuxLivePreview ? displayInfo.getWidth() * LIVE_PREVIEW_RATIO : displayInfo.getWidth();
+                double height = compactLinuxLivePreview ? displayInfo.getHeight() * LIVE_PREVIEW_RATIO : displayInfo.getHeight();
+                stage.setFullScreen(NativeExecutor.isLinux() && !compactLinuxLivePreview);
+                stage.setX(displayInfo.getMinX() + (displayInfo.getWidth() - width) / 2);
+                stage.setY(displayInfo.getMinY() + (displayInfo.getHeight() - height) / 2);
+                stage.setWidth(width);
+                stage.setHeight(height);
+                canvas.setWidth(width);
+                canvas.setHeight(height);
+                return;
             }
             index++;
         }
-        startCaptureBackgroundRefresh();
-        stage.show();
-        bringToFront();
     }
 
     /**
@@ -857,6 +867,10 @@ public class TestCanvas {
         }
         if (GuiSingleton.getInstance().isShowLiveCapture()) {
             drawLiveCapture();
+            // Linux cannot make the unused transparent area of a full screen JavaFX stage click through.
+            if (NativeExecutor.isLinux()) {
+                return;
+            }
             // fall through: tiles are drawn on top of the capture background below
         }
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
@@ -923,12 +937,12 @@ public class TestCanvas {
         if (fresh != null) {
             lastCaptureImage = fresh;
         }
-        // If we still have no frame at all, leave the canvas as-is (do not clear it).
+        // If we still have no frame at all, leave the canvas as is (do not clear it).
         if (lastCaptureImage == null) {
             return;
         }
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        double ratio = 0.30;
+        double ratio = NativeExecutor.isLinux() ? 1.0 : LIVE_PREVIEW_RATIO;
         double rectW = canvas.getWidth() * ratio;
         double rectH = canvas.getHeight() * ratio;
         double x = (canvas.getWidth() - rectW) / 2;
