@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.InstanceConfigurer;
+import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -38,28 +39,28 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 /**
- * Handles the live preview endpoints: serving the last captured frame BMP and toggling the
- * live capture flag, with an idle watchdog that automatically turns the preview off when the
- * web client stops polling.
+ * Handles the live preview endpoints: toggling capture and its WebRTC signaling server, with an
+ * idle watchdog that automatically turns the preview off when the web client becomes inactive.
  */
 @Slf4j
 public class LivePreviewWebHandler {
 
+    // Forces the compatible image-based preview even when the local WebRTC/NICE plugins are installed.
+    private static final boolean FORCE_IMAGE_LIVE_PREVIEW = Boolean.parseBoolean(
+            System.getenv("LUCIFERIN_LIVE_PREVIEW_IMAGE"));
     private static final String JSON_OK = "{\"status\":\"OK\"}";
-    /**
-     * Idle timeout, in milliseconds, after which the live preview is automatically turned off.
-     */
+    private static final String JSON_IMAGE_PREVIEW = "{\"status\":\"OK\",\"livePreviewMode\":\"image\"}";
+    private static final String JSON_WEBRTC_PREVIEW = "{\"status\":\"OK\",\"livePreviewMode\":\"webrtc\"}";
+    // Idle timeout, in milliseconds, after which the live preview is automatically turned off.
     private static final int LIVE_PREVIEW_IDLE_MILLIS = 30000;
-    /**
-     * Wall-clock milliseconds of the most recent {@code GET /screenshot}; refreshed by
-     * {@link #handleGetScreenshot}. The live preview watchdog reads it to detect an idle client.
-     */
     private volatile long lastScreenshotGetMillis = 0L;
-    /**
-     * Watchdog thread that turns off the live capture flag when no {@code GET /screenshot} has
-     * arrived for more than {@value #LIVE_PREVIEW_IDLE_MILLIS} ms.
-     */
+    // Watchdog thread that turns off the live capture flag when no {@code GET /screenshot} has arrived for more than #LIVE_PREVIEW_IDLE_MILLIS} ms.
     private Thread livePreviewWatchdog;
+    private final WebRtcSignalingServer webRtcSignalingServer;
+
+    public LivePreviewWebHandler(WebRtcSignalingServer webRtcSignalingServer) {
+        this.webRtcSignalingServer = webRtcSignalingServer;
+    }
 
     /**
      * Read the {@code disable} query parameter from the request, or {@code null} when absent.
@@ -79,6 +80,14 @@ public class LivePreviewWebHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns whether this request only refreshes the live-preview idle timer.
+     */
+    private static boolean isKeepAliveRequest(HttpExchange exchange) {
+        String query = exchange.getRequestURI().getQuery();
+        return query != null && query.contains("keepalive=true");
     }
 
     /**
@@ -120,19 +129,36 @@ public class LivePreviewWebHandler {
      * @throws IOException when the response cannot be written
      */
     public void handleEnableScreenshot(HttpExchange exchange) throws IOException {
+        if (isKeepAliveRequest(exchange)) {
+            lastScreenshotGetMillis = System.currentTimeMillis();
+            sendOkJson(exchange);
+            return;
+        }
         boolean disable = "true".equalsIgnoreCase(queryDisableParam(exchange));
         boolean on = !disable;
+        boolean webRtcAvailable = !FORCE_IMAGE_LIVE_PREVIEW && webRtcSignalingServer.isWebRtcAvailable();
+        GStreamerGrabber.imageLivePreviewFallback = on && !webRtcAvailable;
         GuiSingleton.getInstance().setShowLiveCapture(on);
         if (on) {
+            if (webRtcAvailable) {
+                webRtcSignalingServer.start(Constants.WEBRTC_SIGNALING_DEFAULT_PORT);
+            } else {
+                // Covers a live environment change only after restart and also tears down a
+                // previously open WebRTC session before serving image frames.
+                webRtcSignalingServer.stop();
+            }
             if (!MainSingleton.getInstance().RUNNING) {
                 PipelineManager.restartCapture(CommonUtility::run);
             }
             startLivePreviewWatchdog();
         } else {
             stopLivePreviewWatchdog();
+            webRtcSignalingServer.stop();
         }
-        log.info("Live preview toggled: showLiveCapture set to {}", on);
-        sendOkJson(exchange);
+        log.info("Live preview toggled: showLiveCapture set to {}, mode={}{}", on,
+                webRtcAvailable ? "webrtc" : "image",
+                FORCE_IMAGE_LIVE_PREVIEW ? " (forced by LUCIFERIN_LIVE_PREVIEW_IMAGE)" : "");
+        sendJson(exchange, on && !webRtcAvailable ? JSON_IMAGE_PREVIEW : JSON_WEBRTC_PREVIEW);
     }
 
     /**
@@ -160,6 +186,7 @@ public class LivePreviewWebHandler {
                 if (System.currentTimeMillis() - lastScreenshotGetMillis > LIVE_PREVIEW_IDLE_MILLIS) {
                     log.info("Live preview idle for more than {} ms, turning showLiveCapture off", LIVE_PREVIEW_IDLE_MILLIS);
                     GuiSingleton.getInstance().setShowLiveCapture(false);
+                    webRtcSignalingServer.stop();
                     return;
                 }
             }
@@ -175,7 +202,11 @@ public class LivePreviewWebHandler {
      * @throws IOException when the response cannot be written
      */
     private void sendOkJson(HttpExchange exchange) throws IOException {
-        byte[] responseBytes = JSON_OK.getBytes(StandardCharsets.UTF_8);
+        sendJson(exchange, JSON_OK);
+    }
+
+    private void sendJson(HttpExchange exchange, String json) throws IOException {
+        byte[] responseBytes = json.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
         try (OutputStream responseBody = exchange.getResponseBody()) {
