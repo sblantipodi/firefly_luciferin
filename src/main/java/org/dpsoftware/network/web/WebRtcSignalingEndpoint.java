@@ -78,6 +78,7 @@ public class WebRtcSignalingEndpoint {
      * @param message the JSON payload (answer or ICE candidate)
      * @param session the open WebSocket session
      */
+    @SuppressWarnings("unused")
     @OnMessage
     public void onMessage(String message, Session session) {
         if (server != null) {
@@ -85,6 +86,7 @@ public class WebRtcSignalingEndpoint {
         }
     }
 
+    @SuppressWarnings("unused")
     @OnClose
     public void onClose(Session session) {
         log.info("WebRTC signaling client disconnected: {}", session.getId());
@@ -93,6 +95,7 @@ public class WebRtcSignalingEndpoint {
         }
     }
 
+    @SuppressWarnings("unused")
     @OnError
     public void onError(Session session, Throwable throwable) {
         log.warn("WebRTC signaling error on session {}: {}", session.getId(), throwable.getMessage());

@@ -166,9 +166,7 @@ public class WebRtcStreamer {
 
         // Handle pipeline errors.
         Bus bus = pipeline.getBus();
-        bus.connect((Bus.ERROR) (source, code, message) -> {
-            log.error("WebRTC pipeline error: code={}, message={}", code, message);
-        });
+        bus.connect((Bus.ERROR) (_, code, message) -> log.error("WebRTC pipeline error: code={}, message={}", code, message));
 
         streaming.set(true);
         // The pipeline is NOT started here; it will be started on the first pushFrame,
