@@ -66,6 +66,10 @@ public class GStreamerGrabber {
     private final int[] reusableRgbTotals = new int[4];
     private final FrameGenerator frameGenerator;
     private long lastCaptureTime = 0;
+    // Optional WebRTC streamer that consumes the captured frame when a live-preview session is active.
+    public static volatile WebRtcStreamer webRtcStreamer;
+    // Set by the live-preview HTTP handler when the optional WebRTC/NICE plugins are absent.
+    public static volatile boolean imageLivePreviewFallback;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -558,28 +562,13 @@ public class GStreamerGrabber {
             if (!bufferLock.tryLock()) {
                 return;
             }
-            // The RGB snapshot is only consumed by the TestCanvas background when showCapturedImage
-            // is true, so skip the per frame copy entirely when it is not needed.
             if (GuiSingleton.getInstance().isShowLiveCapture()) {
-                rawBuffer.rewind();
-                ByteBuffer bufferCopy = rawBuffer.slice();
-                bufferCopy.rewind();
-                int remaining = bufferCopy.remaining();
-                byte[] frameBytes = new byte[remaining];
-                bufferCopy.get(frameBytes);
-                bufferCopy.rewind();
-                // Publish the new frame and a frozen snapshot atomically. The snapshot is a copy taken
-                // while the buffer is stable, so asynchronous readers (TestCanvas) never observe a
-                // half-swapped / discarded buffer while the pipeline is producing frames fast.
-                ByteBuffer snapshot = ByteBuffer.wrap(frameBytes);
-                lastRgbBuffer = snapshot;
-                lastRgbBufferSnapshot = snapshot;
-                // Publish to the global singleton so the TestCanvas (JavaFX thread) always reads
-                // the same field the GStreamer thread writes, regardless of which GStreamerGrabber
-                // instance is alive. This removes the "two grabbers" race after pipeline restarts.
-                GrabberSingleton.getInstance().latestRgbBuffer = snapshot;
-                GrabberSingleton.getInstance().latestRgbBufferSnapshot = snapshot;
-                GrabberSingleton.getInstance().lastPublisherHash = System.identityHashCode(this);
+                copyRealtimeBufferForLivePreview(rawBuffer);
+            }
+            // Forward the raw frame to the WebRTC streamer only when a live-preview session is active.
+            WebRtcStreamer streamer = webRtcStreamer;
+            if (streamer != null) {
+                streamer.pushFrame(rawBuffer, width, height);
             }
             if (main.getConfig().isAutoDetectBlackBars()) {
                 if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
@@ -588,7 +577,7 @@ public class GStreamerGrabber {
                 }
             }
             try {
-                if (log.isTraceEnabled() || GuiSingleton.getInstance().isShowLiveCapture()) {
+                if (log.isTraceEnabled() || (GuiSingleton.getInstance().isShowLiveCapture() && imageLivePreviewFallback)) {
                     intBufferRgbToImage(width, height, rawBuffer);
                 }
                 // Process zones and calculate avg colors
@@ -608,6 +597,33 @@ public class GStreamerGrabber {
             } finally {
                 bufferLock.unlock();
             }
+        }
+
+        /**
+         * Copies the given raw video frame buffer and prepares a stable snapshot for use in rendering or testing.
+         * This method creates an immutable copy of the RGB frame buffer, ensuring that it can be safely shared
+         * across threads without encountering partial updates or inconsistencies.
+         *
+         * @param rawBuffer The raw {@code ByteBuffer} containing the current RGB video frame data, which is copied
+         *                  to create a stable snapshot. The {@code rawBuffer} is expected to be in a rewindable state.
+         */
+        private void copyRealtimeBufferForLivePreview(ByteBuffer rawBuffer) {
+            // The RGB snapshot is only consumed by the TestCanvas background when showCapturedImage is true
+            rawBuffer.rewind();
+            ByteBuffer bufferCopy = rawBuffer.slice();
+            bufferCopy.rewind();
+            int remaining = bufferCopy.remaining();
+            byte[] frameBytes = new byte[remaining];
+            bufferCopy.get(frameBytes);
+            bufferCopy.rewind();
+            // Publish the new frame and a frozen snapshot atomically.
+            ByteBuffer snapshot = ByteBuffer.wrap(frameBytes);
+            lastRgbBuffer = snapshot;
+            lastRgbBufferSnapshot = snapshot;
+            // This removes the "two grabbers" race after pipeline restarts.
+            GrabberSingleton.getInstance().latestRgbBuffer = snapshot;
+            GrabberSingleton.getInstance().latestRgbBufferSnapshot = snapshot;
+            GrabberSingleton.getInstance().lastPublisherHash = System.identityHashCode(this);
         }
 
         /**

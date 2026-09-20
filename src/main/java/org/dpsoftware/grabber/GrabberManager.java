@@ -37,6 +37,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
+import org.freedesktop.gstreamer.Version;
 
 import javax.swing.*;
 import java.awt.*;
@@ -105,8 +106,8 @@ public class GrabberManager {
         MainSingleton main = MainSingleton.getInstance();
         AtomicInteger restartCounter = new AtomicInteger();
         imageProcessor.initGStreamerLibraryPaths();
-        //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
-        Gst.init(Constants.SCREEN_GRABBER, "");
+        // WebRTC support in gst1-java is available from GStreamer 1.14. Supplying the minimum version here is also necessary for the binding's
+        Gst.init(Version.of(1, 14), Constants.SCREEN_GRABBER, "");
         AtomicInteger pipelineRetry = new AtomicInteger();
         String linuxParams = null;
         if (NativeExecutor.isLinux()) {

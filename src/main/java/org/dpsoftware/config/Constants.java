@@ -871,6 +871,10 @@ public class Constants {
     public static final String COMBO_CHANGE_ENDPOINT = "/comboChange";
     public static final String SECTION_TITLES_ENDPOINT = "/sectionTitles";
     public static final int CONFIG_SERVER_DEFAULT_PORT = 33556;
+    // WebRTC signaling: the WebSocket server cannot share the port with the config HTTP server.
+    public static final int WEBRTC_SIGNALING_DEFAULT_PORT = 33557;
+    public static final String WEBRTC_SIGNALING_ENDPOINT = "/webrtc";
+    public static final String WEBRTC_PREVIEW_JS_ENDPOINT = "/webrtc-preview.js";
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
