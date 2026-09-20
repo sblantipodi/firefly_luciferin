@@ -124,16 +124,7 @@ public class WebRtcStreamer {
         byteOrder = byteOrder.replace("format=", "");
         this.byteOrder = byteOrder;
         try {
-            pipeline = (Pipeline) Gst.parseLaunch(
-                    "appsrc name=webrtcsrc is-live=true do-timestamp=true format=TIME"
-                            + " ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0"
-                            + " ! videoconvert ! videoscale add-borders=true"
-                            + " ! capsfilter name=webrtcpreviewcaps"
-                            + " ! vp8enc deadline=1"
-                            + " ! rtpvp8pay"
-                            + " ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0"
-                            + " ! application/x-rtp,media=video,encoding-name=VP8,payload=97"
-                            + " ! webrtcbin name=webrtcbin stun-server=stun://stun.l.google.com:19302");
+            pipeline = (Pipeline) Gst.parseLaunch(Constants.GSTREAMER_PIPELINE_WEBRTC);
         } catch (Exception e) {
             log.error("Failed to parse WebRTC pipeline: {}", e.getMessage());
             return;
