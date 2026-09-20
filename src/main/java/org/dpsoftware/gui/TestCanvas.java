@@ -220,8 +220,7 @@ public class TestCanvas {
         for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
             if (index == MainSingleton.getInstance().config.getMonitorNumber()) {
                 CommonUtility.toJsonString(displayInfo);
-                // Center relative to the complete physical monitor bounds. (Example: GNOME bar)
-                stage.setX((displayInfo.getBoundsMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
+                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
                 stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateDialogY(stage));
             }
             index++;

@@ -285,11 +285,7 @@ function buildForm() {
     html += buildProfilesAccordion();
     html += '</div>';
     html += '<div class="text-center py-2"><button type="button" id="showLivePreview" class="btn btn-sm">Show Live Preview</button></div>';
-    html += '<div class="text-center py-2"><video id="webrtcPreview" autoplay muted playsinline></video></div>';
     html += '<div class="text-center py-2"><img id="screenshot" alt="Captured frame (TRACE)"></div>';
-    html += '<div id="livePreviewFallbackNotice" class="live-preview-fallback-notice" role="status">'
-        + '<strong>Image preview mode.</strong> The GStreamer NICE plugin is not installed, so this preview uses images. '
-        + 'Install <code>gstreamer1.0-nice</code> to enable the faster, lower-latency WebRTC preview.</div>';
     html += '<div class="mt-3"><button type="button" class="btn btn-orange w-100" onclick="saveForm()"> SAVE SETTINGS</button></div>';
     html += '<div class="text-center text-muted py-3"><span id="fpsCounter"></span></div></form></div></div>';
     $('.container-fluid + .container').html(html);
