@@ -490,7 +490,7 @@ public class UdpServer {
                             interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                             broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
                             useBroadcast ? "broadcast" : "static-ip");
-                    sendFromInterface(interfaceAddress, broadCastPing);
+                    sendDiscoveryPing(interfaceAddress, broadCastPing);
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                         if (!isReachableViaInterface(interfaceAddress.getAddress(), sat.getValue().getDeviceIp())) {
                             log.trace("Skipping UDP ping from interfaceIp={} to satelliteIp={} because route does not use this interface",
@@ -510,6 +510,27 @@ public class UdpServer {
             }
         };
         udpBrExecutorService.scheduleAtFixedRate(pingTask, 0, 1, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Preserve per-interface discovery and additionally announce the main listening port.
+     * Glow Worm sends status to port 5001 regardless of the sender's ephemeral port.
+     * Some firewalls require outgoing broadcast traffic from that listening port.
+     * Only PING uses this compatibility path: device name messages must retain their
+     * explicitly bound source address, and secondary instances receive via the relay.
+     */
+    void sendDiscoveryPing(InterfaceAddress interfaceAddress, DatagramPacket packet) throws IOException {
+        sendFromInterface(interfaceAddress, packet);
+        if (socket.getLocalPort() == Constants.UDP_BROADCAST_PORT
+                && packet.getPort() == Constants.UDP_BROADCAST_PORT
+                && packet.getAddress().equals(interfaceAddress.getBroadcast())) {
+            try {
+                socket.send(packet);
+            } catch (IOException e) {
+                // The per nterface packet was already sent. A failed compatibility announcement must not prevent the subsequent satellite pings.
+                log.debug("Unable to send discovery PING from the listening port: {}", e.getMessage());
+            }
+        }
     }
 
     /**
