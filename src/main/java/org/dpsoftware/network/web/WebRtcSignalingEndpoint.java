@@ -29,31 +29,12 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * WebSocket endpoint that carries the WebRTC signaling (SDP offer/answer and ICE candidates)
- * between the browser live-preview page and the GStreamer {@code webrtcbin} pipeline.
- * <p>
- * The browser is the answerer: it creates an {@code answer} to the {@code offer} produced by
- * {@code webrtcbin} and sends it back over this channel, together with the remote ICE candidates.
- * The server sends its own ICE candidates as soon as they are gathered.
- * <p>
- * The in/out JSON shapes mirror the browser payload:
- * <ul>
- *     <li>offer (server→client): {"type":"offer","sdp":"..."}</li>
- *     <li>answer (client→server): {"type":"answer","sdp":"..."}</li>
- *     <li>ice (both ways): {"type":"ice","candidate":"...","sdpMLineIndex":0}</li>
- * </ul>
- */
+/** WebSocket endpoint for browser and GStreamer WebRTC signaling. */
 @Slf4j
 @ServerEndpoint("/webrtc")
 public class WebRtcSignalingEndpoint {
 
-    /**
-     * The signaling server owning the WebRTC pipeline. Set by {@link WebRtcSignalingServer} at
-     * startup; the Tyrus container instantiates this endpoint with a no-arg constructor, so the
-     * server is shared through this static field (there is a single signaling server per process).
-     */
-    private static volatile WebRtcSignalingServer server;
+    private static volatile WebRtcSignalingServer server; // Shared server for Tyrus endpoint instances.
 
     /**
      * Wire the signaling server to this endpoint.

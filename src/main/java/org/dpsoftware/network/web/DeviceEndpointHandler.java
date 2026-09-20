@@ -43,11 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 
-/**
- * Handles the device endpoints: exposing the currently connected devices and proxying the
- * device {@code /prefs} endpoint server-side (the device firmware does not send CORS headers,
- * so the browser cannot read {@code /prefs} directly).
- */
+/** Handles connected devices and proxies their preferences. */
 @Slf4j
 public class DeviceEndpointHandler {
 
@@ -72,8 +68,7 @@ public class DeviceEndpointHandler {
     }
 
     /**
-     * Handle GET /getDevices, exposing the currently connected devices (in-memory device table) as JSON.
-     * Read-only, the connected devices are a runtime state and cannot be persisted.
+     * Returns connected devices.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -89,9 +84,7 @@ public class DeviceEndpointHandler {
     }
 
     /**
-     * Handle GET /devicePrefs?ip=<addr>, proxying the device {@code /prefs} endpoint server-side.
-     * The device firmware does not send CORS headers, so the browser cannot read {@code /prefs} directly;
-     * this endpoint fetches it from the JVM (no CORS) and returns the JSON to the client.
+     * Proxies device preferences to avoid browser CORS restrictions.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written

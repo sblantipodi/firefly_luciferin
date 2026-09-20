@@ -45,17 +45,14 @@ import java.nio.file.Files;
 @Slf4j
 public class LivePreviewWebHandler {
 
-    // Forces the compatible image-based preview even when the local WebRTC/NICE plugins are installed.
-    private static final boolean FORCE_IMAGE_LIVE_PREVIEW = Boolean.parseBoolean(
+    private static final boolean FORCE_IMAGE_LIVE_PREVIEW = Boolean.parseBoolean( // Forces image preview.
             System.getenv("LUCIFERIN_LIVE_PREVIEW_IMAGE"));
     private static final String JSON_OK = "{\"status\":\"OK\"}";
     private static final String JSON_IMAGE_PREVIEW = "{\"status\":\"OK\",\"livePreviewMode\":\"image\"}";
     private static final String JSON_WEBRTC_PREVIEW = "{\"status\":\"OK\",\"livePreviewMode\":\"webrtc\"}";
-    // Idle timeout, in milliseconds, after which the live preview is automatically turned off.
-    private static final int LIVE_PREVIEW_IDLE_MILLIS = 30000;
+    private static final int LIVE_PREVIEW_IDLE_MILLIS = 30000; // Preview idle timeout in milliseconds.
     private volatile long lastScreenshotGetMillis = 0L;
-    // Watchdog thread that turns off the live capture flag when no {@code GET /screenshot} has arrived for more than LIVE_PREVIEW_IDLE_MILLIS ms.
-    private Thread livePreviewWatchdog;
+    private Thread livePreviewWatchdog; // Disables capture after the idle timeout.
     private final WebRtcSignalingServer webRtcSignalingServer;
 
     public LivePreviewWebHandler(WebRtcSignalingServer webRtcSignalingServer) {
@@ -91,17 +88,13 @@ public class LivePreviewWebHandler {
     }
 
     /**
-     * Handle GET /screenshot, serving the last captured frame BMP saved by the grabber
-     * (written by {@code intBufferRgbToImage} when the runtime log level is TRACE).
-     * The file is read from the config path; a 404 is returned when it does not exist yet
-     * so the client can keep retrying until a frame is captured.
+     * Serves the latest captured preview frame.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
      */
     public void handleGetScreenshot(HttpExchange exchange) throws IOException {
-        // A client is actively pulling frames: refresh the idle timestamp so the watchdog does
-        // not turn off the live preview while the page is polling.
+        // Keep the preview active while frames are requested.
         lastScreenshotGetMillis = System.currentTimeMillis();
         File bmp = new File(InstanceConfigurer.getConfigPath(), Constants.GSTREAMER_SCREENSHOT);
         if (!bmp.exists() || !bmp.isFile()) {
@@ -118,12 +111,7 @@ public class LivePreviewWebHandler {
     }
 
     /**
-     * Handle POST /screenshot/enable, toggling the live capture flag so the grabber starts (or
-     * stops) writing the live preview BMP (see {@code GStreamerGrabber.rgbFrame}, which writes the
-     * frame when either the log level is TRACE or {@code showLiveCapture} is true). The flag is a
-     * runtime-only toggle on {@link GuiSingleton}; it does not change the persisted configuration
-     * nor the runtime log level. The {@code disable} query parameter, when set to true, turns the
-     * preview off (showLiveCapture=false); otherwise it is turned on (showLiveCapture=true).
+     * Enables or disables runtime preview capture.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -143,7 +131,7 @@ public class LivePreviewWebHandler {
             if (webRtcAvailable) {
                 webRtcSignalingServer.start(Constants.WEBRTC_SIGNALING_DEFAULT_PORT);
             } else {
-                // Covers a live environment change only after restart and also tears down a previously open WebRTC session before serving image frames.
+                // Close WebRTC before serving image frames.
                 webRtcSignalingServer.stop();
             }
             if (!MainSingleton.getInstance().RUNNING) {
@@ -170,12 +158,7 @@ public class LivePreviewWebHandler {
         }
     }
 
-    /**
-     * Start the idle watchdog that automatically turns off the live capture flag when no
-     * {@code GET /screenshot} has arrived for more than {@value #LIVE_PREVIEW_IDLE_MILLIS} ms.
-     * Any previously running watchdog is stopped first, so the method is safe to call again while
-     * one is already running (it restarts the idle timer).
-     */
+    /** Starts or restarts the preview idle watchdog. */
     private synchronized void startLivePreviewWatchdog() {
         stopLivePreviewWatchdog();
         lastScreenshotGetMillis = System.currentTimeMillis();

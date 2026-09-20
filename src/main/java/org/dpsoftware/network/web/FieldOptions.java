@@ -31,9 +31,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.util.*;
 
 /**
- * Possible values for a single configuration field, exposed to the web settings page.
- * The {@code value} is the exact value to persist (English i18n string for localized enums,
- * or the numeric value for numeric enums) and the {@code label} is the human readable English text.
+ * Selectable values for a configuration field.
  *
  * @param options the selectable values for the field
  * @param type    the value type, so the client can cast it correctly (e.g. "string", "number")
@@ -41,10 +39,7 @@ import java.util.*;
 public record FieldOptions(List<Option> options, String type) {
 
     /**
-     * Build the map of possible values for every configuration field that is backed by an enum,
-     * using the enums as the single source of truth (no value list is duplicated in the client).
-     * Each entry exposes the value to persist and the English display label, plus the value type
-     * so the client can cast it correctly.
+     * Builds enum-backed field options.
      *
      * @return map of configuration field name to its possible values
      */
@@ -78,15 +73,14 @@ public record FieldOptions(List<Option> options, String type) {
                 new FieldOptions.Option("1", "Disabled"),
                 new FieldOptions.Option("2", "Dual display"),
                 new FieldOptions.Option("3", "Triple display")), "number"));
-        // 3D LUT (color tone map) options, the available .cube LUTs (classpath + config dir) with
-        // "Disabled" pinned at the top, the same list the JavaFX combo box is populated with.
+        // 3D LUT (color tone map) options, the available .cube LUTs (classpath + config dir) with "Disabled" pinned at the top
         options.put(WebFieldNames.CUBE_LUT, new FieldOptions(CubeLutToneMap.listAvailableLuts().stream()
                 .map(name -> new FieldOptions.Option(name, name)).toList(), "string"));
         return options;
     }
 
     /**
-     * Effect options with "Solid" and "Bias light" pinned at the top, the remaining effects sorted alphabetically.
+     * Returns effects with Solid and Bias light first.
      *
      * @return the field options for the effect field
      */
@@ -109,8 +103,7 @@ public record FieldOptions(List<Option> options, String type) {
     }
 
     /**
-     * Build {@link FieldOptions} for a localized enum, using its base (English) i18n value to persist
-     * and its English i18n text as label.
+     * Builds options from a localized enum.
      *
      * @param enumClass the localized enum class
      * @param <E>       the localized enum type
