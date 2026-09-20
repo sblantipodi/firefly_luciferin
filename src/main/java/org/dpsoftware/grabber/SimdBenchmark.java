@@ -24,6 +24,7 @@ package org.dpsoftware.grabber;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.Enums;
 
 import java.util.ArrayList;
@@ -50,13 +51,13 @@ public class SimdBenchmark {
 
     /**
      * Determines the initial SIMD processing strategy based on an environment variable.
-     * If an override is provided via the environment variable defined by {@link Constants#LUCIFERIN_SIMD_STRATEGY_OVERRIDE}, the method attempts to match
+     * If an override is provided via the environment variable defined by {@link EnvConstants#LUCIFERIN_SIMD_STRATEGY_OVERRIDE}, the method attempts to match
      * the override to a known {@link SimdProcessingStrategy} value. If no valid override is found or if the variable is unset, the method returns {@code null}.
      *
      * @return The resolved {@link SimdProcessingStrategy} based on the override, or {@code null} if no valid override is specified or the environment variable is missing.
      */
     private static SimdProcessingStrategy resolveInitialSimdProcessingStrategy() {
-        String override = System.getenv(Constants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
+        String override = System.getenv(EnvConstants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
         if (override != null) {
             if (SimdProcessingStrategy.DOUBLE_VECTOR.name().equals(override)) {
                 return SimdProcessingStrategy.DOUBLE_VECTOR;
@@ -75,10 +76,10 @@ public class SimdBenchmark {
      * @return A string describing how the SIMD strategy is selected, either through an override or runtime benchmarking, optionally including CPU identification information.
      */
     static String describeSimdStrategySelection() {
-        String override = System.getenv(Constants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
+        String override = System.getenv(EnvConstants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
         if (override != null && !override.isBlank() && (override.equals(SimdProcessingStrategy.DOUBLE_VECTOR.name())
                 || override.equals(SimdProcessingStrategy.FULL_VECTOR.name()))) {
-            return "override via env variable -> " + Constants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE + "=" + override;
+            return "override via env variable -> " + EnvConstants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE + "=" + override;
         }
         String cpuIdentifier = getCpuIdentifier();
         return cpuIdentifier.isBlank()
@@ -87,7 +88,7 @@ public class SimdBenchmark {
     }
 
     private static String getCpuIdentifier() {
-        String processorIdentifier = System.getenv("PROCESSOR_IDENTIFIER");
+        String processorIdentifier = System.getenv(EnvConstants.PROCESSOR_IDENTIFIER);
         if (processorIdentifier != null && !processorIdentifier.isBlank()) {
             return processorIdentifier.toLowerCase();
         }
@@ -155,10 +156,10 @@ public class SimdBenchmark {
     public static void resetSimdBenchmark() {
         synchronized (SIMD_STRATEGY_BENCH_LOCK) {
             // If there is a system property override (-DLUCIFERIN_SIMD_STRATEGY), we skip the benchmark to respect the user's fixed choice.
-            String simdStrategy = System.getenv(Constants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
+            String simdStrategy = System.getenv(EnvConstants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
             if (simdStrategy != null && (simdStrategy.equals(SimdProcessingStrategy.DOUBLE_VECTOR.name())
                     || simdStrategy.equals(SimdProcessingStrategy.FULL_VECTOR.name()))) {
-                log.debug("Cannot reset benchmark: an env override (-D{}) is currently active.", Constants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
+                log.debug("Cannot reset benchmark: an env override (-D{}) is currently active.", EnvConstants.LUCIFERIN_SIMD_STRATEGY_OVERRIDE);
                 return;
             }
             selectedSimdStrategy = null;

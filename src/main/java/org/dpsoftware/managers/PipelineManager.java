@@ -31,6 +31,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.*;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.DbusScreenCast;
@@ -646,17 +647,17 @@ public class PipelineManager {
 
     // Returns GSTREAMER_CUSTOM_PIPELINE env var if set, otherwise the default.
     public static String getPipeline(final String defaultPipeline) {
-        return Constants.CUSTOM_GSTREAMER_PIPELINE != null ? Constants.CUSTOM_GSTREAMER_PIPELINE : defaultPipeline;
+        return EnvConstants.CUSTOM_GSTREAMER_PIPELINE != null ? EnvConstants.CUSTOM_GSTREAMER_PIPELINE : defaultPipeline;
     }
 
     // Returns CUSTOM_GSTREAMER_CAPS env var if set, otherwise the default.
     public static String getCap(final String defaultCap) {
-        return Constants.CUSTOM_GSTREAMER_CAPS != null ? Constants.CUSTOM_GSTREAMER_CAPS : defaultCap;
+        return EnvConstants.CUSTOM_GSTREAMER_CAPS != null ? EnvConstants.CUSTOM_GSTREAMER_CAPS : defaultCap;
     }
 
     // Returns CUSTOM_GSTREAMER_BO env var if set, otherwise the default.
     public static String getBo(final String defaultBo) {
-        return Constants.CUSTOM_GSTREAMER_BO != null ? Constants.CUSTOM_GSTREAMER_BO : defaultBo;
+        return EnvConstants.CUSTOM_GSTREAMER_BO != null ? EnvConstants.CUSTOM_GSTREAMER_BO : defaultBo;
     }
 
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {

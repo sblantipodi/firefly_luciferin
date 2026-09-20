@@ -115,10 +115,6 @@ public class Constants {
     public static final String LINUX_DESKTOP_FILE_LOCAL = "/.local/share/applications/fireflyluciferin-FireflyLuciferin.desktop";
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
     public static final String HOME_PATH = "user.home";
-    public static final String LUCIFERIN_LOG_LEVEL = "LUCIFERIN_LOG_LEVEL";
-    public static final String LUCIFERIN_LOSSLESS_COMPRESSION_LOG = "LUCIFERIN_LOSSLESS_COMPRESSION_LOG";
-    public static final String LUCIFERIN_SIMD_STRATEGY_OVERRIDE = "LUCIFERIN_SIMD_STRATEGY";
-    public static final String XDG_HOME = "XDG_CONFIG_HOME";
     public static final String DOCUMENTS_FOLDER = "Documents";
     public static final String OPENJFX_PATH = ".openjfx";
     public static final String LINUX_CONFIG_PATH = ".config";
@@ -589,22 +585,15 @@ public class Constants {
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
     public static final String GSTREAMER_PATH = "/gstreamer/1.0/msvc_x86_64/bin";
-    public static final String PATH = "path";
     public static final String JNA_LIB_PATH = "jna.library.path";
     public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
     public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
     public static final String SCREEN_GRABBER = "FireflyLuciferin";
     // GL env
-    public static final String GST_GL_WINDOW = "GST_GL_WINDOW";
-    public static final String GST_GL_PLATFORM = "GST_GL_PLATFORM";
     public static final String X11 = "x11";
     public static final String SURFACELESS = "surfaceless";
     public static final String GLX = "glx";
     public static final String EGL = "egl";
-    // GStreamer System Env Overrides
-    public static final String CUSTOM_GSTREAMER_PIPELINE = System.getenv("CUSTOM_GSTREAMER_PIPELINE");
-    public static final String CUSTOM_GSTREAMER_CAPS = System.getenv("CUSTOM_GSTREAMER_CAPS");
-    public static final String CUSTOM_GSTREAMER_BO = System.getenv("CUSTOM_GSTREAMER_BO");
     // GStreamer Pipelines
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11 = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
@@ -889,8 +878,6 @@ public class Constants {
     public static final String OBJPATH_GNOME_NIGHTLIGHT = "/org/gnome/SettingsDaemon/Color";
     public static final String PROP_GNOME_NIGHTLIGHT = "NightLightActive";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
-    public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
-    public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
     public static final String RESTART_DELAY = "RESTART_DELAY";
     public static final int RESTART_DELAY_SECONDS = 3;
@@ -898,8 +885,6 @@ public class Constants {
     public static final int RESTART_TIMEOUT = -180;
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
     public static final String[] SNAP_RUN = {"FireflyLuciferin"};
-    public static final String FLATPAK_ID = "FLATPAK_ID";
-    public static final String SNAP_NAME = "SNAP_NAME";
     public static final String CMD_GPU_USAGE = "powershell.exe -Command \""
             + "$gpu = Get-Counter '\\GPU Engine(*)\\Utilization Percentage'; "
             + "$gpu.CounterSamples | Where-Object { $_.CookedValue -gt 0 } | "

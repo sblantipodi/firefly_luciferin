@@ -28,6 +28,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.config.LocalizedEnum;
@@ -290,7 +291,7 @@ public final class NativeExecutor {
      * @return if it's Wayland
      */
     public static boolean isWayland() {
-        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_CHK) != null && System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
+        return isLinux() && System.getenv(EnvConstants.DISPLAY_MANAGER_CHK) != null && System.getenv(EnvConstants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
     }
 
     /**
@@ -299,7 +300,7 @@ public final class NativeExecutor {
      * @return if it's Hyprland
      */
     public static boolean isHyprland() {
-        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_HYPRLAND_CHK) != null;
+        return isLinux() && System.getenv(EnvConstants.DISPLAY_MANAGER_HYPRLAND_CHK) != null;
     }
 
     /**
@@ -317,7 +318,7 @@ public final class NativeExecutor {
      * @return if it's Flatpak
      */
     public static boolean isFlatpak() {
-        return System.getenv(Constants.FLATPAK_ID) != null;
+        return System.getenv(EnvConstants.FLATPAK_ID) != null;
     }
 
     /**
@@ -326,7 +327,7 @@ public final class NativeExecutor {
      * @return if it's Snap
      */
     public static boolean isSnap() {
-        return System.getenv(Constants.SNAP_NAME) != null && System.getenv(Constants.SNAP_NAME).equals("fireflyluciferin");
+        return System.getenv(EnvConstants.SNAP_NAME) != null && System.getenv(EnvConstants.SNAP_NAME).equals("fireflyluciferin");
     }
 
 

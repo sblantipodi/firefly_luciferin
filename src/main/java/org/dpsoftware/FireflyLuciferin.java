@@ -269,7 +269,7 @@ public class FireflyLuciferin extends Application {
     private void setRuntimeLogLevel() {
         MainSingleton main = MainSingleton.getInstance();
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        String logLevel = System.getenv(Constants.LUCIFERIN_LOG_LEVEL);
+        String logLevel = System.getenv(EnvConstants.LUCIFERIN_LOG_LEVEL);
         if (logLevel == null || logLevel.isEmpty()) {
             logLevel = main.getConfig().getRuntimeLogLevel();
         }
@@ -284,7 +284,7 @@ public class FireflyLuciferin extends Application {
             log.info("Starting default instance");
         }
         logEnvironment();
-        String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
+        String losslessCompressionLog = System.getenv(EnvConstants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
         if (Constants.TRUE.equalsIgnoreCase(losslessCompressionLog))
             GrabberSingleton.getInstance().losslessCompressionLog = true;
     }

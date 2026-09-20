@@ -40,6 +40,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberSingleton;
@@ -164,7 +165,7 @@ public class TcInteractionHandler {
                 tc.stopOverlayOnlyMode();
                 tc.stage.close();
                 GuiSingleton.getInstance().rleVisualMapVisible = false;
-                String losslessCompressionLog = System.getenv(Constants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
+                String losslessCompressionLog = System.getenv(EnvConstants.LUCIFERIN_LOSSLESS_COMPRESSION_LOG);
                 GrabberSingleton.getInstance().setLosslessCompressionLog(Constants.TRUE.equalsIgnoreCase(losslessCompressionLog));
                 return;
             }
