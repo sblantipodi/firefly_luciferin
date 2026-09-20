@@ -37,13 +37,13 @@ import java.util.jar.JarFile;
  * Cube LUT tone mapper.
  * <p>
  * Loads a 3D lookup table (LUT) in Adobe Cube format and performs trilinear interpolation to map HDR colors to SDR.
- * The LUT filename is read from the application configuration ({@code cubeLut}) at class initialization time
- * and can be changed at runtime via {@link #refresh()}.
+ * The LUT filename is read from the application configuration (cubeLut) at class initialization time
+ * and can be changed at runtime via #refresh().
  * The LUT is resolved from the following locations, in order:
- * - classpath resources co-located in this package ({@code org.dpsoftware.lut})
- * - configuration path {@code <config>/cube_lut/}
+ * - classpath resources co-located in this package (org.dpsoftware.lut)
+ * - configuration path <config>/cube_lut/
  * If the LUT is not found in either location, or cannot be parsed, the tone mapper degrades gracefully
- * and {@link #lookup(int, int, int)} returns the input color unmodified.
+ * and #lookup(int, int, int) returns the input color unmodified.
  */
 @Slf4j
 public final class CubeLutToneMap {
@@ -51,8 +51,7 @@ public final class CubeLutToneMap {
     private static final String CUBE_LUT_DIR = "cube_lut";
 
     /**
-     * Parsed LUT data. Remains {@code null} when no LUT could be loaded,
-     * in which case {@link #lookup(int, int, int)} returns the input unchanged.
+     * Parsed LUT data. Remains null when no LUT could be loaded, in which case #lookup(int, int, int) returns the input unchanged.
      */
     private static volatile float[] lut;
     private static volatile int size;
@@ -61,8 +60,7 @@ public final class CubeLutToneMap {
     private static float[] parsedLut;
 
     /**
-     * Name of the LUT currently loaded. Used to detect config changes and
-     * invalidate the cache on {@link #refresh()}.
+     * Name of the LUT currently loaded. Used to detect config changes and invalidate the cache on #refresh().
      */
     private static volatile String loadedLutName = null;
 
@@ -77,12 +75,12 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * Re-read the LUT filename from {@code MainSingleton.getInstance().config.getCubeLut()}
+     * Re read the LUT filename from MainSingleton.getInstance().config.getCubeLut()
      * and reload the LUT if the configured name has changed since the last load.
      * <p>
      * This allows the LUT to be switched at runtime (e.g. via a UI setting) without
-     * re-initializing the class. If the configured name is unchanged, this method is a
-     * no-op. If the new LUT cannot be loaded, the previously loaded LUT is retained.
+     * re initializing the class. If the configured name is unchanged, this method is a
+     * no op. If the new LUT cannot be loaded, the previously loaded LUT is retained.
      * </p>
      */
     public static void refresh() {
@@ -101,15 +99,13 @@ public final class CubeLutToneMap {
 
     /**
      * List the filenames of the LUTs available to be loaded, using the same
-     * resolution order as {@link #loadLut(String)}:
-     * <ol>
-     *   <li>classpath resources co-located in this package ({@code org.dpsoftware.lut})</li>
-     *   <li>configuration path {@code <config>/cube_lut/}</li>
-     * </ol>
+     * resolution order as #loadLut(String):
+     * - classpath resources co-located in this package
+     * - configuration path <config>/cube_lut/
      * Results are deduplicated (classpath entries take precedence) and sorted
      * lexicographically.
      *
-     * @return sorted list of LUT filenames (e.g. {@code 1000nits_HDR-to-SDR.cube});
+     * @return sorted list of LUT filenames
      * empty list if no LUT is available in either location
      */
     public static List<String> listAvailableLuts() {
@@ -128,9 +124,9 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * List LUT filenames found co-located in this package ({@code org.dpsoftware.lut}).
+     * List LUT filenames found co located in this package.
      * The LUT files are packaged in the same package as this class and the package is
-     * {@code opens} in the module descriptor, so the classloader can read them in JPMS
+     * opens in the module descriptor, so the classloader can read them in JPMS
      * module mode as well (a non opened package would be invisible to it).
      * <p>
      * The lookup is performed by locating the class (jar or exploded classes directory)
@@ -148,8 +144,7 @@ public final class CubeLutToneMap {
             if (path.endsWith(".jar")) {
                 names.addAll(scanJarForCubeLuts(path));
             } else {
-                // Exploded classes directory: the package directory is
-                // <codeSource>/<package-as-paths>.
+                // Exploded classes directory: the package directory is <codeSource>/<package-as-paths>.
                 File pkgDir = new File(new File(path),
                         CubeLutToneMap.class.getPackageName().replace('.', File.separatorChar));
                 File[] files = pkgDir.listFiles(x -> x.isFile() && x.getName().endsWith(".cube"));
@@ -166,8 +161,7 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * Scan the entries of the given jar file for {@code .cube} files co-located in this
-     * package ({@code org/dpsoftware/lut}) and return their base names.
+     * Scan the entries of the given jar file for {@code .cube} files co-located in this package and return their base names.
      */
     private static List<String> scanJarForCubeLuts(String jarPath) {
         List<String> found = new ArrayList<>();
@@ -190,9 +184,8 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * Return {@code true} when the configured LUT is {@code "Disabled"}, meaning
-     * the tone mapper must be completely bypassed (no LUT loaded, {@link #lookup}
-     * returns the input color unmodified).
+     * Return true when the configured LUT is "Disabled", meaning
+     * the tone mapper must be completely bypassed (no LUT loaded, #lookup returns the input color unmodified).
      */
     private static boolean isDisabled() {
         Configuration cfg = MainSingleton.getInstance().config;
@@ -224,7 +217,7 @@ public final class CubeLutToneMap {
 
     /**
      * Resolve the LUT from classpath then config path, parse it, and publish the
-     * result. On any failure the previous LUT is retained (or {@code null} on first load).
+     * result. On any failure the previous LUT is retained or null on first load.
      */
     private static void loadLut(String lutName) {
         if (lutName == null) {
@@ -267,10 +260,9 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * Resolve the {@code .cube} file co-located in this package on the filesystem, when the
-     * class was loaded from an exploded classes directory (e.g. the deployed
-     * {@code lib/app/classes} layout). Returns {@code null} when the class was loaded from a
-     * jar, in which case the LUT must be read through the classloader instead.
+     * Resolve the .cube file co located in this package on the filesystem, when the class was loaded from an
+     * exploded classes directory (e.g. the deployed lib/app/classes layout.
+     * Returns null when the class was loaded from a jar, in which case the LUT must be read through the classloader instead.
      */
     private static File resolveCoLocatedLutFile(String lutName) {
         try {
@@ -292,7 +284,7 @@ public final class CubeLutToneMap {
      * is obtained via trilinear interpolation between the 8 nearest LUT entries.
      * If no LUT was loaded (resource and config-path file both missing, or parsing failed), the input color
      * is returned unmodified (still as float, no rounding).
-     * This is the primary implementation; {@link #lookup(int, int, int)} delegates here.
+     * This is the primary implementation; #lookup(int, int, int) delegates here.
      *
      * @param r red   channel in [0, 255] (float precision, values outside range are clamped)
      * @param g green channel in [0, 255]
@@ -325,7 +317,7 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * Integer convenience overload of {@link #lookup(float, float, float)}, for callers that only have
+     * Integer convenience overload of #lookup(float, float, float), for callers that only have
      * 8-bit channel values available (e.g. reading raw pixel bytes for the debug screenshot path).
      * Prefer the float overload when the caller already holds float precision, to avoid an unnecessary
      * truncation before the LUT lookup.
@@ -382,10 +374,8 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * Parse an Adobe Cube format LUT from the given input stream. Reads the {@code LUT_3D_SIZE} directive to
-     * determine the grid dimensions, then reads the R G B float triples. Comments ({@code #}),
-     * {@code DOMAIN_MIN/MAX} and {@code TITLE} lines are skipped.
-     * Package-private for unit testing.
+     * Parse an Adobe Cube format LUT from the given input stream. Reads the LUT_3D_SIZE directive to
+     * determine the grid dimensions, then reads the R G B float triples.
      *
      * @param in input stream containing the Cube LUT file content
      * @throws Exception if the LUT data is incomplete or cannot be parsed

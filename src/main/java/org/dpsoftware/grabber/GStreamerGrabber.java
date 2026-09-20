@@ -60,14 +60,14 @@ public class GStreamerGrabber {
     private final Lock bufferLock = new ReentrantLock();
     public AppSink videosink;
     public volatile ByteBuffer lastRgbBuffer;
-    //Frozen snapshot of the last captured frame (updated atomically with {@link #lastRgbBuffer}); async readers copy from it to avoid lock contention on the live buffer.
-    @Getter
-    private volatile ByteBuffer lastRgbBufferSnapshot;
+    // Optional WebRTC streamer that consumes the captured frame when a live preview session is active.
+    public static volatile WebRtcStreamer webRtcStreamer;
     private final int[] reusableRgbTotals = new int[4];
     private final FrameGenerator frameGenerator;
     private long lastCaptureTime = 0;
-    // Optional WebRTC streamer that consumes the captured frame when a live-preview session is active.
-    public static volatile WebRtcStreamer webRtcStreamer;
+    //Frozen snapshot of the last captured frame
+    @Getter
+    private volatile ByteBuffer lastRgbBufferSnapshot;
     // Set by the live-preview HTTP handler when the optional WebRTC/NICE plugins are absent.
     public static volatile boolean imageLivePreviewFallback;
 
@@ -267,7 +267,7 @@ public class GStreamerGrabber {
 
         /**
          * Dispatches SIMD processing for a single LED zone, handling both the benchmark timing path
-         * and the post-benchmark selected strategy path.
+         * and the post benchmark selected strategy path.
          *
          * @param isBenchmarkingActive whether the SIMD strategy benchmark is currently running
          * @param height               the height of the captured image
@@ -565,7 +565,7 @@ public class GStreamerGrabber {
             if (GuiSingleton.getInstance().isShowLiveCapture()) {
                 copyRealtimeBufferForLivePreview(rawBuffer);
             }
-            // Forward the raw frame to the WebRTC streamer only when a live-preview session is active.
+            // Forward the raw frame to the WebRTC streamer only when a live preview session is active.
             WebRtcStreamer streamer = webRtcStreamer;
             if (streamer != null) {
                 streamer.pushFrame(rawBuffer, width, height);
@@ -643,8 +643,7 @@ public class GStreamerGrabber {
         }
 
         /**
-         * Body of {@link #newSample(AppSink)} isolated so the outer wrapper can swallow exceptions
-         * and keep the pipeline alive.
+         * Body of #newSample(AppSink) isolated so the outer wrapper can swallow exceptions and keep the pipeline alive.
          */
         private FlowReturn handleNewSample(AppSink elem) {
             Sample sample = elem.pullSample();

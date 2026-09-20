@@ -41,20 +41,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Builds and feeds a GStreamer WebRTC pipeline that pushes the live capture buffer
- * (the same scaled frame that feeds the AppSink) to a browser over WebRTC.
- * <p>
+ * Builds and starts a GStreamer WebRTC pipeline that sends the captured frame
+ * (the same scaled frame used by the AppSink) to a browser over WebRTC.
  * The pipeline is:
- * <pre>
- * appsrc (BGR x-raw, scaled) ! videoconvert ! queue ! vp8enc ! rtpvp8pay
- *   ! queue ! application/x-rtp,media=video,encoding-name=VP8,payload=97 ! webrtcbin
- * </pre>
- * The {@code appsrc} is fed by {@link #pushFrame(ByteBuffer, int, int)} from
- * {@code GStreamerGrabber.handleNewSample}. The {@code webrtcbin} handles the SDP offer
- * (sent to the browser via the signaling server) and ICE.
- * <p>
- * One streamer serves one viewer at a time; calling {@link #startSession} while a session is
- * active tears down the previous pipeline first.
+ * appsrc (BGR x-raw, scaled) - videoconvert - queue - vp8enc - rtpvp8pay queue
+ * - application/x-rtp,media=video,encoding-name=VP8,payload=97 - webrtcbin
+ * The appsrc is fed by pushFrame(ByteBuffer, int, int), called from GStreamerGrabber.handleNewSample.
+ * The webrtcbin handles the SDP offer (sent to the browser via the signaling server) and ICE.
+ * One streamer serves one viewer at a time: calling startSession while a session is active tears down the previous pipeline first.
  */
 @Slf4j
 public class WebRtcStreamer {
@@ -167,8 +161,8 @@ public class WebRtcStreamer {
     }
 
     /**
-     * Push a captured frame into the appsrc. Called from the GStreamer grabber thread on every
-     * {@code newSample}. The buffer is the BGR raw frame in the scaled resolution.
+     * Push a captured frame into the appsrc. Called from the GStreamer grabber thread on every newSample.
+     * The buffer is the BGR raw frame in the scaled resolution.
      *
      * @param buffer the raw BGR frame buffer (already scaled by the capture pipeline)
      * @param width  the frame width in pixels
@@ -202,26 +196,24 @@ public class WebRtcStreamer {
                     "video/x-raw,width=" + previewSize[0] + ",height=" + previewSize[1]
                             + ",pixel-aspect-ratio=1/1"));
             pipeline.play();
-            log.info("WebRTC pipeline started on first frame: {}x{} -> {}x{}", width, height,
-                    previewSize[0], previewSize[1]);
+            log.info("WebRTC pipeline started on first frame: {}x{} -> {}x{}", width, height, previewSize[0], previewSize[1]);
         }
         if (firstFrameLogged.compareAndSet(false, true)) {
             log.info("WebRTC pushing first frame to appsrc: {}x{}, bytes={}", width, height, buffer.remaining());
         }
         ByteBuffer source = buffer.duplicate();
         source.rewind();
-        // AppSrc raw-video caps do not carry the row stride.  Some hardware paths (notably
-        // cudaconvert) retain padding at the end of every row, so sending that mapped buffer as
-        // tightly packed video makes each following row start inside the padding.  Compact the
-        // rows while copying into the new GstBuffer, as ImageProcessor does for screenshots.
+        // AppSrc raw video caps do not carry the row stride. Some hardware paths (notably cudaconvert) retain padding
+        // at the end of every row, so sending that mapped buffer as tightly packed video makes each following
+        // row start inside the padding. Compact the rows while copying into the new GstBuffer, as ImageProcessor does for screenshots.
         int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, source.asIntBuffer());
         int bytesPerPixel = Integer.BYTES;
         int packedRowBytes = width * bytesPerPixel;
         int sourceRowBytes = widthPlusStride * bytesPerPixel;
         int packedFrameBytes = packedRowBytes * height;
         boolean hasStride = widthPlusStride > width;
-        // The last row only needs its visible pixels: mapped capture buffers may omit its
-        // trailing padding. Check the end of the last row we copy, not stride * height.
+        // The last row only needs its visible pixels: mapped capture buffers may omit its trailing padding.
+        // Check the end of the last row we copy, not stride * height.
         long requiredSourceBytes = (long) (height - 1) * sourceRowBytes + packedRowBytes;
         if (source.remaining() < packedFrameBytes || (hasStride && source.remaining() < requiredSourceBytes)) {
             log.warn("Skipping WebRTC frame with invalid buffer size: {} bytes for {}x{} (stride {} pixels)",
@@ -264,7 +256,7 @@ public class WebRtcStreamer {
 
     /**
      * Checks the element factories required by {@code webrtcbin}.  Checking the NICE source and
-     * sink before calling {@link Gst#parseLaunch(String)} is important: gst1-java 1.4 can crash
+     * sink before calling Gst#parseLaunch(String) is important: gst1-java 1.4 can crash
      * while converting GStreamer's parse error when the optional gstreamer1.0-nice package is
      * missing.
      *
@@ -281,9 +273,8 @@ public class WebRtcStreamer {
                                 && ElementFactory.find("nicesrc") != null
                                 && ElementFactory.find("nicesink") != null;
                     } catch (RuntimeException e) {
-                        // gst1-java can throw while wrapping a missing optional factory.  This is
-                        // an expected capability check failure, never a reason to abort the HTTP
-                        // request or the capture pipeline.
+                        // gst1-java can throw while wrapping a missing optional factory. This is an expected
+                        // capability check failure, never a reason to abort the HTTP request or the capture pipeline.
                         available = false;
                         log.debug("Unable to inspect WebRTC/NICE GStreamer factories: {}", e.toString());
                     }
@@ -292,8 +283,7 @@ public class WebRtcStreamer {
             }
         }
         if (!available && unsupportedLogged.compareAndSet(false, true)) {
-            log.info("WebRTC live preview is unavailable because the GStreamer NICE plugin is missing; "
-                    + "using the image live preview instead");
+            log.info("WebRTC live preview is unavailable because the GStreamer NICE plugin is missing; using the image live preview instead");
         }
         return available;
     }
