@@ -51,10 +51,9 @@ public final class CubeLutToneMap {
     private static final String CUBE_LUT_DIR = "cube_lut";
 
     /**
-     * Parsed LUT data. Remains null when no LUT could be loaded, in which case #lookup(int, int, int) returns the input unchanged.
+     * Atomically published LUT data and dimensions. Without LUT data, lookup returns the input unchanged.
      */
-    private static volatile float[] lut;
-    private static volatile int size;
+    private static volatile ToneMapper activeMapper = new ToneMapper(null, 0);
 
     private static int parsedSize;
     private static float[] parsedLut;
@@ -83,10 +82,9 @@ public final class CubeLutToneMap {
      * no op. If the new LUT cannot be loaded, the previously loaded LUT is retained.
      * </p>
      */
-    public static void refresh() {
+    public static synchronized void refresh() {
         if (isDisabled()) {
-            lut = null;
-            size = 0;
+            activeMapper = new ToneMapper(null, 0);
             loadedLutName = "Disabled";
             return;
         }
@@ -206,8 +204,7 @@ public final class CubeLutToneMap {
 
     private static void loadLutFromConfig() {
         if (isDisabled()) {
-            lut = null;
-            size = 0;
+            activeMapper = new ToneMapper(null, 0);
             loadedLutName = Constants.DISABLED;
             return;
         }
@@ -249,10 +246,9 @@ public final class CubeLutToneMap {
             try (InputStream stream = in) {
                 parseCube(stream);
             }
-            lut = parsedLut;
-            size = parsedSize;
+            activeMapper = new ToneMapper(parsedLut, parsedSize);
             loadedLutName = lutName;
-            log.info("Loaded cube LUT '{}' ({}x{}x{})", lutName, size, size, size);
+            log.info("Loaded cube LUT '{}' ({}x{}x{})", lutName, parsedSize, parsedSize, parsedSize);
         } catch (Exception e) {
             // LUT unavailable or unreadable; retain the previous LUT (identity if none).
             log.warn("Failed to load cube LUT '{}': {}", lutName, e.getMessage());
@@ -292,8 +288,24 @@ public final class CubeLutToneMap {
      * @return tone mapped RGB array in [0, 255] float range; the original input when no LUT is available
      */
     public static float[] lookup(float r, float g, float b) {
+        float[] out = new float[3];
+        snapshot().lookup(r, g, b, out);
+        return out;
+    }
+
+    /**
+     * Returns a consistent LUT snapshot, so a frame keeps the same LUT during a settings change.
+     */
+    public static ToneMapper snapshot() {
+        return activeMapper;
+    }
+
+    private static void lookupInto(float[] lut, int size, float r, float g, float b, float[] out) {
         if (lut == null) {
-            return new float[]{r, g, b};
+            out[0] = r;
+            out[1] = g;
+            out[2] = b;
+            return;
         }
         float rf = Math.clamp(r, 0, 255) / 255f;
         float gf = Math.clamp(g, 0, 255) / 255f;
@@ -309,11 +321,39 @@ public final class CubeLutToneMap {
         int z1 = Math.min(z0 + 1, n);
         float tx = fx - x0, ty = fy - y0, tz = fz - z0;
 
-        float rOut = trilinear(x0, y0, z0, x1, y1, z1, tx, ty, tz, 0);
-        float gOut = trilinear(x0, y0, z0, x1, y1, z1, tx, ty, tz, 1);
-        float bOut = trilinear(x0, y0, z0, x1, y1, z1, tx, ty, tz, 2);
+        float rOut = trilinear(lut, size, x0, y0, z0, x1, y1, z1, tx, ty, tz, 0);
+        float gOut = trilinear(lut, size, x0, y0, z0, x1, y1, z1, tx, ty, tz, 1);
+        float bOut = trilinear(lut, size, x0, y0, z0, x1, y1, z1, tx, ty, tz, 2);
 
-        return new float[]{Math.clamp(rOut, 0, 1) * 255, Math.clamp(gOut, 0, 1) * 255, Math.clamp(bOut, 0, 1) * 255};
+        out[0] = Math.clamp(rOut, 0, 1) * 255;
+        out[1] = Math.clamp(gOut, 0, 1) * 255;
+        out[2] = Math.clamp(bOut, 0, 1) * 255;
+    }
+
+    /**
+     * Perform trilinear interpolation of a single color channel.
+     *
+     * @param x0, y0, z0 lower corner grid coordinates
+     * @param x1, y1, z1 upper corner grid coordinates
+     * @param tx, ty, tz fractional offsets within the grid cell
+     * @param ch  color channel index: 0=red, 1=green, 2=blue
+     * @return interpolated value, typically in [0, 1]
+     */
+    private static float trilinear(float[] lut, int size, int x0, int y0, int z0, int x1, int y1, int z1, float tx, float ty, float tz, int ch) {
+        int c000 = lutIndex(size, x0, y0, z0, ch), c100 = lutIndex(size, x1, y0, z0, ch);
+        int c010 = lutIndex(size, x0, y1, z0, ch), c110 = lutIndex(size, x1, y1, z0, ch);
+        int c001 = lutIndex(size, x0, y0, z1, ch), c101 = lutIndex(size, x1, y0, z1, ch);
+        int c011 = lutIndex(size, x0, y1, z1, ch), c111 = lutIndex(size, x1, y1, z1, ch);
+
+        float c00 = lut[c000] * (1 - tx) + lut[c100] * tx;
+        float c10 = lut[c010] * (1 - tx) + lut[c110] * tx;
+        float c01 = lut[c001] * (1 - tx) + lut[c101] * tx;
+        float c11 = lut[c011] * (1 - tx) + lut[c111] * tx;
+
+        float c0 = c00 * (1 - ty) + c10 * ty;
+        float c1 = c01 * (1 - ty) + c11 * ty;
+
+        return c0 * (1 - tz) + c1 * tz;
     }
 
     /**
@@ -333,32 +373,6 @@ public final class CubeLutToneMap {
     }
 
     /**
-     * Perform trilinear interpolation of a single color channel.
-     *
-     * @param x0, y0, z0 lower corner grid coordinates
-     * @param x1, y1, z1 upper corner grid coordinates
-     * @param tx, ty, tz fractional offsets within the grid cell
-     * @param ch  color channel index: 0=red, 1=green, 2=blue
-     * @return interpolated value, typically in [0, 1]
-     */
-    private static float trilinear(int x0, int y0, int z0, int x1, int y1, int z1, float tx, float ty, float tz, int ch) {
-        int c000 = lutIndex(x0, y0, z0, ch), c100 = lutIndex(x1, y0, z0, ch);
-        int c010 = lutIndex(x0, y1, z0, ch), c110 = lutIndex(x1, y1, z0, ch);
-        int c001 = lutIndex(x0, y0, z1, ch), c101 = lutIndex(x1, y0, z1, ch);
-        int c011 = lutIndex(x0, y1, z1, ch), c111 = lutIndex(x1, y1, z1, ch);
-
-        float c00 = lut[c000] * (1 - tx) + lut[c100] * tx;
-        float c10 = lut[c010] * (1 - tx) + lut[c110] * tx;
-        float c01 = lut[c001] * (1 - tx) + lut[c101] * tx;
-        float c11 = lut[c011] * (1 - tx) + lut[c111] * tx;
-
-        float c0 = c00 * (1 - ty) + c10 * ty;
-        float c1 = c01 * (1 - ty) + c11 * ty;
-
-        return c0 * (1 - tz) + c1 * tz;
-    }
-
-    /**
      * Compute the flat array index for a given LUT grid coordinate and channel.
      * The LUT is stored in ZYX order (blue, green, red), with R, G, B values
      * laid out contiguously for each grid point.
@@ -369,8 +383,29 @@ public final class CubeLutToneMap {
      * @param ch color channel index: 0=red, 1=green, 2=blue
      * @return index into the flat LUT array
      */
-    private static int lutIndex(int x, int y, int z, int ch) {
+    private static int lutIndex(int size, int x, int y, int z, int ch) {
         return (z * size * size + y * size + x) * 3 + ch;
+    }
+
+    public static final class ToneMapper {
+        private final float[] data;
+        private final int gridSize;
+
+        private ToneMapper(float[] data, int gridSize) {
+            this.data = data;
+            this.gridSize = gridSize;
+        }
+
+        public boolean isAvailable() {
+            return data != null;
+        }
+
+        /**
+         * Writes RGB into a reusable output array without allocating per pixel.
+         */
+        public void lookup(float r, float g, float b, float[] out) {
+            lookupInto(data, gridSize, r, g, b, out);
+        }
     }
 
     /**

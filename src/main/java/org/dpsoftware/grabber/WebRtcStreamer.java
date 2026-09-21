@@ -25,6 +25,7 @@ import jakarta.websocket.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.network.web.WebRtcSignalingServer;
 import org.freedesktop.gstreamer.*;
@@ -161,6 +162,68 @@ public class WebRtcStreamer {
     }
 
     /**
+     * Applies the HDR to SDR tone mapping via the configured cube LUT to every pixel of the
+     * packed WebRTC copy in place. The capture buffer must never be passed here.
+     *
+     * @param buffer the writable packed frame buffer
+     * @param width  the frame width in pixels
+     * @param height the frame height in pixels
+     */
+    static void applyLutToneMap(ByteBuffer buffer, int width, int height, String format) {
+        CubeLutToneMap.ToneMapper mapper = CubeLutToneMap.snapshot();
+        if (!mapper.isAvailable()) {
+            return;
+        }
+        int redOffset;
+        int greenOffset;
+        int blueOffset;
+        switch (format) {
+            case "BGRx", "BGRA" -> {
+                redOffset = 2;
+                greenOffset = 1;
+                blueOffset = 0;
+            }
+            case "xRGB", "ARGB" -> {
+                redOffset = 1;
+                greenOffset = 2;
+                blueOffset = 3;
+            }
+            case "RGBx", "RGBA" -> {
+                redOffset = 0;
+                greenOffset = 1;
+                blueOffset = 2;
+            }
+            case "xBGR", "ABGR" -> {
+                redOffset = 3;
+                greenOffset = 2;
+                blueOffset = 1;
+            }
+            default -> {
+                return;
+            }
+        }
+        long requiredBytes = (long) width * height * Integer.BYTES;
+        if (width <= 0 || height <= 0 || buffer.remaining() < requiredBytes) {
+            return;
+        }
+        float[] mappedColor = new float[3];
+        int start = buffer.position();
+        for (int y = 0; y < height; y++) {
+            int rowStart = start + y * width * Integer.BYTES;
+            for (int x = 0; x < width; x++) {
+                int offset = rowStart + x * Integer.BYTES;
+                int r = buffer.get(offset + redOffset) & 0xFF;
+                int g = buffer.get(offset + greenOffset) & 0xFF;
+                int b = buffer.get(offset + blueOffset) & 0xFF;
+                mapper.lookup(r, g, b, mappedColor);
+                buffer.put(offset + redOffset, (byte) Math.round(mappedColor[0]));
+                buffer.put(offset + greenOffset, (byte) Math.round(mappedColor[1]));
+                buffer.put(offset + blueOffset, (byte) Math.round(mappedColor[2]));
+            }
+        }
+    }
+
+    /**
      * Push a captured frame into the appsrc. Called from the GStreamer grabber thread on every newSample.
      * The buffer is the BGR raw frame in the scaled resolution.
      *
@@ -224,25 +287,29 @@ public class WebRtcStreamer {
             log.info("WebRTC compacting capture rows: {}x{}, stride {} pixels", width, height, widthPlusStride);
         }
         Buffer gstBuffer = new Buffer(packedFrameBytes);
-        ByteBuffer mappedBuffer = gstBuffer.map(false);
+        ByteBuffer mappedBuffer = gstBuffer.map(true);
         if (mappedBuffer == null) {
             log.warn("Unable to map WebRTC frame buffer");
             return;
         }
-        if (hasStride) {
-            for (int row = 0; row < height; row++) {
-                int rowStart = row * sourceRowBytes;
-                ByteBuffer sourceRow = source.duplicate();
-                sourceRow.position(rowStart);
-                sourceRow.limit(rowStart + packedRowBytes);
-                mappedBuffer.put(sourceRow);
+        try {
+            if (hasStride) {
+                for (int row = 0; row < height; row++) {
+                    int rowStart = row * sourceRowBytes;
+                    ByteBuffer sourceRow = source.duplicate();
+                    sourceRow.position(rowStart);
+                    sourceRow.limit(rowStart + packedRowBytes);
+                    mappedBuffer.put(sourceRow);
+                }
+            } else {
+                source.limit(packedFrameBytes);
+                mappedBuffer.put(source);
             }
-        } else {
-            source.limit(packedFrameBytes);
-            mappedBuffer.put(source);
+            mappedBuffer.rewind();
+            applyLutToneMap(mappedBuffer, width, height, byteOrder);
+        } finally {
+            gstBuffer.unmap();
         }
-        mappedBuffer.rewind();
-        gstBuffer.unmap();
 
         // do-timestamp=true makes appsrc automatically set the PTS from the system clock,
         // so we no longer set it manually. This avoids the segment format mismatch assertion.
