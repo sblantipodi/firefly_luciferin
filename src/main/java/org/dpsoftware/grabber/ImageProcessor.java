@@ -1052,7 +1052,7 @@ public class ImageProcessor {
     /**
      * Load GStreamer libraries
      */
-    public void initGStreamerLibraryPaths() {
+    public static void initGStreamerLibraryPaths() {
         String libPath = getInstallationPath() + Constants.GSTREAMER_PATH;
         if (NativeExecutor.isWindows()) {
             try {
@@ -1077,7 +1077,7 @@ public class ImageProcessor {
                     System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + gstPath);
                 }
             }
-        } else if (NativeExecutor.isLinux() && MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
+        } else if (NativeExecutor.isLinux() && MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
             try {
                 if (System.getenv(EnvConstants.GST_GL_WINDOW) == null) {
                     if (MainSingleton.getInstance().isHeadlessMode()) {
@@ -1124,7 +1124,7 @@ public class ImageProcessor {
      *
      * @return String path
      */
-    public String getInstallationPath() {
+    public static String getInstallationPath() {
         String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
         try {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;

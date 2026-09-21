@@ -22,6 +22,7 @@
 package org.dpsoftware.config;
 
 import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,7 @@ import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -105,7 +107,6 @@ public class Configuration implements Cloneable {
     private int ledStartOffset = 0;
     private int leftLed;
     private int monitorNumber = 1;
-    private String extSrcFriendlyName = "";
     private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
     private String mqttPwd = "";
@@ -169,7 +170,8 @@ public class Configuration implements Cloneable {
     boolean checkFullScreen = false;
     int resamplingFactor = Constants.RESAMPLING_FACTOR;
     boolean useLosslessCompression = Constants.USE_LOSSLESS_COMPRESSION;
-    String cubeLut = Constants.DISABLED;
+    private String cubeLut = Constants.DISABLED;
+    private CaptureDeviceUtilities.BestCaptureFormat captureDevice;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
@@ -189,6 +191,22 @@ public class Configuration implements Cloneable {
         ledMatrix.put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), letterboxLedMatrix);
         ledMatrix.put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), fitScreenLedMatrix);
         this.hueMap = hueMap;
+    }
+
+    /**
+     * Get the friendlyName of the capture device in use, never null
+     */
+    @JsonIgnore
+    public String getCaptureDeviceFriendlyName() {
+        return captureDevice == null || captureDevice.getFriendlyName() == null ? "" : captureDevice.getFriendlyName();
+    }
+
+    /**
+     * Check if a capture device is in use (external source mode)
+     */
+    @JsonIgnore
+    public boolean hasCaptureDevice() {
+        return captureDevice != null;
     }
 
     public Object clone() throws CloneNotSupportedException {

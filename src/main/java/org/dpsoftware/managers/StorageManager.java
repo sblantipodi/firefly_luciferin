@@ -271,7 +271,7 @@ public class StorageManager {
             if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
             if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
                 restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
-            if (!defaultConfig.getExtSrcFriendlyName().equals(profileConfig.getExtSrcFriendlyName()))
+            if (!defaultConfig.getCaptureDeviceFriendlyName().equals(profileConfig.getCaptureDeviceFriendlyName()))
                 restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
                 restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);

@@ -379,7 +379,7 @@ public class FireflyLuciferin extends Application {
                 || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name()))
                 || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name()))
                 || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
-            grabberManager.launchAdvancedGrabber(imageProcessor);
+            grabberManager.launchAdvancedGrabber();
             GuiSingleton.getInstance().setGrabberManager(grabberManager);
         } else { // Standard Producers
             grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);

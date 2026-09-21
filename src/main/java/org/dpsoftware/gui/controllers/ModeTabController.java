@@ -40,6 +40,7 @@ import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.List;
@@ -332,8 +333,8 @@ public class ModeTabController {
         refreshingMonitorValue = true;
         try {
             monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
-            if (!currentConfig.getExtSrcFriendlyName().isEmpty()) {
-                monitorNumber.setValue(currentConfig.getExtSrcFriendlyName());
+            if (!currentConfig.getCaptureDeviceFriendlyName().isEmpty()) {
+                monitorNumber.setValue(currentConfig.getCaptureDeviceFriendlyName());
             }
         } finally {
             refreshingMonitorValue = false;
@@ -403,14 +404,15 @@ public class ModeTabController {
             DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
             setDispInfo(screenInfo);
             if (newVal != null && !newVal.equals(oldVal)) {
-                settingsController.currentConfig.setExtSrcFriendlyName("");
+                settingsController.currentConfig.setCaptureDevice(null);
                 settingsController.initCaptureMethods();
                 setCaptureMethod();
             }
         } else {
             if (newVal != null && !newVal.equals(oldVal)) {
                 if (settingsController.currentConfig != null) {
-                    settingsController.currentConfig.setExtSrcFriendlyName(monitorNumber.getValue());
+                    CaptureDeviceUtilities.BestCaptureFormat captureDevice = CaptureDeviceUtilities.findPixelFormat(monitorNumber.getValue());
+                    settingsController.currentConfig.setCaptureDevice(captureDevice);
                 }
                 settingsController.initCaptureMethods();
                 setCaptureMethodUsbVideo();
@@ -575,10 +577,10 @@ public class ModeTabController {
         monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
         if (monitorIndex >= 0 && monitorIndex < settingsController.displayManager.getDisplayList().size()) {
             config.setMonitorNumber(monitorIndex);
-            config.setExtSrcFriendlyName("");
+            config.setCaptureDevice(null);
         } else {
             config.setMonitorNumber(0);
-            config.setExtSrcFriendlyName(monitorNumber.getValue());
+            config.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(monitorNumber.getValue()));
         }
         config.setBaudRate(baudRate.getValue());
         config.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, theme.getValue()).getBaseI18n());
