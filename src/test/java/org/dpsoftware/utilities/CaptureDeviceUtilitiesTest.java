@@ -22,11 +22,8 @@
 package org.dpsoftware.utilities;
 
 import org.freedesktop.gstreamer.Structure;
-import org.freedesktop.gstreamer.Version;
 import org.freedesktop.gstreamer.device.Device;
 import org.freedesktop.gstreamer.device.DeviceMonitor;
-import org.dpsoftware.grabber.ImageProcessor;
-import org.freedesktop.gstreamer.Gst;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -54,7 +51,7 @@ class CaptureDeviceUtilitiesTest {
                 System.out.println("=== " + dev.getDisplayName() + " ===");
                 Structure props = dev.getProperties();
                 if (props != null) {
-                    System.out.println("  Properties toString: " + props.toString());
+                    System.out.println("  Properties toString: " + props);
                 } else {
                     System.out.println("  Properties: null");
                 }
