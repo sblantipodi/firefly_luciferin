@@ -33,13 +33,11 @@ import org.dpsoftware.managers.dto.DeviceDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 
@@ -75,12 +73,7 @@ public class DeviceEndpointHandler {
      */
     public void handleGetDevices(HttpExchange exchange) throws IOException {
         List<DeviceDto> devices = DeviceDto.fromDevices(GuiSingleton.getInstance().getDeviceTableData());
-        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(devices);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
+        HttpResponses.sendJson(exchange, devices);
     }
 
     /**
@@ -92,7 +85,7 @@ public class DeviceEndpointHandler {
     public void handleDevicePrefs(HttpExchange exchange) throws IOException {
         String ip = queryIpParam(exchange);
         if (ip == null || !ip.matches("\\d{1,3}(\\.\\d{1,3}){3}")) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or invalid ip parameter");
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or invalid ip parameter");
             return;
         }
         URI devicePrefsUri = URI.create("http://" + ip + "/prefs");
@@ -121,34 +114,12 @@ public class DeviceEndpointHandler {
             } catch (Exception e) {
                 log.warn("Device prefs response is not valid JSON: {}", e.getMessage());
             }
-            byte[] responseBytes = body.getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-            exchange.sendResponseHeaders(response.statusCode(), responseBytes.length);
-            try (OutputStream responseBody = exchange.getResponseBody()) {
-                responseBody.write(responseBytes);
-            }
+            HttpResponses.sendRawJson(exchange, response.statusCode(), body);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Interrupted");
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Interrupted");
         } catch (Exception e) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_GATEWAY, "Device unreachable: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Send a plain text error response.
-     *
-     * @param exchange   the HTTP exchange to reply on
-     * @param statusCode the HTTP status code to return
-     * @param message    the human-readable error description
-     * @throws IOException when the response cannot be written
-     */
-    private void sendError(HttpExchange exchange, int statusCode, String message) throws IOException {
-        byte[] responseBytes = message.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-        exchange.sendResponseHeaders(statusCode, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_GATEWAY, "Device unreachable: " + e.getMessage());
         }
     }
 }

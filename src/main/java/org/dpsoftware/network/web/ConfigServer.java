@@ -43,9 +43,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
@@ -66,8 +64,6 @@ import java.util.function.Predicate;
 @Slf4j
 public class ConfigServer {
 
-    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix"); // Large client-irrelevant fields.
-    private static final String JSON_OK = "{\"status\":\"OK\"}";
     private final StorageManager storageManager = new StorageManager();
     private final List<HttpServer> httpServers = new ArrayList<>();
     private final WebRtcStreamer webRtcStreamer = new WebRtcStreamer();
@@ -114,16 +110,6 @@ public class ConfigServer {
     }
 
     /**
-     * Handle GET /listProfiles, exposing the list of profile names available for this instance.
-     *
-     * @param exchange the HTTP exchange containing the request and response
-     * @throws IOException when the response cannot be written
-     */
-    private void handleListProfiles(HttpExchange exchange) throws IOException {
-        profileHandler.handleListProfiles(exchange);
-    }
-
-    /**
      * Handle GET /fps, exposing the current producing and consuming framerate.
      * Read-only, the values are the live counters kept in {@link MainSingleton}.
      *
@@ -131,95 +117,9 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void handleGetFps(HttpExchange exchange) throws IOException {
-        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(new FpsDto(
+        HttpResponses.sendJson(exchange, new FpsDto(
                 MainSingleton.getInstance().FPS_PRODUCER,
                 MainSingleton.getInstance().FPS_GW_CONSUMER));
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
-    }
-
-    /**
-     * Activates the requested profile, or the default one when omitted.
-     *
-     * @param exchange the HTTP exchange containing the request and response
-     * @throws IOException when the response cannot be written
-     */
-    private void handleActivateProfile(HttpExchange exchange) throws IOException {
-        profileHandler.handleActivateProfile(exchange);
-    }
-
-    /**
-     * Creates a profile from the supplied configuration without activating it.
-     *
-     * @param exchange the HTTP exchange containing the request and response
-     * @throws IOException when the response cannot be written
-     */
-    private void handleAddProfile(HttpExchange exchange) throws IOException {
-        String name = exchange.getRequestURI().getQuery();
-        String profileName = null;
-        if (name != null) {
-            for (String pair : name.split("&")) {
-                int eq = pair.indexOf('=');
-                if (eq > 0 && pair.substring(0, eq).equals("name")) {
-                    profileName = pair.substring(eq + 1);
-                }
-            }
-        }
-        if (profileName == null || profileName.isEmpty()) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or empty name parameter");
-            return;
-        }
-        JsonNode payload;
-        try (InputStream requestBody = exchange.getRequestBody()) {
-            payload = CommonUtility.JSON_MAPPER.readTree(requestBody);
-        } catch (IOException e) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
-            return;
-        }
-        if (payload == null || payload.isNull() || !payload.isObject()) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Payload must be a JSON object");
-            return;
-        }
-        Configuration savedConfig = storageManager.readProfileInUseConfig();
-        if (savedConfig == null) {
-            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
-            return;
-        }
-        ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(savedConfig);
-        mergePayload(payload, configTree);
-        Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
-        if (updatedConfig.ledMatrixParamsChanged(savedConfig)) {
-            updatedConfig.regenerateLedMatrix();
-        }
-        updatedConfig.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, updatedConfig.getEffect()).getBaseI18n());
-        int whoAmI = MainSingleton.getInstance().whoAmI;
-        String filename;
-        if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            filename = whoAmI == 2 ? Constants.CONFIG_FILENAME_2 : whoAmI == 3 ? Constants.CONFIG_FILENAME_3 : Constants.CONFIG_FILENAME;
-        } else {
-            filename = whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
-        }
-        try {
-            storageManager.writeConfig(updatedConfig, filename);
-        } catch (IOException e) {
-            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save profile: " + e.getMessage());
-            return;
-        }
-        log.info("Profile created via addProfile endpoint: {}", filename);
-        sendOkJson(exchange);
-    }
-
-    /**
-     * Deletes an inactive, non-default profile.
-     *
-     * @param exchange the HTTP exchange containing the request and response
-     * @throws IOException when the response cannot be written
-     */
-    private void handleRemoveProfile(HttpExchange exchange) throws IOException {
-        profileHandler.handleRemoveProfile(exchange);
     }
 
     /**
@@ -234,37 +134,31 @@ public class ConfigServer {
         try (InputStream requestBody = exchange.getRequestBody()) {
             payload = CommonUtility.JSON_MAPPER.readTree(requestBody);
         } catch (IOException e) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
             return;
         }
         if (payload == null || payload.isNull() || !payload.isObject()) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Payload must be a JSON object");
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Payload must be a JSON object");
             return;
         }
         log.info("setConfig payload received: {}", CommonUtility.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
         // Read the active or main configuration.
         Configuration savedConfig = storageManager.readProfileInUseConfig();
         if (savedConfig == null) {
-            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
             return;
         }
-        ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(savedConfig);
-        mergePayload(payload, configTree);
-        Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
-        // Regenerate only when matrix parameters change.
-        if (updatedConfig.ledMatrixParamsChanged(savedConfig)) {
-            updatedConfig.regenerateLedMatrix();
-        }
+        Configuration updatedConfig = ConfigurationPayload.apply(payload, savedConfig);
         try {
             // Persist to the active or main configuration.
-            updatedConfig.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, updatedConfig.getEffect()).getBaseI18n());
+            updatedConfig.setEffect(LocalizedEnum.fromTextToBase(Enums.Effect.class, updatedConfig.getEffect()));
             storageManager.writeConfig(updatedConfig, null);
         } catch (IOException e) {
-            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save configuration: " + e.getMessage());
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save configuration: " + e.getMessage());
             return;
         }
         log.info("Configuration updated via setConfig endpoint");
-        sendOkJson(exchange);
+        HttpResponses.sendOk(exchange);
         // Restart with the active profile and headless mode.
         NativeExecutor.restartNativeInstanceWithCurrentProfile();
     }
@@ -279,7 +173,7 @@ public class ConfigServer {
         // Expose the active or main configuration.
         Configuration config = storageManager.readProfileInUseConfig();
         if (config == null) {
-            sendError(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
             return;
         }
         sendConfiguration(exchange, config);
@@ -293,8 +187,7 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void sendConfiguration(HttpExchange exchange, Configuration config) throws IOException {
-        ObjectNode configNode = CommonUtility.JSON_MAPPER.valueToTree(config);
-        EXCLUDED_FIELDS.forEach(configNode::remove);
+        ObjectNode configNode = ConfigurationPayload.toWebConfig(config);
         // Include the active non-default profile.
         String profileArg = MainSingleton.getInstance().profileArg;
         if (profileArg != null && !profileArg.isEmpty()
@@ -302,12 +195,7 @@ public class ConfigServer {
                 && !CommonUtility.getWord(Constants.DEFAULT).equals(profileArg)) {
             configNode.put("activeProfile", profileArg);
         }
-        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(configNode);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
+        HttpResponses.sendJson(exchange, configNode);
     }
 
     /**
@@ -328,17 +216,6 @@ public class ConfigServer {
         webRtcSignalingServer.stop();
     }
 
-    /**
-     * Handle GET /getDevices, exposing the currently connected devices (in-memory device table) as JSON.
-     * Read-only, the connected devices are a runtime state and cannot be persisted.
-     *
-     * @param exchange the HTTP exchange containing the request and response
-     * @throws IOException when the response cannot be written
-     */
-    private void handleGetDevices(HttpExchange exchange) throws IOException {
-        deviceEndpointHandler.handleGetDevices(exchange);
-    }
-
     /** Starts one server per loopback or active non link local IPv4 address. */
     @SuppressWarnings("all")
     public void start() {
@@ -349,7 +226,7 @@ public class ConfigServer {
             for (InetAddress address : localBindAddresses()) {
                 HttpServer server = HttpServer.create(new InetSocketAddress(address, Constants.CONFIG_SERVER_DEFAULT_PORT), 0);
                 server.createContext(Constants.CONFIG_ENDPOINT, withGuard(this::handleGetConfig, GET_METHOD));
-                server.createContext(Constants.GET_DEVICES_ENDPOINT, withGuard(this::handleGetDevices, GET_METHOD));
+                server.createContext(Constants.GET_DEVICES_ENDPOINT, withGuard(deviceEndpointHandler::handleGetDevices, GET_METHOD));
                 server.createContext(Constants.FIELD_OPTIONS_ENDPOINT, withGuard(this::handleGetFieldOptions, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_PAGE_ENDPOINT, withGuard(webResourceServer::handleSetConfigPage, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_PAGE_JS_ENDPOINT, withGuard(webResourceServer::handleSetConfigPageJs, GET_METHOD));
@@ -363,10 +240,10 @@ public class ConfigServer {
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENDPOINT, withGuard(livePreviewWebHandler::handleGetScreenshot, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(livePreviewWebHandler::handleEnableScreenshot, POST_METHOD));
-                server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(this::handleListProfiles, GET_METHOD));
-                server.createContext(Constants.ACTIVATE_PROFILE_ENDPOINT, withGuard(this::handleActivateProfile, POST_METHOD));
-                server.createContext(Constants.ADD_PROFILE_ENDPOINT, withGuard(this::handleAddProfile, POST_METHOD));
-                server.createContext(Constants.REMOVE_PROFILE_ENDPOINT, withGuard(this::handleRemoveProfile, POST_METHOD));
+                server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(profileHandler::handleListProfiles, GET_METHOD));
+                server.createContext(Constants.ACTIVATE_PROFILE_ENDPOINT, withGuard(profileHandler::handleActivateProfile, POST_METHOD));
+                server.createContext(Constants.ADD_PROFILE_ENDPOINT, withGuard(profileHandler::handleAddProfile, POST_METHOD));
+                server.createContext(Constants.REMOVE_PROFILE_ENDPOINT, withGuard(profileHandler::handleRemoveProfile, POST_METHOD));
                 server.createContext(Constants.COMBO_CHANGE_ENDPOINT, withGuard(this::handleComboChange, POST_METHOD));
                 server.createContext(Constants.SECTION_TITLES_ENDPOINT, withGuard(this::handleGetSectionTitles, GET_METHOD));
                 server.createContext("/", withGuard(webResourceServer::handleRoot, GET_METHOD));
@@ -403,12 +280,7 @@ public class ConfigServer {
         Map<String, String> labels = FieldOptions.getFieldLabels();
         FieldOptions.applyToggleLedLabels(labels);
         response.set("labels", CommonUtility.JSON_MAPPER.valueToTree(labels));
-        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(response);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
+        HttpResponses.sendJson(exchange, response);
     }
 
     /**
@@ -419,12 +291,7 @@ public class ConfigServer {
      */
     private void handleGetSectionTitles(HttpExchange exchange) throws IOException {
         ObjectNode response = CommonUtility.JSON_MAPPER.valueToTree(FieldOptions.getSectionTitles());
-        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(response);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
+        HttpResponses.sendJson(exchange, response);
     }
 
     /**
@@ -438,14 +305,14 @@ public class ConfigServer {
         try (InputStream requestBody = exchange.getRequestBody()) {
             payload = CommonUtility.JSON_MAPPER.readTree(requestBody);
         } catch (IOException e) {
-            sendError(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
             return;
         }
         String comboName = payload.has(WebFieldNames.COMBO_NAME) ? payload.get(WebFieldNames.COMBO_NAME).asText() : "";
         JsonNode valueNode = payload.has(WebFieldNames.VALUE) ? payload.get(WebFieldNames.VALUE) : null;
         log.info("Web combo change: {} = {}", comboName, valueNode);
         applyComboChange(comboName, valueNode);
-        sendOkJson(exchange);
+        HttpResponses.sendOk(exchange);
     }
 
     /**
@@ -507,20 +374,6 @@ public class ConfigServer {
     }
 
     /**
-     * Merge the payload fields into the configuration tree, excluding the fields not exposed to a client.
-     *
-     * @param payload    the JSON object received from the client
-     * @param configTree the configuration tree to update in place
-     */
-    private void mergePayload(JsonNode payload, ObjectNode configTree) {
-        for (Map.Entry<String, JsonNode> entry : payload.properties()) {
-            if (!EXCLUDED_FIELDS.contains(entry.getKey()) && !entry.getValue().isNull()) {
-                configTree.set(entry.getKey(), entry.getValue());
-            }
-        }
-    }
-
-    /**
      * Human readable description of the method allowed by a guard predicate.
      *
      * @param methodAllowed the predicate deciding which method the handler accepts
@@ -554,12 +407,8 @@ public class ConfigServer {
                     return;
                 }
                 if (!methodAllowed.test(exchange.getRequestMethod())) {
-                    byte[] responseBytes = ("Only the " + methodAllowedDescription(methodAllowed) + " method is supported").getBytes(StandardCharsets.UTF_8);
-                    exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-                    exchange.sendResponseHeaders(405, responseBytes.length);
-                    try (OutputStream responseBody = exchange.getResponseBody()) {
-                        responseBody.write(responseBytes);
-                    }
+                    HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_METHOD,
+                            "Only the " + methodAllowedDescription(methodAllowed) + " method is supported");
                     return;
                 }
                 handler.handle(exchange);
@@ -570,21 +419,6 @@ public class ConfigServer {
     }
 
     /**
-     * Send a JSON {@code OK} response.
-     *
-     * @param exchange the HTTP exchange to send the response on
-     * @throws IOException when the response cannot be written
-     */
-    private void sendOkJson(HttpExchange exchange) throws IOException {
-        byte[] responseBytes = JSON_OK.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
-    }
-
-    /**
      * Plain data holder for the current framerate counters, JSON friendly.
      *
      * @param producing the producer framerate (frames captured per second)
@@ -592,22 +426,4 @@ public class ConfigServer {
      */
     public record FpsDto(float producing, float consuming) {
     }
-
-    /**
-     * Send a plain text error response and close the exchange.
-     *
-     * @param exchange   the HTTP exchange to reply on
-     * @param statusCode the HTTP status code to return
-     * @param message    the human-readable error description
-     * @throws IOException when the response cannot be written
-     */
-    private void sendError(HttpExchange exchange, int statusCode, String message) throws IOException {
-        byte[] responseBytes = message.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-        exchange.sendResponseHeaders(statusCode, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
-    }
-
 }

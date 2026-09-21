@@ -34,9 +34,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 /**
@@ -48,7 +46,6 @@ public class LivePreviewWebHandler {
 
     private static final boolean FORCE_IMAGE_LIVE_PREVIEW = Boolean.parseBoolean( // Forces image preview.
             System.getenv(EnvConstants.LUCIFERIN_LIVE_PREVIEW_IMAGE));
-    private static final String JSON_OK = "{\"status\":\"OK\"}";
     private static final String JSON_IMAGE_PREVIEW = "{\"status\":\"OK\",\"livePreviewMode\":\"image\"}";
     private static final String JSON_WEBRTC_PREVIEW = "{\"status\":\"OK\",\"livePreviewMode\":\"webrtc\"}";
     private static final int LIVE_PREVIEW_IDLE_MILLIS = 30000; // Preview idle timeout in milliseconds.
@@ -99,16 +96,12 @@ public class LivePreviewWebHandler {
         lastScreenshotGetMillis = System.currentTimeMillis();
         File bmp = new File(InstanceConfigurer.getConfigPath(), Constants.GSTREAMER_SCREENSHOT);
         if (!bmp.exists() || !bmp.isFile()) {
-            sendNotAvailableError(exchange);
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_NOT_FOUND, "Screenshot not available");
             return;
         }
         byte[] imageBytes = Files.readAllBytes(bmp.toPath());
-        exchange.getResponseHeaders().set("Content-Type", "image/bmp");
         exchange.getResponseHeaders().set("Cache-Control", "no-store");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, imageBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(imageBytes);
-        }
+        HttpResponses.sendBytes(exchange, HttpURLConnection.HTTP_OK, "image/bmp", imageBytes);
     }
 
     /**
@@ -120,7 +113,7 @@ public class LivePreviewWebHandler {
     public void handleEnableScreenshot(HttpExchange exchange) throws IOException {
         if (isKeepAliveRequest(exchange)) {
             lastScreenshotGetMillis = System.currentTimeMillis();
-            sendOkJson(exchange);
+            HttpResponses.sendOk(exchange);
             return;
         }
         boolean disable = "true".equalsIgnoreCase(queryDisableParam(exchange));
@@ -146,7 +139,7 @@ public class LivePreviewWebHandler {
         log.info("Live preview toggled: showLiveCapture set to {}, mode={}{}", on,
                 webRtcAvailable ? "webrtc" : "image",
                 FORCE_IMAGE_LIVE_PREVIEW ? " (forced by LUCIFERIN_LIVE_PREVIEW_IMAGE)" : "");
-        sendJson(exchange, on && !webRtcAvailable ? JSON_IMAGE_PREVIEW : JSON_WEBRTC_PREVIEW);
+        HttpResponses.sendRawJson(exchange, HttpURLConnection.HTTP_OK, on && !webRtcAvailable ? JSON_IMAGE_PREVIEW : JSON_WEBRTC_PREVIEW);
     }
 
     /**
@@ -176,39 +169,5 @@ public class LivePreviewWebHandler {
         }, "live-preview-watchdog");
         livePreviewWatchdog.setDaemon(true);
         livePreviewWatchdog.start();
-    }
-
-    /**
-     * Send a JSON {@code OK} response.
-     *
-     * @param exchange the HTTP exchange to send the response on
-     * @throws IOException when the response cannot be written
-     */
-    private void sendOkJson(HttpExchange exchange) throws IOException {
-        sendJson(exchange, JSON_OK);
-    }
-
-    private void sendJson(HttpExchange exchange, String json) throws IOException {
-        byte[] responseBytes = json.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
-    }
-
-    /**
-     * Send a 404 plain text error response.
-     *
-     * @param exchange the HTTP exchange to reply on
-     * @throws IOException when the response cannot be written
-     */
-    private void sendNotAvailableError(HttpExchange exchange) throws IOException {
-        byte[] responseBytes = "Screenshot not available".getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_NOT_FOUND, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
     }
 }

@@ -795,10 +795,15 @@ public class CommonUtility {
     }
 
     /**
-     * Get localized string
+     * Get localized string in the locale in use.
+     * The search is performed only against the resource bundle of the locale currently active in the application,
+     * not against all available locales: if the locale in use is Italian, "enum.effect.solid" returns "Solido",
+     * but if the locale in use is German the same key returns "Einfarbig".
+     * Example: getWord("enum.effect.solid") -> "Solido"
      *
      * @param key resource bundle key
-     * @return localized String
+     * @return localized String, or the key itself if the bundle is not
+     * available or the key is missing
      */
     public static String getWord(String key) {
         try {
@@ -809,11 +814,13 @@ public class CommonUtility {
     }
 
     /**
-     * Get localized string
+     * Get localized string in the specified locale.
+     * The resource bundle of the given locale is loaded from the classpath, independently of the locale currently active in the application.
+     * Example: getWord("enum.effect.solid", Locale.ENGLISH) -> "Solid"
      *
      * @param key    resource bundle key
      * @param locale locale to use
-     * @return localized String
+     * @return localized String, or the key itself if the key is missing
      */
     public static String getWord(String key, Locale locale) {
         try {
@@ -821,6 +828,27 @@ public class CommonUtility {
         } catch (MissingResourceException e) {
             return key;
         }
+    }
+
+    /**
+     * Convert a localized text to the base (English) localized text.
+     * The search is performed only against the resource bundle of the locale currently active in the application.
+     * If the locale in use is Italian, "Solido" returns "Solid", but if the locale in use is German "Solido" returns "Solido" (unchanged) because
+     * the German bundle does not contain that text. If the text already is  the base English value it is returned as is.
+     * Example: getBaseWord("Solido") -> "Solid"
+     *
+     * @param text localized text in the locale in use
+     * @return base (English) localized text, or the input text if no match is found
+     */
+    @SuppressWarnings("unused")
+    public static String getBaseWord(String text) {
+        if (MainSingleton.getInstance().bundle != null) {
+            for (String key : MainSingleton.getInstance().bundle.keySet()) {
+                if (MainSingleton.getInstance().bundle.getString(key).equalsIgnoreCase(text))
+                    return getWord(key, Locale.ENGLISH);
+            }
+        }
+        return text;
     }
 
     /**

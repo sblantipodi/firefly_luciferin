@@ -1,7 +1,11 @@
+import {state} from './set-config-state.js';
+import {fetchJson} from './set-config-api.js';
+import {escapeHtml, showToast} from './set-config-ui.js';
+
+var colorPicker;
 var deviceIp = null;
-var deviceState = {on: true, whitetemp: 65, brightness: 255};
-var lastColor = {r: 255, g: 38, b: 0};
-var deviceReachable = false;
+var deviceState = {on: true, whitetemp: 65};
+export var lastColor = {r: 255, g: 38, b: 0};
 var pollTimer = null;
 var outputDeviceTouched = false;
 
@@ -30,10 +34,10 @@ function resolveDeviceIp() {
     if (deviceIp) {
         return deviceIp;
     }
-    var cfg = window.__lastConfig || {};
+    var cfg = state.lastConfig || {};
     var out = cfg.outputDevice || null;
     var staticIp = cfg.staticGlowWormIp || null;
-    var devices = window.__devices || [];
+    var devices = state.devices || [];
     var match = null;
     var auto = out && String(out).toUpperCase() === 'AUTO';
     if (auto) {
@@ -59,18 +63,14 @@ function resolveDeviceIp() {
     return null;
 }
 
-function buildPickerHtml() {
-    var effectOpts = (fieldOptions && fieldOptions.effect) ? fieldOptions.effect.options : [];
-    var opts = effectOpts.map(function (o) {
+export function fillPickerControls() {
+    var effectOpts = (state.fieldOptions && state.fieldOptions.effect) ? state.fieldOptions.effect.options : [];
+    document.getElementById('effectSelect').innerHTML = effectOpts.map(function (o) {
         return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
     }).join('');
-    var toggleLabel = deviceState.on ? (fieldLabels.turnLedOff || 'Turn OFF') : (fieldLabels.turnLedOn || 'Turn ON');
-    var toggleClass = deviceState.on ? 'btn-primary' : 'btn-outline-primary';
-    return '<div class="row mb-3 align-items-start justify-content-center"><div class="col-12 col-sm-8 col-md-6 col-lg-4 text-center"><div id="picker"></div>' +
-        '<div class="form-group mt-2"><select id="effectSelect" class="form-select w-100">' + opts + '</select></div>' +
-        '<div class="form-group mt-2"><button id="toggleLED" type="button" class="btn ' + toggleClass + ' w-100">' + toggleLabel + '</button></div>' +
-        '<div id="activeProfile" class="text-center text-muted small mt-1"></div>' +
-        '</div></div></div>';
+    var toggle = document.getElementById('toggleLED');
+    toggle.textContent = deviceState.on ? (state.fieldLabels.turnLedOff || 'Turn OFF') : (state.fieldLabels.turnLedOn || 'Turn ON');
+    toggle.className = 'btn ' + (deviceState.on ? 'btn-primary' : 'btn-outline-primary') + ' w-100';
 }
 
 function applyPrefs(prefs) {
@@ -86,33 +86,28 @@ function applyPrefs(prefs) {
         if (parts.length === 3) {
             lastColor = {r: Number(parts[0]), g: Number(parts[1]), b: Number(parts[2])};
             var picker = document.getElementById('picker');
-            if (picker && window.__colorPicker) {
-                window.__colorPicker.color.rgb = lastColor;
+            if (picker && colorPicker) {
+                colorPicker.color.rgb = lastColor;
             }
             document.getElementById('effectSelect').value = prefs.effect;
         }
     }
 }
 
-function syncDeviceFromPrefs() {
+export function syncDeviceFromPrefs() {
     var ip = resolveDeviceIp();
     if (!ip) {
         console.log('syncDeviceFromPrefs: no IP resolved, scheduling poll');
-        deviceReachable = false;
         schedulePoll();
         return;
     }
     console.log('syncDeviceFromPrefs: fetching devicePrefs for IP', ip);
     fetchJson('devicePrefs?ip=' + encodeURIComponent(ip)).then(function (prefs) {
-        deviceReachable = true;
-        if (prefs && prefs.error) {
-            deviceReachable = false;
-        } else {
+        if (!(prefs && prefs.error)) {
             applyPrefs(prefs);
         }
         schedulePoll();
     }).catch(function () {
-        deviceReachable = false;
         schedulePoll();
     });
 }
@@ -132,7 +127,7 @@ function setToggleUi(on) {
     deviceState.on = on;
     var toggle = document.getElementById('toggleLED');
     if (toggle) {
-        toggle.textContent = on ? (fieldLabels.turnLedOff || 'Turn OFF') : (fieldLabels.turnLedOn || 'Turn ON');
+        toggle.textContent = on ? (state.fieldLabels.turnLedOff || 'Turn OFF') : (state.fieldLabels.turnLedOn || 'Turn ON');
         toggle.classList.toggle('btn-primary', on);
         toggle.classList.toggle('btn-outline-primary', !on);
         toggle.classList.toggle('active', on);
@@ -165,16 +160,15 @@ function buildPayload() {
     };
 }
 
-function initColorPicker() {
+export function initColorPicker() {
     var pickerEl = document.getElementById('picker');
     if (!pickerEl || typeof iro === 'undefined') {
         return;
     }
-    var colorPicker = new iro.ColorPicker('#picker', {
+    colorPicker = new iro.ColorPicker('#picker', {
         width: 288,
         color: '#0091ff'
     });
-    window.__colorPicker = colorPicker;
     colorPicker.on(['input:end'], function (color) {
         lastColor = color.rgb;
         sendToDevice(buildPayload(), 'Color sent to device');
@@ -205,12 +199,12 @@ function renderOutputDeviceSuggestions() {
     if (!el || el.tagName !== 'SELECT') {
         return;
     }
-    var devices = window.__devices || [];
+    var devices = state.devices || [];
     var names = devices.map(function (d) {
         return d.deviceName;
     }).filter(Boolean);
     var preserved = outputDeviceTouched ? el.value : null;
-    var current = preserved || (window.__lastConfig && window.__lastConfig.outputDevice) || el.value;
+    var current = preserved || (state.lastConfig && state.lastConfig.outputDevice) || el.value;
     var html = '';
     names.forEach(function (name) {
         html += '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
@@ -227,7 +221,7 @@ function renderOutputDeviceSuggestions() {
     }
 }
 
-function refreshDevices() {
+export function refreshDevices() {
     fetchJson('getDevices').then(function (devices) {
         renderDevices(devices);
         applyAutoOutputDevice();
@@ -240,7 +234,7 @@ function refreshDevices() {
 }
 
 function renderDevices(devices) {
-    window.__devices = Array.isArray(devices) ? devices : [];
+    state.devices = Array.isArray(devices) ? devices : [];
     renderOutputDeviceSuggestions();
     var el = document.getElementById('devicesTable');
     if (!el) {
@@ -280,17 +274,17 @@ function renderDevices(devices) {
     el.innerHTML = html;
 }
 
-function applyAutoOutputDevice() {
+export function applyAutoOutputDevice() {
     if (outputDeviceTouched) {
         deviceIp = null;
         resolveDeviceIp();
         return;
     }
-    var cfg = window.__lastConfig;
+    var cfg = state.lastConfig;
     if (!cfg) {
         return;
     }
-    var devices = window.__devices || [];
+    var devices = state.devices || [];
     var match = null;
     var out = cfg.outputDevice;
     if (out && String(out).toUpperCase() === 'AUTO') {

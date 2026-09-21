@@ -27,9 +27,9 @@ import org.dpsoftware.config.Constants;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 /** Serves static resources for the settings page. */
 public class WebResourceServer {
@@ -41,6 +41,9 @@ public class WebResourceServer {
     private static final String SET_CONFIG_UI_JS_RESOURCE = "set-config-ui.js";
     private static final String SET_CONFIG_CSS_RESOURCE = "set-config.css";
     private static final String WEBRTC_PREVIEW_JS_RESOURCE = "webrtc-preview.js";
+    private static final Set<String> SETTINGS_MODULES = Set.of(
+            "set-config-app.js", "set-config-api.js", "set-config-state.js", "set-config-schema.js",
+            "set-config-profiles.js", "set-config-preview.js", "set-config-status.js");
     // Marker replaced at serve time with the Java-side default config server port.
     private static final String PORT_PLACEHOLDER = "__CONFIG_SERVER_DEFAULT_PORT__";
 
@@ -73,7 +76,10 @@ public class WebResourceServer {
     public void handleSetConfigPageJs(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String resource;
-        if (path.endsWith("set-config-core.js")) {
+        String filename = path.substring(path.lastIndexOf('/') + 1);
+        if (SETTINGS_MODULES.contains(filename)) {
+            resource = filename;
+        } else if (path.endsWith("set-config-core.js")) {
             resource = SET_CONFIG_CORE_JS_RESOURCE;
         } else if (path.endsWith("set-config-device.js")) {
             resource = SET_CONFIG_DEVICE_JS_RESOURCE;
@@ -99,12 +105,8 @@ public class WebResourceServer {
         }
         resource = resource.replace(PORT_PLACEHOLDER, String.valueOf(Constants.CONFIG_SERVER_DEFAULT_PORT));
         byte[] responseBytes = resource.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "application/javascript; charset=utf-8");
         exchange.getResponseHeaders().set("Cache-Control", "no-store");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
+        HttpResponses.sendBytes(exchange, HttpURLConnection.HTTP_OK, "application/javascript; charset=utf-8", responseBytes);
     }
 
     /**
@@ -122,12 +124,7 @@ public class WebResourceServer {
         } else if (path.endsWith(".css")) {
             handleSetConfigCss(exchange);
         } else {
-            byte[] responseBytes = ("Not found: " + path).getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-            exchange.sendResponseHeaders(HttpURLConnection.HTTP_NOT_FOUND, responseBytes.length);
-            try (OutputStream responseBody = exchange.getResponseBody()) {
-                responseBody.write(responseBytes);
-            }
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_NOT_FOUND, "Not found: " + path);
         }
     }
 
@@ -142,21 +139,12 @@ public class WebResourceServer {
     private void sendResource(HttpExchange exchange, String resource, String mimeType) throws IOException {
         String content = readResource(resource);
         if (content == null) {
-            byte[] responseBytes = ("Resource not found: " + resource).getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-            exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, responseBytes.length);
-            try (OutputStream responseBody = exchange.getResponseBody()) {
-                responseBody.write(responseBytes);
-            }
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Resource not found: " + resource);
             return;
         }
         byte[] responseBytes = content.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", mimeType);
         exchange.getResponseHeaders().set("Cache-Control", "no-store");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
+        HttpResponses.sendBytes(exchange, HttpURLConnection.HTTP_OK, mimeType, responseBytes);
     }
 
     /**

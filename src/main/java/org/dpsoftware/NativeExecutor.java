@@ -224,7 +224,7 @@ public final class NativeExecutor {
      */
     private static void writeProfileFile(String profileToUse) {
         if (profileToUse != null && !profileToUse.isEmpty() && !Constants.DEFAULT.equals(profileToUse) && !CommonUtility.getWord(Constants.DEFAULT).equals(profileToUse)) {
-            new StorageManager().writeProfileInUseFile(profileToUse);
+            new StorageManager().writeStartProfileFile(profileToUse);
         }
     }
 
