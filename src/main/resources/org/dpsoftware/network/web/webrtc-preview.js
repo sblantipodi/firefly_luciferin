@@ -8,10 +8,14 @@
 //   3. answers the incoming offer and relays ICE candidates both ways.
 //
 // The WebSocket URL is derived from the page origin: the signaling server runs on the
-// sibling port (CONFIG_SERVER_DEFAULT_PORT + 1) bound to the same interface.
+// sibling port (config server default port + 1) bound to the same interface. The port is
+// injected at serve time from the Java-side Constants.CONFIG_SERVER_DEFAULT_PORT.PORT_PLACEHOLDER
 
 (function () {
-    var CONFIG_SERVER_DEFAULT_PORT = 33556;
+    // __CONFIG_SERVER_DEFAULT_PORT__ is replaced at serve time with the Java-side
+    // Constants.CONFIG_SERVER_DEFAULT_PORT. The || fallback covers the case where
+    // the resource is served statically without the substitution (e.g. from the IDE).
+    var CONFIG_SERVER_DEFAULT_PORT = __CONFIG_SERVER_DEFAULT_PORT__ || 33556;
     var SIGNALING_PORT_OFFSET = 1;
     var videoEl = null;
     var socket = null;

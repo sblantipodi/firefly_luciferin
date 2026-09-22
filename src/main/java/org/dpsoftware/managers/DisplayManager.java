@@ -21,8 +21,6 @@
 */
 package org.dpsoftware.managers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import javafx.application.Platform;
@@ -30,9 +28,11 @@ import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -255,6 +255,10 @@ public class DisplayManager {
                 log.info("Native HMONITOR peer: {} -> {}", displayInfo.getNativePeer(), displayInfo.getMonitorName());
             }
             log.info("Width: {} Height: {} Scaling: {} MinX: {} MinY: {}", displayInfo.getWidth(), displayInfo.getHeight(), displayInfo.getScaleX(), displayInfo.getMinX(), displayInfo.getMinY());
+            if (MainSingleton.getInstance().getConfig() != null && MainSingleton.getInstance().getConfig().hasCaptureDevice()) {
+                CaptureDeviceUtilities.BestCaptureFormat captureDevice = MainSingleton.getInstance().getConfig().getCaptureDevice();
+                log.info("Capture device: {}, {}x{}, {}FPS, format: {}", captureDevice.getFriendlyName(), captureDevice.getSuggestedWidth(), captureDevice.getSuggestedHeight(), captureDevice.getMaxFps(), captureDevice.getBestFormat());
+            }
         });
     }
 
@@ -301,37 +305,19 @@ public class DisplayManager {
      * Detects and sets up an external device by retrieving its friendly name for video capture.
      */
     public void getExtVideoCaptureDevices(Consumer<List<String>> onComplete) {
-        if (NativeExecutor.isWindows()) {
-            CommonUtility.delayMilliseconds(() -> {
-                List<String> extSrcFriendlyNames = new ArrayList<>();
-                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_GET_EXT_SRC};
-                List<String> rawOutput = NativeExecutor.runNative(cmd, Constants.CMD_WAIT_DELAY);
-                String json = String.join(" ", rawOutput);
-                try {
-                    JsonNode node = CommonUtility.JSON_MAPPER.readTree(json);
-                    if (node.isArray()) {
-                        for (JsonNode item : node) {
-                            extSrcFriendlyNames.add(item.get("FriendlyName").asText());
-                            log.debug("External device: {}", item.get("FriendlyName").asText());
-                        }
-                    } else {
-                        extSrcFriendlyNames.add(node.get("FriendlyName").asText());
-                        log.debug("An external device found: {}", node.get("FriendlyName").asText());
-                    }
-                } catch (JsonProcessingException e) {
-                    log.debug("No USB capture device found.");
-                }
-                Platform.runLater(() -> onComplete.accept(extSrcFriendlyNames));
-            }, 10);
-        } else {
-            CommonUtility.delayMilliseconds(() -> {
-                List<String> rawOutput = NativeExecutor.runNative(Constants.CMD_USB_DEVIE_CHECK, Constants.CMD_WAIT_DELAY);
-                List<String> videoDevices = rawOutput.stream()
-                        .filter(line -> line.startsWith("/dev/video"))
-                        .toList();
-                Platform.runLater(() -> onComplete.accept(videoDevices));
-            }, 10);
-        }
+        CommonUtility.delayMilliseconds(() -> {
+            List<CaptureDeviceUtilities.CaptureDevice> captureDevices = ManagerSingleton.getInstance().getCaptureDevices();
+            captureDevices.addAll(CaptureDeviceUtilities.discover());
+            if (captureDevices.isEmpty()) {
+                log.debug("No video capture devices found.");
+                return;
+            }
+            List<String> extSrcFriendlyNames = new ArrayList<>();
+            for (CaptureDeviceUtilities.CaptureDevice dev : captureDevices) {
+                extSrcFriendlyNames.add(dev.getFriendlyName());
+            }
+            Platform.runLater(() -> onComplete.accept(extSrcFriendlyNames));
+        }, 10);
         onComplete.accept(new ArrayList<>());
     }
 

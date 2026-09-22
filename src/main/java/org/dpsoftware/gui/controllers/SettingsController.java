@@ -794,35 +794,34 @@ public class SettingsController {
      * Initializes the available capture methods for the capture method dropdown in the UI.
      **/
     void initCaptureMethods() {
-        modeTabController.captureMethod.getItems().clear();
-        boolean isExtSrc = currentConfig != null && !currentConfig.getExtSrcFriendlyName().isEmpty();
+        boolean isExtSrc = currentConfig != null && currentConfig.hasCaptureDevice();
         if (NativeExecutor.isWindows()) {
             if (!isExtSrc) {
-                modeTabController.captureMethod.getItems().addAll(
+                modeTabController.captureMethod.getItems().setAll(
                         Configuration.CaptureMethod.DDUPL_DX12,
                         Configuration.CaptureMethod.DDUPL_DX11,
                         Configuration.CaptureMethod.WinAPI,
                         Configuration.CaptureMethod.CPU);
             } else {
-                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.WIN_USB_VIDEO);
+                modeTabController.captureMethod.getItems().setAll(Configuration.CaptureMethod.WIN_USB_VIDEO);
             }
         } else if (NativeExecutor.isMac()) {
-            modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
+            modeTabController.captureMethod.getItems().setAll(Configuration.CaptureMethod.AVFVIDEOSRC);
         } else {
             if (!isExtSrc) {
                 if (NativeExecutor.isWayland()) {
-                    modeTabController.captureMethod.getItems().addAll(
+                    modeTabController.captureMethod.getItems().setAll(
                             Configuration.CaptureMethod.PIPEWIREXDG,
                             Configuration.CaptureMethod.PIPEWIREXDG_OPENGL,
                             Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA,
                             Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL);
                 } else {
-                    modeTabController.captureMethod.getItems().addAll(
+                    modeTabController.captureMethod.getItems().setAll(
                             Configuration.CaptureMethod.XIMAGESRC,
                             Configuration.CaptureMethod.XIMAGESRC_NVIDIA);
                 }
             } else {
-                modeTabController.captureMethod.getItems().addAll(
+                modeTabController.captureMethod.getItems().setAll(
                         Configuration.CaptureMethod.USB_VIDEO,
                         Configuration.CaptureMethod.USB_VIDEO_OPENGL,
                         Configuration.CaptureMethod.USB_VIDEO_NVIDIA,
@@ -1075,7 +1074,6 @@ public class SettingsController {
     private void setModeTabParams(Configuration currentSettingsInUse) {
         if (currentSettingsInUse != null) {
             currentSettingsInUse.setTheme(modeTabController.theme.getValue());
-            currentSettingsInUse.setExtSrcFriendlyName(modeTabController.monitorNumber.getValue());
             currentSettingsInUse.setBaudRate(modeTabController.baudRate.getValue());
             currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
             currentSettingsInUse.setLanguage(modeTabController.language.getValue());

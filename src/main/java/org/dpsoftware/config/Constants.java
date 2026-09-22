@@ -605,13 +605,14 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! vapostproc ! videorate drop-only=true";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     // GStreamer Pipelines External Sources
-    public static final String GSTREAMER_PIPELINE_WINDOWS_EXT_SRC = "mfvideosrc device-name=\"{0}\" ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12upload ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
-    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! videoscale ! videoconvert";
-    public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src device={0} ! image/jpeg ! jpegdec ! videorate ! glupload ! glcolorconvert ! glcolorscale ! video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,framerate=FRAMERATE_PLACEHOLDER/1 ! gldownload ! videoconvert ! capsfilter caps=video/x-raw,format=BGRx";
-    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! cudaupload ! cudascale ! cudaconvert ! cudadownload ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
-    public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src device={0} ! videorate ! image/jpeg ! jpegdec ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_WINDOWS_EXT_SRC = "mfvideosrc device-name=\"{0}\" ! videorate {1} ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12upload ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC = "v4l2src device={0} ! videorate {1} ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src device={0} ! videorate {1} ! glupload ! glcolorconvert ! glcolorscale ! video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,framerate=FRAMERATE_PLACEHOLDER/1 ! gldownload ! videoconvert ! capsfilter caps=video/x-raw,format=BGRx";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA = "v4l2src device={0} ! videorate {1} ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! cudaupload ! cudascale ! cudaconvert ! cudadownload ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src device={0} ! videorate {1} ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_WEBRTC = "appsrc name=webrtcsrc is-live=true do-timestamp=true format=TIME ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0 ! videoconvert ! videoscale add-borders=true ! capsfilter name=webrtcpreviewcaps ! vp8enc deadline=1 target-bitrate=4000000 ! rtpvp8pay ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0 ! application/x-rtp,media=video,encoding-name=VP8,payload=97 ! webrtcbin name=webrtcbin stun-server=stun://stun.l.google.com:19302";
     public static final String GSTREAMER_DDUPL = "DDUPL";
+    public static final String MJPG = "! image/jpeg ! jpegdec";
     // GStreamer Caps
     public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_DDUPL_DX12 = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
@@ -803,7 +804,6 @@ public class Constants {
     public static final String NIGHT_LIGHT_VALUE_NAME = "Data";
     public static final String CMD_POWERSHELL = "powershell.exe";
     public static final String CMD_SET_PRIORITY = "Get-WmiObject Win32_process -filter 'name = \\\"Firefly Luciferin.exe\\\"' | foreach-object { $_.SetPriority({0}) }";
-    public static final String CMD_GET_EXT_SRC = "Get-PnpDevice -PresentOnly -Status OK -Class Camera | Select-Object FriendlyName | ConvertTo-Json";
     public static final String REGISTRY_HDR_KEY_PATH = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\MonitorDataStore";
     public static final String REGISTRY_HDR_VAL = "HDREnabled";
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
@@ -868,7 +868,6 @@ public class Constants {
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
-    public static final String[] CMD_USB_DEVIE_CHECK = {"/bin/sh", "-c", "ls -1 /dev/video*"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};
     public static final String[] CURL_HEAD_LINUX = {"curl", "-I", "--max-time", "4"};

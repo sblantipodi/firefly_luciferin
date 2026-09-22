@@ -69,6 +69,21 @@ public class Enums {
         L
     }
 
+    public enum VideoDeviceFormat {
+        MJPG,
+        YUY2,
+        UYVY,
+        NV12,
+        NV21,
+        H264,
+        I420,
+        YV12,
+        RGB,
+        BGR,
+        GRAY8,
+        RAW
+    }
+
     public enum TRAY_PREFERENCE {
         AUTO,
         DISABLED,

@@ -22,6 +22,7 @@
 package org.dpsoftware.network.web;
 
 import com.sun.net.httpserver.HttpExchange;
+import org.dpsoftware.config.Constants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,6 +41,8 @@ public class WebResourceServer {
     private static final String SET_CONFIG_UI_JS_RESOURCE = "set-config-ui.js";
     private static final String SET_CONFIG_CSS_RESOURCE = "set-config.css";
     private static final String WEBRTC_PREVIEW_JS_RESOURCE = "webrtc-preview.js";
+    // Marker replaced at serve time with the Java-side default config server port.
+    private static final String PORT_PLACEHOLDER = "__CONFIG_SERVER_DEFAULT_PORT__";
 
     /**
      * Serves the settings page.
@@ -89,7 +92,19 @@ public class WebResourceServer {
      * @throws IOException when the resource is missing or the response cannot be written
      */
     public void handleWebrtcPreviewJs(HttpExchange exchange) throws IOException {
-        sendResource(exchange, WEBRTC_PREVIEW_JS_RESOURCE, "application/javascript; charset=utf-8");
+        String resource = readResource(WEBRTC_PREVIEW_JS_RESOURCE);
+        if (resource == null) {
+            sendResource(exchange, WEBRTC_PREVIEW_JS_RESOURCE, "application/javascript; charset=utf-8");
+            return;
+        }
+        resource = resource.replace(PORT_PLACEHOLDER, String.valueOf(Constants.CONFIG_SERVER_DEFAULT_PORT));
+        byte[] responseBytes = resource.getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "application/javascript; charset=utf-8");
+        exchange.getResponseHeaders().set("Cache-Control", "no-store");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(responseBytes);
+        }
     }
 
     /**
@@ -125,25 +140,40 @@ public class WebResourceServer {
      * @throws IOException when the resource is missing or the response cannot be written
      */
     private void sendResource(HttpExchange exchange, String resource, String mimeType) throws IOException {
-        try (InputStream resourceStream = getClass().getResourceAsStream(resource)) {
-            if (resourceStream == null) {
-                byte[] responseBytes = ("Resource not found: " + resource).getBytes(StandardCharsets.UTF_8);
-                exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-                exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, responseBytes.length);
-                try (OutputStream responseBody = exchange.getResponseBody()) {
-                    responseBody.write(responseBytes);
-                }
-                return;
-            }
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            resourceStream.transferTo(buffer);
-            byte[] responseBytes = buffer.toByteArray();
-            exchange.getResponseHeaders().set("Content-Type", mimeType);
-            exchange.getResponseHeaders().set("Cache-Control", "no-store");
-            exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+        String content = readResource(resource);
+        if (content == null) {
+            byte[] responseBytes = ("Resource not found: " + resource).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+            exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, responseBytes.length);
             try (OutputStream responseBody = exchange.getResponseBody()) {
                 responseBody.write(responseBytes);
             }
+            return;
+        }
+        byte[] responseBytes = content.getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", mimeType);
+        exchange.getResponseHeaders().set("Cache-Control", "no-store");
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            responseBody.write(responseBytes);
+        }
+    }
+
+    /**
+     * Read a class relative resource as a UTF-8 string.
+     *
+     * @param resource the class relative resource name
+     * @return the resource content, or null when the resource is missing
+     * @throws IOException when the resource cannot be read
+     */
+    private String readResource(String resource) throws IOException {
+        try (InputStream resourceStream = getClass().getResourceAsStream(resource)) {
+            if (resourceStream == null) {
+                return null;
+            }
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            resourceStream.transferTo(buffer);
+            return buffer.toString(StandardCharsets.UTF_8);
         }
     }
 }
