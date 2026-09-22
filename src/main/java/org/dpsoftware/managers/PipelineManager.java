@@ -227,19 +227,14 @@ public class PipelineManager {
                     .replace("{1}", String.valueOf(xdgStreamDetails.fileDescriptor.getIntFileDescriptor()))
                     .replace("{2}", xdgStreamDetails.streamId.toString());
         } else {
-            // startx{0}, endx{1}, starty{2}, endy{3}
             if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
-                gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC)
-                    .replace("{1}", (main.getConfig().hasCaptureDevice() && Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
+                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC));
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
-                gstreamerPipeline = GStreamerGrabber.setScaling(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL), main)
-                    .replace("{1}", (main.getConfig().hasCaptureDevice() && Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
+                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL));
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
-                gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA)
-                    .replace("{1}", (main.getConfig().hasCaptureDevice() && Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
+                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA));
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
-                gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL)
-                    .replace("{1}", (main.getConfig().hasCaptureDevice() && Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
+                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL));
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA);
                 gstreamerPipeline = replaceWithMonitorInfo(main, pipeline);
@@ -249,6 +244,22 @@ public class PipelineManager {
             }
         }
         log.debug("Pipeline: {}", gstreamerPipeline);
+        return gstreamerPipeline;
+    }
+
+    /**
+     * Configures the USB video pipeline parameters by replacing specific placeholders in the provided GStreamer
+     * pipeline string with appropriate values based on the application configuration.
+     *
+     * @param gstreamerPipeline the GStreamer pipeline string containing placeholders
+     * @return a string representing the updated GStreamer pipeline with the placeholders
+     */
+    private static String setUsbVideoPipelineParams(String gstreamerPipeline) {
+        MainSingleton main = MainSingleton.getInstance();
+        gstreamerPipeline = gstreamerPipeline
+                .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.VIDEO_MJPG : Constants.VIDEO_RAW)
+                .replace("{2}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedWidth()))
+                .replace("{3}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedHeight()));
         return gstreamerPipeline;
     }
 

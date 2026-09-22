@@ -511,7 +511,7 @@ public class StorageManager {
      */
     public static String readStartProfileFile() {
         try {
-            File profileInUseFile = new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.START_PROFILE_FILENAME);
+            File profileInUseFile = new File(InstanceConfigurer.getConfigPath() + File.separator + MainSingleton.getInstance().whoAmI + "_" + Constants.START_PROFILE_FILENAME);
             if (profileInUseFile.exists()) {
                 String profileName = java.nio.file.Files.readString(profileInUseFile.toPath()).trim();
                 if (!profileName.isEmpty()) {
@@ -553,7 +553,7 @@ public class StorageManager {
      */
     public void deleteStartProfileFile() {
         try {
-            Path file = Paths.get(path, Constants.START_PROFILE_FILENAME);
+            Path file = Paths.get(path, MainSingleton.getInstance().whoAmI + "_" + Constants.START_PROFILE_FILENAME);
             Files.deleteIfExists(file);
         } catch (IOException e) {
             log.error("Failed to delete StartProfile in use file: {}", e.getMessage());

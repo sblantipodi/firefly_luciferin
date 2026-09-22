@@ -178,8 +178,7 @@ public class GrabberManager {
             } else {
                 bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC)
                         .replace("{0}", friendlyName)
-                        .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : ""), true);
-
+                        .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.VIDEO_MJPG : ""), true);
             }
         } else if (NativeExecutor.isLinux()) {
             String devPath = main.getConfig().hasCaptureDevice() ? main.getConfig().getCaptureDevice().getDevPath() : "";
