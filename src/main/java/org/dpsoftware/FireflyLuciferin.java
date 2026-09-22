@@ -184,11 +184,11 @@ public class FireflyLuciferin extends Application {
 
     /**
      * Parse the startup arguments and apply the related side effects:
-     * a single {@code -h} argument starts instance #1 with the default profile in headless mode,
-     * {@code RESTART_DELAY} as first arg is stripped and a delay is applied,
-     * {@code -h} as third arg enables headless mode,
-     * {@code args[0]} is the instance number ({@code whoAmI}) and disables instance spawning,
-     * {@code args[1]} is the profile to use, defaults to the default profile.
+     * a single h argument starts instance #1 with the default profile in headless mode,
+     * RESTART_DELAY as first arg is stripped and a delay is applied,
+     * -h as third arg enables headless mode,
+     * args[0] is the instance number whoAmI and disables instance spawning,
+     * args[1] is the profile to use, defaults to the default profile.
      *
      * @param main MainSingleton to set the parsed values on
      * @param args startup arguments
@@ -204,7 +204,7 @@ public class FireflyLuciferin extends Application {
             args = newArray;
             CommonUtility.sleepSeconds(Constants.RESTART_DELAY_SECONDS);
         }
-        if (args != null && args.length > 2 && Constants.HEADLESS_ARG.equals(args[2])) {
+        if (java.awt.GraphicsEnvironment.isHeadless() || (args != null && args.length > 2 && Constants.HEADLESS_ARG.equals(args[2]))) {
             log.info("Running in headless mode");
             main.setHeadlessMode(true);
             System.setProperty("glass.platform", "Headless");
@@ -218,7 +218,7 @@ public class FireflyLuciferin extends Application {
         if (args != null && args.length > 1) {
             main.profileArg = args[1];
         }
-        String profileFromFile = StorageManager.readProfileInUseFile();
+        String profileFromFile = StorageManager.readStartProfileFile();
         if (profileFromFile != null) {
             log.debug("ProfileInUse file found, activating profile: {}", profileFromFile);
             main.profileArg = profileFromFile;

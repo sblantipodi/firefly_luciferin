@@ -21,27 +21,31 @@
  */
 package org.dpsoftware.network.web;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
-/** Handles profile listing, activation and deletion. */
+/** Handles profile listing, creation, activation and deletion. */
+@Slf4j
 public class ProfileHandler {
 
-    private static final String JSON_OK = "{\"status\":\"OK\"}";
     private final StorageManager storageManager = new StorageManager();
 
     /**
@@ -86,12 +90,60 @@ public class ProfileHandler {
         ObjectNode node = CommonUtility.JSON_MAPPER.createObjectNode();
         node.putPOJO("profiles", profiles);
         node.put("activeProfile", activeProfile);
-        byte[] responseBytes = CommonUtility.JSON_MAPPER.writeValueAsBytes(node);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
+        HttpResponses.sendJson(exchange, node);
+    }
+
+    /**
+     * Creates a profile from the supplied configuration without activating it.
+     */
+    public void handleAddProfile(HttpExchange exchange) throws IOException {
+        String name = exchange.getRequestURI().getQuery();
+        String profileName = null;
+        if (name != null) {
+            for (String pair : name.split("&")) {
+                int eq = pair.indexOf('=');
+                if (eq > 0 && pair.substring(0, eq).equals("name")) {
+                    profileName = pair.substring(eq + 1);
+                }
+            }
         }
+        if (profileName == null || profileName.isEmpty()) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or empty name parameter");
+            return;
+        }
+        JsonNode payload;
+        try (InputStream requestBody = exchange.getRequestBody()) {
+            payload = CommonUtility.JSON_MAPPER.readTree(requestBody);
+        } catch (IOException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            return;
+        }
+        if (payload == null || payload.isNull() || !payload.isObject()) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Payload must be a JSON object");
+            return;
+        }
+        Configuration savedConfig = storageManager.readProfileInUseConfig();
+        if (savedConfig == null) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
+            return;
+        }
+        Configuration updatedConfig = ConfigurationPayload.apply(payload, savedConfig);
+        updatedConfig.setEffect(LocalizedEnum.fromTextToBase(Enums.Effect.class, updatedConfig.getEffect()));
+        int whoAmI = MainSingleton.getInstance().whoAmI;
+        String filename;
+        if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            filename = whoAmI == 2 ? Constants.CONFIG_FILENAME_2 : whoAmI == 3 ? Constants.CONFIG_FILENAME_3 : Constants.CONFIG_FILENAME;
+        } else {
+            filename = whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+        }
+        try {
+            storageManager.writeConfig(updatedConfig, filename);
+        } catch (IOException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save profile: " + e.getMessage());
+            return;
+        }
+        log.info("Profile created via addProfile endpoint: {}", filename);
+        HttpResponses.sendOk(exchange);
     }
 
     /**
@@ -103,11 +155,11 @@ public class ProfileHandler {
     public void handleActivateProfile(HttpExchange exchange) throws IOException {
         String name = queryNameParam(exchange);
         if (name == null || name.isEmpty()) {
-            sendMissingNameError(exchange);
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or empty name parameter");
             return;
         }
         // The default profile uses the main configuration.
-        sendOkJson(exchange);
+        HttpResponses.sendOk(exchange);
         if (name.equals(CommonUtility.getWord(Constants.DEFAULT))) {
             NativeExecutor.restartNativeInstance("\"" + Constants.DEFAULT + "\"");
         } else {
@@ -124,7 +176,7 @@ public class ProfileHandler {
     public void handleRemoveProfile(HttpExchange exchange) throws IOException {
         String name = queryNameParam(exchange);
         if (name == null || name.isEmpty()) {
-            sendMissingNameError(exchange);
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or empty name parameter");
             return;
         }
         String defaultWord = CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH);
@@ -136,71 +188,14 @@ public class ProfileHandler {
             activeProfile = profileArg;
         }
         if (name.equals(defaultWord) || name.equals(activeProfile)) {
-            sendBadRequest(exchange, "Cannot remove the " + (name.equals(defaultWord) ? "default" : "active") + " profile");
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Cannot remove the " + (name.equals(defaultWord) ? "default" : "active") + " profile");
             return;
         }
         boolean deleted = storageManager.deleteProfile(name);
         if (!deleted) {
-            sendInternalError(exchange, "Unable to delete profile: " + name);
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to delete profile: " + name);
             return;
         }
-        sendOkJson(exchange);
-    }
-
-    /**
-     * Send a plain text internal server error response.
-     *
-     * @param exchange the HTTP exchange to reply on
-     * @param message  the human-readable error description
-     * @throws IOException when the response cannot be written
-     */
-    private void sendInternalError(HttpExchange exchange, String message) throws IOException {
-        byte[] responseBytes = message.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
-    }
-
-    /**
-     * Send a JSON {@code OK} response.
-     *
-     * @param exchange the HTTP exchange to send the response on
-     * @throws IOException when the response cannot be written
-     */
-    private void sendOkJson(HttpExchange exchange) throws IOException {
-        byte[] responseBytes = JSON_OK.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
-    }
-
-    /**
-     * Send a 400 plain text error response for a missing name parameter.
-     *
-     * @param exchange the HTTP exchange to reply on
-     * @throws IOException when the response cannot be written
-     */
-    private void sendMissingNameError(HttpExchange exchange) throws IOException {
-        sendBadRequest(exchange, "Missing or empty name parameter");
-    }
-
-    /**
-     * Send a 400 plain text error response with a custom message.
-     *
-     * @param exchange the HTTP exchange to reply on
-     * @param message  the human-readable error description
-     * @throws IOException when the response cannot be written
-     */
-    private void sendBadRequest(HttpExchange exchange, String message) throws IOException {
-        byte[] responseBytes = message.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-        exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_REQUEST, responseBytes.length);
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(responseBytes);
-        }
+        HttpResponses.sendOk(exchange);
     }
 }

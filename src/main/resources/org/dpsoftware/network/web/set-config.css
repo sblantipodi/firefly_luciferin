@@ -74,9 +74,28 @@ body.server-down > :not(#offlineOverlay) {
     margin: 0 auto;
 }
 
-/* Toggle LED button, text color (the background is set at runtime by JS). */
 #toggleLED {
+    font-size: 1.8rem;
+    font-weight: bold;
     color: #fff;
+    background: lightgrey;
+    border-color: lightgrey;
+}
+
+#toggleLED.active {
+    color: #fff;
+    background: orange;
+    border-color: orange;
+}
+
+#toggleLED:hover {
+    background-color: #c6c6c6 !important;
+    border-color: #c6c6c6 !important;
+}
+
+#toggleLED.active:hover {
+    background-color: darkorange !important;
+    border-color: darkorange !important;
 }
 
 /* Live preview button, base (off) state: light grey. The .active class (added by
@@ -101,24 +120,19 @@ body.server-down > :not(#offlineOverlay) {
 }
 
 /* WebRTC live preview video, hidden until the .show class is toggled by JS. */
-#webrtcPreview {
-    max-width: 100%;
-    border: 1px solid #ccc;
-    display: none;
-    background: #000;
-}
-
-#webrtcPreview.show {
-    display: inline-block;
-}
-
 /* Captured frame, hidden until the live preview is enabled (the .show class is toggled by JS). */
+#webrtcPreview,
 #screenshot {
     max-width: 100%;
     border: 1px solid #ccc;
     display: none;
 }
 
+#webrtcPreview {
+    background: #000;
+}
+
+#webrtcPreview.show,
 #screenshot.show {
     display: inline-block;
 }
@@ -149,30 +163,6 @@ body.server-down > :not(#offlineOverlay) {
     bottom: 10px;
     right: 10px;
     z-index: 1051;
-}
-
-#toggleLED {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #fff;
-    background: lightgrey;
-    border-color: lightgrey;
-}
-
-#toggleLED.active {
-    color: #fff;
-    background: orange;
-    border-color: orange;
-}
-
-#toggleLED:hover {
-    background-color: #c6c6c6 !important;
-    border-color: #c6c6c6 !important;
-}
-
-#toggleLED.active:hover {
-    background-color: darkorange !important;
-    border-color: darkorange !important;
 }
 
 /* Profile delete button, small red cross to the right of each removable profile. */

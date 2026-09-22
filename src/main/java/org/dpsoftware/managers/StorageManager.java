@@ -500,50 +500,61 @@ public class StorageManager {
     }
 
     /**
-     * Read the ProfileInUse file if it exists and return the profile name.
+     * Read the StartProfile file if it exists and return the profile name.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
      *
      * @return the profile name read from the file, or null if the file doesn't exist or is empty
      */
-    public static String readProfileInUseFile() {
+    public static String readStartProfileFile() {
         try {
-            File profileInUseFile = new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.PROFILE_IN_USE_FILENAME);
+            File profileInUseFile = new File(InstanceConfigurer.getConfigPath() + File.separator + Constants.START_PROFILE_FILENAME);
             if (profileInUseFile.exists()) {
                 String profileName = java.nio.file.Files.readString(profileInUseFile.toPath()).trim();
                 if (!profileName.isEmpty()) {
-                    log.debug("Using profile from ProfileInUse file: {}", profileName);
+                    log.debug("Using profile from StartProfile file: {}", profileName);
                     return profileName;
                 }
             }
         } catch (IOException e) {
-            log.warn("Failed to read ProfileInUse file: {}", e.getMessage());
+            log.warn("Failed to read StartProfile file: {}", e.getMessage());
         }
         return null;
     }
 
     /**
      * Write the profile name to a plain text file inside the configuration path.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
      *
      * @param profileName profile name to write
      */
-    public void writeProfileInUseFile(String profileName) {
+    public void writeStartProfileFile(String profileName) {
         if (profileName != null && !profileName.isEmpty()) profileName = profileName.replace("\"", "");
         try {
-            Path file = Paths.get(path, Constants.PROFILE_IN_USE_FILENAME);
-            Files.writeString(file, profileName, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            Path file = Paths.get(path, MainSingleton.getInstance().whoAmI + "_" +Constants.START_PROFILE_FILENAME);
+            if (profileName != null && !profileName.isEmpty()) {
+                Files.writeString(file, profileName, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            }
         } catch (IOException e) {
-            log.error("Failed to write profile in use file: {}", e.getMessage());
+            log.error("Failed to write StartProfile in use file: {}", e.getMessage());
         }
     }
 
     /**
-     * Delete the profile in use file.
+     * Delete the StartProfile in use file.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
      */
-    public void deleteProfileInUseFile() {
+    public void deleteStartProfileFile() {
         try {
-            Path file = Paths.get(path, Constants.PROFILE_IN_USE_FILENAME);
+            Path file = Paths.get(path, Constants.START_PROFILE_FILENAME);
             Files.deleteIfExists(file);
         } catch (IOException e) {
-            log.error("Failed to delete profile in use file: {}", e.getMessage());
+            log.error("Failed to delete StartProfile in use file: {}", e.getMessage());
         }
     }
 
@@ -611,7 +622,7 @@ public class StorageManager {
                 File fileToDelete = new File(path + File.separator + tempFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();
             }
-            deleteProfileInUseFile();
+            deleteStartProfileFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
