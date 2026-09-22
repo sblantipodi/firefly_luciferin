@@ -87,6 +87,8 @@ public class Constants {
     public static final String CHECK = "✔";
     public static final String DIALOG = "☰";
     public static final String SHARP = "#";
+    public static final int DEFAULT_RES_WIDTH = 1920;
+    public static final int DEFAULT_RES_HEIGHT = 1080;
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
     public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE = "4.0.3";

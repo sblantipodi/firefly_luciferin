@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.freedesktop.gstreamer.*;
@@ -340,9 +341,13 @@ public class CaptureDeviceUtilities {
      * supported format has resolutions.
      */
     public static BestCaptureFormat findPixelFormat(String friendlyName) {
-        Configuration main = MainSingleton.getInstance().config;
-        int width = main.getScreenResX() / main.getResamplingFactor();
-        int height = main.getScreenResY() / main.getResamplingFactor();
+        int width = Constants.DEFAULT_RES_WIDTH / Constants.RESAMPLING_FACTOR;
+        int height = Constants.DEFAULT_RES_HEIGHT / Constants.RESAMPLING_FACTOR;
+        if (MainSingleton.getInstance().config != null) {
+            Configuration main = MainSingleton.getInstance().config;
+            width = main.getScreenResX() / main.getResamplingFactor();
+            height = main.getScreenResY() / main.getResamplingFactor();
+        }
         CaptureDevice dev = (friendlyName == null || friendlyName.isBlank()) ? firstDevice() : findDeviceByName(friendlyName);
         if (dev == null) {
             return null;
