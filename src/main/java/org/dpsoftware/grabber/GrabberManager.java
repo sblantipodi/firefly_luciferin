@@ -42,8 +42,10 @@ import org.freedesktop.gstreamer.Version;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -176,9 +178,8 @@ public class GrabberManager {
                 bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12)
                         .replace("{0}", monitorNativePeer), true);
             } else {
-                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC)
-                        .replace("{0}", friendlyName)
-                        .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.VIDEO_MJPG : ""), true);
+                bin = Gst.parseBinFromDescription(PipelineManager.setUsbVideoPipelineParams(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC))
+                        .replace("{0}", friendlyName), true);
             }
         } else if (NativeExecutor.isLinux()) {
             String devPath = main.getConfig().hasCaptureDevice() ? main.getConfig().getCaptureDevice().getDevPath() : "";
