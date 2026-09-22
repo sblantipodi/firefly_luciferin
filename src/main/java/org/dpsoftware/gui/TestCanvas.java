@@ -32,6 +32,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.Effect;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
@@ -100,6 +101,9 @@ public class TestCanvas {
     private javafx.animation.Timeline captureBackgroundTimeline;
     // Last successfully decoded GStreamer frame kept so the canvas never goes blank between refreshes
     private javafx.scene.image.Image lastCaptureImage;
+    private ByteBuffer lastRenderedCaptureBuffer;
+    private WritableImage previewImage;
+    private int[] previewPixels;
     private List<Configuration> configHistory;
     private int configHistoryIdx = 1;
     private int dialogY;
@@ -1028,46 +1032,58 @@ public class TestCanvas {
                 if (buf == null && everCapturedFrame) {
                     log.debug("GStreamer lastRgbBuffer lost: singleton=null, manager={}, managerHash={}, vcHash={}, singletonPublisherHash={}, singletonLatest={}", manager, (manager == null) ? "null" : System.identityHashCode(manager), (grabber == null) ? "null" : System.identityHashCode(grabber), GrabberSingleton.getInstance().lastPublisherHash, (GrabberSingleton.getInstance().latestRgbBuffer == null) ? "null" : GrabberSingleton.getInstance().latestRgbBuffer.remaining());
                 }
-                return null;
+                if (buf == null) return null;
             }
             everCapturedFrame = true;
             MainSingleton main = MainSingleton.getInstance();
             int width = main.getConfig().getScreenResX() / main.getConfig().getResamplingFactor();
             int height = main.getConfig().getScreenResY() / main.getConfig().getResamplingFactor();
-            if (buf.remaining() < (width * height * Integer.BYTES)) {
+            ByteBuffer bgr = buf.duplicate().order(java.nio.ByteOrder.nativeOrder());
+            bgr.position(0);
+            if (bgr.remaining() < ((long) width * height * Integer.BYTES)) {
                 log.trace("GStreamer capture buffer too small: {} bytes, need {}", buf.remaining(), width * height * Integer.BYTES);
                 return null;
             }
-            int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, buf.asIntBuffer());
-            int stridePixels = widthPlusStride - width;
-            int rowBytes = widthPlusStride * 4;
-            int[] argbArray = new int[width * height];
-            java.nio.ByteBuffer bgr = buf.order(java.nio.ByteOrder.nativeOrder());
-            int bufferLimit = bgr.limit();
+            double ratio = NativeExecutor.isLinux() ? 1.0 : LIVE_PREVIEW_RATIO;
+            int previewWidth = Math.clamp((int) Math.round(canvas.getWidth() * ratio), 1, width);
+            int previewHeight = Math.clamp((int) Math.round(canvas.getHeight() * ratio), 1, height);
+            if (buf == lastRenderedCaptureBuffer && previewImage != null
+                    && previewImage.getWidth() == previewWidth && previewImage.getHeight() == previewHeight) {
+                return previewImage;
+            }
+            int rowBytes = ImageProcessor.getWidthPlusStride(width, height, bgr.asIntBuffer()) * Integer.BYTES;
+            if ((long) (height - 1) * rowBytes + (long) width * Integer.BYTES > bgr.limit()) {
+                return null;
+            }
+            if (previewImage == null || previewImage.getWidth() != previewWidth || previewImage.getHeight() != previewHeight) {
+                previewImage = new WritableImage(previewWidth, previewHeight);
+                previewPixels = new int[previewWidth * previewHeight];
+            }
+            CubeLutToneMap.ToneMapper toneMapper = CubeLutToneMap.snapshot();
+            boolean toneMap = toneMapper.isAvailable();
+            float[] mapped = toneMap ? new float[3] : null;
             int pixelIndex = 0;
-            for (int y = 0; y < height; y++) {
-                int rowStart = Math.min(y * rowBytes, bufferLimit - width * 4);
-                for (int x = 0; x < width; x++) {
-                    int offset = rowStart + x * 4;
+            for (int y = 0; y < previewHeight; y++) {
+                int rowStart = (int) ((long) y * height / previewHeight) * rowBytes;
+                for (int x = 0; x < previewWidth; x++) {
+                    int offset = rowStart + (int) ((long) x * width / previewWidth) * Integer.BYTES;
                     int r, g, b;
                     b = bgr.get(offset) & 0xFF;
                     g = bgr.get(offset + 1) & 0xFF;
                     r = bgr.get(offset + 2) & 0xFF;
-                    // HDR to SDR tone mapping via 3D LUT
-                    int[] tonedMappedColor = CubeLutToneMap.lookup(r, g, b);
-                    argbArray[pixelIndex++] = (0xFF << 24) | (tonedMappedColor[0] << 16) | (tonedMappedColor[1] << 8) | tonedMappedColor[2];
+                    if (toneMap) {
+                        toneMapper.lookup(r, g, b, mapped);
+                        r = Math.round(mapped[0]);
+                        g = Math.round(mapped[1]);
+                        b = Math.round(mapped[2]);
+                    }
+                    previewPixels[pixelIndex++] = 0xFF000000 | (r << 16) | (g << 8) | b;
                 }
-                // skip padding bytes (stride)
-                bgr.position(Math.min(rowStart + width * 4 + stridePixels * 4, bufferLimit));
             }
-            javafx.scene.image.WritableImage fxImage = new javafx.scene.image.WritableImage(width, height);
-            javafx.scene.image.PixelWriter writer = fxImage.getPixelWriter();
-            for (int i = 0; i < width * height; i++) {
-                int x = i % width;
-                int y = i / width;
-                writer.setArgb(x, y, argbArray[i]);
-            }
-            return fxImage;
+            previewImage.getPixelWriter().setPixels(0, 0, previewWidth, previewHeight,
+                    PixelFormat.getIntArgbInstance(), previewPixels, 0, previewWidth);
+            lastRenderedCaptureBuffer = buf;
+            return previewImage;
         } catch (Exception e) {
             log.warn("Unable to read latest capture for test canvas background: {}", e.getMessage());
             return null;
