@@ -29,11 +29,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.*;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.EnvConstants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.DbusScreenCast;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
@@ -254,7 +250,7 @@ public class PipelineManager {
      * @param gstreamerPipeline the GStreamer pipeline string containing placeholders
      * @return a string representing the updated GStreamer pipeline with the placeholders
      */
-    private static String setUsbVideoPipelineParams(String gstreamerPipeline) {
+    public static String setUsbVideoPipelineParams(String gstreamerPipeline) {
         MainSingleton main = MainSingleton.getInstance();
         gstreamerPipeline = gstreamerPipeline
                 .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.VIDEO_MJPG : Constants.VIDEO_RAW)
