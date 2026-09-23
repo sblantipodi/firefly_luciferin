@@ -230,16 +230,16 @@ public class PipelineManager {
             // startx{0}, endx{1}, starty{2}, endy{3}
             if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
                 gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC)
-                    .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
+                    .replace("{1}", (main.getConfig().hasCaptureDevice() && Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
                 gstreamerPipeline = GStreamerGrabber.setScaling(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL), main)
-                    .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
+                    .replace("{1}", (main.getConfig().hasCaptureDevice() && Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
                 gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA)
-                    .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
+                    .replace("{1}", (main.getConfig().hasCaptureDevice() && Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
                 gstreamerPipeline = getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL)
-                    .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
+                    .replace("{1}", (main.getConfig().hasCaptureDevice() && Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.MJPG : "");
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name())) {
                 pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA);
                 gstreamerPipeline = replaceWithMonitorInfo(main, pipeline);

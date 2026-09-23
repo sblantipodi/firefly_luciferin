@@ -34,6 +34,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -365,8 +366,8 @@ public class StorageManager {
         defaultConfig.setWirelessStream(true);
         defaultConfig.setLanguage("English");
         defaultConfig.setConfigVersion(MainSingleton.getInstance().version);
-        defaultConfig.setScreenResX(1920);
-        defaultConfig.setScreenResY(1080);
+        defaultConfig.setScreenResX(Constants.DEFAULT_RES_WIDTH);
+        defaultConfig.setScreenResY(Constants.DEFAULT_RES_HEIGHT);
         defaultConfig.setOsScaling(100);
         defaultConfig.setNumberOfCPUThreads(1);
         defaultConfig.setTopLed(10);
@@ -394,6 +395,7 @@ public class StorageManager {
         }
         defaultConfig.setHueMap(ColorCorrectionDialogController.initHSLMap());
         defaultConfig.regenerateLedMatrix();
+        defaultConfig.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(""));
         writeConfig(defaultConfig, null);
         config = readProfileInUseConfig();
         return config;
