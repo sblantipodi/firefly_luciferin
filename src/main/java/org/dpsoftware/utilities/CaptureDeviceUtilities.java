@@ -345,8 +345,8 @@ public class CaptureDeviceUtilities {
         int height = Constants.DEFAULT_RES_HEIGHT / Constants.RESAMPLING_FACTOR;
         if (MainSingleton.getInstance().config != null) {
             Configuration main = MainSingleton.getInstance().config;
-            width = main.getScreenResX() / main.getResamplingFactor();
-            height = main.getScreenResY() / main.getResamplingFactor();
+            width = ((main.getScreenResX() * 100) / main.getOsScaling()) / main.getResamplingFactor();
+            height = ((main.getScreenResY() * 100) / main.getOsScaling()) / main.getResamplingFactor();
         }
         CaptureDevice dev = (friendlyName == null || friendlyName.isBlank()) ? firstDevice() : findDeviceByName(friendlyName);
         if (dev == null) {
