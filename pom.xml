@@ -317,6 +317,7 @@
                         -Djava.awt.headless=true
                         --add-modules=jdk.incubator.vector
                         --add-exports=jdk.incubator.vector/jdk.incubator.vector=ALL-UNNAMED
+                        --add-opens org.dpsoftware/org.dpsoftware.utilities=ALL-UNNAMED
                         -XX:+EnableDynamicAgentLoading
                     </argLine>
                 </configuration>
