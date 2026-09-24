@@ -33,11 +33,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -170,6 +166,29 @@ class UdpServerDiscoveryTest {
             assertEquals(Constants.UDP_DEVICE_NAME + "GW_ESP32_S3_2230", payload(sent.getValue()));
             verify(server.socket, never()).send(any());
         }
+    }
+
+    @Test
+    void receivesFullDeviceStatusAfterShortDiscoveryPacket() throws Exception {
+        InetAddress loopback = InetAddress.getLoopbackAddress();
+        try (DatagramSocket receiver = new DatagramSocket(0, loopback);
+             DatagramSocket sender = new DatagramSocket()) {
+            receiver.setSoTimeout(2000);
+            DatagramPacket incoming = new DatagramPacket(new byte[512], 512);
+            String shortPing = "PING192.168.1.255";
+            String deviceStatus = "{\"deviceName\":\"GW_ESP32_S3_2230\",\"state\":\"ON\",\"IP\":\"192.168.1.42\",\"MAC\":\"AA:BB:CC:DD:EE:FF\"}";
+
+            send(sender, receiver, shortPing);
+            send(sender, receiver, deviceStatus);
+
+            assertEquals(shortPing, UdpServer.receiveDatagram(receiver, incoming));
+            assertEquals(deviceStatus, UdpServer.receiveDatagram(receiver, incoming));
+        }
+    }
+
+    private void send(DatagramSocket sender, DatagramSocket receiver, String payload) throws IOException {
+        byte[] bytes = payload.getBytes(StandardCharsets.UTF_8);
+        sender.send(new DatagramPacket(bytes, bytes.length, receiver.getLocalAddress(), receiver.getLocalPort()));
     }
 
     private MainSingleton configuredMain() {
