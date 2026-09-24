@@ -1,7 +1,9 @@
+// Configuration profiles UI: renders the profile list, activates a profile (server restart) and adds/removes profiles via the ConfigServer endpoints.
 import {fetchJson, postResponse} from './set-config-api.js';
 import {collectPayload} from './set-config-core.js';
 import {showToast} from './set-config-ui.js';
 
+// Renders the profile list with activate buttons and (for non-default, non-active profiles) a remove button, marking the active profile.
 export function renderProfiles(data) {
     var container = document.getElementById('profilesList');
     if (!container) {
@@ -39,6 +41,7 @@ export function renderProfiles(data) {
     });
 }
 
+// Activates a profile via the server endpoint (with confirmation); the server restarts to apply it.
 export function activateProfile(name) {
     var confirmMsg = 'Activate profile "' + name + '"? Firefly will restart.';
     if (!confirm(confirmMsg)) {
@@ -51,6 +54,7 @@ export function activateProfile(name) {
     });
 }
 
+// Creates a new profile from the current form values (collectPayload) and refreshes the list afterwards.
 export function addProfile() {
     var name = document.getElementById('newProfileName').value.trim();
     if (!name) {
@@ -77,6 +81,7 @@ export function addProfile() {
     });
 }
 
+// Removes a profile via the server endpoint (with confirmation) and refreshes the list afterwards.
 export function removeProfile(name) {
     var confirmMsg = 'Remove profile "' + name + '"? This cannot be undone.';
     if (!confirm(confirmMsg)) {

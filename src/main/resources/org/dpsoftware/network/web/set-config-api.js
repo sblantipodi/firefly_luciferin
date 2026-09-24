@@ -1,3 +1,4 @@
+// Thin HTTP helpers for the ConfigServer endpoints (fetchJson, POST wrapper, comboChange notification) used by the other set-config modules.
 export function fetchJson(url, options) {
     return fetch(url, options).then(function (r) {
         if (!r.ok) {

@@ -1,9 +1,12 @@
+// Server status polling for the settings page: periodically fetches the FPS endpoint to show the live framerate and detect when the server is offline.
 import {fetchJson} from './set-config-api.js';
 import {showToast} from './set-config-ui.js';
 
 var serverOnline = true;
 var serverPollController = null;
 
+// Polls the 'fps' endpoint to update the FPS counter and detect server offline/online transitions (with a 3s timeout to bound pending
+// requests); force=true aborts a previous in-flight poll (used on tab visibility change).
 export function pollServerStatus(force) {
     if (serverPollController) {
         if (force !== true) {
@@ -52,6 +55,7 @@ export function pollServerStatus(force) {
     });
 }
 
+// Shows the full-screen "server offline/restarting" overlay (created lazily).
 function showOfflineOverlay() {
     var overlay = document.getElementById('offlineOverlay');
     if (!overlay) {
@@ -64,6 +68,7 @@ function showOfflineOverlay() {
     overlay.classList.add('show');
 }
 
+// Hides the offline overlay when the server comes back online.
 function hideOfflineOverlay() {
     var overlay = document.getElementById('offlineOverlay');
     if (overlay) {

@@ -1,3 +1,4 @@
+// Device controls of the settings page: color picker, output device/serial selection, LED toggle, live device table and per-device status polling.
 import {state} from './set-config-state.js';
 import {fetchJson} from './set-config-api.js';
 import {escapeHtml, showToast} from './set-config-ui.js';
@@ -30,6 +31,7 @@ var DEVICE_COLUMNS = [
     {key: 'sbPin', label: 'Button GPIO'}
 ];
 
+// Resolves the IP of the Glow Worm device to target, based on the configured output device (AUTO / static IP / device name) and the connected device list.
 function resolveDeviceIp() {
     if (deviceIp) {
         return deviceIp;
@@ -63,6 +65,7 @@ function resolveDeviceIp() {
     return null;
 }
 
+// Populates the effect dropdown from the server-provided options and renders the initial LED toggle button state.
 export function fillPickerControls() {
     var effectOpts = (state.fieldOptions && state.fieldOptions.effect) ? state.fieldOptions.effect.options : [];
     document.getElementById('effectSelect').innerHTML = effectOpts.map(function (o) {
@@ -73,6 +76,7 @@ export function fillPickerControls() {
     toggle.className = 'btn ' + (deviceState.on ? 'btn-primary' : 'btn-outline-primary') + ' w-100';
 }
 
+// Applies the device's live preferences (LED state, white temperature, color, effect) to the UI controls and local state.
 function applyPrefs(prefs) {
     if (!prefs) {
         return;
@@ -94,6 +98,7 @@ function applyPrefs(prefs) {
     }
 }
 
+// Fetches the device preferences for the resolved IP and syncs the UI, (re)scheduling the periodic poll afterwards.
 export function syncDeviceFromPrefs() {
     var ip = resolveDeviceIp();
     if (!ip) {
@@ -112,6 +117,7 @@ export function syncDeviceFromPrefs() {
     });
 }
 
+// (Re)starts the 5s interval that re-syncs device prefs and refreshes devices.
 function schedulePoll() {
     if (pollTimer) {
         clearInterval(pollTimer);
@@ -123,6 +129,7 @@ function schedulePoll() {
     }, 5000);
 }
 
+// Updates the LED toggle button and the form checkbox to reflect the on/off state, keeping both in sync.
 function setToggleUi(on) {
     deviceState.on = on;
     var toggle = document.getElementById('toggleLED');
@@ -138,6 +145,7 @@ function setToggleUi(on) {
     }
 }
 
+// Sends a payload (state/color/whitetemp) directly to the Glow Worm device over its HTTP API (no-cors fetch, so the response is not readable).
 function sendToDevice(payload, successMsg) {
     var ip = resolveDeviceIp();
     if (!ip) {
@@ -152,6 +160,7 @@ function sendToDevice(payload, successMsg) {
     });
 }
 
+// Builds the device payload from the current UI state (LED on/off, color, white temp).
 function buildPayload() {
     return {
         state: deviceState.on ? 'ON' : 'OFF',
@@ -160,6 +169,7 @@ function buildPayload() {
     };
 }
 
+// Initializes the iro color picker, the LED toggle button and the output device select; color changes are pushed to the device immediately.
 export function initColorPicker() {
     var pickerEl = document.getElementById('picker');
     if (!pickerEl || typeof iro === 'undefined') {
@@ -194,6 +204,7 @@ export function initColorPicker() {
     }
 }
 
+// Refreshes the output device select options with the connected device names, preserving the user's choice or the configured value.
 function renderOutputDeviceSuggestions() {
     var el = document.getElementById('outputDevice');
     if (!el || el.tagName !== 'SELECT') {
@@ -221,6 +232,7 @@ function renderOutputDeviceSuggestions() {
     }
 }
 
+// Fetches the list of connected devices from the server, renders the device table and updates the auto output device resolution.
 export function refreshDevices() {
     fetchJson('getDevices').then(function (devices) {
         renderDevices(devices);
@@ -233,6 +245,7 @@ export function refreshDevices() {
     });
 }
 
+// Renders the connected devices into the table (DEVICE_COLUMNS) and the output device select, storing the list in the shared state.
 function renderDevices(devices) {
     state.devices = Array.isArray(devices) ? devices : [];
     renderOutputDeviceSuggestions();
@@ -274,6 +287,7 @@ function renderDevices(devices) {
     el.innerHTML = html;
 }
 
+// Selects the matching device name in the output device select based on the configured AUTO/static IP, unless the user manually touched the select.
 export function applyAutoOutputDevice() {
     if (outputDeviceTouched) {
         deviceIp = null;

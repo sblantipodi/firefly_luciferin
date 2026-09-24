@@ -1,8 +1,11 @@
+// Live preview toggle for the settings page: starts/stops the preview using WebRTC when available, falling back to polled image screenshots otherwise.
 import {showToast} from './set-config-ui.js';
 
 var livePreviewOn = false;
 var livePreviewTimer = null;
 
+// Wires the "Show Live Preview" button: uses WebRTC when available, otherwise enables/disables the server-side screenshot stream via the
+// screenshot endpoint.
 export function wireLivePreviewButton() {
     var showBtn = document.getElementById('showLivePreview');
     if (!showBtn) {
@@ -38,6 +41,8 @@ export function wireLivePreviewButton() {
     });
 }
 
+// Toggles the preview UI: button label/state, screenshot vs WebRTC video visibility, fallback notice, and the screenshot polling timer
+// (image mode).
 function setLivePreview(on, useWebrtc) {
     livePreviewOn = on;
     var btn = document.getElementById('showLivePreview');
@@ -71,6 +76,7 @@ function setLivePreview(on, useWebrtc) {
     }
 }
 
+// Refreshes the screenshot <img> from the server (cache-busting query), used while the image-mode live preview is active.
 function pollScreenshot() {
     if (!livePreviewOn) {
         return;

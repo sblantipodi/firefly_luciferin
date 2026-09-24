@@ -1,3 +1,5 @@
+// Declarative schema of the settings page: the sections and their fields (id, type, numeric constraints) used to build the form. Values and
+// labels are merged at runtime from the server-provided config/field options.
 export const sections = [
     {
         id: 'leds', fields: [

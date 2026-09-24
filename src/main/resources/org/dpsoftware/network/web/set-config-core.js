@@ -1,8 +1,11 @@
+// Core form engine of the settings page: builds the accordion form from the sections/fields defined in set-config-schema.js, fills it with
+// the current configuration, and collects the edited values into the JSON payload.
 import {sections} from './set-config-schema.js';
 import {state} from './set-config-state.js';
 import {escapeHtml} from './set-config-ui.js';
 import {fillPickerControls, lastColor} from './set-config-device.js';
 
+// Resolves the option list for a select field, preferring the server-provided options over the static schema defaults.
 function optionsFor(f) {
     var src = (state.fieldOptions && state.fieldOptions[f.id]) ? state.fieldOptions[f.id].options : f.options;
     if (!src) {
@@ -16,18 +19,22 @@ function optionsFor(f) {
     });
 }
 
+// Returns the value type ('number' or 'string') of a select field, used to cast values when collecting the payload.
 function selectType(f) {
     return (state.fieldOptions && state.fieldOptions[f.id]) ? state.fieldOptions[f.id].type : (f.numeric ? 'number' : 'string');
 }
 
+// Returns the display label for a field, preferring the server-provided label.
 function fieldLabel(f) {
     return (state.fieldLabels[f.id] != null) ? state.fieldLabels[f.id] : f.label;
 }
 
+// Returns the display title of a section, falling back to its id.
 function sectionTitle(id) {
     return (state.sectionTitles[id] != null) ? state.sectionTitles[id] : id;
 }
 
+// Builds the HTML markup for a single field (note, checkbox, select, number, text; special-casing the devices table and output device select).
 function buildFieldHtml(f) {
     var lbl = fieldLabel(f);
     if (f.id === 'devicesContent') {
@@ -55,6 +62,7 @@ function buildFieldHtml(f) {
     return '<div class="form-group"><label for="' + f.id + '">' + lbl + '</label> ' + inputHtml + '</div>';
 }
 
+// Wraps a list of field HTML blocks into a responsive Bootstrap grid row.
 function buildFieldsGrid(fields) {
     var html = '<div class="row g-3">';
     fields.forEach(function (f) {
@@ -65,6 +73,7 @@ function buildFieldsGrid(fields) {
     return html;
 }
 
+// Clones the accordion template into a configured accordion item bound to the given id/parent; nested items use an h3 heading instead of h2.
 function buildAccordion(id, title, parentId, nested = false) {
     var item = document.getElementById('accordionTemplate').content.firstElementChild.cloneNode(true);
     var heading = item.querySelector('.accordion-header');
@@ -84,6 +93,7 @@ function buildAccordion(id, title, parentId, nested = false) {
     return item;
 }
 
+// Builds the nested accordion container for a section's sub-accordions.
 function buildSubAccordions(section) {
     var accordion = document.createElement('div');
     accordion.className = 'accordion mt-3';
@@ -96,6 +106,7 @@ function buildSubAccordions(section) {
     return accordion;
 }
 
+// Builds and inserts the whole settings page: one accordion section per schema section (with sub-accordions), a profiles section, then initializes the picker.
 export function buildForm() {
     var page = document.getElementById('settingsPageTemplate').content.cloneNode(true);
     var accordion = page.querySelector('#settingsAccordion');
@@ -117,6 +128,7 @@ export function buildForm() {
     fillPickerControls();
 }
 
+// Sets a single form control from the configuration value (handles checkboxes, selects with missing options, list fields and the staticGlowWormIp 'Auto' alias).
 function fillField(f, cfg) {
     if (f.type === 'note') {
         return;
@@ -157,6 +169,7 @@ function fillField(f, cfg) {
     }
 }
 
+// Fills every field (including sub-accordion fields) of the form with the given configuration object.
 export function fillForm(cfg) {
     sections.forEach(function (s) {
         s.fields.forEach(function (f) {
@@ -170,6 +183,7 @@ export function fillForm(cfg) {
     });
 }
 
+// Reads a single form control back into the payload object, casting to the field type and applying field-specific conversions (e.g. 'Auto' to '-').
 function collectField(f, payload) {
     if (f.type === 'note') {
         return;
@@ -208,6 +222,8 @@ function collectField(f, payload) {
     }
 }
 
+// Collects all edited form values into the JSON payload sent to the server: normalizes arrays, applies the outputDevice/staticGlowWormIp
+// rule and appends the current color picker color.
 export function collectPayload() {
     var payload = {};
     sections.forEach(function (s) {
