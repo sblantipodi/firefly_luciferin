@@ -123,7 +123,7 @@ public class LivePreviewWebHandler {
         GuiSingleton.getInstance().setShowLiveCapture(on);
         if (on) {
             if (webRtcAvailable) {
-                webRtcSignalingServer.start(Constants.WEBRTC_SIGNALING_DEFAULT_PORT);
+                webRtcSignalingServer.start(Constants.CONFIG_SERVER_DEFAULT_PORT + 1);
             } else {
                 // Close WebRTC before serving image frames.
                 webRtcSignalingServer.stop();
