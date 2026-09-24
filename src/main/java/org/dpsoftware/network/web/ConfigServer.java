@@ -49,17 +49,14 @@ import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 /**
- * Minimal HTTP server exposing the saved {@link Configuration} as JSON and providing a small web page to edit it.
+ * Minimal HTTP server exposing the saved Configuration as JSON and providing a small web page to edit it.
  * Backed by the JDK HTTP server.
- * <p>
  * The server owns the lifecycle (bind, contexts, CORS guard, shutdown) and the configuration endpoints;
  * the individual endpoint families are delegated to dedicated handlers:
- * <ul>
- *     <li>{@link WebResourceServer} for the settings page static resources</li>
- *     <li>{@link LivePreviewWebHandler} for the live preview endpoints</li>
- *     <li>{@link ProfileHandler} for the profile list/activation endpoints</li>
- *     <li>{@link DeviceEndpointHandler} for the connected device endpoints</li>
- * </ul>
+ * WebResourceServer for the settings page static resources,
+ * LivePreviewWebHandler for the live preview endpoints,
+ * ProfileHandler for the profile list/activation endpoints,
+ * DeviceEndpointHandler for the connected device endpoints.
  */
 @Slf4j
 public class ConfigServer {
@@ -75,7 +72,11 @@ public class ConfigServer {
     private final Predicate<String> GET_METHOD = method -> method.equalsIgnoreCase("GET");
     private final Predicate<String> POST_METHOD = method -> method.equalsIgnoreCase("POST");
 
-    /** Returns loopback and active non link local IPv4 addresses. */
+    /**
+     * Returns loopback and active non link local IPv4 addresses.
+     *
+     * @return the set of addresses to bind the config server on
+     */
     private static Set<InetAddress> localBindAddresses() {
         Set<InetAddress> addresses = new LinkedHashSet<>();
         try {
@@ -111,7 +112,7 @@ public class ConfigServer {
 
     /**
      * Handle GET /fps, exposing the current producing and consuming framerate.
-     * Read-only, the values are the live counters kept in {@link MainSingleton}.
+     * Read only, the values are the live counters kept in MainSingleton.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
@@ -216,7 +217,9 @@ public class ConfigServer {
         webRtcSignalingServer.stop();
     }
 
-    /** Starts one server per loopback or active non link local IPv4 address. */
+    /**
+     * Starts one server per loopback or active non link local IPv4 address.
+     */
     @SuppressWarnings("all")
     public void start() {
         if (!httpServers.isEmpty()) {
@@ -295,7 +298,7 @@ public class ConfigServer {
     }
 
     /**
-     * Applies a select-field change to the running configuration.
+     * Applies a select field change to the running configuration.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written

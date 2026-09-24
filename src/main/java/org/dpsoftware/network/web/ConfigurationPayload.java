@@ -30,7 +30,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-// Configuration fields exchanged with the web interface.
+/**
+ * Configuration fields exchanged with the web interface.
+ * Applies the editable payload fields to the saved configuration and serializes it back for the web client,
+ * skipping the fields excluded from the web interface.
+ */
 final class ConfigurationPayload {
 
     private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix");
@@ -43,6 +47,11 @@ final class ConfigurationPayload {
 
     /**
      * Applies editable fields to a copy and regenerates the LED matrix when needed.
+     *
+     * @param payload     the JSON payload with the editable configuration fields
+     * @param savedConfig the saved configuration to apply the payload to
+     * @return the updated configuration
+     * @throws IOException when the JSON payload or configuration cannot be parsed
      */
     static Configuration apply(JsonNode payload, Configuration savedConfig) throws IOException {
         ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(savedConfig);
@@ -60,6 +69,9 @@ final class ConfigurationPayload {
 
     /**
      * Serializes the configuration without fields excluded from the web interface.
+     *
+     * @param config the configuration to serialize
+     * @return the JSON node with the excluded fields removed
      */
     static ObjectNode toWebConfig(Configuration config) {
         ObjectNode configNode = CommonUtility.JSON_MAPPER.valueToTree(config);

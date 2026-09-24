@@ -53,15 +53,20 @@ public class LivePreviewWebHandler {
     private Thread livePreviewWatchdog; // Disables capture after the idle timeout.
     private final WebRtcSignalingServer webRtcSignalingServer;
 
+    /**
+     * Creates the handler with the WebRTC signaling server used to start/stop the live preview stream.
+     *
+     * @param webRtcSignalingServer the WebRTC signaling server
+     */
     public LivePreviewWebHandler(WebRtcSignalingServer webRtcSignalingServer) {
         this.webRtcSignalingServer = webRtcSignalingServer;
     }
 
     /**
-     * Read the {@code disable} query parameter from the request, or {@code null} when absent.
+     * Read the disable query parameter from the request, or null when absent.
      *
      * @param exchange the HTTP exchange containing the request
-     * @return the disable value or {@code null}
+     * @return the disable value or null
      */
     private static String queryDisableParam(HttpExchange exchange) {
         String query = exchange.getRequestURI().getQuery();
@@ -79,6 +84,9 @@ public class LivePreviewWebHandler {
 
     /**
      * Returns whether this request only refreshes the live preview idle timer.
+     *
+     * @param exchange the HTTP exchange containing the request
+     * @return true when the request carries the keepalive=true query parameter
      */
     private static boolean isKeepAliveRequest(HttpExchange exchange) {
         String query = exchange.getRequestURI().getQuery();
@@ -152,7 +160,9 @@ public class LivePreviewWebHandler {
         }
     }
 
-    /** Starts or restarts the preview idle watchdog. */
+    /**
+     * Starts or restarts the preview idle watchdog.
+     */
     private synchronized void startLivePreviewWatchdog() {
         stopLivePreviewWatchdog();
         lastScreenshotGetMillis = System.currentTimeMillis();

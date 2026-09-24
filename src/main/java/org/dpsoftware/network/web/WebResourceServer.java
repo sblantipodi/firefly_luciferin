@@ -31,7 +31,9 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-/** Serves static resources for the settings page. */
+/**
+ * Serves static resources for the settings page.
+ */
 public class WebResourceServer {
 
     private static final String SET_CONFIG_PAGE_RESOURCE = "set-config.html"; // Settings page resource.

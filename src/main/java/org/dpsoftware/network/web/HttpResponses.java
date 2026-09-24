@@ -29,32 +29,60 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 
-/** Writes HTTP response bodies without changing endpoint-specific headers or status codes. */
+/**
+ * Writes HTTP response bodies without changing endpoint specific headers or status codes.
+ */
 final class HttpResponses {
 
     private HttpResponses() {
     }
 
-    /** Serializes a value with the application's JSON mapper. */
+    /**
+     * Serializes a value with the application's JSON mapper.
+     */
     static void sendJson(HttpExchange exchange, Object value) throws IOException {
         sendBytes(exchange, HttpURLConnection.HTTP_OK, "application/json; charset=utf-8",
                 CommonUtility.JSON_MAPPER.writeValueAsBytes(value));
     }
 
-    /** Sends JSON that is already serialized, including responses proxied from a device. */
+    /**
+     * Sends JSON that is already serialized, including responses proxied from a device.
+     */
     static void sendRawJson(HttpExchange exchange, int statusCode, String json) throws IOException {
         sendBytes(exchange, statusCode, "application/json; charset=utf-8", json.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Sends a 200 OK response with a JSON status body.
+     *
+     * @param exchange the HTTP exchange to send the response on
+     * @throws IOException when the response cannot be written
+     */
     static void sendOk(HttpExchange exchange) throws IOException {
         sendRawJson(exchange, HttpURLConnection.HTTP_OK, "{\"status\":\"OK\"}");
     }
 
+    /**
+     * Sends a plain text response with the given status code.
+     *
+     * @param exchange   the HTTP exchange to send the response on
+     * @param statusCode the HTTP status code
+     * @param message    the plain text body
+     * @throws IOException when the response cannot be written
+     */
     static void sendText(HttpExchange exchange, int statusCode, String message) throws IOException {
         sendBytes(exchange, statusCode, "text/plain; charset=utf-8", message.getBytes(StandardCharsets.UTF_8));
     }
 
-    /** Preserves any headers set by the caller and closes the response body after writing. */
+    /**
+     * Preserves any headers set by the caller and closes the response body after writing.
+     *
+     * @param exchange the HTTP exchange to send the response on
+     * @param statusCode the HTTP status code
+     * @param contentType the response MIME type
+     * @param body the response body
+     * @throws IOException when the response cannot be written
+     */
     static void sendBytes(HttpExchange exchange, int statusCode, String contentType, byte[] body) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", contentType);
         exchange.sendResponseHeaders(statusCode, body.length);

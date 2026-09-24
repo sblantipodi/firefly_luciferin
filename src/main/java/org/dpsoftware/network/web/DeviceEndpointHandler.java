@@ -41,15 +41,17 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 
-/** Handles connected devices and proxies their preferences. */
+/**
+ * Handles connected devices and proxies their preferences.
+ */
 @Slf4j
 public class DeviceEndpointHandler {
 
     /**
-     * Read the {@code ip} query parameter from the request, or {@code null} when absent.
+     * Read the ip query parameter from the request, or null when absent.
      *
      * @param exchange the HTTP exchange containing the request
-     * @return the ip value or {@code null}
+     * @return the ip value or null
      */
     private static String queryIpParam(HttpExchange exchange) {
         String query = exchange.getRequestURI().getQuery();

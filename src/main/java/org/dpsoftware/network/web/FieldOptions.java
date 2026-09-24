@@ -39,7 +39,7 @@ import java.util.*;
 public record FieldOptions(List<Option> options, String type) {
 
     /**
-     * Builds enum-backed field options.
+     * Builds enum backed field options.
      *
      * @return map of configuration field name to its possible values
      */
@@ -98,6 +98,12 @@ public record FieldOptions(List<Option> options, String type) {
         return new FieldOptions(opts, "string");
     }
 
+    /**
+     * Build a single effect option from a localized i18n key.
+     *
+     * @param i18nKey the i18n key of the effect
+     * @return the option with value and label both set to the localized word
+     */
     private static FieldOptions.Option effectOption(String i18nKey) {
         return new FieldOptions.Option(CommonUtility.getWord(i18nKey), CommonUtility.getWord(i18nKey));
     }
