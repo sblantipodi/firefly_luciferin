@@ -25,11 +25,17 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,6 +47,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * so the static must be mocked before the class is first touched.
  */
 class CubeLutToneMapTest {
+
+    @TempDir
+    Path tempDir;
 
     private static final MainSingleton mockedInstance;
     private static final MockedStatic<MainSingleton> mockedMainSingleton;
@@ -218,6 +227,19 @@ class CubeLutToneMapTest {
     }
 
     // --- listAvailableLuts ---
+
+    @Test
+    void scanJarForCubeLuts_supportsWindowsInstallPathWithSpaces() throws IOException {
+        Path installDir = Files.createDirectory(tempDir.resolve("Firefly Luciferin"));
+        Path jarPath = installDir.resolve("FireflyLuciferin-jar-with-dependencies.jar");
+        try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(jarPath))) {
+            jar.putNextEntry(new JarEntry("org/dpsoftware/lut/1000nits_HDR-to-SDR.cube"));
+            jar.closeEntry();
+        }
+
+        assertEquals(java.util.List.of("1000nits_HDR-to-SDR.cube"),
+                CubeLutToneMap.scanJarForCubeLuts(jarPath.toFile()));
+    }
 
     @Test
     void listAvailableLuts_returnsResourceLuts() {
