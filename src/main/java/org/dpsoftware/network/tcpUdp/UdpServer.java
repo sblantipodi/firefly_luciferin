@@ -123,6 +123,23 @@ public class UdpServer {
         }, 1, 1, TimeUnit.SECONDS);
     }
 
+    /**
+     * Receive a single UDP datagram and return its payload as a String.
+     * Before calling receive() the packet length is reset to the full buffer capacity,
+     * because the previous call left it set to the size of the last datagram.
+     * Without this reset, a later, longer device status payload would be silently truncated.
+     *
+     * @param socket the bound UDP socket used for receiving
+     * @param packet reusable packet whose backing buffer holds the received payload
+     * @return the received datagram payload converted to a String
+     * @throws IOException if a socket read error occurs
+     */
+    static String receiveDatagram(DatagramSocket socket, DatagramPacket packet) throws IOException {
+        packet.setLength(packet.getData().length - packet.getOffset());
+        socket.receive(packet);
+        return new String(packet.getData(), packet.getOffset(), packet.getLength());
+    }
+
     private void startUdpReceiver() {
         if (udpReceiverStarted) {
             return;
@@ -140,8 +157,7 @@ public class UdpServer {
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 while (NetworkSingleton.getInstance().udpBroadcastReceiverRunning) {
                     try {
-                        socket.receive(packet);
-                        String received = new String(packet.getData(), 0, packet.getLength());
+                        String received = receiveDatagram(socket, packet);
                         if (!received.startsWith(Constants.UDP_DEVICE_NAME) && !received.startsWith(Constants.UDP_DEVICE_NAME_STATIC)) {
                             if (!received.contains(Constants.UDP_PING)) {
                                 log.trace("Received UDP broadcast={}", received);
