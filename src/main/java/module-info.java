@@ -31,7 +31,6 @@ module org.dpsoftware {
     opens org.dpsoftware.gui.controllers to javafx.fxml;
     opens org.dpsoftware.managers.dto to com.fasterxml.jackson.databind;
     opens org.dpsoftware.managers.dto.mqttdiscovery to com.fasterxml.jackson.databind;
-    opens org.dpsoftware.utilities to org.junit.platform.commons;
 
     exports org.dpsoftware;
     exports org.dpsoftware.audio;
