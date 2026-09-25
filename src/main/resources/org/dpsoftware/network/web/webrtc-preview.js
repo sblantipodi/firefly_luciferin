@@ -24,6 +24,7 @@
     var keepAliveTimer = null;
     var pendingIceCandidates = [];
 
+    // Lazily fetches the live preview <video> element.
     function ensureVideoElement() {
         if (!videoEl) {
             videoEl = document.getElementById('webrtcPreview');
@@ -31,12 +32,14 @@
         return videoEl;
     }
 
+    // Builds the WebSocket signaling URL from the page origin (config server port + 1, same host).
     function signalingUrl() {
         var host = location.hostname || '127.0.0.1';
         var port = Number((location.port && location.port !== '') ? location.port : CONFIG_SERVER_DEFAULT_PORT);
         return 'ws://' + host + ':' + (port + SIGNALING_PORT_OFFSET) + '/webrtc';
     }
 
+    // Creates (or reuses) the RTCPeerConnection with its ICE/track/connection handlers; remote tracks are attached to the video element.
     function createPeer() {
         if (peer) {
             return peer;
@@ -68,18 +71,22 @@
         return peer;
     }
 
+    // Adds a single ICE candidate to the peer connection (errors are logged).
     function addIceCandidate(p, candidate) {
         p.addIceCandidate(new RTCIceCandidate(candidate)).catch(function (err) {
             console.warn('WebRTC addIceCandidate failed:', err);
         });
     }
 
+    // Adds any ICE candidates that arrived before the remote description was set (they are queued in pendingIceCandidates in the meantime).
     function flushPendingIceCandidates(p) {
         while (pendingIceCandidates.length) {
             addIceCandidate(p, pendingIceCandidates.shift());
         }
     }
 
+    // Handles signaling messages from the server: 'offer' is answered via the normal SDP flow and the answer sent back; 'ice' candidates are
+    // applied (or queued until the remote description exists).
     function handleMessage(raw) {
         var msg;
         try {
@@ -118,6 +125,8 @@
         }
     }
 
+    // Starts the preview: enables the grabber (screenshot/enable), keeps it alive, then either reports 'image' mode (no WebRTC) or opens the
+    // signaling socket to start the 'webrtc' mode.
     function start() {
         if (socket && socket.readyState <= WebSocket.OPEN) {
             return;
@@ -144,6 +153,7 @@
         });
     }
 
+    // Starts the 10s keep-alive poll that keeps the server-side grabber alive while the preview is on.
     function startKeepAlive() {
         if (keepAliveTimer) {
             return;
@@ -153,6 +163,7 @@
         }, 10000);
     }
 
+    // Stops the keep-alive poll.
     function stopKeepAlive() {
         if (keepAliveTimer) {
             clearInterval(keepAliveTimer);
@@ -160,6 +171,7 @@
         }
     }
 
+    // Opens the signaling WebSocket; on close it retries after 1.5s while the preview button still indicates the preview should be on.
     function openSocket() {
         socket = new WebSocket(signalingUrl());
         socket.onopen = function () {
@@ -186,6 +198,7 @@
         };
     }
 
+    // Stops the preview: clears timers, closes the socket and peer connection, hides the video and disables the grabber on the server.
     function stop() {
         stopKeepAlive();
         if (reconnectTimer) {
@@ -209,6 +222,7 @@
         });
     }
 
+    // Shows or hides the WebRTC <video> element (toggled from the page controller).
     function showVideo(on) {
         var video = ensureVideoElement();
         if (video) {

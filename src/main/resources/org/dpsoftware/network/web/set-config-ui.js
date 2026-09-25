@@ -1,3 +1,4 @@
+// Small UI utilities shared by the settings page modules: HTML escaping and Bootstrap toast notifications.
 export function escapeHtml(v) {
     return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }

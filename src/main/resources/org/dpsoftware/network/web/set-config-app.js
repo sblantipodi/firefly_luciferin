@@ -1,12 +1,15 @@
+// Entry point of the LUCIFERIN web configuration page: wires together the form, device picker, profiles, live preview and status polling
+// modules, and handles loading/saving the configuration against the ConfigServer HTTP endpoints.
 import {state} from './set-config-state.js';
 import {fetchJson, notifyComboChange} from './set-config-api.js';
-import {buildForm, fillForm, collectPayload} from './set-config-core.js';
-import {initColorPicker, applyAutoOutputDevice, syncDeviceFromPrefs, refreshDevices} from './set-config-device.js';
-import {renderProfiles, addProfile} from './set-config-profiles.js';
+import {buildForm, collectPayload, fillForm} from './set-config-core.js';
+import {applyAutoOutputDevice, initColorPicker, refreshDevices, syncDeviceFromPrefs} from './set-config-device.js';
+import {addProfile, renderProfiles} from './set-config-profiles.js';
 import {wireLivePreviewButton} from './set-config-preview.js';
 import {pollServerStatus} from './set-config-status.js';
 import {showToast} from './set-config-ui.js';
 
+// Collects the form payload and POSTs it to 'setConfig'; on success the server restarts to apply the settings.
 function saveForm() {
     if (!confirm('Luciferin needs to restart to apply these settings. Proceed?')) {
         return;
@@ -38,6 +41,7 @@ function saveForm() {
     });
 }
 
+// Notifies the server (comboChange endpoint) whenever a select control or the LED toggle changes, so dependent field options can be refreshed.
 function wireSelectChangeListeners() {
     document.querySelectorAll('select').forEach(function (el) {
         el.addEventListener('change', function () {
