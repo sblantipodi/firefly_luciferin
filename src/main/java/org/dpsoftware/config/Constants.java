@@ -863,9 +863,7 @@ public class Constants {
     public static final String REMOVE_PROFILE_ENDPOINT = "/removeProfile";
     public static final String COMBO_CHANGE_ENDPOINT = "/comboChange";
     public static final String SECTION_TITLES_ENDPOINT = "/sectionTitles";
-    public static final int CONFIG_SERVER_DEFAULT_PORT = 33556;
-    // WebRTC signaling: the WebSocket server cannot share the port with the config HTTP server.
-    public static final int WEBRTC_SIGNALING_DEFAULT_PORT = 33557;
+    public static final int CONFIG_SERVER_DEFAULT_PORT = 8091;
     public static final String WEBRTC_SIGNALING_ENDPOINT = "/webrtc";
     public static final String WEBRTC_PREVIEW_JS_ENDPOINT = "/webrtc-preview.js";
     // Native executor

@@ -15,7 +15,7 @@
     // __CONFIG_SERVER_DEFAULT_PORT__ is replaced at serve time with the Java-side
     // Constants.CONFIG_SERVER_DEFAULT_PORT. The || fallback covers the case where
     // the resource is served statically without the substitution (e.g. from the IDE).
-    var CONFIG_SERVER_DEFAULT_PORT = __CONFIG_SERVER_DEFAULT_PORT__ || 33556;
+    var CONFIG_SERVER_DEFAULT_PORT = __CONFIG_SERVER_DEFAULT_PORT__ || 8091;
     var SIGNALING_PORT_OFFSET = 1;
     var videoEl = null;
     var socket = null;
