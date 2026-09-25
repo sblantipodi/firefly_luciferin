@@ -48,6 +48,7 @@ public class WebRtcSignalingEndpoint {
      *
      * @param session the newly opened WebSocket session
      */
+    @SuppressWarnings("unused")
     @OnOpen
     public void onOpen(Session session) {
         log.info("WebRTC signaling client connected: {}", session.getId());
