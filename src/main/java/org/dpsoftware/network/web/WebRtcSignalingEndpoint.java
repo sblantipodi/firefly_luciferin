@@ -21,15 +21,13 @@
  */
 package org.dpsoftware.network.web;
 
-import jakarta.websocket.OnClose;
-import jakarta.websocket.OnError;
-import jakarta.websocket.OnMessage;
-import jakarta.websocket.OnOpen;
-import jakarta.websocket.Session;
+import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
 
-/** WebSocket endpoint for browser and GStreamer WebRTC signaling. */
+/**
+ * WebSocket endpoint for browser and GStreamer WebRTC signaling.
+ */
 @Slf4j
 @ServerEndpoint("/webrtc")
 public class WebRtcSignalingEndpoint {
@@ -45,6 +43,11 @@ public class WebRtcSignalingEndpoint {
         WebRtcSignalingEndpoint.server = server;
     }
 
+    /**
+     * Fired when a browser opens the /webrtc socket; starts streaming for the session.
+     *
+     * @param session the newly opened WebSocket session
+     */
     @OnOpen
     public void onOpen(Session session) {
         log.info("WebRTC signaling client connected: {}", session.getId());
@@ -67,6 +70,11 @@ public class WebRtcSignalingEndpoint {
         }
     }
 
+    /**
+     * Fired when a browser closes the /webrtc socket; stops the stream when no viewer is left.
+     *
+     * @param session the closed WebSocket session
+     */
     @SuppressWarnings("unused")
     @OnClose
     public void onClose(Session session) {
@@ -76,6 +84,12 @@ public class WebRtcSignalingEndpoint {
         }
     }
 
+    /**
+     * Fired on a WebSocket error; logs it.
+     *
+     * @param session   the affected WebSocket session
+     * @param throwable the error that occurred
+     */
     @SuppressWarnings("unused")
     @OnError
     public void onError(Session session, Throwable throwable) {

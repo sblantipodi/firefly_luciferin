@@ -31,7 +31,9 @@ import org.dpsoftware.grabber.WebRtcStreamer;
 import org.glassfish.tyrus.server.Server;
 
 
-/** WebRTC signaling server for one live-preview viewer. */
+/**
+ * WebRTC signaling server for one live-preview viewer.
+ */
 @Slf4j
 public class WebRtcSignalingServer {
 
@@ -41,6 +43,11 @@ public class WebRtcSignalingServer {
     private Server server;
     private volatile boolean running = false;
 
+    /**
+     * Creates the signaling server for the given GStreamer WebRTC streamer.
+     *
+     * @param streamer the GStreamer WebRTC streamer
+     */
     public WebRtcSignalingServer(WebRtcStreamer streamer) {
         this.streamer = streamer;
     }
@@ -72,7 +79,7 @@ public class WebRtcSignalingServer {
     /**
      * Returns whether the required GStreamer WebRTC factories are available.
      *
-     * @return {@code true} when browser WebRTC preview can be used
+     * @return true when browser WebRTC preview can be used
      */
     public boolean isWebRtcAvailable() {
         return streamer.isSupported();
@@ -140,7 +147,7 @@ public class WebRtcSignalingServer {
     }
 
     /**
-     * A browser closed the {@code /webrtc} socket. The streamer stops its pipeline.
+     * A browser closed the /webrtc socket. The streamer stops its pipeline.
      *
      * @param session the closed session
      */
@@ -169,11 +176,22 @@ public class WebRtcSignalingServer {
         }
     }
 
+    /**
+     * Returns whether the given session is the currently active viewer.
+     *
+     * @param session the session to check
+     * @return true when the session is the active one
+     */
     private boolean isActive(Session session) {
         Session current = activeSession;
         return current != null && current.getId().equals(session.getId());
     }
 
+    /**
+     * Closes the session if it is open, ignoring close errors.
+     *
+     * @param session the session to close
+     */
     private void close(Session session) {
         if (session != null && session.isOpen()) {
             try {

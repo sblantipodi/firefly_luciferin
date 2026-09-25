@@ -42,17 +42,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
-/** Handles profile listing, creation, activation and deletion. */
+/**
+ * Handles profile listing, creation, activation and deletion.
+ */
 @Slf4j
 public class ProfileHandler {
 
     private final StorageManager storageManager = new StorageManager();
 
     /**
-     * Read the {@code name} query parameter from the request, or {@code null} when absent.
+     * Read the name query parameter from the request, or null when absent.
      *
      * @param exchange the HTTP exchange containing the request
-     * @return the name value or {@code null}
+     * @return the name value or null
      */
     private static String queryNameParam(HttpExchange exchange) {
         String query = exchange.getRequestURI().getQuery();
@@ -95,6 +97,9 @@ public class ProfileHandler {
 
     /**
      * Creates a profile from the supplied configuration without activating it.
+     *
+     * @param exchange the HTTP exchange containing the request and response
+     * @throws IOException when the response cannot be written
      */
     public void handleAddProfile(HttpExchange exchange) throws IOException {
         String name = exchange.getRequestURI().getQuery();
@@ -168,7 +173,7 @@ public class ProfileHandler {
     }
 
     /**
-     * Deletes an inactive, non-default profile.
+     * Deletes an inactive, non default profile.
      *
      * @param exchange the HTTP exchange containing the request and response
      * @throws IOException when the response cannot be written
