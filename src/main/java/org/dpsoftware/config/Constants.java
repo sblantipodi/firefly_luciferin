@@ -614,7 +614,7 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src device={0} ! {1} ! videorate ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_WEBRTC = "appsrc name=webrtcsrc is-live=true do-timestamp=true format=TIME ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0 ! videoconvert ! videoscale add-borders=true ! capsfilter name=webrtcpreviewcaps ! vp8enc deadline=1 target-bitrate=4000000 ! rtpvp8pay ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0 ! application/x-rtp,media=video,encoding-name=VP8,payload=97 ! webrtcbin name=webrtcbin stun-server=stun://stun.l.google.com:19302";
     public static final String GSTREAMER_DDUPL = "DDUPL";
-    public static final String VIDEO_MJPG = "image/jpeg,width={2},height={3},framerate=10/1 ! jpegdec";
+    public static final String VIDEO_MJPG = "image/jpeg,width={2},height={3},framerate={4}/1 ! jpegdec";
     public static final String VIDEO_RAW = "video/x-raw,width={2},height={3}";
     // GStreamer Caps
     public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
