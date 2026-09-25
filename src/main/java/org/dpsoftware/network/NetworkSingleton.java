@@ -131,7 +131,8 @@ public class NetworkSingleton {
             }
         });
         zonedList.forEach(zonedItem -> {
-            if (zonedItem.getZone() == Enums.PossibleZones.BOTTOM && zonedItem.getMonitorNumber() == 1) {
+            if ((zonedItem.getZone() == Enums.PossibleZones.BOTTOM || zonedItem.getZone() == Enums.PossibleZones.BOTTOM_RIGHT)
+                    && zonedItem.getMonitorNumber() == 1) {
                 orderedList.add(zonedItem.getColor());
             }
         });
@@ -161,7 +162,8 @@ public class NetworkSingleton {
             }
         });
         zonedList.forEach(zonedItem -> {
-            if (zonedItem.getZone() == Enums.PossibleZones.BOTTOM && zonedItem.getMonitorNumber() == 3) {
+            if ((zonedItem.getZone() == Enums.PossibleZones.BOTTOM || zonedItem.getZone() == Enums.PossibleZones.BOTTOM_LEFT)
+                    && zonedItem.getMonitorNumber() == 3) {
                 orderedList.add(zonedItem.getColor());
             }
         });
@@ -396,6 +398,10 @@ public class NetworkSingleton {
         zonedList.addAll(zonedList2);
         zonedList.addAll(zonedList1);
         orderZonedList(zonedList, config2, orderedList);
+        if (orderedList.size() != colorArray.length) {
+            log.debug("Custom ordering produced {} colors for {} LEDs; keeping the original order", orderedList.size(), colorArray.length);
+            return;
+        }
         orderedList.toArray(colorArray);
     }
 
