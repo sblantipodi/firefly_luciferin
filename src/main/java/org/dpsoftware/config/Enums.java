@@ -567,6 +567,7 @@ public class Enums {
         LIGHT_THEME_SILVER("enum.theme.light.silver", "css/theme-light-silver.css"),
         LIGHT_THEME_CYAN("enum.theme.light.cyan", "css/theme-light-cyan.css"),
         DARK_THEME_ORANGE("enum.theme.dark.orange", "css/theme-dark-orange.css"),
+        DARK_THEME_ORANGE_MODERN("enum.theme.dark.orange.modern", "css/theme-dark-orange-modern.css"),
         DARK_THEME_CYAN("enum.theme.dark.cyan", "css/theme-dark-cyan.css"),
         DARK_BLUE_THEME("enum.theme.blue.dark", "css/theme-dark-blue.css"),
         DARK_THEME_ARTIC("enum.theme.dark.artic", "css/theme-dark-artic.css"),
