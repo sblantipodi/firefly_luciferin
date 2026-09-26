@@ -1,0 +1,319 @@
+/*
+  LabelKey.java
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package org.dpsoftware.gui;
+
+/**
+ * Localized label keys (messagebundle_en.properties).
+ */
+public final class LabelKey {
+
+    public static final String SPAWNING_ROBOTS = "log.spawning.robots";
+    public static final String SERIAL_PORT_IN_USE = "log.serial.port";
+    public static final String TURN_LED_ON = "controller.turn.led.on";
+    public static final String TURN_LED_OFF = "controller.turn.led.off";
+    public static final String FULL_FIRM = "full.firm";
+    public static final String LIGHT_FIRM = "light.firm";
+    public static final String MULTIMONITOR_1 = "multimonitor.disabled";
+    public static final String MULTIMONITOR_2 = "multimonitor.dual";
+    public static final String MULTIMONITOR_3 = "multimonitor.triple";
+    public static final String LEFT_DISPLAY = "fxml.ledsconfigtab.leftdisplay";
+    public static final String CENTER_DISPLAY = "fxml.ledsconfigtab.centerdisplay";
+    public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
+    public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
+    public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
+    public static final String CAPTURE_SOURCE_UNAVAILABLE = "capture.source.unavailable";
+    public static final String CAPTURE_SOURCE_UNAVAILABLE_CONTEXT = "capture.source.unavailable.context";
+    public static final String CAPTURE_SOURCE_USB = "capture.source.usb";
+    public static final String CAPTURE_SOURCE_USB_UNCONFIGURED = "capture.source.usb.unconfigured";
+    public static final String CAPTURE_SOURCE_MONITOR = "capture.source.monitor";
+    public static final String CONTEXT_MENU_COLOR = "context.menu.color";
+    public static final String CONTEXT_MENU_GAMMA = "context.menu.gamma";
+    public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";
+    public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
+    public static final String MIN_FIRMWARE_NOT_MATCH = "min.firmware.not.match";
+    public static final String DOWNLOADING = "update.downloading";
+    public static final String EXPECTED_SIZE = "update.expected.size";
+    public static final String DOWNLOAD_PROGRESS_BAR = "download.progress.bar";
+    public static final String DOWNLOAD_COMPLETE = "download.complete";
+    public static final String SHOW_MORE_SETTINGS = "show.more.settings";
+    public static final String CLEANING_OLD_CONFIG = "cleaning.old.config";
+    public static final String FAILED_TO_CLEAN_CONFIG = "failed.to.clean.old.config";
+    public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
+    public static final String ERROR_READING_CONFIG = "error.reading.config";
+    public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
+    public static final String MQTT_REMOVE_DEVICE = "fxml.mqtttab.mqttremovedevice";
+    public static final String MQTT_DISCOVERY = "fxml.mqtttab.mqttdiscovery";
+    public static final String SAVE = "fxml.save";
+    public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
+    public static final String FRAMERATE_TITLE = "framerate.title";
+    public static final String FRAMERATE_HEADER = "framerate.header";
+    public static final String FRAMERATE_CONTEXT = "framerate.context";
+    public static final String BAUDRATE_TITLE = "baudrate.title";
+    public static final String BAUDRATE_HEADER = "baudrate.header";
+    public static final String BAUDRATE_CONTEXT = "baudrate.context";
+    public static final String INITIAL_TITLE = "initial.title";
+    public static final String INITIAL_HEADER = "initial.header";
+    public static final String INITIAL_CONTEXT = "initial.context";
+    public static final String GPIO_OK_TITLE = "gpio.ok.title";
+    public static final String GPIO_OK_HEADER = "gpio.ok.header";
+    public static final String GPIO_OK_CONTEXT = "gpio.ok.context";
+    public static final String SERIAL_PORT = "serial.port";
+    public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
+    public static final String ASPECT_RATIO = "fxml.modetab.aspectratio";
+    public static final String PROFILES = "fxml.misctab.profiles";
+    public static final String DEFAULT = "tray.icon.default";
+    public static final String NO_SMOOTHING = "no.smoothing";
+    public static final String SERIAL_ERROR_TITLE = "serial.port.title";
+    public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
+    public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
+    public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
+    public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
+    public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
+    public static final String CUDA_ERROR_TITLE = "cuda.error.title";
+    public static final String CUDA_ERROR_HEADER = "cuda.error.header";
+    public static final String CUDA_ERROR_CONTEXT = "cuda.error.context";
+    public static final String WAYLAND_SCREEN_REC_PERMISSION = "wayland.screen.rec.permission";
+    public static final String WAYLAND_SCREEN_REC_PERMISSION_CONTEXT = "wayland.screen.rec.permission.context";
+    public static final String START = "tray.icon.start";
+    public static final String STOP = "tray.icon.stop";
+    public static final String INFO = "tray.icon.info";
+    public static final String CHECK_UPDATE = "tray.icon.check.update";
+    public static final String INSTALL_UPDATE = "tray.icon.check.install";
+    public static final String SETTINGS = "tray.icon.settings";
+    public static final String TRAY_EXIT = "tray.icon.exit";
+    public static final String CLICK_OK_DOWNLOAD = "click.ok.download";
+    public static final String CLICK_OK_DOWNLOAD_LINUX = "click.ok.download.linux";
+    public static final String ONCE_DOWNLOAD_FINISHED = "once.download.finished";
+    public static final String NEW_VERSION_AVAILABLE = "new.version.available";
+    public static final String LATEST_VERSION = "latest.version";
+    public static final String NO_UPDATES = "no.updates";
+    public static final String INSTALL_UPDATES = "new.version.install";
+    public static final String UPGRADE_AVAILABLE_SANDBOX = "new.version.available.sandbox";
+    public static final String UPGRADE_SUCCESS = "upgrade.success";
+    public static final String UPGRADE_ERROR = "upgrade.error";
+    public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
+    public static final String DEVICEUPGRADE_ERROR = "device.upgrade.error";
+    public static final String DEVICEUPGRADE_SUCCESS_CDC = "device.upgrade.success.cdc";
+    public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
+    public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
+    public static final String FIRMWARE_PROVISION_NOTIFY = "device.provision.error";
+    public static final String FIRMWARE_PROVISION_NOTIFY_HEADER = "device.provision.error.header";
+    public static final String FIRMWARE_IMPROV_ERROR_HEADER = "fxml.mqtttab.improv.wifi.error";
+    public static final String FIRMWARE_IMPROV_ERROR2_HEADER = "fxml.mqtttab.improv.eth.field.error";
+    public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
+    public static final String CANT_UPGRADE_TOO_OLD = "cant.upgrade.too.old";
+    public static final String MANUAL_UPGRADE = "manual.upgrade";
+    public static final String DEVICES_UPDATED = "devices.updated";
+    public static final String DEVICE_UPDATED = "device.updated";
+    public static final String DEVICE_UPDATED_LIGHT = "device.updated.light";
+    public static final String UPDATE_BACKGROUND = "update.background";
+    public static final String UPDATE_NEEDED = "update.needed";
+    public static final String UPDATE_NEEDED_LINUX = "update.needed.linux";
+    public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
+    public static final String SAT_ZONE_ERROR_TITLE = "satellite.zone.error.title";
+    public static final String SAT_ZONE_ERROR = "satellite.zone.error";
+    public static final String NO_DEVICE_FOUND = "no.device.found";
+    public static final String SCREEN_MAIN = "main.screen";
+    public static final String SCREEN_LEFT = "left.screen";
+    public static final String SCREEN_RIGHT = "right.screen";
+    public static final String SCREEN_CENTER = "center.screen";
+    public static final String TOOLTIP_TOPLED = "tooltip.topled";
+    public static final String TOOLTIP_LEFTLED = "tooltip.leftled";
+    public static final String TOOLTIP_RIGHTLED = "tooltip.rightled";
+    public static final String TOOLTIP_BOTTOMLEFTLED = "tooltip.bottomleftled";
+    public static final String TOOLTIP_BOTTOMRIGHTLED = "tooltip.bottomrightled";
+    public static final String TOOLTIP_BOTTOMROWLED = "tooltip.bottomrowled";
+    public static final String TOOLTIP_ORIENTATION = "tooltip.orientation";
+    public static final String TOOLTIP_SCREENWIDTH = "tooltip.screenwidth";
+    public static final String TOOLTIP_RESET_WAYLAND = "tooltip.reset.wayland";
+    public static final String TOOLTIP_SCREENHEIGHT = "tooltip.screenheight";
+    public static final String TOOLTIP_LEDSTARTOFFSET = "tooltip.ledstartoffset";
+    public static final String TOOLTIP_SCALING = "tooltip.scaling";
+    public static final String TOOLTIP_WHITE_TEMP = "tooltip.white.temp";
+    public static final String TOOLTIP_LATENCY_TEST = "tooltip.colorcorrection.latency.test";
+    public static final String TOOLTIP_LATENCY_TEST_SPEED = "tooltip.colorcorrection.latency.test.speed";
+    public static final String TOOLTIP_SETTINGS = "tooltip.colorcorrection.settings";
+    public static final String TOOLTIP_CD_INFO = "tooltip.colorcorrection.info";
+    public static final String TOOLTIP_OVERLAY = "tooltip.colorcorrection.overlay";
+    public static final String TOOLTIP_GAMMA = "tooltip.gamma";
+    public static final String TOOLTIP_GAMMA_ENABLE_AUTO = "tooltip.gamma.enable.auto";
+    public static final String TOOLTIP_GAMMA_LEVEL = "tooltip.gamma.level";
+    public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
+    public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
+    public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";
+    public static final String TOOLTIP_NUMBEROFTHREADS = "tooltip.numberofthreads";
+    public static final String TOOLTIP_SIMD = "tooltip.simd";
+    public static final String TOOLTIP_SERIALPORT = "tooltip.serialport";
+    public static final String TOOLTIP_ASPECTRATIO = "tooltip.aspectratio";
+    public static final String TOOLTIP_LANGUAGE = "tooltip.language";
+    public static final String TOOLTIP_RESAMPLING_FACTOR = "tooltip.resampling.factor";
+    public static final String TOOLTIP_FRAMERATE = "tooltip.framerate";
+    public static final String TOOLTIP_SMOOTHING = "tooltip.smoothing";
+    public static final String TOOLTIP_EMA = "tooltip.ema";
+    public static final String TOOLTIP_FG = "tooltip.fg";
+    public static final String TOOLTIP_MQTTHOST = "tooltip.mqtthost";
+    public static final String TOOLTIP_POWER_SAVING = "tooltip.power.saving";
+    public static final String TOOLTIP_SAT_BTN = "tooltip.sat.btn";
+    public static final String TOOLTIP_MULTIMONITOR = "tooltip.multimonitor";
+    public static final String TOOLTIP_MONITORNUMBER = "tooltip.monitornumber";
+    public static final String TOOLTIP_MQTTPORT = "tooltip.mqttport";
+    public static final String TOOLTIP_MQTTTOPIC = "tooltip.mqtttopic";
+    public static final String TOOLTIP_MQTTDISCOVERYTOPIC = "tooltip.mqttdiscoverytopic";
+    public static final String TOOLTIP_MQTTDISCOVERYTOPIC_ADD = "tooltip.mqttdiscoverytopic.add";
+    public static final String TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE = "tooltip.mqttdiscoverytopic.remove";
+    public static final String TOOLTIP_MQTTUSER = "tooltip.mqttuser";
+    public static final String TOOLTIP_MQTTPWD = "tooltip.mqttpwd";
+    public static final String TOOLTIP_MQTTENABLE = "tooltip.mqttenable";
+    public static final String TOOLTIP_WIFIENABLE = "tooltip.wifienable";
+    public static final String TOOLTIP_EYE_CARE = "tooltip.eye.care";
+    public static final String TOOLTIP_NIGHT_LIGHT = "tooltip.night.light";
+    public static final String TOOLTIP_MQTTSTREAM = "tooltip.mqttstream";
+    public static final String TOOLTIP_STREAMTYPE = "tooltip.streamtype";
+    public static final String TOOLTIP_START_WITH_SYSTEM = "tooltip.start.with.system";
+    public static final String TOOLTIP_CHECK_UPDATES = "tooltip.check.updates";
+    public static final String TOOLTIP_PLAYBUTTON_NULL = "tooltip.playbutton.null";
+    public static final String TOOLTIP_SYNC_CHECK = "tooltip.sync.check";
+    public static final String TOOLTIP_BRIGHTNESS = "tooltip.brightness";
+    public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "tooltip.split.bottom.row";
+    public static final String TOOLTIP_GRABBER_AREA_TOP_BOTTOM = "tooltip.grabber.area.top.bottom";
+    public static final String TOOLTIP_GRABBER_AREA_SIDE = "tooltip.grabber.area.side";
+    public static final String TOOLTIP_CORNER_GAP = "tooltip.corner.gap";
+    public static final String TOOLTIP_GROUP_BY = "tooltip.corner.group.by";
+    public static final String TOOLTIP_SAVELEDBUTTON_NULL = "tooltip.saveledbutton.null";
+    public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "tooltip.savemqttbutton.null";
+    public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "tooltip.savesettingsbutton.null";
+    public static final String TOOLTIP_SAVEDEVICEBUTTON_NULL = "tooltip.savedevicebutton.null";
+    public static final String TOOLTIP_PLAYBUTTON = "tooltip.playbutton";
+    public static final String TOOLTIP_SAVELEDBUTTON = "tooltip.saveledbutton";
+    public static final String TOOLTIP_SAVEMQTTBUTTON = "tooltip.savemqttbutton";
+    public static final String TOOLTIP_SAVESETTINGSBUTTON = "tooltip.savesettingsbutton";
+    public static final String TOOLTIP_SAVEDEVICEBUTTON = "tooltip.savedevicebutton";
+    public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "tooltip.showtestimagebutton";
+    public static final String TOOLTIP_BAUD_RATE = "tooltip.baud.rate";
+    public static final String TOOLTIP_THEME = "tooltip.theme";
+    public static final String TOOLTIP_AUDIO_CHANNELS = "tooltip.audio.channels";
+    public static final String TOOLTIP_AUDIO_GAIN = "tooltip.audio.gain";
+    public static final String TOOLTIP_AUDIO_DEVICE = "tooltip.audio.device";
+    public static final String TOOLTIP_EFFECT = "tooltip.effect";
+    public static final String TOOLTIP_COLORS = "tooltip.colors";
+    public static final String TOOLTIP_NIGHT_MODE_FROM = "tooltip.night.mode.from";
+    public static final String TOOLTIP_NIGHT_MODE_TO = "tooltip.night.mode.to";
+    public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "tooltip.night.mode.bright";
+    public static final String TOOLTIP_COLOR_MODE = "tooltip.color.mode";
+    public static final String TOOLTIP_PROFILES = "tooltip.profiles";
+    public static final String TOOLTIP_PROFILES_ADD = "tooltip.profiles.add";
+    public static final String TOOLTIP_PROFILES_REMOVE = "tooltip.profiles.remove";
+    public static final String TOOLTIP_PROFILES_APPLY = "tooltip.profiles.apply";
+    public static final String TOOLTIP_RED_SATURATION = "tooltip.color.correction.red";
+    public static final String TOOLTIP_YELLOW_SATURATION = "tooltip.color.correction.yellow";
+    public static final String TOOLTIP_GREEN_SATURATION = "tooltip.color.correction.green";
+    public static final String TOOLTIP_CYAN_SATURATION = "tooltip.color.correction.cyan";
+    public static final String TOOLTIP_BLUE_SATURATION = "tooltip.color.correction.blue";
+    public static final String TOOLTIP_MAGENTA_SATURATION = "tooltip.color.correction.magenta";
+    public static final String TOOLTIP_RED_HUE = "tooltip.color.correction.hue.red";
+    public static final String TOOLTIP_YELLOW_HUE = "tooltip.color.correction.hue.yellow";
+    public static final String TOOLTIP_GREEN_HUE = "tooltip.color.correction.hue.green";
+    public static final String TOOLTIP_CYAN_HUE = "tooltip.color.correction.hue.cyan";
+    public static final String TOOLTIP_BLUE_HUE = "tooltip.color.correction.hue.blue";
+    public static final String TOOLTIP_MAGENTA_HUE = "tooltip.color.correction.hue.magenta";
+    public static final String TOOLTIP_SATURATION = "tooltip.color.correction.saturation";
+    public static final String TOOLTIP_RED_LIGHTNESS = "tooltip.color.correction.lightness.red";
+    public static final String TOOLTIP_YELLOW_LIGHTNESS = "tooltip.color.correction.lightness.yellow";
+    public static final String TOOLTIP_GREEN_LIGHTNESS = "tooltip.color.correction.lightness.green";
+    public static final String TOOLTIP_CYAN_LIGHTNESS = "tooltip.color.correction.lightness.cyan";
+    public static final String TOOLTIP_BLUE_LIGHTNESS = "tooltip.color.correction.lightness.blue";
+    public static final String TOOLTIP_MAGENTA_LIGHTNESS = "tooltip.color.correction.lightness.magenta";
+    public static final String TOOLTIP_HUE_MONITOR_SLIDER = "tooltip.color.correction.hue.monitor.slider";
+    public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
+    public static final String TOOLTIP_GREY_LIGHTNESS = "tooltip.color.correction.grey.correction";
+    public static final String TOOLTIP_HALF_SATURATION = "tooltip.color.correction.half.saturation";
+    public static final String TOOLTIP_EYEC_ENABLE_LDR = "tooltip.ldr.enableldr";
+    public static final String TOOLTIP_EYEC_TURNOFF = "tooltip.ldr.turnoff";
+    public static final String TOOLTIP_EYEC_CONT_READING = "tooltip.ldr.interval";
+    public static final String TOOLTIP_EYEC_MIN_BRIGHT = "tooltip.ldr.minbright";
+    public static final String TOOLTIP_BRIGHTNESS_LIMITER = "tooltip.brightness.limiter";
+    public static final String TOOLTIP_EYEC_CAL = "tooltip.ldr.calibrateldr";
+    public static final String TOOLTIP_EYEC_RESET = "tooltip.ldr.resetldr";
+    public static final String TOOLTIP_VAL = "tooltip.ldr.ldrlabel";
+    public static final String TOOLTIP_SAT_IP = "tooltip.sat.manager.ip";
+    public static final String TOOLTIP_SAT_ZONE = "tooltip.sat.manager.zone";
+    public static final String TOOLTIP_SAT_ORIENT = "tooltip.sat.manager.orientation";
+    public static final String TOOLTIP_SAT_NUM = "tooltip.sat.manager.num.led";
+    public static final String TOOLTIP_SAT_ALGO = "tooltip.sat.manager.algo";
+    public static final String TOOLTIP_SAT_ADD = "tooltip.sat.manager.add";
+    public static final String TOOLTIP_GPU_THRESHOLD = "tooltip.profile.gpu.threshold";
+    public static final String TOOLTIP_CPU_THRESHOLD = "tooltip.profile.cpu.threshold";
+    public static final String TOOLTIP_PROCESS1 = "tooltip.profile.process1";
+    public static final String TOOLTIP_PROCESS2 = "tooltip.profile.process2";
+    public static final String TOOLTIP_PROCESS3 = "tooltip.profile.process3";
+    public static final String TOOLTIP_ENABLEFULLSCREENDETECTION = "tooltip.profile.enablefullscreen";
+    public static final String TOOLTIP_IMPROV_SSID = "fxml.mqtttab.improv.ssid";
+    public static final String TOOLTIP_IMPROV_PWD = "fxml.mqtttab.improv.pwd";
+    public static final String TOOLTIP_IMPROV_COM = "fxml.mqtttab.improv.comport";
+    public static final String TOOLTIP_IMPROV_BAUD = "fxml.mqtttab.improv.baudrate";
+    public static final String TOOLTIP_DEV_NAME = "fxml.mqtttab.improv.devicename";
+    public static final String TOOLTIP_ETHERNET = "fxml.mqtttab.improv.ethernet";
+    public static final String TOOLTIP_IMPROV_CONTEXT = "fxml.mqtttab.improv.context";
+    public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
+    public static final String WHITE_LABEL_CORRECTION = "fxml.misctab.whitetemp";
+    public static final String TC_BEFORE_TEXT = "tc.before.text";
+    public static final String TC_AFTER_TEXT = "tc.after.text";
+    public static final String TC_AFTER_TEXT_RGBW = "tc.after.text.rgwb";
+    public static final String TC_FULL_SATURATION = "tc.full.saturation";
+    public static final String CANVAS_ZONE_TITLE = "canvas.dialog.zone.title";
+    public static final String CANVAS_ZONE_DESCRIPTION = "canvas.dialog.zone.description";
+    public static final String CANVAS_ZONE_TEXT = "canvas.dialog.zone.text.input";
+    public static final String CANVAS_HELPER = "canvas.helper";
+    public static final String CANVAS_ZONE_EMPTY = "canvas.zone.empty";
+    public static final String CANVAS_ZONE_EMPTY_TITLE = "canvas.zone.empty.title";
+    public static final String WIN32_EXCEPTION = "exceptions.win32.exception";
+    public static final String SELECT_OBJ_EXCEPTION = "exceptions.select.obj";
+    public static final String DELETE_OBJ_EXCEPTION = "exceptions.delete.obj";
+    public static final String DELETE_DC_EXCEPTION = "exceptions.delete.dc";
+    public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "exceptions.device.context.release";
+    public static final String WINDOWS_EXCEPTION = "exceptions.windows";
+    public static final String CANT_FIND_GSTREAMER = "exceptions.cant.find.gsreamer";
+    public static final String SOMETHING_WENT_WRONG = "exceptions.something.went.wrong";
+    public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
+    public static final String INFO_WIFI_STRENGTH = "fxml.info.signal.strenght";
+    public static final String INFO_PRODUCING = "fxml.info.producing";
+    public static final String INFO_CONSUMING = "fxml.info.consuming";
+    public static final String LDR_ALERT_ENABLED = "ldr.alert.enabled";
+    public static final String LDR_ALERT_TITLE = "ldr.alert.title";
+    public static final String LDR_ALERT_CAL_HEADER = "ldr.alert.cal.header";
+    public static final String LDR_ALERT_CAL_CONTENT = "ldr.alert.cal.content";
+    public static final String LDR_ALERT_RESET_HEADER = "ldr.alert.reset.header";
+    public static final String LDR_ALERT_RESET_CONTENT = "ldr.alert.reset.content";
+    public static final String LDR_ALERT_HEADER_ERROR = "ldr.alert.header.error";
+    public static final String LDR_ALERT_HEADER_CONTENT = "ldr.alert.content.error";
+    public static final String LDR_ALERT_CONTINUE = "ldr.alert.continue";
+    public static final String SAT_ALERT_IP_TITLE = "satellite.ip.error.title";
+    public static final String SAT_ALERT_IP_HEADER = "satellite.ip.error.header";
+    public static final String SAT_ALERT_IP_CONTENT = "satellite.ip.error.content";
+    public static final String USB_NOT_AVAILABLE_TITLE = "usb.not.available.title";
+    public static final String USB_NOT_AVAILABLE_HEADER = "usb.not.available.header";
+    public static final String USB_NOT_AVAILABLE_CONTENT = "usb.not.available.content";
+    public static final String USB_NOT_AVAILABLE_CONTENT_SNAP = "usb.not.available.content.snap";
+
+    private LabelKey() {
+    }
+}
