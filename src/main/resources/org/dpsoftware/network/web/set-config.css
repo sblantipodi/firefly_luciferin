@@ -20,6 +20,35 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* The theme switch sits just below the sticky header without using header space. */
+#themeToggle {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0.75rem;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid #adb5bd;
+    border-radius: 50%;
+    background: #fff;
+    color: #343a40;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+}
+
+#themeToggle:hover,
+#themeToggle:focus-visible {
+    background: #f1f3f5;
+    border-color: #6c757d;
+}
+
+#themeToggle:focus-visible {
+    outline: 2px solid #343a40;
+    outline-offset: 2px;
+}
+
 /* Layout helper: the Bootstrap .col has no margin, the form wrapper expects one. */
 .margin-2 {
     margin: 2rem 1rem;

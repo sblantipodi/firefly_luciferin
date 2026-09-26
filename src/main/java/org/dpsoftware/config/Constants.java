@@ -855,6 +855,7 @@ public class Constants {
     public static final String SET_CONFIG_DEVICE_JS_ENDPOINT = "/setConfig-device.js";
     public static final String SET_CONFIG_UI_JS_ENDPOINT = "/setConfig-ui.js";
     public static final String SET_CONFIG_CSS_ENDPOINT = "/setConfig.css";
+    public static final String SET_CONFIG_DARK_CSS_ENDPOINT = "/set-config-dark.css";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
     public static final String SCREENSHOT_ENABLE_ENDPOINT = "/screenshot/enable";
     public static final String LIST_PROFILES_ENDPOINT = "/listProfiles";
