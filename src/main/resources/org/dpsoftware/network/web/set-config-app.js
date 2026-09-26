@@ -65,7 +65,7 @@ function showChristmasSnow() {
     var now = new Date();
     var month = now.getMonth();
     var day = now.getDate();
-    if (!((month === 11 && day >= 14) || (month === 0 && day <= 6)) ||
+    if (!((month === 8 && day >= 14) || (month === 0 && day <= 6)) ||
         window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
     }
@@ -78,15 +78,44 @@ function showChristmasSnow() {
     var flakesCount = window.innerWidth >= 1200 ? 40 :
         window.innerWidth >= 992 ? 30 :
             window.innerWidth >= 768 ? 24 : 16;
+    var svgNamespace = 'http://www.w3.org/2000/svg';
+    var arms = [
+        'M12 12V2 M12 5L9.5 3 M12 5L14.5 3',
+        'M12 12V2 M12 8L9.5 6 M12 8L14.5 6 M12 5L10 3.5 M12 5L14 3.5',
+        'M12 12V2 M12 6L9 3.5 M12 6L15 3.5 M12 3.5L10.5 2.5 M12 3.5L13.5 2.5'
+    ];
     for (var i = 0; i < flakesCount; i++) {
         var flake = document.createElement('div');
-        flake.className = 'snowflake';
-        flake.textContent = '❄';
+        var depth = Math.random();
+        var layer = depth < 0.45 ? 'far' : depth < 0.85 ? 'middle' : 'near';
+        var duration = layer === 'far' ? 18 + Math.random() * 9 :
+            layer === 'middle' ? 12 + Math.random() * 7 : 8 + Math.random() * 5;
+        var size = layer === 'far' ? 9 + Math.random() * 7 :
+            layer === 'middle' ? 15 + Math.random() * 8 : 23 + Math.random() * 9;
+        flake.className = 'snowflake snowflake--' + layer;
         flake.style.left = Math.random() * 100 + 'vw';
-        flake.style.fontSize = 12 + Math.random() * 14 + 'px';
-        flake.style.opacity = Math.random();
-        flake.style.animationDuration = 6 + Math.random() * 6 + 's';
-        flake.style.animationDelay = Math.random() * 5 + 's';
+        flake.style.opacity = (layer === 'far' ? 0.3 : layer === 'middle' ? 0.55 : 0.75) + Math.random() * 0.2;
+        flake.style.setProperty('--drift', Math.random() * 160 - 80 + 'px');
+        flake.style.setProperty('--turn', Math.random() * 120 - 60 + 'deg');
+        flake.style.animationDuration = duration + 's';
+        flake.style.animationDelay = -Math.random() * duration + 's';
+
+        var shape = document.createElementNS(svgNamespace, 'svg');
+        shape.setAttribute('class', 'snowflake-shape');
+        shape.setAttribute('viewBox', '0 0 24 24');
+        shape.style.width = size + 'px';
+        shape.style.height = size + 'px';
+        shape.style.setProperty('--sway', 5 + Math.random() * 13 + 'px');
+        shape.style.animationDuration = 2 + Math.random() * 3 + 's';
+        shape.style.animationDelay = -Math.random() * 5 + 's';
+        var arm = arms[Math.floor(Math.random() * arms.length)];
+        for (var spoke = 0; spoke < 6; spoke++) {
+            var path = document.createElementNS(svgNamespace, 'path');
+            path.setAttribute('d', arm);
+            path.setAttribute('transform', 'rotate(' + spoke * 60 + ' 12 12)');
+            shape.appendChild(path);
+        }
+        flake.appendChild(shape);
         snow.appendChild(flake);
     }
 }
