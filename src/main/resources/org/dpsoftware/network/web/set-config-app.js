@@ -164,8 +164,6 @@ function showChristmasSnow() {
 }
 
 $(function () {
-    var br = '<br class="d-sm-none">';
-    $('#subtitle').html('Bias Lighting and Ambient Light software' + br + ' designed for ' + br + 'Glow Worm Luciferin firmware');
     showChristmasSnow();
     fetchJson('sectionTitles').then(function (titles) {
         state.sectionTitles = titles || {};
