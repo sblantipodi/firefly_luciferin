@@ -1141,18 +1141,18 @@ public class GuiManager {
     }
 
     /**
-     * Show settings dialog if using Linux and check for upgrade
+     * Show settings when needed and check for updates. In headless mode, only Glow Worm firmware is checked.
      *
      * @param showChangelog show changelog
      */
     public void showSettingsAndCheckForUpgrade(boolean showChangelog) {
-        if (MainSingleton.getInstance().isHeadlessMode()) {
-            return;
-        }
+        boolean headless = MainSingleton.getInstance().isHeadlessMode();
         if (!upgradeCheckInProgress.compareAndSet(false, true)) {
             log.info("Update already in progress");
-            showLocalizedNotification(LabelKey.CHECK_UPDATE, LabelKey.UPDATE_ALREADY_IN_PROGRESS,
-                    Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            if (!headless) {
+                showLocalizedNotification(LabelKey.CHECK_UPDATE, LabelKey.UPDATE_ALREADY_IN_PROGRESS,
+                        Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            }
             return;
         }
         AtomicBoolean released = new AtomicBoolean();
@@ -1162,11 +1162,11 @@ public class GuiManager {
             }
         };
         try {
-            if (!NativeExecutor.isSystemTraySupported()) {
+            if (!headless && !NativeExecutor.isSystemTraySupported()) {
                 showSettingsDialog(false);
             }
             UpgradeManager upgradeManager = new UpgradeManager();
-            upgradeManager.checkForUpdates(showChangelog, releaseCheck);
+            upgradeManager.checkForUpdates(showChangelog && !headless, releaseCheck);
         } catch (RuntimeException | Error e) {
             releaseCheck.run();
             throw e;

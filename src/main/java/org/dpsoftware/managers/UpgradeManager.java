@@ -151,11 +151,15 @@ public class UpgradeManager {
             } else {
                 notificationContext += CommonUtility.getWord(LabelKey.DEVICEUPGRADE_SUCCESS);
             }
-            MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(LabelKey.UPGRADE_SUCCESS), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            if (!MainSingleton.getInstance().isHeadlessMode()) {
+                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(LabelKey.UPGRADE_SUCCESS), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            }
         } else {
             log.error(CommonUtility.getWord(LabelKey.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
             notificationContext += CommonUtility.getWord(LabelKey.DEVICEUPGRADE_ERROR);
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(LabelKey.UPGRADE_ERROR), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            if (!MainSingleton.getInstance().isHeadlessMode()) {
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(LabelKey.UPGRADE_ERROR), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            }
         }
     }
 
@@ -410,7 +414,11 @@ public class UpgradeManager {
                     postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.CANT_UPGRADE_TOO_OLD, LabelKey.MANUAL_UPGRADE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                if (MainSingleton.getInstance().isHeadlessMode()) {
+                    log.warn("Firmware on {} is too old for automatic update", glowWormDevice.getDeviceName());
+                } else {
+                    MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.CANT_UPGRADE_TOO_OLD, LabelKey.MANUAL_UPGRADE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                }
             }
         } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
@@ -529,7 +537,7 @@ public class UpgradeManager {
         try {
             // Check Firefly updates
             boolean fireflyUpdate = false;
-            if (MainSingleton.getInstance().whoAmI == 1) {
+            if (!MainSingleton.getInstance().isHeadlessMode() && MainSingleton.getInstance().whoAmI == 1) {
                 fireflyUpdate = checkFireflyUpdates(showChangelog);
                 if (fireflyUpdate) {
                     GuiSingleton.getInstance().setUpgrade(true);
@@ -585,20 +593,29 @@ public class UpgradeManager {
                 ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                 // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
                 GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
-                    if (!MainSingleton.getInstance().config.isFullFirmware() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
-                        // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
-                        if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
-                            glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
-                        }
-                        if (checkRemoteUpdateGW(useAlphaFirmware, glowWormDevice.getDeviceVersion())) {
-                            // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
-                            if (!MainSingleton.getInstance().config.isFullFirmware() || MainSingleton.getInstance().whoAmI == 1 || NetworkManager.currentTopicDiffersFromMainTopic()) {
-                                devicesToUpdate.add(glowWormDevice);
+                    try {
+                        if (!MainSingleton.getInstance().config.isFullFirmware() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                            // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
+                            if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
+                                glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
+                            }
+                            if (checkRemoteUpdateGW(useAlphaFirmware, glowWormDevice.getDeviceVersion())) {
+                                // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
+                                if (!MainSingleton.getInstance().config.isFullFirmware() || MainSingleton.getInstance().whoAmI == 1 || NetworkManager.currentTopicDiffersFromMainTopic()) {
+                                    devicesToUpdate.add(glowWormDevice);
+                                }
                             }
                         }
+                    } catch (RuntimeException e) {
+                        if (!MainSingleton.getInstance().isHeadlessMode()) {
+                            throw e;
+                        }
+                        log.warn("Skipping firmware check for {}: invalid device information", glowWormDevice.getDeviceName(), e);
                     }
                 });
-                if (!devicesToUpdate.isEmpty()) {
+                if (MainSingleton.getInstance().isHeadlessMode()) {
+                    updateGlowWormHeadless(devicesToUpdate);
+                } else if (!devicesToUpdate.isEmpty()) {
                     javafx.application.Platform.runLater(() -> {
                         try {
                             String deviceToUpdateStr = devicesToUpdate
@@ -667,6 +684,64 @@ public class UpgradeManager {
         } finally {
             if (!handedOffToUi) {
                 onCheckComplete.run();
+            }
+        }
+    }
+
+    /**
+     * Update each compatible Glow Worm device without showing a confirmation dialog.
+     *
+     * @param devicesToUpdate devices with an available firmware update
+     */
+    private void updateGlowWormHeadless(List<GlowWormDevice> devicesToUpdate) {
+        List<GlowWormDevice> eligibleDevices = new ArrayList<>();
+        for (GlowWormDevice device : devicesToUpdate) {
+            try {
+                ArrayList<GlowWormDevice> singleDevice = new ArrayList<>(List.of(device));
+                if (versionNumberToNumber(device.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRM_FOR_AUTO_UPGRADE)
+                        && isAutomaticUpdateCapable(singleDevice)) {
+                    eligibleDevices.add(device);
+                } else {
+                    log.warn("Skipping automatic firmware update for {}: manual update required", device.getDeviceName());
+                }
+            } catch (RuntimeException e) {
+                log.warn("Skipping automatic firmware update for {}: invalid device information", device.getDeviceName(), e);
+            }
+        }
+        if (eligibleDevices.isEmpty()) {
+            return;
+        }
+        if (MainSingleton.getInstance().RUNNING) {
+            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+            CommonUtility.sleepSeconds(15);
+        }
+        if (MainSingleton.getInstance().config.isMqttEnable()) {
+            log.info("Starting web server");
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT),
+                    CommonUtility.toJsonString(new WebServerStarterDto(true)));
+            for (GlowWormDevice device : eligibleDevices) {
+                try {
+                    executeUpdate(device, false);
+                } catch (RuntimeException e) {
+                    log.error("Firmware update failed for {}", device.getDeviceName(), e);
+                }
+            }
+        } else {
+            try {
+                for (GlowWormDevice device : eligibleDevices) {
+                    try {
+                        log.info("Starting web server: {}", device.getDeviceIP());
+                        TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
+                                NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), device.getDeviceIP());
+                        log.info("Updating: {}", device.getDeviceIP());
+                        CommonUtility.sleepSeconds(5);
+                        executeUpdate(device, false);
+                    } catch (RuntimeException e) {
+                        log.error("Firmware update failed for {}", device.getDeviceName(), e);
+                    }
+                }
+            } finally {
+                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 60);
             }
         }
     }
