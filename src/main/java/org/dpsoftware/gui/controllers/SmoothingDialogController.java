@@ -33,6 +33,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -92,9 +93,9 @@ public class SmoothingDialogController {
      * Set tooltips
      */
     private void setTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_EMA, smoothingLvl);
-        GuiManager.createTooltip(Constants.TOOLTIP_FG, frameGen);
-        GuiManager.createTooltip(Constants.TOOLTIP_FG, targetFramerate);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EMA, smoothingLvl);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_FG, frameGen);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_FG, targetFramerate);
     }
 
     /**

@@ -42,6 +42,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
@@ -277,7 +278,7 @@ public class MiscTabController {
         colorMode.setValue(Enums.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Enums.Effect.BIAS_LIGHT.getI18n());
         framerate.setValue(Enums.Framerate.FPS_30.getI18n() + Constants.FPS_VAL);
-        smoothing.setValue(CommonUtility.getWord(Constants.NO_SMOOTHING));
+        smoothing.setValue(CommonUtility.getWord(LabelKey.NO_SMOOTHING));
         toggleLed.setSelected(true);
         brightness.setValue(255);
         audioGain.setVisible(false);
@@ -298,7 +299,7 @@ public class MiscTabController {
         removeProfileButton.setDisable(true);
         applyProfileButton.setDisable(true);
         profiles.setDisable(true);
-        profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
+        profiles.setValue(CommonUtility.getWord(LabelKey.DEFAULT));
         colorPicker.setValue(Constants.DEFAULT_COLOR);
         smoothingBtn.setDisable(true);
     }
@@ -376,9 +377,9 @@ public class MiscTabController {
             effect.setValue(Enums.Effect.SOLID.getI18n());
         }
         if (MainSingleton.getInstance().config.isToggleLed()) {
-            toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
+            toggleLed.setText(CommonUtility.getWord(LabelKey.TURN_LED_OFF));
         } else {
-            toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_ON));
+            toggleLed.setText(CommonUtility.getWord(LabelKey.TURN_LED_ON));
         }
         toggleLed.setSelected(MainSingleton.getInstance().config.isToggleLed());
         WidgetFactory widgetFactory = new WidgetFactory();
@@ -389,10 +390,10 @@ public class MiscTabController {
         if (updateProfiles) {
             StorageManager sm = new StorageManager();
             profiles.getItems().addAll(sm.listProfilesForThisInstance());
-            profiles.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
+            profiles.getItems().add(CommonUtility.getWord(LabelKey.DEFAULT));
         }
-        if (MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
-            profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
+        if (MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+            profiles.setValue(CommonUtility.getWord(LabelKey.DEFAULT));
         } else {
             profiles.setValue(MainSingleton.getInstance().profileArg);
         }
@@ -411,20 +412,20 @@ public class MiscTabController {
                 || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
                 || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
             colorPicker.setVisible(false);
-            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_DEVICE));
+            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_AUDIO_DEVICE));
             gamma.setVisible(false);
             enableAutomaticGamma.setVisible(false);
-            contextGammaGain.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_GAIN));
+            contextGammaGain.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_AUDIO_GAIN));
             audioGain.setVisible(true);
             audioDevice.setVisible(true);
             audioChannels.setVisible(true);
             colorMode.setVisible(false);
         } else {
             colorPicker.setVisible(true);
-            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_COLOR));
+            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_COLOR));
             gamma.setVisible(true);
             enableAutomaticGamma.setVisible(true);
-            contextGammaGain.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_GAMMA));
+            contextGammaGain.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_GAMMA));
             audioGain.setVisible(false);
             audioDevice.setVisible(false);
             audioChannels.setVisible(false);
@@ -494,7 +495,7 @@ public class MiscTabController {
             StorageManager sm = new StorageManager();
             removeProfileButton.setDisable(!sm.checkIfFileExist(sm.getProfileFileName(profileName)));
             applyProfileButton.setDisable(!sm.checkIfFileExist(sm.getProfileFileName(profileName)));
-            if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            if (profileName.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
                 addProfileButton.setDisable(false);
                 removeProfileButton.setDisable(true);
                 applyProfileButton.setDisable(false);
@@ -537,13 +538,13 @@ public class MiscTabController {
         // Toggle LED button listener
         toggleLed.setOnAction(_ -> {
             if ((toggleLed.isSelected())) {
-                toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
+                toggleLed.setText(CommonUtility.getWord(LabelKey.TURN_LED_OFF));
                 turnOnLEDs(currentConfig, true);
                 if (MainSingleton.getInstance().config != null) {
                     MainSingleton.getInstance().config.setToggleLed(true);
                 }
             } else {
-                toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_ON));
+                toggleLed.setText(CommonUtility.getWord(LabelKey.TURN_LED_ON));
                 CommonUtility.turnOffLEDs(currentConfig);
                 if (MainSingleton.getInstance().config != null) {
                     MainSingleton.getInstance().config.setToggleLed(false);
@@ -845,7 +846,7 @@ public class MiscTabController {
     @SuppressWarnings("unused")
     public void removeProfile(InputEvent e) {
         String profileName = profiles.getValue();
-        if (!profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+        if (!profileName.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
             profiles.getItems().remove(profileName);
             profiles.commitValue();
             StorageManager sm = new StorageManager();
@@ -885,7 +886,7 @@ public class MiscTabController {
      */
     private void setProfileButtonContext() {
         if (NativeExecutor.isWindows()) {
-            if (!MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(Constants.DEFAULT)) && MainSingleton.getInstance().profileArg.equals(profiles.getValue())) {
+            if (!MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(LabelKey.DEFAULT)) && MainSingleton.getInstance().profileArg.equals(profiles.getValue())) {
                 applyProfileButton.setText(Constants.DIALOG);
                 applyProfileButton.setOnMouseClicked(this::openProfileDialog);
             } else {
@@ -954,7 +955,7 @@ public class MiscTabController {
         String profileName = getFormattedProfileName();
         if (!profileName.isEmpty()) {
             String fileToWrite = profileName;
-            if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            if (profileName.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
                 switch (MainSingleton.getInstance().whoAmI) {
                     case 1 -> fileToWrite = Constants.CONFIG_FILENAME;
                     case 2 -> fileToWrite = Constants.CONFIG_FILENAME_2;
@@ -980,10 +981,10 @@ public class MiscTabController {
     private String getFormattedProfileName() {
         String profile = profiles.getValue() != null ? profiles.getValue().toLowerCase() : "";
         profile = CommonUtility.capitalize(profile);
-        if (CommonUtility.getWord(Constants.STOP).equals(profile)
-                || CommonUtility.getWord(Constants.START).equals(profile)
-                || CommonUtility.getWord(Constants.SETTINGS).equals(profile)
-                || CommonUtility.getWord(Constants.INFO).equals(profile)) {
+        if (CommonUtility.getWord(LabelKey.STOP).equals(profile)
+                || CommonUtility.getWord(LabelKey.START).equals(profile)
+                || CommonUtility.getWord(LabelKey.SETTINGS).equals(profile)
+                || CommonUtility.getWord(LabelKey.INFO).equals(profile)) {
             return profile + " ";
         }
         return profile;
@@ -1023,29 +1024,29 @@ public class MiscTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        GuiManager.createTooltip(Constants.TOOLTIP_GAMMA, gamma);
-        GuiManager.createTooltip(Constants.TOOLTIP_FRAMERATE, framerate);
-        GuiManager.createTooltip(Constants.TOOLTIP_SMOOTHING, smoothing);
-        GuiManager.createTooltip(Constants.TOOLTIP_BRIGHTNESS, brightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_DEVICE, audioDevice);
-        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_CHANNELS, audioChannels);
-        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_GAIN, audioGain);
-        GuiManager.createTooltip(Constants.TOOLTIP_EFFECT, effect);
-        GuiManager.createTooltip(Constants.TOOLTIP_COLORS, colorPicker);
-        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_FROM, nightModeFrom);
-        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_TO, nightModeTo);
-        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_BRIGHT, nightModeBrightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_WHITE_TEMP, whiteTemp);
-        GuiManager.createTooltip(Constants.TOOLTIP_COLOR_MODE, colorMode);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GAMMA, gamma);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_FRAMERATE, framerate);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SMOOTHING, smoothing);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BRIGHTNESS, brightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_AUDIO_DEVICE, audioDevice);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_AUDIO_CHANNELS, audioChannels);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_AUDIO_GAIN, audioGain);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EFFECT, effect);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_COLORS, colorPicker);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_MODE_FROM, nightModeFrom);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_MODE_TO, nightModeTo);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_MODE_BRIGHT, nightModeBrightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_WHITE_TEMP, whiteTemp);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_COLOR_MODE, colorMode);
         if (currentConfig == null) {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMiscButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMiscButton);
         }
-        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES, profiles);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_REMOVE, removeProfileButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_ADD, addProfileButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_APPLY, applyProfileButton);
-        GuiManager.createTooltip(Constants.SHOW_MORE_SETTINGS, smoothingBtn);
-        GuiManager.createTooltip(Constants.SHOW_MORE_SETTINGS, eyeCareBtn);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES, profiles);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_REMOVE, removeProfileButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_ADD, addProfileButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_APPLY, applyProfileButton);
+        GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, smoothingBtn);
+        GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, eyeCareBtn);
     }
 
     /**

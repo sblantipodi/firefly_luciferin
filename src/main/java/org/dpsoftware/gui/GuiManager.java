@@ -82,7 +82,6 @@ public class GuiManager {
 
     public PipelineManager pipelineManager;
     public TrayIconManager trayIconManager;
-    // Label and framerate dialog
     WebView wv;
     public Stage stage;
     private Stage stageInfo;
@@ -149,21 +148,21 @@ public class GuiManager {
             switch (MainSingleton.getInstance().whoAmI) {
                 case 1 -> {
                     if ((MainSingleton.getInstance().config.getMultiMonitor() != 1)) {
-                        title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
+                        title += " (" + CommonUtility.getWord(LabelKey.RIGHT_DISPLAY) + ")";
                     }
                 }
                 case 2 -> {
                     if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                        title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
+                        title += " (" + CommonUtility.getWord(LabelKey.LEFT_DISPLAY) + ")";
                     } else {
-                        title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
+                        title += " (" + CommonUtility.getWord(LabelKey.CENTER_DISPLAY) + ")";
                     }
                 }
-                case 3 -> title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
+                case 3 -> title += " (" + CommonUtility.getWord(LabelKey.LEFT_DISPLAY) + ")";
             }
         }
-        if (!CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)
-                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
+        if (!CommonUtility.getWord(LabelKey.DEFAULT).equals(MainSingleton.getInstance().profileArg)
+                && !LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
             title += " [" + MainSingleton.getInstance().profileArg + "]";
         }
         return title;
@@ -200,14 +199,14 @@ public class GuiManager {
      */
     private static void showFirmwareTypeDialog(boolean configPresent) {
         if (!configPresent) {
-            ButtonType fullBtn = new ButtonType(CommonUtility.getWord(Constants.FULL_FIRM));
-            ButtonType lightBtn = new ButtonType(CommonUtility.getWord(Constants.LIGHT_FIRM));
-            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.INITIAL_TITLE,
-                    Constants.INITIAL_HEADER, Constants.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
-            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.FULL_FIRM))) {
+            ButtonType fullBtn = new ButtonType(CommonUtility.getWord(LabelKey.FULL_FIRM));
+            ButtonType lightBtn = new ButtonType(CommonUtility.getWord(LabelKey.LIGHT_FIRM));
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(LabelKey.INITIAL_TITLE,
+                    LabelKey.INITIAL_HEADER, LabelKey.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
+            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(LabelKey.FULL_FIRM))) {
                 GuiSingleton.getInstance().setFirmTypeFull(true);
             }
-            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.LIGHT_FIRM))) {
+            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(LabelKey.LIGHT_FIRM))) {
                 GuiSingleton.getInstance().setFirmTypeFull(false);
             }
         }

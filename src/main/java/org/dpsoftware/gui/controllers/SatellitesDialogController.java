@@ -39,6 +39,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
@@ -275,12 +276,12 @@ public class SatellitesDialogController {
      * Set tooltips
      */
     public void setTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_IP, deviceIp);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ZONE, zone);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ORIENT, orientation);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_NUM, ledNum);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ALGO, algo);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ADD, addButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_IP, deviceIp);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ZONE, zone);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ORIENT, orientation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_NUM, ledNum);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ALGO, algo);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ADD, addButton);
     }
 
     /**
@@ -376,8 +377,8 @@ public class SatellitesDialogController {
             GuiSingleton.getInstance().satellitesTableData.add(new Satellite(zone.getValue(), orientation.getValue(),
                     ledNum.getText(), deviceIp.getValue(), "", algo.getValue()));
         } else {
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ALERT_IP_HEADER,
-                    Constants.SAT_ALERT_IP_CONTENT, Constants.SAT_ALERT_IP_TITLE, TrayIcon.MessageType.ERROR);
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.SAT_ALERT_IP_HEADER,
+                    LabelKey.SAT_ALERT_IP_CONTENT, LabelKey.SAT_ALERT_IP_TITLE, TrayIcon.MessageType.ERROR);
         }
     }
 

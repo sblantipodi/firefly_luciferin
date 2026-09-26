@@ -30,6 +30,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.StorageManager;
@@ -75,8 +76,8 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         setMenuItemStyle(null, null, null);
         GuiSingleton.getInstance().popupMenu = new JPopupMenu();
         GuiSingleton.getInstance().popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, css.get(Constants.CSS_TRAY_MENU_BORDER)));
-        aspectRatioSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.ASPECT_RATIO) + " ");
-        profilesSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.PROFILES) + " ");
+        aspectRatioSubMenu = createSubMenuItem(CommonUtility.getWord(LabelKey.ASPECT_RATIO) + " ");
+        profilesSubMenu = createSubMenuItem(CommonUtility.getWord(LabelKey.PROFILES) + " ");
         initMenuListener();
     }
 
@@ -137,19 +138,19 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         menuListener = e -> {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
             String menuItemText = getMenuString(jMenuItem);
-            if (CommonUtility.getWord(Constants.STOP).equals(menuItemText)) {
+            if (CommonUtility.getWord(LabelKey.STOP).equals(menuItemText)) {
                 stopAction();
-            } else if (CommonUtility.getWord(Constants.START).equals(menuItemText)) {
+            } else if (CommonUtility.getWord(LabelKey.START).equals(menuItemText)) {
                 startAction();
-            } else if (CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase()).equals(menuItemText)) {
+            } else if (CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_OFF).toLowerCase()).equals(menuItemText)) {
                 turnOffAction();
-            } else if (CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase()).equals(menuItemText)) {
+            } else if (CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_ON).toLowerCase()).equals(menuItemText)) {
                 turnOnAction();
-            } else if (CommonUtility.getWord(Constants.SETTINGS).equals(menuItemText)) {
+            } else if (CommonUtility.getWord(LabelKey.SETTINGS).equals(menuItemText)) {
                 settingsAction();
-            } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
+            } else if (CommonUtility.getWord(LabelKey.INFO).equals(menuItemText)) {
                 infoAction();
-            } else if ((MainSingleton.getInstance().whoAmI == 1) && (CommonUtility.getWord(Constants.CHECK_UPDATE).equals(menuItemText) || CommonUtility.getWord(Constants.INSTALL_UPDATE).equals(menuItemText))) {
+            } else if ((MainSingleton.getInstance().whoAmI == 1) && (CommonUtility.getWord(LabelKey.CHECK_UPDATE).equals(menuItemText) || CommonUtility.getWord(LabelKey.INSTALL_UPDATE).equals(menuItemText))) {
                 showCheckForUpdate();
             } else {
                 profileAction(menuItemText);
@@ -254,14 +255,14 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         profilesSubMenu.removeAll();
         aspectRatioSubMenu.removeAll();
         if (MainSingleton.getInstance().RUNNING || ManagerSingleton.getInstance().pipelineStarting) {
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.STOP)));
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.STOP)));
         } else {
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.START)));
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.START)));
         }
         if (MainSingleton.getInstance().config.isToggleLed()) {
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase())));
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_OFF).toLowerCase())));
         } else {
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase())));
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_ON).toLowerCase())));
         }
         addSeparator();
         populateAspectRatio();
@@ -270,18 +271,18 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         profilesSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, css.get(Constants.CSS_TRAY_MENU_BORDER)));
         GuiSingleton.getInstance().popupMenu.add(aspectRatioSubMenu);
         GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
-        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
-        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.SETTINGS)));
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.INFO)));
         if ((MainSingleton.getInstance().whoAmI == 1)) {
             if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
                 addSeparator();
-                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INSTALL_UPDATE)));
+                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.INSTALL_UPDATE)));
             } else {
-                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.CHECK_UPDATE)));
+                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.CHECK_UPDATE)));
             }
         }
         addSeparator();
-        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.TRAY_EXIT)));
         if (popupMenuHeight == 0) {
             popupMenuHeight = GuiSingleton.getInstance().popupMenu.getPreferredSize().height;
         }
@@ -294,7 +295,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.FULLSCREEN.getI18n()), 0);
         aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.LETTERBOX.getI18n()), 1);
         aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.PILLARBOX.getI18n()), 2);
-        aspectRatioSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)), 3);
+        aspectRatioSubMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS)), 3);
     }
 
     /**
@@ -307,7 +308,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         for (String profile : sm.listProfilesForThisInstance()) {
             profilesSubMenu.add(createMenuItem(profile), index++);
         }
-        profilesSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.DEFAULT)));
+        profilesSubMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.DEFAULT)));
     }
 
     /**
@@ -473,12 +474,12 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         UIManager.put(Constants.CSS_TRAY_SELECTIONFOREGROUND_KEY, css.get(Constants.CSS_TRAY_SELECTIONFOREGROUND));
         if (menuLabel != null && menuItemText != null && jMenuItem != null) {
             if ((menuItemText.equals(MainSingleton.getInstance().config.getDefaultLedMatrix()) && !MainSingleton.getInstance().config.isAutoDetectBlackBars())
-                    || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && MainSingleton.getInstance().config.isAutoDetectBlackBars())) {
+                    || (menuLabel.equals(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS)) && MainSingleton.getInstance().config.isAutoDetectBlackBars())) {
                 jMenuItem.setForeground(css.get(Constants.CSS_TRAY_ITEM_TEXT));
             }
             if (menuLabel.equals(MainSingleton.getInstance().profileArg)
-                    || (menuLabel.equals(CommonUtility.getWord(Constants.DEFAULT))
-                    && MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT))) {
+                    || (menuLabel.equals(CommonUtility.getWord(LabelKey.DEFAULT))
+                    && MainSingleton.getInstance().profileArg.equals(LabelKey.DEFAULT))) {
                 jMenuItem.setForeground(css.get(Constants.CSS_TRAY_ITEM_TEXT));
             }
         }

@@ -22,9 +22,9 @@
 package org.dpsoftware.network.web;
 
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -215,9 +215,9 @@ public record FieldOptions(List<Option> options, String type) {
     public static void applyToggleLedLabels(Map<String, String> labels) {
         labels.put(WebFieldNames.TOGGLE_LED, CommonUtility.getWord(
                 MainSingleton.getInstance().config.isToggleLed()
-                        ? Constants.TURN_LED_OFF : Constants.TURN_LED_ON));
-        labels.put(WebFieldNames.TURN_LED_ON, CommonUtility.getWord(Constants.TURN_LED_ON));
-        labels.put(WebFieldNames.TURN_LED_OFF, CommonUtility.getWord(Constants.TURN_LED_OFF));
+                        ? LabelKey.TURN_LED_OFF : LabelKey.TURN_LED_ON));
+        labels.put(WebFieldNames.TURN_LED_ON, CommonUtility.getWord(LabelKey.TURN_LED_ON));
+        labels.put(WebFieldNames.TURN_LED_OFF, CommonUtility.getWord(LabelKey.TURN_LED_OFF));
     }
 
     /**

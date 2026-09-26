@@ -38,6 +38,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.LdrDto;
@@ -154,17 +155,17 @@ public class EyeCareDialogController {
      * Set tooltips
      */
     private void setTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_ENABLE_LDR, enableLDR);
-        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_TURNOFF, ldrTurnOff);
-        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_CONT_READING, ldrInterval);
-        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_MIN_BRIGHT, minimumBrightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_CAL, calibrateLDR);
-        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_RESET, resetLDR);
-        GuiManager.createTooltip(Constants.TOOLTIP_VAL, ldrLabel);
-        GuiManager.createTooltip(Constants.TOOLTIP_BRIGHTNESS_LIMITER, brightnessLimiter);
-        GuiManager.createTooltip(Constants.TOOLTIP_EYE_CARE, luminosityThreshold);
-        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT, nightLight);
-        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT, nightLightLvl);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EYEC_ENABLE_LDR, enableLDR);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EYEC_TURNOFF, ldrTurnOff);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EYEC_CONT_READING, ldrInterval);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EYEC_MIN_BRIGHT, minimumBrightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EYEC_CAL, calibrateLDR);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EYEC_RESET, resetLDR);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_VAL, ldrLabel);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BRIGHTNESS_LIMITER, brightnessLimiter);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EYE_CARE, luminosityThreshold);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_LIGHT, nightLight);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_LIGHT, nightLightLvl);
     }
 
     /**
@@ -267,8 +268,8 @@ public class EyeCareDialogController {
         settingsController.save(e);
         setLdrDto(4);
         if (showApplyAlert) {
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.LDR_ALERT_ENABLED,
-                    Constants.TOOLTIP_EYEC_ENABLE_LDR, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.LDR_ALERT_ENABLED,
+                    LabelKey.TOOLTIP_EYEC_ENABLE_LDR, LabelKey.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
         }
         settingsController.miscTabController.evaluateLDRConnectedFeatures();
     }
@@ -316,11 +317,11 @@ public class EyeCareDialogController {
      */
     @FXML
     public void calibrateLDR() {
-        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_CONTINUE,
-                Constants.TOOLTIP_EYEC_CAL, Alert.AlertType.CONFIRMATION);
+        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(LabelKey.LDR_ALERT_TITLE, LabelKey.LDR_ALERT_CONTINUE,
+                LabelKey.TOOLTIP_EYEC_CAL, Alert.AlertType.CONFIRMATION);
         ButtonType button = result.orElse(ButtonType.OK);
         if (button == ButtonType.OK) {
-            programMicrocontroller(2, Constants.LDR_ALERT_CAL_HEADER, Constants.LDR_ALERT_CAL_CONTENT);
+            programMicrocontroller(2, LabelKey.LDR_ALERT_CAL_HEADER, LabelKey.LDR_ALERT_CAL_CONTENT);
         }
     }
 
@@ -329,11 +330,11 @@ public class EyeCareDialogController {
      */
     @FXML
     public void resetLDR() {
-        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_CONTINUE,
-                Constants.TOOLTIP_EYEC_RESET, Alert.AlertType.CONFIRMATION);
+        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(LabelKey.LDR_ALERT_TITLE, LabelKey.LDR_ALERT_CONTINUE,
+                LabelKey.TOOLTIP_EYEC_RESET, Alert.AlertType.CONFIRMATION);
         ButtonType button = result.orElse(ButtonType.OK);
         if (button == ButtonType.OK) {
-            programMicrocontroller(3, Constants.LDR_ALERT_RESET_HEADER, Constants.LDR_ALERT_RESET_CONTENT);
+            programMicrocontroller(3, LabelKey.LDR_ALERT_RESET_HEADER, LabelKey.LDR_ALERT_RESET_CONTENT);
         }
     }
 
@@ -348,10 +349,10 @@ public class EyeCareDialogController {
         TcpResponse tcpResponse = setLdrDto(ldrAction);
         if (!MainSingleton.getInstance().config.isFullFirmware() || tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
             MainSingleton.getInstance().guiManager.showLocalizedNotification(ldrAlertResetHeader,
-                    ldrAlertResetContent, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
+                    ldrAlertResetContent, LabelKey.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
         } else {
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.LDR_ALERT_HEADER_ERROR,
-                    Constants.LDR_ALERT_HEADER_CONTENT, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.ERROR);
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.LDR_ALERT_HEADER_ERROR,
+                    LabelKey.LDR_ALERT_HEADER_CONTENT, LabelKey.LDR_ALERT_TITLE, TrayIcon.MessageType.ERROR);
         }
     }
 

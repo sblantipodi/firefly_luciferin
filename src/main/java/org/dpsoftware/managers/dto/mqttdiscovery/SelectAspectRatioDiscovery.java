@@ -26,8 +26,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class SelectAspectRatioDiscovery extends DeviceDiscovery implements Disco
         for (Enums.AspectRatio ar : Enums.AspectRatio.values()) {
             options.add(ar.getBaseI18n());
         }
-        this.options.add(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
+        this.options.add(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
         return CommonUtility.toJsonString(this);
     }
 

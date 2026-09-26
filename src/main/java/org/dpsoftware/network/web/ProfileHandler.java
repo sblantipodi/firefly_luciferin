@@ -31,6 +31,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -78,14 +79,14 @@ public class ProfileHandler {
      */
     public void handleListProfiles(HttpExchange exchange) throws IOException {
         List<String> profiles = new ArrayList<>(new LinkedHashSet<>(storageManager.listProfilesForThisInstance()));
-        profiles.removeIf(p -> CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH).equals(p));
-        profiles.addFirst(CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH));
+        profiles.removeIf(p -> CommonUtility.getWord(LabelKey.DEFAULT, Locale.ENGLISH).equals(p));
+        profiles.addFirst(CommonUtility.getWord(LabelKey.DEFAULT, Locale.ENGLISH));
         String profileArg = MainSingleton.getInstance().profileArg;
         String activeProfile;
         if (profileArg == null || profileArg.isEmpty()
-                || Constants.DEFAULT.equals(profileArg)
-                || CommonUtility.getWord(Constants.DEFAULT).equals(profileArg)) {
-            activeProfile = CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH);
+                || LabelKey.DEFAULT.equals(profileArg)
+                || CommonUtility.getWord(LabelKey.DEFAULT).equals(profileArg)) {
+            activeProfile = CommonUtility.getWord(LabelKey.DEFAULT, Locale.ENGLISH);
         } else {
             activeProfile = profileArg;
         }
@@ -136,7 +137,7 @@ public class ProfileHandler {
         updatedConfig.setEffect(LocalizedEnum.fromTextToBase(Enums.Effect.class, updatedConfig.getEffect()));
         int whoAmI = MainSingleton.getInstance().whoAmI;
         String filename;
-        if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+        if (profileName.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
             filename = whoAmI == 2 ? Constants.CONFIG_FILENAME_2 : whoAmI == 3 ? Constants.CONFIG_FILENAME_3 : Constants.CONFIG_FILENAME;
         } else {
             filename = whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
@@ -165,8 +166,8 @@ public class ProfileHandler {
         }
         // The default profile uses the main configuration.
         HttpResponses.sendOk(exchange);
-        if (name.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            NativeExecutor.restartNativeInstance("\"" + Constants.DEFAULT + "\"");
+        if (name.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+            NativeExecutor.restartNativeInstance("\"" + LabelKey.DEFAULT + "\"");
         } else {
             NativeExecutor.restartNativeInstance("\"" + name + "\"");
         }
@@ -184,10 +185,10 @@ public class ProfileHandler {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Missing or empty name parameter");
             return;
         }
-        String defaultWord = CommonUtility.getWord(Constants.DEFAULT, Locale.ENGLISH);
+        String defaultWord = CommonUtility.getWord(LabelKey.DEFAULT, Locale.ENGLISH);
         String profileArg = MainSingleton.getInstance().profileArg;
         String activeProfile;
-        if (profileArg == null || profileArg.isEmpty() || Constants.DEFAULT.equals(profileArg) || CommonUtility.getWord(Constants.DEFAULT).equals(profileArg)) {
+        if (profileArg == null || profileArg.isEmpty() || LabelKey.DEFAULT.equals(profileArg) || CommonUtility.getWord(LabelKey.DEFAULT).equals(profileArg)) {
             activeProfile = defaultWord;
         } else {
             activeProfile = profileArg;

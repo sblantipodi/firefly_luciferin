@@ -125,8 +125,8 @@ public class DisplayDialogController {
      * Set tooltips
      */
     private void setTooltips() {
-//        GuiManager.createTooltip(Constants.TOOLTIP_GAMMA_ENABLE_AUTO, enableAutomaticGammaCheck);
-//        GuiManager.createTooltip(Constants.TOOLTIP_GAMMA_LEVEL, gammaLevel);
+//        GuiManager.createTooltip(LabelKey.TOOLTIP_GAMMA_ENABLE_AUTO, enableAutomaticGammaCheck);
+//        GuiManager.createTooltip(LabelKey.TOOLTIP_GAMMA_LEVEL, gammaLevel);
 
     }
 

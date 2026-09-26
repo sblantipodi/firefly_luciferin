@@ -38,13 +38,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.EnvConstants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -326,8 +323,8 @@ public class TcInteractionHandler {
             MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
         }
         dialog.initStyle(StageStyle.UNDECORATED);
-        dialog.setTitle(CommonUtility.getWord(Constants.CANVAS_ZONE_TITLE));
-        dialog.setHeaderText(CommonUtility.getWord(Constants.CANVAS_ZONE_DESCRIPTION));
+        dialog.setTitle(CommonUtility.getWord(LabelKey.CANVAS_ZONE_TITLE));
+        dialog.setHeaderText(CommonUtility.getWord(LabelKey.CANVAS_ZONE_DESCRIPTION));
         // Ok / Cancel button
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         // Editable ComboBox
@@ -342,7 +339,7 @@ public class TcInteractionHandler {
             comboBox.getItems().add(Enums.PossibleZones.BOTTOM.getI18n());
         }
         comboBox.getItems().add(Enums.PossibleZones.LEFT.getI18n());
-        comboBox.setPromptText(CommonUtility.getWord(Constants.CANVAS_ZONE_TEXT));
+        comboBox.setPromptText(CommonUtility.getWord(LabelKey.CANVAS_ZONE_TEXT));
         dialog.getDialogPane().setContent(comboBox);
         Platform.runLater(() -> comboBox.getEditor().requestFocus());
         dialog.setResultConverter(button -> {
@@ -429,8 +426,8 @@ public class TcInteractionHandler {
         String zoneName = showTileCategoryDialog(conf, saturation);
         canvasClicked = false;
         if (zoneName == null || zoneName.isEmpty()) {
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANVAS_ZONE_EMPTY_TITLE,
-                    Constants.CANVAS_ZONE_EMPTY, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.CANVAS_ZONE_EMPTY_TITLE,
+                    LabelKey.CANVAS_ZONE_EMPTY, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
             return;
         }
         addLedUsingOrientationLogic(ledMatrix, zoneName);

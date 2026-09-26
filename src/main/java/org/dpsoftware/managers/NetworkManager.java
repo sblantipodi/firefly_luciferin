@@ -33,12 +33,13 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.NetworkTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.network.tcpUdp.UdpClient;
@@ -81,8 +82,8 @@ public class NetworkManager implements MqttCallback {
         } catch (MqttException | RuntimeException e) {
             connected = false;
             if (showErrorIfAny && retryCounter.get() == 3) {
-                Platform.runLater(() -> MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE,
-                        Constants.MQTT_ERROR_CONTEXT, Constants.MQTT_ERROR_TITLE, TrayIcon.MessageType.ERROR));
+                Platform.runLater(() -> MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.MQTT_ERROR_TITLE,
+                        LabelKey.MQTT_ERROR_CONTEXT, LabelKey.MQTT_ERROR_TITLE, TrayIcon.MessageType.ERROR));
             }
             log.error("Can't connect to the MQTT Server");
         }
@@ -605,8 +606,8 @@ public class NetworkManager implements MqttCallback {
     private void manageProfile(String message) {
         if (MainSingleton.getInstance().config != null) {
             CommonUtility.delayMilliseconds(() -> {
-                if (message.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                    NativeExecutor.restartNativeInstance(Constants.DEFAULT);
+                if (message.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+                    NativeExecutor.restartNativeInstance(CommonUtility.getWord(LabelKey.DEFAULT));
                 } else {
                     NativeExecutor.restartNativeInstance(message);
                 }

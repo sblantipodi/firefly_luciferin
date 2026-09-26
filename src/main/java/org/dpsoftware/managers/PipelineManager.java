@@ -35,6 +35,7 @@ import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
@@ -190,8 +191,8 @@ public class PipelineManager {
         DisplayManager displayManager = new DisplayManager();
         if (displayManager.displayNumber() > 1) {
             String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
-            MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
-                    CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
+            MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(LabelKey.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
+                    CommonUtility.getWord(LabelKey.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
         }
     }
 
@@ -424,7 +425,7 @@ public class PipelineManager {
         refreshCaptureLedState();
         boolean orphanSat = checkForSatelliteOrphans();
         if (orphanSat) {
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ZONE_ERROR_TITLE, Constants.SAT_ZONE_ERROR, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.SAT_ZONE_ERROR_TITLE, LabelKey.SAT_ZONE_ERROR, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
             return;
         }
         ManagerSingleton.getInstance().pipelineStarting = true;
@@ -608,8 +609,8 @@ public class PipelineManager {
         GuiSingleton.getInstance().oldFirmwareDevice = true;
         for (GlowWormDevice gwd : CommonUtility.getDeviceToUseWithSatellites()) {
             if (Boolean.FALSE.equals(UpgradeManager.checkFirmwareVersion(gwd))) {
-                log.warn("[{}, ver={}] {}", gwd.getDeviceName(), gwd.getDeviceVersion(), CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH));
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.NEW_FIRMWARE_AVAILABLE, Constants.MIN_FIRMWARE_NOT_MATCH, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.WARNING);
+                log.warn("[{}, ver={}] {}", gwd.getDeviceName(), gwd.getDeviceVersion(), CommonUtility.getWord(LabelKey.MIN_FIRMWARE_NOT_MATCH));
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.NEW_FIRMWARE_AVAILABLE, LabelKey.MIN_FIRMWARE_NOT_MATCH, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.WARNING);
             }
         }
         scheduledExecutorService.shutdown();

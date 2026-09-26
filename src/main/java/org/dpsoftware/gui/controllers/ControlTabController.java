@@ -33,10 +33,10 @@ import javafx.scene.input.InputEvent;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.Objects;
@@ -210,11 +210,11 @@ public class ControlTabController {
     void setTooltips(Configuration currentConfig) {
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
-                GuiManager.createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, playButton);
+                GuiManager.createTooltip(LabelKey.TOOLTIP_PLAYBUTTON_NULL, 50, playButton);
             }
         } else {
             if (!NativeExecutor.isWindows()) {
-                GuiManager.createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, playButton);
+                GuiManager.createTooltip(LabelKey.TOOLTIP_PLAYBUTTON, 200, playButton);
             }
         }
     }

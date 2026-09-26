@@ -40,6 +40,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
@@ -320,8 +321,8 @@ public class RleVisualMapHandler {
         gc.setFill(new Color(1.0F, 0.5F, 0F, 1.0F));
         gc.fillText(statsGamma, marginX + 2, statsLineY + 5 + fpsFont.getSize());
         // FPS labels right-aligned, stacked vertically above stats
-        String producerFps = CommonUtility.getWord(Constants.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL;
-        String consumerFps = CommonUtility.getWord(Constants.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL;
+        String producerFps = CommonUtility.getWord(LabelKey.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL;
+        String consumerFps = CommonUtility.getWord(LabelKey.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL;
         Text fpsMeasure = new Text();
         fpsMeasure.setFont(fpsFont);
         double fpsLineHeight;

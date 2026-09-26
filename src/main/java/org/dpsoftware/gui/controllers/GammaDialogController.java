@@ -29,10 +29,10 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.utilities.CommonUtility;
 
 /**
@@ -108,8 +108,8 @@ public class GammaDialogController {
      * Set tooltips
      */
     private void setTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_GAMMA_ENABLE_AUTO, enableAutomaticGammaCheck);
-        GuiManager.createTooltip(Constants.TOOLTIP_GAMMA_LEVEL, gammaLevel);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GAMMA_ENABLE_AUTO, enableAutomaticGammaCheck);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GAMMA_LEVEL, gammaLevel);
     }
 
     /**

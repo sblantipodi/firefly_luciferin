@@ -43,6 +43,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.NetworkManager;
@@ -157,11 +158,11 @@ public class SettingsController {
             modeTabController.monitorNumber.getItems().add(displayManager.getDisplayName(i));
             switch (i) {
                 case 0 ->
-                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_1));
+                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(LabelKey.MULTIMONITOR_1));
                 case 1 ->
-                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_2));
+                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(LabelKey.MULTIMONITOR_2));
                 case 2 ->
-                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_3));
+                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(LabelKey.MULTIMONITOR_3));
             }
         }
         displayManager.getExtVideoCaptureDevices(devices ->
@@ -252,7 +253,7 @@ public class SettingsController {
         ledsConfigTabController.initListeners();
         devicesTabController.multiMonitor.valueProperty().addListener((_, _, value) -> {
             if (!modeTabController.serialPort.isFocused()) {
-                if (!value.equals(Constants.MULTIMONITOR_1)) {
+                if (!value.equals(CommonUtility.getWord(LabelKey.MULTIMONITOR_1))) {
                     if (!modeTabController.serialPort.getItems().isEmpty() && modeTabController.serialPort.getItems().getFirst().equals(Constants.SERIAL_PORT_AUTO)) {
                         modeTabController.serialPort.getItems().removeFirst();
                         if (NativeExecutor.isWindows()) {
@@ -323,7 +324,7 @@ public class SettingsController {
     @FXML
     public void save(InputEvent e) {
         String fileToWrite = MainSingleton.getInstance().profileArg;
-        if (Constants.DEFAULT.equals(fileToWrite)) {
+        if (CommonUtility.getWord(LabelKey.DEFAULT).equals(fileToWrite)) {
             save(e, null);
         } else {
             save(e, MainSingleton.getInstance().whoAmI + "_" + fileToWrite + Constants.YAML_EXTENSION);
@@ -567,8 +568,8 @@ public class SettingsController {
             }
         }
         if (isBaudRateChanged) {
-            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
-                    Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(LabelKey.BAUDRATE_TITLE, LabelKey.BAUDRATE_HEADER,
+                    LabelKey.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 if (currentConfig.isFullFirmware()) {
@@ -633,9 +634,9 @@ public class SettingsController {
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
             if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
-                log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
-                        CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                log.info(CommonUtility.getWord(LabelKey.FIRMWARE_PROGRAM_NOTIFY_HEADER));
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(LabelKey.FIRMWARE_PROGRAM_NOTIFY),
+                        CommonUtility.getWord(LabelKey.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
             }
         }
     }
@@ -758,7 +759,7 @@ public class SettingsController {
     public void initOutputDeviceChooser(boolean initCaptureMethod) {
         if (!networkTabController.mqttStream.isSelected()) {
             String deviceInUse = modeTabController.serialPort.getValue();
-            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
+            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(LabelKey.OUTPUT_DEVICE));
             modeTabController.serialPort.getItems().clear();
             modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
             SerialManager serialManager = new SerialManager();
@@ -766,7 +767,7 @@ public class SettingsController {
             availableDevices.forEach((portName, _) -> modeTabController.serialPort.getItems().add(portName));
             modeTabController.serialPort.setValue(deviceInUse);
         } else {
-            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
+            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(LabelKey.OUTPUT_DEVICE));
             if (!modeTabController.serialPort.isFocused()) {
                 String deviceInUse = modeTabController.serialPort.getValue();
                 modeTabController.serialPort.getItems().clear();
@@ -1019,13 +1020,13 @@ public class SettingsController {
             if (profileToUse != null) {
                 setProfileButtonColor(true, 0);
             } else {
-                setSaveButtonColor(Constants.SAVE_AND_CLOSE, 0);
+                setSaveButtonColor(LabelKey.SAVE_AND_CLOSE, 0);
             }
         } else {
             if (profileToUse != null) {
                 setProfileButtonColor(false, Constants.TOOLTIP_DELAY);
             } else {
-                setSaveButtonColor(Constants.SAVE, Constants.TOOLTIP_DELAY);
+                setSaveButtonColor(LabelKey.SAVE, Constants.TOOLTIP_DELAY);
             }
         }
     }
@@ -1037,9 +1038,9 @@ public class SettingsController {
      */
     private void setDevicesTabParams(Configuration currentSettingsInUse) {
         if (currentSettingsInUse != null) {
-            if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_2))) {
+            if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(LabelKey.MULTIMONITOR_2))) {
                 currentSettingsInUse.setMultiMonitor(2);
-            } else if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_3))) {
+            } else if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(LabelKey.MULTIMONITOR_3))) {
                 currentSettingsInUse.setMultiMonitor(3);
             } else {
                 currentSettingsInUse.setMultiMonitor(1);
@@ -1094,28 +1095,28 @@ public class SettingsController {
         networkTabController.saveMQTTButton.setText(CommonUtility.getWord(buttonText));
         miscTabController.saveMiscButton.setText(CommonUtility.getWord(buttonText));
         devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(buttonText));
-        if (buttonText.equals(Constants.SAVE)) {
+        if (buttonText.equals(LabelKey.SAVE)) {
             ledsConfigTabController.saveLedButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             modeTabController.saveSettingsButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             networkTabController.saveMQTTButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             miscTabController.saveMiscButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             devicesTabController.saveDeviceButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
-            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, ledsConfigTabController.saveLedButton);
-            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, modeTabController.saveSettingsButton);
-            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, networkTabController.saveMQTTButton);
-            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, miscTabController.saveMiscButton);
-            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, devicesTabController.saveDeviceButton);
+            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, ledsConfigTabController.saveLedButton);
+            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, modeTabController.saveSettingsButton);
+            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, networkTabController.saveMQTTButton);
+            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, miscTabController.saveMiscButton);
+            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, devicesTabController.saveDeviceButton);
         } else {
             ledsConfigTabController.saveLedButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             modeTabController.saveSettingsButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             networkTabController.saveMQTTButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             miscTabController.saveMiscButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             devicesTabController.saveDeviceButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON, tooltipDelay, ledsConfigTabController.saveLedButton);
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, modeTabController.saveSettingsButton);
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, networkTabController.saveMQTTButton);
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, miscTabController.saveMiscButton);
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay, devicesTabController.saveDeviceButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVELEDBUTTON, tooltipDelay, ledsConfigTabController.saveLedButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, modeTabController.saveSettingsButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, networkTabController.saveMQTTButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, miscTabController.saveMiscButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay, devicesTabController.saveDeviceButton);
         }
     }
 
@@ -1125,10 +1126,10 @@ public class SettingsController {
     void setProfileButtonColor(boolean addRedClass, int tooltipDelay) {
         if (addRedClass) {
             miscTabController.applyProfileButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, miscTabController.applyProfileButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, miscTabController.applyProfileButton);
         } else {
             miscTabController.applyProfileButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
-            GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_APPLY, tooltipDelay, miscTabController.applyProfileButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_APPLY, tooltipDelay, miscTabController.applyProfileButton);
         }
     }
 

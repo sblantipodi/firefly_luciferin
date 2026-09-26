@@ -38,6 +38,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.NetworkManager;
@@ -256,8 +257,8 @@ public class DevicesTabController {
                     device.setGpioClock(d.getGpioClock());
                     device.setLedBuiltin(d.getLedBuiltin());
                     boolean newValue = checkBox.isSelected();
-                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
-                            Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
+                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(LabelKey.GPIO_OK_TITLE, LabelKey.GPIO_OK_HEADER,
+                            LabelKey.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
                     ButtonType button = result.orElse(ButtonType.OK);
                     if (button == ButtonType.OK) {
                         device.relayInvertedPinProperty().set(newValue);
@@ -366,8 +367,8 @@ public class DevicesTabController {
     private void setPins(TableColumn.CellEditEvent<GlowWormDevice, String> t) {
         cellEdit = false;
         GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
-                Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
+        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(LabelKey.GPIO_OK_TITLE, LabelKey.GPIO_OK_HEADER,
+                LabelKey.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
         ButtonType button = result.orElse(ButtonType.OK);
         if (button == ButtonType.OK) {
             String pinToEdit = t.getTableColumn().getText();
@@ -422,13 +423,13 @@ public class DevicesTabController {
     void initDefaultValues() {
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
         powerSaving.setValue(Enums.PowerSaving.MINUTES_30.getI18n());
-        multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
+        multiMonitor.setValue(CommonUtility.getWord(LabelKey.MULTIMONITOR_1));
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
         multiScreenSingleDevice.setSelected(false);
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
-        deviceTable.setPlaceholder(new Label(CommonUtility.getWord(Constants.NO_DEVICE_FOUND)));
+        deviceTable.setPlaceholder(new Label(CommonUtility.getWord(LabelKey.NO_DEVICE_FOUND)));
         startWithSystem.setSelected(true);
     }
 
@@ -450,9 +451,9 @@ public class DevicesTabController {
         }
         multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
-            case 2 -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_2));
-            case 3 -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_3));
-            default -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
+            case 2 -> multiMonitor.setValue(CommonUtility.getWord(LabelKey.MULTIMONITOR_2));
+            case 3 -> multiMonitor.setValue(CommonUtility.getWord(LabelKey.MULTIMONITOR_3));
+            default -> multiMonitor.setValue(CommonUtility.getWord(LabelKey.MULTIMONITOR_1));
         }
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
@@ -488,8 +489,8 @@ public class DevicesTabController {
         gpioColumn.setOnEditCommit(t -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
-                    Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(LabelKey.GPIO_OK_TITLE, LabelKey.GPIO_OK_HEADER,
+                    LabelKey.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 log.info("Setting GPIO{} on {}", t.getNewValue(), device.getDeviceName());
@@ -598,16 +599,16 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_BTN, manageSatButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_POWER_SAVING, powerSaving);
-        GuiManager.createTooltip(Constants.TOOLTIP_MULTIMONITOR, multiMonitor);
-        GuiManager.createTooltip(Constants.TOOLTIP_CHECK_UPDATES, checkForUpdates);
-        GuiManager.createTooltip(Constants.TOOLTIP_SYNC_CHECK, syncCheck);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_BTN, manageSatButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_POWER_SAVING, powerSaving);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MULTIMONITOR, multiMonitor);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CHECK_UPDATES, checkForUpdates);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SYNC_CHECK, syncCheck);
         if (currentConfig == null) {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
         }
         if (NativeExecutor.isWindows()) {
-            GuiManager.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM, startWithSystem);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_START_WITH_SYSTEM, startWithSystem);
         }
     }
 
