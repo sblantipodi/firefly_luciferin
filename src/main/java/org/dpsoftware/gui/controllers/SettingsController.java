@@ -50,7 +50,6 @@ import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.HSLColor;
-import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -112,6 +111,10 @@ public class SettingsController {
     @FXML
     private EyeCareDialogController eyeCareDialogController;
     @FXML
+    private GammaDialogController gammaDialogController;
+    @FXML
+    private DisplayDialogController displayDialogController;
+    @FXML
     private ImprovDialogController improvDialogController;
     @FXML
     private ProfileDialogController profileDialogController;
@@ -161,6 +164,9 @@ public class SettingsController {
                         devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_3));
             }
         }
+        displayManager.getExtVideoCaptureDevices(devices ->
+                modeTabController.monitorNumber.getItems().addAll(devices)
+        );
         currentConfig = sm.readProfileInUseConfig();
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
         initComboBox();
@@ -331,32 +337,19 @@ public class SettingsController {
      */
     @FXML
     public void save(InputEvent e, String profileName) {
-        LEDCoordinate ledCoordinate = new LEDCoordinate();
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
-                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
-                Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
-                Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomMargin.getValue(), ledsConfigTabController.grabberAreaTopBottom.getValue(),
-                ledsConfigTabController.grabberSide.getValue(), ledsConfigTabController.gapTypeTopBottom.getValue(), ledsConfigTabController.gapTypeSide.getValue(), ledsConfigTabController.groupBy.getValue());
         try {
             resetLedMatrixWithConditions();
-            LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-            LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, false);
-            LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, false);
-            LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, false);
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
             Configuration config;
             if (MainSingleton.getInstance().config != null) {
                 config = new StorageManager().readProfileInUseConfig();
                 config.setHueMap(hueMap);
-                config.setLedMatrix(new LinkedHashMap<>());
-                config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledFullScreenMatrix);
-                config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledLetterboxMatrix);
-                config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), fitToScreenMatrix);
                 config.setRuntimeLogLevel(MainSingleton.getInstance().config.getRuntimeLogLevel());
+                // Carry the in-memory LED matrices (incl. tile positions moved in the GUI)
+                // onto the disk-loaded config so they are preserved, not regenerated, on save.
+                config.setLedMatrix(MainSingleton.getInstance().config.getLedMatrix());
             } else {
-                config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
+                config = new Configuration(null, null, null, hueMap);
             }
             ledsConfigTabController.save(config);
             modeTabController.save(config);
@@ -365,6 +358,18 @@ public class SettingsController {
             devicesTabController.save(config);
             saveDialogues(config);
             setCaptureMethod(config);
+            Map<String, LinkedHashMap<Integer, LEDCoordinate>> inMemoryMatrices = MainSingleton.getInstance().config != null
+                    ? MainSingleton.getInstance().config.getLedMatrix() : null;
+            config.regenerateLedMatrix();
+            // Restore the in-memory matrices (incl. tile positions moved in the GUI) so the
+            // regenerated matrices are preserved, not overwritten, on save.
+            if (inMemoryMatrices != null) {
+                inMemoryMatrices.forEach((key, matrix) -> {
+                    if (matrix != null && !matrix.isEmpty()) {
+                        config.getLedMatrix().put(key, matrix);
+                    }
+                });
+            }
             config.setConfigVersion(MainSingleton.getInstance().version);
             boolean firstStartup = MainSingleton.getInstance().config == null;
             if (config.isFullFirmware() && !config.isMqttEnable() && firstStartup) {
@@ -496,6 +501,7 @@ public class SettingsController {
             switch (modeTabController.captureMethod.getValue()) {
                 case DDUPL_DX11 -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX11.name());
                 case DDUPL_DX12 -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
+                case WIN_USB_VIDEO -> config.setCaptureMethod(Configuration.CaptureMethod.WIN_USB_VIDEO.name());
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
@@ -518,6 +524,18 @@ public class SettingsController {
                 config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG.name());
             } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA) {
                 config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL) {
+                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_OPENGL) {
+                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.USB_VIDEO) {
+                config.setCaptureMethod(Configuration.CaptureMethod.USB_VIDEO.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.USB_VIDEO_OPENGL) {
+                config.setCaptureMethod(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.USB_VIDEO_NVIDIA) {
+                config.setCaptureMethod(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL) {
+                config.setCaptureMethod(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name());
             }
         }
     }
@@ -728,18 +746,7 @@ public class SettingsController {
         tempConfiguration.setScreenResX((int) (screenInfo.width * scaleX));
         tempConfiguration.setScreenResY((int) (screenInfo.height * scaleY));
         tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
-        config.getLedMatrix().clear();
-        LEDCoordinate ledCoordinate = new LEDCoordinate();
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(tempConfiguration.getScreenResX(),
-                tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin(), ledsConfigTabController.grabberAreaTopBottom.getValue(), ledsConfigTabController.grabberSide.getValue(),
-                ledsConfigTabController.gapTypeTopBottom.getValue(), ledsConfigTabController.gapTypeSide.getValue(), ledsConfigTabController.groupBy.getValue());
-        LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, false));
-        LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, false));
-        LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, false));
+        tempConfiguration.regenerateLedMatrix();
         sm.writeConfig(tempConfiguration, filename);
     }
 
@@ -768,15 +775,7 @@ public class SettingsController {
             }
         }
         if (initCaptureMethod) {
-            modeTabController.captureMethod.getItems().clear();
-            if (NativeExecutor.isWindows()) {
-                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL_DX12, Configuration.CaptureMethod.DDUPL_DX11, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-            } else if (NativeExecutor.isMac()) {
-                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
-            } else {
-                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
-                        Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
-            }
+            initCaptureMethods();
         }
         if (MainSingleton.getInstance().config != null) {
             if ((MainSingleton.getInstance().config.isWirelessStream() && !networkTabController.mqttStream.isSelected())
@@ -789,6 +788,46 @@ public class SettingsController {
             }
         }
         modeTabController.setCaptureMethodConverter();
+    }
+
+    /**
+     * Initializes the available capture methods for the capture method dropdown in the UI.
+     **/
+    void initCaptureMethods() {
+        boolean isExtSrc = currentConfig != null && currentConfig.hasCaptureDevice();
+        if (NativeExecutor.isWindows()) {
+            if (!isExtSrc) {
+                modeTabController.captureMethod.getItems().setAll(
+                        Configuration.CaptureMethod.DDUPL_DX12,
+                        Configuration.CaptureMethod.DDUPL_DX11,
+                        Configuration.CaptureMethod.WinAPI,
+                        Configuration.CaptureMethod.CPU);
+            } else {
+                modeTabController.captureMethod.getItems().setAll(Configuration.CaptureMethod.WIN_USB_VIDEO);
+            }
+        } else if (NativeExecutor.isMac()) {
+            modeTabController.captureMethod.getItems().setAll(Configuration.CaptureMethod.AVFVIDEOSRC);
+        } else {
+            if (!isExtSrc) {
+                if (NativeExecutor.isWayland()) {
+                    modeTabController.captureMethod.getItems().setAll(
+                            Configuration.CaptureMethod.PIPEWIREXDG,
+                            Configuration.CaptureMethod.PIPEWIREXDG_OPENGL,
+                            Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA,
+                            Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL);
+                } else {
+                    modeTabController.captureMethod.getItems().setAll(
+                            Configuration.CaptureMethod.XIMAGESRC,
+                            Configuration.CaptureMethod.XIMAGESRC_NVIDIA);
+                }
+            } else {
+                modeTabController.captureMethod.getItems().setAll(
+                        Configuration.CaptureMethod.USB_VIDEO,
+                        Configuration.CaptureMethod.USB_VIDEO_OPENGL,
+                        Configuration.CaptureMethod.USB_VIDEO_NVIDIA,
+                        Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL);
+            }
+        }
     }
 
     /**
@@ -877,6 +916,12 @@ public class SettingsController {
             if (eyeCareDialogController != null) {
                 eyeCareDialogController.initDefaultValues();
             }
+            if (gammaDialogController != null) {
+                gammaDialogController.initDefaultValues();
+            }
+            if (displayDialogController != null) {
+                displayDialogController.initDefaultValues();
+            }
             if (improvDialogController != null) {
                 improvDialogController.initDefaultValues();
             }
@@ -903,6 +948,12 @@ public class SettingsController {
         }
         if (eyeCareDialogController != null) {
             eyeCareDialogController.save(config);
+        }
+        if (gammaDialogController != null) {
+            gammaDialogController.save(config);
+        }
+        if (displayDialogController != null) {
+            displayDialogController.save(config);
         }
         if (improvDialogController != null) {
             improvDialogController.save();
@@ -1027,7 +1078,8 @@ public class SettingsController {
             currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
             currentSettingsInUse.setLanguage(modeTabController.language.getValue());
             currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
-            currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
+            if (modeTabController.captureMethod.getValue() != null)
+                currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
             currentSettingsInUse.setOutputDevice(modeTabController.serialPort.getValue());
             currentSettingsInUse.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, modeTabController.simdOption.getValue()).getSimdOptionNumeric());
         }
@@ -1099,6 +1151,24 @@ public class SettingsController {
     }
 
     /**
+     * Inject gamma dialogue controller into the main controller
+     *
+     * @param gammaDialogController dialog controller
+     */
+    public void injectGammaController(GammaDialogController gammaDialogController) {
+        this.gammaDialogController = gammaDialogController;
+    }
+
+    /**
+     * Inject display dialogue controller into the main controller
+     *
+     * @param displayDialogController dialog controller
+     */
+    public void injectDisplayController(DisplayDialogController displayDialogController) {
+        this.displayDialogController = displayDialogController;
+    }
+
+    /**
      * Inject profile dialogue controller into the main controller
      *
      * @param profileDialogController dialog controller
@@ -1150,22 +1220,25 @@ public class SettingsController {
      * Conditions to reset the led matrix
      */
     private void resetLedMatrixWithConditions() {
-        if (MainSingleton.getInstance().config != null) {
-            if (Integer.parseInt(ledsConfigTabController.topLed.getText()) != MainSingleton.getInstance().config.getTopLed()
-                    || Integer.parseInt(ledsConfigTabController.leftLed.getText()) != MainSingleton.getInstance().config.getLeftLed()
-                    || Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()) != MainSingleton.getInstance().config.getBottomLeftLed()
-                    || Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()) != MainSingleton.getInstance().config.getBottomRightLed()
-                    || Integer.parseInt(ledsConfigTabController.rightLed.getText()) != MainSingleton.getInstance().config.getRightLed()
-                    || Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()) != MainSingleton.getInstance().config.getBottomRowLed()
-                    || !ledsConfigTabController.grabberSide.getValue().equals(MainSingleton.getInstance().config.getGrabberSide())
-                    || !ledsConfigTabController.grabberAreaTopBottom.getValue().equals(MainSingleton.getInstance().config.getGrabberAreaTopBottom())
-                    || !ledsConfigTabController.gapTypeSide.getValue().equals(MainSingleton.getInstance().config.getGapTypeSide())
-                    || !ledsConfigTabController.gapTypeTopBottom.getValue().equals(MainSingleton.getInstance().config.getGapTypeTopBottom())
-                    || !ledsConfigTabController.splitBottomMargin.getValue().equals(MainSingleton.getInstance().config.getSplitBottomMargin())
-                    || ledsConfigTabController.groupBy.getValue() != MainSingleton.getInstance().config.getGroupBy()
-                    || Integer.parseInt(modeTabController.screenWidth.getText()) != MainSingleton.getInstance().config.getScreenResX()
-                    || Integer.parseInt(modeTabController.screenHeight.getText()) != MainSingleton.getInstance().config.getScreenResY()
-                    || Integer.parseInt((modeTabController.scaling.getValue()).replace(Constants.PERCENT, "")) != MainSingleton.getInstance().config.getOsScaling()) {
+        Configuration currentConfig = MainSingleton.getInstance().config;
+        if (currentConfig != null) {
+            Configuration guiConfig = new Configuration();
+            guiConfig.setTopLed(Integer.parseInt(ledsConfigTabController.topLed.getText()));
+            guiConfig.setLeftLed(Integer.parseInt(ledsConfigTabController.leftLed.getText()));
+            guiConfig.setBottomLeftLed(Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()));
+            guiConfig.setBottomRightLed(Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()));
+            guiConfig.setRightLed(Integer.parseInt(ledsConfigTabController.rightLed.getText()));
+            guiConfig.setBottomRowLed(Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()));
+            guiConfig.setGrabberSide(ledsConfigTabController.grabberSide.getValue());
+            guiConfig.setGrabberAreaTopBottom(ledsConfigTabController.grabberAreaTopBottom.getValue());
+            guiConfig.setGapTypeSide(ledsConfigTabController.gapTypeSide.getValue());
+            guiConfig.setGapTypeTopBottom(ledsConfigTabController.gapTypeTopBottom.getValue());
+            guiConfig.setSplitBottomMargin(ledsConfigTabController.splitBottomMargin.getValue());
+            guiConfig.setGroupBy(ledsConfigTabController.groupBy.getValue());
+            guiConfig.setScreenResX(Integer.parseInt(modeTabController.screenWidth.getText()));
+            guiConfig.setScreenResY(Integer.parseInt(modeTabController.screenHeight.getText()));
+            guiConfig.setOsScaling(Integer.parseInt(modeTabController.scaling.getValue().replace(Constants.PERCENT, "")));
+            if (currentConfig.ledMatrixParamsChanged(guiConfig)) {
                 resetLedMatrix();
             }
         }
@@ -1175,25 +1248,22 @@ public class SettingsController {
      * Reset LED matrix
      */
     public void resetLedMatrix() {
-        LEDCoordinate ledCoordinate = new LEDCoordinate();
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
-                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
-                Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
-                Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomMargin.getValue(), ledsConfigTabController.grabberAreaTopBottom.getValue(),
-                ledsConfigTabController.grabberSide.getValue(), ledsConfigTabController.gapTypeTopBottom.getValue(), ledsConfigTabController.gapTypeSide.getValue(), ledsConfigTabController.groupBy.getValue());
-        LedMatrixInfo ledMatrixInfoFullScreen = null;
-        LedMatrixInfo ledMatrixInfoLetterbox = null;
-        LedMatrixInfo ledMatrixInfoPillarbox = null;
-        try {
-            ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-            ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-        } catch (CloneNotSupportedException e) {
-            log.error(e.getMessage());
-        }
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, true));
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, true));
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, true));
+        Configuration config = MainSingleton.getInstance().config;
+        config.setScreenResX(Integer.parseInt(modeTabController.screenWidth.getText()));
+        config.setScreenResY(Integer.parseInt(modeTabController.screenHeight.getText()));
+        config.setBottomRightLed(Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()));
+        config.setRightLed(Integer.parseInt(ledsConfigTabController.rightLed.getText()));
+        config.setTopLed(Integer.parseInt(ledsConfigTabController.topLed.getText()));
+        config.setLeftLed(Integer.parseInt(ledsConfigTabController.leftLed.getText()));
+        config.setBottomLeftLed(Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()));
+        config.setBottomRowLed(Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()));
+        config.setSplitBottomMargin(ledsConfigTabController.splitBottomMargin.getValue());
+        config.setGrabberAreaTopBottom(ledsConfigTabController.grabberAreaTopBottom.getValue());
+        config.setGrabberSide(ledsConfigTabController.grabberSide.getValue());
+        config.setGapTypeTopBottom(ledsConfigTabController.gapTypeTopBottom.getValue());
+        config.setGapTypeSide(ledsConfigTabController.gapTypeSide.getValue());
+        config.setGroupBy(ledsConfigTabController.groupBy.getValue());
+        config.regenerateLedMatrix();
         FireflyLuciferin.setLedNumber(currentConfig.getDefaultLedMatrix());
     }
 

@@ -46,11 +46,9 @@ import org.dpsoftware.managers.dto.StateDto;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -60,6 +58,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class CommonUtility {
 
     /**
+     * Shared JSON mapper, thread-safe, reuse everywhere instead of {@code new ObjectMapper()}.
+     */
+    public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final AtomicInteger DELAY_THREAD_COUNTER = new AtomicInteger(1);
+    private static final ThreadFactory DELAY_THREAD_FACTORY = r -> {
+        Thread t = new Thread(r, "luciferin-delay-" + DELAY_THREAD_COUNTER.getAndIncrement());
+        t.setDaemon(true);
+        return t;
+    };
+    private static final ScheduledExecutorService DELAY_EXECUTOR = Executors.newScheduledThreadPool(1, DELAY_THREAD_FACTORY);
+
+    /**
      * From Java Object to JSON String, useful to handle checked exceptions in lambdas
      *
      * @param obj generic Java object
@@ -67,7 +77,7 @@ public class CommonUtility {
      */
     public static String toJsonStringPrettyPrinted(Object obj) {
         try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+            return JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
@@ -82,7 +92,7 @@ public class CommonUtility {
      */
     public static String toJsonString(Object obj) {
         try {
-            return new ObjectMapper().writeValueAsString(obj);
+            return JSON_MAPPER.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
@@ -98,8 +108,7 @@ public class CommonUtility {
     @SuppressWarnings("unused")
     public static JsonNode fromJsonToObject(String jsonString) {
         try {
-            ObjectMapper jacksonObjMapper = new ObjectMapper();
-            return jacksonObjMapper.readTree(jsonString);
+            return JSON_MAPPER.readTree(jsonString);
         } catch (JsonProcessingException e) {
             log.trace("Non JSON String, skipping: {}", jsonString);
         }
@@ -225,9 +234,9 @@ public class CommonUtility {
     @SuppressWarnings("all")
     public static <V> ScheduledFuture<V> delaySeconds(@NonNull Callable<V> callable, int delay) {
         try {
-            return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.SECONDS);
+            return DELAY_EXECUTOR.schedule(callable, delay, TimeUnit.SECONDS);
         } catch (Exception e) {
-            e.getMessage();
+            log.debug("Scheduled delay failed", e);
         }
         return null;
     }
@@ -242,9 +251,9 @@ public class CommonUtility {
     @SuppressWarnings("all")
     public static ScheduledFuture<?> delaySeconds(Runnable command, long delay) {
         try {
-            return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.SECONDS);
+            return DELAY_EXECUTOR.schedule(command, delay, TimeUnit.SECONDS);
         } catch (Exception e) {
-            e.getMessage();
+            log.debug("Scheduled delay failed", e);
         }
         return null;
     }
@@ -259,9 +268,9 @@ public class CommonUtility {
     @SuppressWarnings("all")
     public static <V> ScheduledFuture<V> delayMilliseconds(@NonNull Callable<V> callable, int delay) {
         try {
-            return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.MILLISECONDS);
+            return DELAY_EXECUTOR.schedule(callable, delay, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            e.getMessage();
+            log.debug("Scheduled delay failed", e);
         }
         return null;
     }
@@ -276,9 +285,9 @@ public class CommonUtility {
     @SuppressWarnings("all")
     public static ScheduledFuture<?> delayMilliseconds(Runnable command, long delay) {
         try {
-            return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.MILLISECONDS);
+            return DELAY_EXECUTOR.schedule(command, delay, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            e.getMessage();
+            log.debug("Scheduled delay failed", e);
         }
         return null;
     }
@@ -786,10 +795,15 @@ public class CommonUtility {
     }
 
     /**
-     * Get localized string
+     * Get localized string in the locale in use.
+     * The search is performed only against the resource bundle of the locale currently active in the application,
+     * not against all available locales: if the locale in use is Italian, "enum.effect.solid" returns "Solido",
+     * but if the locale in use is German the same key returns "Einfarbig".
+     * Example: getWord("enum.effect.solid") -> "Solido"
      *
      * @param key resource bundle key
-     * @return localized String
+     * @return localized String, or the key itself if the bundle is not
+     * available or the key is missing
      */
     public static String getWord(String key) {
         try {
@@ -800,11 +814,13 @@ public class CommonUtility {
     }
 
     /**
-     * Get localized string
+     * Get localized string in the specified locale.
+     * The resource bundle of the given locale is loaded from the classpath, independently of the locale currently active in the application.
+     * Example: getWord("enum.effect.solid", Locale.ENGLISH) -> "Solid"
      *
      * @param key    resource bundle key
      * @param locale locale to use
-     * @return localized String
+     * @return localized String, or the key itself if the key is missing
      */
     public static String getWord(String key, Locale locale) {
         try {
@@ -812,6 +828,27 @@ public class CommonUtility {
         } catch (MissingResourceException e) {
             return key;
         }
+    }
+
+    /**
+     * Convert a localized text to the base (English) localized text.
+     * The search is performed only against the resource bundle of the locale currently active in the application.
+     * If the locale in use is Italian, "Solido" returns "Solid", but if the locale in use is German "Solido" returns "Solido" (unchanged) because
+     * the German bundle does not contain that text. If the text already is  the base English value it is returned as is.
+     * Example: getBaseWord("Solido") -> "Solid"
+     *
+     * @param text localized text in the locale in use
+     * @return base (English) localized text, or the input text if no match is found
+     */
+    @SuppressWarnings("unused")
+    public static String getBaseWord(String text) {
+        if (MainSingleton.getInstance().bundle != null) {
+            for (String key : MainSingleton.getInstance().bundle.keySet()) {
+                if (MainSingleton.getInstance().bundle.getString(key).equalsIgnoreCase(text))
+                    return getWord(key, Locale.ENGLISH);
+            }
+        }
+        return text;
     }
 
     /**
@@ -946,8 +983,7 @@ public class CommonUtility {
      */
     public static <T> T deepClone(T object, Class<T> clazz) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            return new ObjectMapper().readValue(mapper.writeValueAsString(object), clazz);
+            return JSON_MAPPER.readValue(JSON_MAPPER.writeValueAsString(object), clazz);
         } catch (Exception e) {
             throw new RuntimeException("Failed to deep clone object", e);
         }

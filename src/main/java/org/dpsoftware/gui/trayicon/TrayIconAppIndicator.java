@@ -26,6 +26,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
@@ -243,7 +244,7 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
                     if (lastDotIndex == -1) {
                         return fileName;
                     }
-                    logoPath = System.getenv(Constants.FLATPAK_ID) + "." + fileName.substring(0, lastDotIndex);
+                    logoPath = System.getenv(EnvConstants.FLATPAK_ID) + "." + fileName.substring(0, lastDotIndex);
                 } catch (Exception ignored) {
                     log.error("Can't set tray icon image");
                 }

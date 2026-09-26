@@ -23,18 +23,22 @@ package org.dpsoftware.managers;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
+import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.util.Comparator.comparing;
 
@@ -61,6 +65,8 @@ public class DisplayManager {
         displayInfo.setScaleY(gd.getDefaultConfiguration().getDefaultTransform().getScaleY());
         displayInfo.setMinX(bounds.getMinX());
         displayInfo.setMinY(bounds.getMinY());
+        displayInfo.setBoundsMinX(bounds.getMinX());
+        displayInfo.setBoundsMinY(bounds.getMinY());
         displayInfo.setMaxX(bounds.getMaxX());
         displayInfo.setMaxY(bounds.getMaxY());
         return displayInfo;
@@ -114,6 +120,8 @@ public class DisplayManager {
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setWidth(displayInfoListAwt.get(i).getWidth());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMinX(displayInfoListAwt.get(i).getMinX());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMinY(displayInfoListAwt.get(i).getMinY());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setBoundsMinX(displayInfoListAwt.get(i).getBoundsMinX());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setBoundsMinY(displayInfoListAwt.get(i).getBoundsMinY());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMaxX(displayInfoListAwt.get(i).getMaxX());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMaxY(displayInfoListAwt.get(i).getMaxY());
         }
@@ -128,8 +136,8 @@ public class DisplayManager {
     private List<DisplayInfo> getScreensWithJavaFX() {
         List<DisplayInfo> displayInfoList = new ArrayList<>();
         for (Screen screen : Screen.getScreens()) {
-            Rectangle2D visualBounds = screen.getBounds();
             Rectangle2D bounds = screen.getBounds();
+            Rectangle2D visualBounds = screen.getVisualBounds();
             DisplayInfo displayInfo = getDisplayInfo(screen, bounds, visualBounds);
             displayInfoList.add(displayInfo);
         }
@@ -153,6 +161,8 @@ public class DisplayManager {
         displayInfo.setScaleY(screen.getOutputScaleY());
         displayInfo.setMinX(visualBounds.getMinX());
         displayInfo.setMinY(visualBounds.getMinY());
+        displayInfo.setBoundsMinX(bounds.getMinX());
+        displayInfo.setBoundsMinY(bounds.getMinY());
         displayInfo.setMaxX(visualBounds.getMaxX());
         displayInfo.setMaxY(visualBounds.getMaxY());
         return displayInfo;
@@ -245,6 +255,10 @@ public class DisplayManager {
                 log.info("Native HMONITOR peer: {} -> {}", displayInfo.getNativePeer(), displayInfo.getMonitorName());
             }
             log.info("Width: {} Height: {} Scaling: {} MinX: {} MinY: {}", displayInfo.getWidth(), displayInfo.getHeight(), displayInfo.getScaleX(), displayInfo.getMinX(), displayInfo.getMinY());
+            if (MainSingleton.getInstance().getConfig() != null && MainSingleton.getInstance().getConfig().hasCaptureDevice()) {
+                CaptureDeviceUtilities.BestCaptureFormat captureDevice = MainSingleton.getInstance().getConfig().getCaptureDevice();
+                log.info("Capture device: {}, {}x{}, {}FPS, format: {}", captureDevice.getFriendlyName(), captureDevice.getSuggestedWidth(), captureDevice.getSuggestedHeight(), captureDevice.getMaxFps(), captureDevice.getBestFormat());
+            }
         });
     }
 
@@ -286,4 +300,25 @@ public class DisplayManager {
         }
         return displayName;
     }
+
+    /**
+     * Detects and sets up an external device by retrieving its friendly name for video capture.
+     */
+    public void getExtVideoCaptureDevices(Consumer<List<String>> onComplete) {
+        CommonUtility.delayMilliseconds(() -> {
+            List<CaptureDeviceUtilities.CaptureDevice> captureDevices = ManagerSingleton.getInstance().getCaptureDevices();
+            captureDevices.addAll(CaptureDeviceUtilities.discover());
+            if (captureDevices.isEmpty()) {
+                log.debug("No video capture devices found.");
+                return;
+            }
+            List<String> extSrcFriendlyNames = new ArrayList<>();
+            for (CaptureDeviceUtilities.CaptureDevice dev : captureDevices) {
+                extSrcFriendlyNames.add(dev.getFriendlyName());
+            }
+            Platform.runLater(() -> onComplete.accept(extSrcFriendlyNames));
+        }, 10);
+        onComplete.accept(new ArrayList<>());
+    }
+
 }

@@ -156,7 +156,7 @@ public class ProfileManager {
                     log.debug("Profile switch triggered");
                     if (!MainSingleton.getInstance().getGuiManager().getStage(Constants.FXML_SETTINGS).isShowing()) {
                         log.debug("Switch to default profile.");
-                        NativeExecutor.restartNativeInstance();
+                        NativeExecutor.restartNativeInstance(Constants.DEFAULT);
                     }
                 }
             }

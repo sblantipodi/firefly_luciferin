@@ -69,6 +69,21 @@ public class Enums {
         L
     }
 
+    public enum VideoDeviceFormat {
+        MJPG,
+        YUY2,
+        UYVY,
+        NV12,
+        NV21,
+        H264,
+        I420,
+        YV12,
+        RGB,
+        BGR,
+        GRAY8,
+        RAW
+    }
+
     public enum TRAY_PREFERENCE {
         AUTO,
         DISABLED,
@@ -610,6 +625,27 @@ public class Enums {
 
         public String getValue() {
             return nightLight;
+        }
+    }
+
+    public enum GammaLevel implements LocalizedEnum {
+        LOW("enum.gamma.level.low"),
+        MEDIUM("enum.gamma.level.medium"),
+        HIGH("enum.gamma.level.high");
+
+        private final String gammaLevel;
+
+        GammaLevel(String gammaLevel) {
+            this.gammaLevel = gammaLevel;
+        }
+
+        public static GammaLevel findByValue(final String valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getBaseI18n().equals(valToSearch)).findFirst().orElse(null);
+        }
+
+        @Override
+        public String getValue() {
+            return gammaLevel;
         }
     }
 

@@ -29,10 +29,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.*;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.DbusScreenCast;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
@@ -204,14 +201,21 @@ public class PipelineManager {
      * @return params for Linux Pipeline
      */
     public static String getLinuxPipelineParams() {
+        MainSingleton main = MainSingleton.getInstance();
         String gstreamerPipeline;
         String pipeline;
-        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
-                || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
-            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())) {
-                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG;
-            } else {
-                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA;
+        if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())
+                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
+            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL);
+            }  else {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG);
             }
             XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
             assert xdgStreamDetails != null;
@@ -219,33 +223,79 @@ public class PipelineManager {
                     .replace("{1}", String.valueOf(xdgStreamDetails.fileDescriptor.getIntFileDescriptor()))
                     .replace("{2}", xdgStreamDetails.streamId.toString());
         } else {
-            // startx{0}, endx{1}, starty{2}, endy{3}
-            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
-                pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC;
+            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
+                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC));
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
+                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL));
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
+                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA));
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
+                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL));
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name())) {
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA);
+                gstreamerPipeline = replaceWithMonitorInfo(main, pipeline);
             } else {
-                pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA;
+                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC);
+                gstreamerPipeline = replaceWithMonitorInfo(main, pipeline);
             }
-            DisplayManager displayManager = new DisplayManager();
-            List<DisplayInfo> displayList = displayManager.getDisplayList();
-            DisplayInfo monitorInfo = displayList.get(MainSingleton.getInstance().config.getMonitorNumber());
-            gstreamerPipeline = pipeline
-                    .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
-                    .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
-                    .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
-                    .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
         }
-        log.info(gstreamerPipeline);
+        log.debug("Pipeline: {}", gstreamerPipeline);
+        return gstreamerPipeline;
+    }
+
+    /**
+     * Configures the USB video pipeline parameters by replacing specific placeholders in the provided GStreamer
+     * pipeline string with appropriate values based on the application configuration.
+     *
+     * @param gstreamerPipeline the GStreamer pipeline string containing placeholders
+     * @return a string representing the updated GStreamer pipeline with the placeholders
+     */
+    public static String setUsbVideoPipelineParams(String gstreamerPipeline) {
+        MainSingleton main = MainSingleton.getInstance();
+        gstreamerPipeline = gstreamerPipeline
+                .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.VIDEO_MJPG : Constants.VIDEO_RAW)
+                .replace("{2}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedWidth()))
+                .replace("{3}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedHeight()))
+                .replace("{4}", String.valueOf(main.getConfig().getCaptureDevice().getMaxFps()));
+        return gstreamerPipeline;
+    }
+
+    /**
+     * Replaces placeholders in the provided pipeline string with monitor-specific information
+     * based on the display configuration of the system.
+     *
+     * @param main     an instance of MainSingleton containing the application configuration,
+     *                 including the monitor number to retrieve display info.
+     * @param pipeline the GStreamer pipeline string containing placeholders ({0}, {1}, {2}, {3})
+     *                 to be replaced with the respective monitor's dimensions and position.
+     * @return a string representing the pipeline with the monitor-specific details substituted into it.
+     */
+    private static String replaceWithMonitorInfo(MainSingleton main, String pipeline) {
+        String gstreamerPipeline;
+        DisplayManager displayManager = new DisplayManager();
+        List<DisplayInfo> displayList = displayManager.getDisplayList();
+        DisplayInfo monitorInfo = displayList.get(main.getConfig().getMonitorNumber());
+        gstreamerPipeline = pipeline.replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
+                .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
+                .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
+                .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
         return gstreamerPipeline;
     }
 
     /**
      * Message offered to the queue is sent to the LED strip, if multi screen single instance, is sent via TCP Socket to the main instance
+     * EMA and white balance run on full-precision values, converting to 8-bit only before serialization or offering to the queue.
      *
-     * @param leds colors to be sent to the LED strip
+     * @param ledsFloat color floats [0..255] to be sent to the LED strip
      */
-    public static void offerToTheQueue(Color[] leds) {
-        ImageProcessor.exponentialMovingAverage(leds);
-        ImageProcessor.adjustStripWhiteBalance(leds);
+    public static void offerToTheQueue(org.dpsoftware.grabber.ColorFloat[] ledsFloat) {
+        ImageProcessor.exponentialMovingAverage(ledsFloat);
+        ImageProcessor.adjustStripWhiteBalance(ledsFloat);
+        // Convert to 8-bit only here, final quantization point
+        Color[] leds = new Color[ledsFloat.length];
+        for (int i = 0; i < ledsFloat.length; i++) {
+            leds[i] = ledsFloat[i].toColor();
+        }
         if (CommonUtility.isSingleDeviceMultiScreen()) {
             if (NetworkSingleton.getInstance().msgClient == null) {
                 NetworkSingleton.getInstance().msgClient = new MessageClient();
@@ -579,8 +629,16 @@ public class PipelineManager {
         MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
         if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.WIN_USB_VIDEO.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
             GrabberSingleton.getInstance().pipe.stop();
         }
@@ -597,6 +655,21 @@ public class PipelineManager {
         }
         AudioSingleton.getInstance().AUDIO_BRIGHTNESS = 255;
         MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
+    }
+
+    // Returns GSTREAMER_CUSTOM_PIPELINE env var if set, otherwise the default.
+    public static String getPipeline(final String defaultPipeline) {
+        return EnvConstants.CUSTOM_GSTREAMER_PIPELINE != null ? EnvConstants.CUSTOM_GSTREAMER_PIPELINE : defaultPipeline;
+    }
+
+    // Returns CUSTOM_GSTREAMER_CAPS env var if set, otherwise the default.
+    public static String getCap(final String defaultCap) {
+        return EnvConstants.CUSTOM_GSTREAMER_CAPS != null ? EnvConstants.CUSTOM_GSTREAMER_CAPS : defaultCap;
+    }
+
+    // Returns CUSTOM_GSTREAMER_BO env var if set, otherwise the default.
+    public static String getBo(final String defaultBo) {
+        return EnvConstants.CUSTOM_GSTREAMER_BO != null ? EnvConstants.CUSTOM_GSTREAMER_BO : defaultBo;
     }
 
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {

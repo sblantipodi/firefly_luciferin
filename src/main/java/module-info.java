@@ -14,14 +14,17 @@ module org.dpsoftware {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;
     requires java.net.http;
+    requires jdk.httpserver;
     requires ch.qos.logback.classic;
     requires org.freedesktop.dbus;
     requires jdk.incubator.vector;
     requires java.management;
     requires jdk.management;
     requires jdk.compiler;
-    requires org.mapstruct.processor;
     requires javafx.graphics;
+    requires jakarta.websocket;
+    requires org.glassfish.tyrus.server;
+    requires org.glassfish.tyrus.container.grizzly.server;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;
@@ -42,10 +45,15 @@ module org.dpsoftware {
     exports org.dpsoftware.managers.dto;
     exports org.dpsoftware.managers.dto.mqttdiscovery;
     exports org.dpsoftware.utilities;
+    exports org.dpsoftware.lut;
     exports org.dpsoftware.network;
+    exports org.dpsoftware.network.web;
+    exports org.dpsoftware.gui.tc;
 
     opens org.dpsoftware.audio to javafx.fxml, javafx.web;
     opens org.dpsoftware.grabber to javafx.fxml, javafx.web;
     exports org.dpsoftware.gui.trayicon;
     opens org.dpsoftware.gui.trayicon to javafx.fxml, javafx.web;
+    opens org.dpsoftware.network.web;
+    opens org.dpsoftware.lut;
 }

@@ -1,0 +1,79 @@
+<!-- LUCIFERIN web configuration page (served by ConfigServer) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LUCIFERIN Web Interface</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="https://sblantipodi.github.io/glow_worm_luciferin/static/logos/luciferin_logo.png" rel="icon"
+          type="image/png">
+    <script crossorigin="anonymous"
+            integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
+            src="https://sblantipodi.github.io/glow_worm_luciferin/third_party_scripts/jquery-3.6.0.slim.min.js"></script>
+    <link href="https://sblantipodi.github.io/glow_worm_luciferin/third_party_scripts/bootstrap.min.css"
+          rel="stylesheet">
+    <script src="https://sblantipodi.github.io/glow_worm_luciferin/third_party_scripts/bootstrap.bundle.min.js"></script>
+    <script src="https://sblantipodi.github.io/glow_worm_luciferin/third_party_scripts/iro5_2_2.js"></script>
+    <link href="https://sblantipodi.github.io/glow_worm_luciferin/fa6/css/all.css" rel="stylesheet">
+    <link href="https://sblantipodi.github.io/glow_worm_luciferin/webInterface_1.1.5.slim.min.css" rel="stylesheet">
+    <link href="set-config.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid p-2 bg-primary text-white text-center sticky-top">
+    <h1>LUCIFERIN</h1>
+    <p id="subtitle"></p>
+</div>
+<div class="container"></div>
+
+<template id="settingsPageTemplate">
+    <div class="row">
+        <div class="col margin-2">
+            <div class="row mb-3 align-items-start justify-content-center">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-4 text-center">
+                    <div id="picker"></div>
+                    <div class="form-group mt-2"><select id="effectSelect" class="form-select w-100"></select></div>
+                    <div class="form-group mt-2"><button id="toggleLED" type="button" class="btn w-100"></button></div>
+                    <div id="activeProfile" class="text-center text-muted small mt-1"></div>
+                </div>
+            </div>
+        </div>
+        <form id="settingsForm" novalidate>
+            <div class="accordion" id="settingsAccordion"></div>
+            <div class="text-center py-2"><button type="button" id="showLivePreview" class="btn btn-sm">Show Live Preview</button></div>
+            <div class="text-center py-2"><video id="webrtcPreview" autoplay muted playsinline></video></div>
+            <div class="text-center py-2"><img id="screenshot" alt="Captured frame (TRACE)"></div>
+            <div id="livePreviewFallbackNotice" class="live-preview-fallback-notice" role="status"><strong>Image preview mode.</strong> The GStreamer NICE plugin is not installed, so this preview uses images. Install <code>gstreamer1.0-plugins-bad gstreamer1.0-nice libnice10 libnice-dev</code> to enable the faster, lower-latency WebRTC preview.</div>
+            <div class="mt-3"><button type="button" id="saveSettings" class="btn btn-orange w-100"> SAVE SETTINGS</button></div>
+            <div class="text-center text-muted py-3"><span id="fpsCounter"></span></div>
+        </form>
+    </div>
+</template>
+
+<template id="accordionTemplate">
+    <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" aria-expanded="false"></button></h2>
+        <div class="accordion-collapse collapse"><div class="accordion-body"></div></div>
+    </div>
+</template>
+
+<template id="profilesTemplate">
+    <div id="profilesList" class="list-group mb-2"></div>
+    <div class="input-group input-group-sm mb-2">
+        <input type="text" class="form-control" id="newProfileName" placeholder="New profile name">
+        <button type="button" id="addProfile" class="btn btn-orange btn-sm">Add</button>
+    </div>
+    <div class="form-text text-muted">Click a profile name to activate it. Firefly will restart with the selected profile. Add a new profile to copy the current configuration under a new name.</div>
+</template>
+
+<template id="profileRowTemplate">
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+        <button type="button" class="list-group-item-action flex-grow-0 text-start" style="background:none;border:none;padding:0"></button>
+        <button type="button" class="btn btn-sm btn-outline-danger float-end" title="Remove profile">&times;</button>
+    </div>
+</template>
+
+<template id="activeProfileBadgeTemplate"><span class="badge bg-success">active</span></template>
+    <script src="webrtc-preview.js"></script>
+    <script type="module" src="set-config-app.js"></script>
+</body>
+</html>

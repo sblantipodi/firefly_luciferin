@@ -1,0 +1,182 @@
+/*
+  setConfig.css
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/* Layout helper: the Bootstrap .col has no margin, the form wrapper expects one. */
+.margin-2 {
+    margin: 2rem 1rem;
+}
+
+body.server-down {
+    pointer-events: none;
+}
+
+/* Do not filter <body>: CSS filters create a containing block for fixed descendants.
+ * On mobile Chrome that makes #offlineOverlay fixed to the scrollable body rather than
+ * the visual viewport. The overlay is appended directly to body, so exclude it. */
+body.server-down > :not(#offlineOverlay) {
+    filter: grayscale(1);
+}
+
+.offline-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.offline-overlay.show {
+    display: flex;
+}
+
+.offline-overlay-content {
+    background: #343a40;
+    color: #fff;
+    padding: 1.5rem 2.5rem;
+    border-radius: 0.5rem;
+    font-size: 1.25rem;
+}
+
+/* Save button color, not provided by Bootstrap. */
+.btn-orange {
+    background-color: orange;
+    border-color: orange;
+    color: #fff;
+}
+
+/* Color picker, fixed width to match the iro picker size. */
+#picker {
+    max-width: 288px;
+    margin: 0 auto;
+}
+
+#toggleLED {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #fff;
+    background: lightgrey;
+    border-color: lightgrey;
+}
+
+#toggleLED.active {
+    color: #fff;
+    background: orange;
+    border-color: orange;
+}
+
+#toggleLED:hover {
+    background-color: #c6c6c6 !important;
+    border-color: #c6c6c6 !important;
+}
+
+#toggleLED.active:hover {
+    background-color: darkorange !important;
+    border-color: darkorange !important;
+}
+
+/* Live preview button, base (off) state: light grey. The .active class (added by
+   JS while the preview is running) turns it green, the :hover states darken a bit. */
+#showLivePreview {
+    background-color: lightgrey;
+    border: 0;
+    color: #fff;
+    font-weight: bold;
+}
+
+#showLivePreview:hover {
+    background-color: #b3b3b3;
+}
+
+#showLivePreview.active {
+    background-color: #28a745;
+}
+
+#showLivePreview.active:hover {
+    background-color: #1e7e34;
+}
+
+/* WebRTC live preview video, hidden until the .show class is toggled by JS. */
+/* Captured frame, hidden until the live preview is enabled (the .show class is toggled by JS). */
+#webrtcPreview,
+#screenshot {
+    max-width: 100%;
+    border: 1px solid #ccc;
+    display: none;
+}
+
+#webrtcPreview {
+    background: #000;
+}
+
+#webrtcPreview.show,
+#screenshot.show {
+    display: inline-block;
+}
+
+.live-preview-fallback-notice {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ffe69c;
+    border-radius: 0.25rem;
+    background: #fff3cd;
+    color: #664d03;
+    text-align: center;
+}
+
+.live-preview-fallback-notice.show {
+    display: block;
+}
+
+/* Toasts, positioned so they do not cover the form. */
+#toastContainer {
+    position: relative;
+}
+
+#toastContainer .toast {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1051;
+}
+
+/* Profile delete button, small red cross to the right of each removable profile. */
+#profilesList .btn-outline-danger {
+    margin-left: auto;
+    flex-shrink: 0;
+    max-width: 32px;
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+#profilesList .btn-outline-danger:hover {
+    background-color: #b02a37;
+    border-color: #b02a37;
+    color: #fff;
+}
