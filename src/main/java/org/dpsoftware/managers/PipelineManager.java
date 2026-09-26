@@ -255,7 +255,8 @@ public class PipelineManager {
         gstreamerPipeline = gstreamerPipeline
                 .replace("{1}", (Enums.VideoDeviceFormat.MJPG == main.getConfig().getCaptureDevice().getBestFormat()) ? Constants.VIDEO_MJPG : Constants.VIDEO_RAW)
                 .replace("{2}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedWidth()))
-                .replace("{3}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedHeight()));
+                .replace("{3}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedHeight())
+                .replace("{4}", String.valueOf(main.getConfig().getCaptureDevice().getMaxFps())));
         return gstreamerPipeline;
     }
 
