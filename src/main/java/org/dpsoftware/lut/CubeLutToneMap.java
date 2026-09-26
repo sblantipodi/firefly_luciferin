@@ -138,12 +138,12 @@ public final class CubeLutToneMap {
             if (codeSource == null) {
                 return names;
             }
-            String path = codeSource.getFile();
-            if (path.endsWith(".jar")) {
-                names.addAll(scanJarForCubeLuts(path));
+            File location = new File(codeSource.toURI());
+            if (location.isFile() && location.getName().endsWith(".jar")) {
+                names.addAll(scanJarForCubeLuts(location));
             } else {
                 // Exploded classes directory: the package directory is <codeSource>/<package-as-paths>.
-                File pkgDir = new File(new File(path),
+                File pkgDir = new File(location,
                         CubeLutToneMap.class.getPackageName().replace('.', File.separatorChar));
                 File[] files = pkgDir.listFiles(x -> x.isFile() && x.getName().endsWith(".cube"));
                 if (files != null) {
@@ -161,10 +161,10 @@ public final class CubeLutToneMap {
     /**
      * Scan the entries of the given jar file for {@code .cube} files co-located in this package and return their base names.
      */
-    private static List<String> scanJarForCubeLuts(String jarPath) {
+    static List<String> scanJarForCubeLuts(File jarFile) {
         List<String> found = new ArrayList<>();
         String pkgDir = CubeLutToneMap.class.getPackageName().replace('.', '/') + "/";
-        try (JarFile jar = new JarFile(new File(jarPath))) {
+        try (JarFile jar = new JarFile(jarFile)) {
             Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
                 String entryName = entries.nextElement().getName();
@@ -176,7 +176,7 @@ public final class CubeLutToneMap {
                 }
             }
         } catch (Exception e) {
-            log.warn("Failed to scan jar {} for cube LUTs: {}", jarPath, e.getMessage());
+            log.warn("Failed to scan jar {} for cube LUTs: {}", jarFile, e.getMessage());
         }
         return found;
     }
@@ -263,10 +263,14 @@ public final class CubeLutToneMap {
     private static File resolveCoLocatedLutFile(String lutName) {
         try {
             URL codeSource = CubeLutToneMap.class.getProtectionDomain().getCodeSource().getLocation();
-            if (codeSource == null || codeSource.getFile().endsWith(".jar")) {
+            if (codeSource == null) {
                 return null;
             }
-            File pkgDir = new File(new File(codeSource.getFile()),
+            File location = new File(codeSource.toURI());
+            if (location.isFile() && location.getName().endsWith(".jar")) {
+                return null;
+            }
+            File pkgDir = new File(location,
                     CubeLutToneMap.class.getPackageName().replace('.', File.separatorChar));
             return new File(pkgDir, lutName);
         } catch (Exception e) {
