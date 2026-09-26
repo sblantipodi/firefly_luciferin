@@ -56,9 +56,45 @@ function wireSelectChangeListeners() {
     }
 }
 
+function revealSettingsPage() {
+    document.getElementById('settingsContainer').classList.add('page-ready');
+}
+
+// Match the firmware's seasonal snow: December 14 through January 6.
+function showChristmasSnow() {
+    var now = new Date();
+    var month = now.getMonth();
+    var day = now.getDate();
+    if (!((month === 11 && day >= 14) || (month === 0 && day <= 6)) ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+
+    var snow = document.createElement('div');
+    snow.id = 'snow';
+    snow.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(snow);
+
+    var flakesCount = window.innerWidth >= 1200 ? 40 :
+        window.innerWidth >= 992 ? 30 :
+            window.innerWidth >= 768 ? 24 : 16;
+    for (var i = 0; i < flakesCount; i++) {
+        var flake = document.createElement('div');
+        flake.className = 'snowflake';
+        flake.textContent = '❄';
+        flake.style.left = Math.random() * 100 + 'vw';
+        flake.style.fontSize = 12 + Math.random() * 14 + 'px';
+        flake.style.opacity = Math.random();
+        flake.style.animationDuration = 6 + Math.random() * 6 + 's';
+        flake.style.animationDelay = Math.random() * 5 + 's';
+        snow.appendChild(flake);
+    }
+}
+
 $(function () {
     var br = '<br class="d-sm-none">';
     $('#subtitle').html('Bias Lighting and Ambient Light software' + br + ' designed for ' + br + 'Glow Worm Luciferin firmware');
+    showChristmasSnow();
     fetchJson('sectionTitles').then(function (titles) {
         state.sectionTitles = titles || {};
     }).catch(function () {
@@ -73,6 +109,7 @@ $(function () {
         initColorPicker();
         wireLivePreviewButton();
         wireSelectChangeListeners();
+        revealSettingsPage();
         return fetchJson('getConfig');
     }).then(function (cfg) {
         state.lastConfig = cfg || {};
@@ -88,6 +125,7 @@ $(function () {
     }).then(function (profilesData) {
         renderProfiles(profilesData);
     }).catch(function (err) {
+        revealSettingsPage();
         showToast('Unable to load settings: ' + err.message, 'bg-danger text-white');
     });
     refreshDevices();
