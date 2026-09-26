@@ -60,6 +60,49 @@ function revealSettingsPage() {
     document.getElementById('settingsContainer').classList.add('page-ready');
 }
 
+// Poll only while the log accordion is open; each response contains at most 1000 lines.
+function wireLogAccordion() {
+    var panel = document.getElementById('section-log');
+    var output = document.getElementById('appLog');
+    var timer;
+    var loading = false;
+
+    function refreshLog() {
+        if (loading) {
+            return;
+        }
+        loading = true;
+        fetch('log', {cache: 'no-store'}).then(function (response) {
+            if (response.status === 404) {
+                return 'Log file not found.';
+            }
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            return response.text();
+        }).then(function (contents) {
+            if (panel.classList.contains('show')) {
+                output.textContent = contents || 'Log file is empty.';
+                output.scrollTop = output.scrollHeight;
+            }
+        }).catch(function (error) {
+            if (panel.classList.contains('show')) {
+                output.textContent = 'Unable to load log: ' + error.message;
+            }
+        }).finally(function () {
+            loading = false;
+        });
+    }
+
+    panel.addEventListener('shown.bs.collapse', function () {
+        refreshLog();
+        timer = setInterval(refreshLog, 3000);
+    });
+    panel.addEventListener('hidden.bs.collapse', function () {
+        clearInterval(timer);
+    });
+}
+
 // Match the firmware's seasonal snow: December 14 through January 6.
 function showChristmasSnow() {
     var now = new Date();
@@ -133,6 +176,7 @@ $(function () {
         state.fieldOptions = (data && data.options) || {};
         state.fieldLabels = (data && data.labels) || {};
         buildForm();
+        wireLogAccordion();
         document.getElementById('saveSettings').addEventListener('click', saveForm);
         document.getElementById('addProfile').addEventListener('click', addProfile);
         initColorPicker();

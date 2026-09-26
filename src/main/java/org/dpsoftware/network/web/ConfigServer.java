@@ -29,10 +29,7 @@ import com.sun.net.httpserver.HttpServer;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.WebRtcStreamer;
 import org.dpsoftware.gui.LabelKey;
@@ -45,6 +42,9 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
@@ -122,6 +122,33 @@ public class ConfigServer {
         HttpResponses.sendJson(exchange, new FpsDto(
                 MainSingleton.getInstance().FPS_PRODUCER,
                 MainSingleton.getInstance().FPS_GW_CONSUMER));
+    }
+
+    static String tailLog(Path logFile) throws IOException {
+        Deque<String> lines = new ArrayDeque<>(1000);
+        try (var reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (lines.size() == 1000) {
+                    lines.removeFirst();
+                }
+                lines.addLast(line);
+            }
+        }
+        return String.join("\n", lines);
+    }
+
+    /**
+     * Return at most the last 1000 lines of the active application log.
+     */
+    private void handleGetLog(HttpExchange exchange) throws IOException {
+        Path logFile = Path.of(InstanceConfigurer.getConfigPath(), "logs", "FireflyLuciferin.log");
+        if (!Files.isRegularFile(logFile)) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_NOT_FOUND, "Log file not found");
+            return;
+        }
+        exchange.getResponseHeaders().set("Cache-Control", "no-store");
+        HttpResponses.sendText(exchange, HttpURLConnection.HTTP_OK, tailLog(logFile));
     }
 
     /**
@@ -243,6 +270,7 @@ public class ConfigServer {
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(deviceEndpointHandler::handleDevicePrefs, GET_METHOD));
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
+                server.createContext(Constants.LOG_ENDPOINT, withGuard(this::handleGetLog, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENDPOINT, withGuard(livePreviewWebHandler::handleGetScreenshot, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(livePreviewWebHandler::handleEnableScreenshot, POST_METHOD));
                 server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(profileHandler::handleListProfiles, GET_METHOD));
