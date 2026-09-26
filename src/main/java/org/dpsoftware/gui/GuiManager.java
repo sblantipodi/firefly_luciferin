@@ -71,6 +71,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -91,6 +92,7 @@ public class GuiManager {
     private double xOffsetInfo = 0;
     private double yOffset = 0;
     private double yOffsetInfo = 0;
+    private final AtomicBoolean upgradeCheckInProgress = new AtomicBoolean();
 
     /**
      * Constructor
@@ -1143,16 +1145,32 @@ public class GuiManager {
      *
      * @param showChangelog show changelog
      */
-    // TODO prevent to launch 2 checks at the same time
     public void showSettingsAndCheckForUpgrade(boolean showChangelog) {
         if (MainSingleton.getInstance().isHeadlessMode()) {
             return;
         }
-        if (!NativeExecutor.isSystemTraySupported()) {
-            showSettingsDialog(false);
+        if (!upgradeCheckInProgress.compareAndSet(false, true)) {
+            log.info("Update already in progress");
+            showLocalizedNotification(LabelKey.CHECK_UPDATE, LabelKey.UPDATE_ALREADY_IN_PROGRESS,
+                    Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            return;
         }
-        UpgradeManager upgradeManager = new UpgradeManager();
-        upgradeManager.checkForUpdates(showChangelog);
+        AtomicBoolean released = new AtomicBoolean();
+        Runnable releaseCheck = () -> {
+            if (released.compareAndSet(false, true)) {
+                upgradeCheckInProgress.set(false);
+            }
+        };
+        try {
+            if (!NativeExecutor.isSystemTraySupported()) {
+                showSettingsDialog(false);
+            }
+            UpgradeManager upgradeManager = new UpgradeManager();
+            upgradeManager.checkForUpdates(showChangelog, releaseCheck);
+        } catch (RuntimeException | Error e) {
+            releaseCheck.run();
+            throw e;
+        }
     }
 
     public Stage getStage(String stageName) {

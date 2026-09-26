@@ -246,8 +246,8 @@ public class CommonUtility {
      *
      * @param command function to call after the delay
      * @param delay   time to delay
+     * @return scheduled task, or null if scheduling fails
      */
-    @NonNull
     @SuppressWarnings("all")
     public static ScheduledFuture<?> delaySeconds(Runnable command, long delay) {
         try {
