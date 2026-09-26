@@ -67,6 +67,11 @@ public class Constants {
     public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
     public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
     public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
+    public static final String CAPTURE_SOURCE_UNAVAILABLE = "capture.source.unavailable";
+    public static final String CAPTURE_SOURCE_UNAVAILABLE_CONTEXT = "capture.source.unavailable.context";
+    public static final String CAPTURE_SOURCE_USB = "capture.source.usb";
+    public static final String CAPTURE_SOURCE_USB_UNCONFIGURED = "capture.source.usb.unconfigured";
+    public static final String CAPTURE_SOURCE_MONITOR = "capture.source.monitor";
     public static final int NUMBER_OF_AREA_TO_CHECK = 50;
     public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 15;
     public static final int BLACK_BAR_MINIMUM_PCT = 95;
