@@ -205,9 +205,12 @@ public class CaptureDeviceUtilities {
     private static String extractDevicePath(Device dev) {
         try {
             org.freedesktop.gstreamer.Structure props = dev.getProperties();
+            log.debug("Extracting device path from GStreamer device properties: {}", props);
             if (props == null) return null;
             if (props.hasField("api.v4l2.path")) {
                 return props.getString("api.v4l2.path");
+            } else if (props.hasField("device.path")) {
+                return props.getString("device.path");
             }
             if (props.hasField("object.path")) {
                 String raw = props.getString("object.path");
