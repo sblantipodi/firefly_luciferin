@@ -148,6 +148,8 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                 turnOnAction();
             } else if (CommonUtility.getWord(LabelKey.SETTINGS).equals(menuItemText)) {
                 settingsAction();
+            } else if (CommonUtility.getWord(LabelKey.WEB_INTERFACE).equals(menuItemText)) {
+                webInterfaceAction();
             } else if (CommonUtility.getWord(LabelKey.INFO).equals(menuItemText)) {
                 infoAction();
             } else if ((MainSingleton.getInstance().whoAmI == 1) && (CommonUtility.getWord(LabelKey.CHECK_UPDATE).equals(menuItemText) || CommonUtility.getWord(LabelKey.INSTALL_UPDATE).equals(menuItemText))) {
@@ -272,6 +274,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         GuiSingleton.getInstance().popupMenu.add(aspectRatioSubMenu);
         GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.SETTINGS)));
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.WEB_INTERFACE)));
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.INFO)));
         if ((MainSingleton.getInstance().whoAmI == 1)) {
             if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
