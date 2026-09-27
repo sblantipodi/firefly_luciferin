@@ -609,6 +609,7 @@ public class PipelineManager {
         GuiSingleton.getInstance().oldFirmwareDevice = true;
         for (GlowWormDevice gwd : CommonUtility.getDeviceToUseWithSatellites()) {
             if (Boolean.FALSE.equals(UpgradeManager.checkFirmwareVersion(gwd))) {
+                GuiSingleton.getInstance().registerGlowWormUpdate(gwd);
                 log.warn("[{}, ver={}] {}", gwd.getDeviceName(), gwd.getDeviceVersion(), CommonUtility.getWord(LabelKey.MIN_FIRMWARE_NOT_MATCH));
                 MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.NEW_FIRMWARE_AVAILABLE, LabelKey.MIN_FIRMWARE_NOT_MATCH, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.WARNING);
             }

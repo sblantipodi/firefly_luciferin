@@ -166,6 +166,30 @@ body {
 }
 
 /* The theme switch sits just below the sticky header without using header space. */
+.firefly-update-notice,
+.glow-worm-update-available-notice {
+    padding: 0.55rem 1rem;
+    border-bottom: 1px solid #e8b956;
+    background: #fff3cd;
+    color: #5c4100;
+    text-align: center;
+    font-weight: 600;
+}
+
+.firefly-update-notice a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.glow-worm-update-notice {
+    padding: 0.55rem 1rem;
+    border-bottom: 1px solid #9ec5fe;
+    background: #cfe2ff;
+    color: #084298;
+    text-align: center;
+    font-weight: 600;
+}
+
 #themeToggle {
     position: absolute;
     top: calc(100% + 0.5rem);

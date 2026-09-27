@@ -28,6 +28,18 @@ export function pollServerStatus(force) {
         if (el) {
             el.textContent = 'Firefly ' + Number(fps.producing).toFixed(0) + ' FPS / GlowWorm ' + Number(fps.consuming).toFixed(0) + ' FPS';
         }
+        var updateNotice = document.getElementById('fireflyUpdateNotice');
+        if (updateNotice) {
+            updateNotice.hidden = !fps.fireflyUpdateAvailable;
+        }
+        var deviceUpdateAvailableNotice = document.getElementById('glowWormUpdateAvailableNotice');
+        if (deviceUpdateAvailableNotice) {
+            deviceUpdateAvailableNotice.hidden = !fps.glowWormUpdateAvailable;
+        }
+        var deviceUpdateNotice = document.getElementById('glowWormUpdateNotice');
+        if (deviceUpdateNotice) {
+            deviceUpdateNotice.hidden = !fps.glowWormUpdateInProgress;
+        }
         if (!serverOnline) {
             serverOnline = true;
             document.body.classList.remove('server-down');

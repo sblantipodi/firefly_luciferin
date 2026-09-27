@@ -63,6 +63,19 @@ body {
     border-bottom: 1px solid var(--border);
 }
 
+.firefly-update-notice,
+.glow-worm-update-available-notice {
+    background: #5a411d;
+    color: #ffe1a8;
+    border-color: #966c31;
+}
+
+.glow-worm-update-notice {
+    background: #244665;
+    color: #d7ecff;
+    border-color: #467ba8;
+}
+
 #themeToggle {
     background: var(--surface-raised);
     border-color: var(--border);
