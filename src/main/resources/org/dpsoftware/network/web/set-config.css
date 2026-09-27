@@ -127,6 +127,44 @@ body {
     }
 }
 
+.header-shell h1,
+.header-shell #subtitle {
+    font-family: system-ui, sans-serif;
+    text-shadow: var(--glow-rest);
+    animation: header-glow 4s ease-in-out infinite alternate;
+}
+
+.header-shell h1 {
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    --glow-rest: 0 0 2px rgba(255, 255, 255, 0.25), 0 0 7px rgba(255, 255, 255, 0.12), 0 0 14px rgba(255, 255, 255, 0.08);
+    --glow-peak: 0 0 10px #fff, 0 0 25px rgba(255, 248, 190, 0.95), 0 0 40px rgba(255, 255, 255, 0.75);
+}
+
+.header-shell #subtitle {
+    margin-top: 0.1em;
+    margin-bottom: 0.25rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    --glow-rest: 0 0 2px rgba(255, 255, 255, 0.12), 0 0 6px rgba(255, 255, 255, 0.06), 0 0 12px rgba(255, 255, 255, 0.04);
+    --glow-peak: 0 0 7px rgba(255, 255, 255, 0.8), 0 0 18px rgba(255, 248, 190, 0.55), 0 0 28px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes header-glow {
+    to {
+        text-shadow: var(--glow-peak);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .header-shell h1,
+    .header-shell #subtitle {
+        animation: none;
+    }
+}
+
 /* The theme switch sits just below the sticky header without using header space. */
 #themeToggle {
     position: absolute;
