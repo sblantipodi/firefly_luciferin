@@ -211,46 +211,14 @@
     -fx-text-fill: #ffd1aa;
 }
 
-.tray_menu_item_selectionbackground {
-    color: #d87030;
-}
-
-.tray_menu_item_selectionforeground {
-    color: #17191c;
-}
-
-.tray_menu_item_foreground {
-    color: #f2f0ed;
-}
-
-.tray_menu_foreground {
-    color: #f2f0ed;
-}
-
-.tray_menu_selectionbackground {
-    color: #d87030;
-}
-
-.tray_menu_selectionforeground {
-    color: #17191c;
-}
-
-.tray_menu_item_text {
-    color: #ffb477;
-}
-
-.tray_menu_border {
-    color: #50545c;
-}
-
-.tray_menu_item_border {
-    color: #50545c;
-}
-
-.tray_background {
-    color: #292d33;
-}
-
-.tray_separator {
-    color: #4b5058;
-}
+.tray_menu_item_selectionbackground { color: #d87030; }
+.tray_menu_item_selectionforeground { color: #17191c; }
+.tray_menu_item_foreground { color: #f2f0ed; }
+.tray_menu_foreground { color: #f2f0ed; }
+.tray_menu_selectionbackground { color: #d87030; }
+.tray_menu_selectionforeground { color: #17191c; }
+.tray_menu_item_text { color: #ffb477; }
+.tray_menu_border { color: #50545c; }
+.tray_menu_item_border { color: #50545c; }
+.tray_background { color: #292d33; }
+.tray_separator { color: #4b5058; }
