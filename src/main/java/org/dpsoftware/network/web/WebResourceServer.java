@@ -42,6 +42,7 @@ public class WebResourceServer {
     private static final String SET_CONFIG_DEVICE_JS_RESOURCE = "set-config-device.js";
     private static final String SET_CONFIG_UI_JS_RESOURCE = "set-config-ui.js";
     private static final String SET_CONFIG_CSS_RESOURCE = "set-config.css";
+    private static final String SET_CONFIG_DARK_CSS_RESOURCE = "set-config-dark.css";
     private static final String WEBRTC_PREVIEW_JS_RESOURCE = "webrtc-preview.js";
     private static final Set<String> SETTINGS_MODULES = Set.of(
             "set-config-app.js", "set-config-api.js", "set-config-state.js", "set-config-schema.js",
@@ -67,6 +68,13 @@ public class WebResourceServer {
      */
     public void handleSetConfigCss(HttpExchange exchange) throws IOException {
         sendResource(exchange, SET_CONFIG_CSS_RESOURCE, "text/css; charset=utf-8");
+    }
+
+    /**
+     * Serves the optional dark stylesheet for the settings page.
+     */
+    public void handleSetConfigDarkCss(HttpExchange exchange) throws IOException {
+        sendResource(exchange, SET_CONFIG_DARK_CSS_RESOURCE, "text/css; charset=utf-8");
     }
 
     /**

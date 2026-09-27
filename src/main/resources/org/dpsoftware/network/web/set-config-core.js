@@ -124,7 +124,7 @@ export function buildForm() {
     var profiles = buildAccordion('section-profiles', sectionTitle('profile'), accordion.id);
     profiles.querySelector('.accordion-body').appendChild(document.getElementById('profilesTemplate').content.cloneNode(true));
     accordion.appendChild(profiles);
-    document.querySelector('.container-fluid + .container').replaceChildren(page);
+    document.getElementById('settingsContainer').replaceChildren(page);
     fillPickerControls();
 }
 

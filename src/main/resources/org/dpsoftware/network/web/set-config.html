@@ -17,13 +17,71 @@
     <link href="https://sblantipodi.github.io/glow_worm_luciferin/fa6/css/all.css" rel="stylesheet">
     <link href="https://sblantipodi.github.io/glow_worm_luciferin/webInterface_1.1.5.slim.min.css" rel="stylesheet">
     <link href="set-config.css" rel="stylesheet">
+    <link href="set-config-dark.css" id="darkThemeStylesheet" media="not all" rel="stylesheet">
+    <script>
+        (function () {
+            var cookieName = 'luciferin_theme';
+            var darkStylesheet = document.getElementById('darkThemeStylesheet');
+            var systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+            var savedTheme = document.cookie.split(';').map(function (cookie) {
+                return cookie.trim();
+            }).find(function (cookie) {
+                return cookie.indexOf(cookieName + '=') === 0;
+            });
+            var preference = savedTheme ? savedTheme.substring(cookieName.length + 1) : null;
+            if (preference !== 'dark' && preference !== 'light') {
+                preference = null;
+            }
+
+            function applyTheme(theme) {
+                var dark = theme === 'dark';
+                darkStylesheet.media = dark ? 'all' : 'not all';
+                var button = document.getElementById('themeToggle');
+                if (button) {
+                    button.querySelector('i').className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                    button.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+                    button.setAttribute('title', dark ? 'Switch to light theme' : 'Switch to dark theme');
+                    button.setAttribute('aria-pressed', String(dark));
+                }
+            }
+
+            applyTheme(preference || (systemTheme.matches ? 'dark' : 'light'));
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var button = document.getElementById('themeToggle');
+                applyTheme(preference || (systemTheme.matches ? 'dark' : 'light'));
+                button.addEventListener('click', function () {
+                    preference = darkStylesheet.media === 'all' ? 'light' : 'dark';
+                    document.cookie = cookieName + '=' + preference + '; Path=/; Max-Age=31536000; SameSite=Lax';
+                    applyTheme(preference);
+                });
+            });
+
+            function followSystemTheme() {
+                if (!preference) {
+                    applyTheme(systemTheme.matches ? 'dark' : 'light');
+                }
+            }
+
+            if (systemTheme.addEventListener) {
+                systemTheme.addEventListener('change', followSystemTheme);
+            } else {
+                systemTheme.addListener(followSystemTheme);
+            }
+        })();
+    </script>
 </head>
 <body>
-<div class="container-fluid p-2 bg-primary text-white text-center sticky-top">
-    <h1>LUCIFERIN</h1>
-    <p id="subtitle"></p>
+<div class="header-shell sticky-top">
+    <div class="container-fluid p-2 bg-primary text-white text-center">
+        <h1>LUCIFERIN</h1>
+        <p id="subtitle"></p>
+    </div>
+    <button aria-label="Switch theme" id="themeToggle" title="Switch theme" type="button">
+        <i aria-hidden="true" class="fa-solid fa-moon"></i>
+    </button>
 </div>
-<div class="container"></div>
+<div class="container" id="settingsContainer"></div>
 
 <template id="settingsPageTemplate">
     <div class="row">

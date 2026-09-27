@@ -237,6 +237,7 @@ public class ConfigServer {
                 server.createContext(Constants.SET_CONFIG_DEVICE_JS_ENDPOINT, withGuard(webResourceServer::handleSetConfigPageJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_UI_JS_ENDPOINT, withGuard(webResourceServer::handleSetConfigPageJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_CSS_ENDPOINT, withGuard(webResourceServer::handleSetConfigCss, GET_METHOD));
+                server.createContext(Constants.SET_CONFIG_DARK_CSS_ENDPOINT, withGuard(webResourceServer::handleSetConfigDarkCss, GET_METHOD));
                 server.createContext(Constants.WEBRTC_PREVIEW_JS_ENDPOINT, withGuard(webResourceServer::handleWebrtcPreviewJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(deviceEndpointHandler::handleDevicePrefs, GET_METHOD));
