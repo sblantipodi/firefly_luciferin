@@ -65,7 +65,7 @@ function showChristmasSnow() {
     var now = new Date();
     var month = now.getMonth();
     var day = now.getDate();
-    if (!((month === 8 && day >= 14) || (month === 0 && day <= 6)) ||
+    if (!((month === 11 && day >= 14) || (month === 0 && day <= 6)) ||
         window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
     }
