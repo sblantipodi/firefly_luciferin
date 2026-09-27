@@ -61,17 +61,58 @@ body {
 
 .snowflake {
     position: absolute;
-    top: -10px;
-    color: gray;
+    top: 0;
+    line-height: 1;
     user-select: none;
     animation-name: snow-fall;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
 }
 
+.snowflake--far {
+    color: #8196a7;
+}
+
+.snowflake--middle {
+    color: #6f899d;
+}
+
+.snowflake--near {
+    color: #58738b;
+}
+
+.snowflake--near .snowflake-shape {
+    filter: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.75));
+}
+
+.snowflake-shape {
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation-name: snow-sway;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
 @keyframes snow-fall {
+    from {
+        transform: translate3d(0, -12vh, 0) rotate(0deg);
+    }
     to {
-        transform: translateY(100vh);
+        transform: translate3d(var(--drift), 112vh, 0) rotate(var(--turn));
+    }
+}
+
+@keyframes snow-sway {
+    from {
+        transform: translate3d(calc(0px - var(--sway)), 0, 0) rotate(-12deg);
+    }
+    to {
+        transform: translate3d(var(--sway), 0, 0) rotate(12deg);
     }
 }
 

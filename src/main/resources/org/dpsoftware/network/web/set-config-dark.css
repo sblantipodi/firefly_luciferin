@@ -37,8 +37,20 @@
     --bs-border-color: var(--border);
 }
 
-.snowflake {
-    color: var(--muted);
+.snowflake--far {
+    color: #a5becc;
+}
+
+.snowflake--middle {
+    color: #d3e4ee;
+}
+
+.snowflake--near {
+    color: #f5fbff;
+}
+
+.snowflake--near .snowflake-shape {
+    filter: drop-shadow(0 0 5px rgba(225, 244, 255, 0.65));
 }
 
 body {
