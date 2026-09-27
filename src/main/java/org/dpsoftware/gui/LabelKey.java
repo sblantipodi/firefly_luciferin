@@ -99,6 +99,7 @@ public final class LabelKey {
     public static final String CHECK_UPDATE = "tray.icon.check.update";
     public static final String INSTALL_UPDATE = "tray.icon.check.install";
     public static final String SETTINGS = "tray.icon.settings";
+    public static final String WEB_INTERFACE = "tray.icon.web.interface";
     public static final String TRAY_EXIT = "tray.icon.exit";
     public static final String CLICK_OK_DOWNLOAD = "click.ok.download";
     public static final String CLICK_OK_DOWNLOAD_LINUX = "click.ok.download.linux";
@@ -314,6 +315,4 @@ public final class LabelKey {
     public static final String USB_NOT_AVAILABLE_CONTENT = "usb.not.available.content";
     public static final String USB_NOT_AVAILABLE_CONTENT_SNAP = "usb.not.available.content.snap";
 
-    private LabelKey() {
-    }
 }
