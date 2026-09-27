@@ -257,6 +257,7 @@ public class PipelineManager {
                 .replace("{2}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedWidth()))
                 .replace("{3}", String.valueOf(main.getConfig().getCaptureDevice().getSuggestedHeight()))
                 .replace("{4}", String.valueOf(main.getConfig().getCaptureDevice().getMaxFps()));
+        gstreamerPipeline = GStreamerGrabber.setScaling(gstreamerPipeline, main);
         return gstreamerPipeline;
     }
 
