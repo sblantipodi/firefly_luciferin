@@ -324,7 +324,7 @@ public class SettingsController {
     @FXML
     public void save(InputEvent e) {
         String fileToWrite = MainSingleton.getInstance().profileArg;
-        if (CommonUtility.getWord(LabelKey.DEFAULT).equals(fileToWrite)) {
+        if (LabelKey.DEFAULT.equals(fileToWrite)) {
             save(e, null);
         } else {
             save(e, MainSingleton.getInstance().whoAmI + "_" + fileToWrite + Constants.YAML_EXTENSION);

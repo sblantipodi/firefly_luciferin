@@ -193,6 +193,7 @@ public class ConfigServer {
         // Include the active non-default profile.
         String profileArg = MainSingleton.getInstance().profileArg;
         if (profileArg != null && !profileArg.isEmpty()
+                && !LabelKey.DEFAULT.equals(profileArg)
                 && !CommonUtility.getWord(LabelKey.DEFAULT).equals(profileArg)) {
             configNode.put("activeProfile", profileArg);
         }

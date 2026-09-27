@@ -392,7 +392,7 @@ public class MiscTabController {
             profiles.getItems().addAll(sm.listProfilesForThisInstance());
             profiles.getItems().add(CommonUtility.getWord(LabelKey.DEFAULT));
         }
-        if (MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+        if (MainSingleton.getInstance().profileArg.equals(LabelKey.DEFAULT)) {
             profiles.setValue(CommonUtility.getWord(LabelKey.DEFAULT));
         } else {
             profiles.setValue(MainSingleton.getInstance().profileArg);
