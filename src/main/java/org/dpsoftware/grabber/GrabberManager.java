@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.grabber;
 
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
@@ -51,6 +53,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Screen grabbing manager
@@ -61,6 +64,7 @@ public class GrabberManager {
     public Bin bin;
     public GStreamerGrabber vc;
     private boolean linuxPingUnavailable = false;
+    private String linuxPipelineParams;
 
     /**
      * Get suggested framerate
@@ -107,19 +111,43 @@ public class GrabberManager {
         // WebRTC support in gst1-java is available from GStreamer 1.14. Supplying the minimum version here is also necessary for the binding's
         Gst.init(Version.of(1, 14), Constants.SCREEN_GRABBER, "");
         AtomicInteger pipelineRetry = new AtomicInteger();
-        String linuxParams = null;
-        if (NativeExecutor.isLinux()) {
-            linuxParams = PipelineManager.getLinuxPipelineParams();
-        }
-        String finalLinuxParams = linuxParams;
+        AtomicReference<String> missingSource = new AtomicReference<>();
+        AtomicInteger missingSourceTicks = new AtomicInteger();
         Gst.getExecutor().scheduleAtFixedRate(() -> {
             if (!ManagerSingleton.getInstance().pipelineStopping && main.RUNNING && main.FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
                 boolean pipeNull = GrabberSingleton.getInstance().pipe == null;
                 boolean notPlaying = !pipeNull && !GrabberSingleton.getInstance().pipe.isPlaying();
                 boolean tooManyRetries = pipelineRetry.get() >= 2;
-                log.info("Watchdog tick #{}: pipeNull={}, notPlaying={}, tooManyRetries={}", pipelineRetry.get(), pipeNull, notPlaying, tooManyRetries);
+                log.debug("Watchdog tick #{}: pipeNull={}, notPlaying={}, tooManyRetries={}", pipelineRetry.get(), pipeNull, notPlaying, tooManyRetries);
                 if (pipeNull || notPlaying || tooManyRetries) {
+                    // Device discovery can be slow: retry every three seconds while the source is missing.
+                    if (missingSource.get() != null && missingSourceTicks.incrementAndGet() < 6) {
+                        disposePipeline();
+                        return;
+                    }
+                    missingSourceTicks.set(0);
+                    String unavailableSource = getUnavailableCaptureSource();
+                    if (unavailableSource != null) {
+                        if (GrabberSingleton.getInstance().pipe != null) {
+                            GrabberSingleton.getInstance().pipe.stop();
+                        }
+                        pipelineRetry.set(0);
+                        if (!unavailableSource.equals(missingSource.getAndSet(unavailableSource))) {
+                            log.warn("Capture source unavailable; pipeline not started: {}", unavailableSource);
+                            if (!main.isHeadlessMode() && main.guiManager != null) {
+                                Platform.runLater(() -> main.guiManager.showAlert(Constants.SCREEN_GRABBER,
+                                        CommonUtility.getWord(Constants.CAPTURE_SOURCE_UNAVAILABLE),
+                                        CommonUtility.getWord(Constants.CAPTURE_SOURCE_UNAVAILABLE_CONTEXT).replace("{0}", unavailableSource),
+                                        Alert.AlertType.WARNING));
+                            }
+                        }
+                        disposePipeline();
+                        return;
+                    }
+                    if (missingSource.getAndSet(null) != null) {
+                        log.info("Capture source available again; starting pipeline");
+                    }
                     if (GrabberSingleton.getInstance().pipe != null) {
                         log.info("Restarting pipeline (reason={})", (pipeNull ? "pipeNull" : (notPlaying ? "notPlaying" : "tooManyRetries")));
                         GrabberSingleton.getInstance().pipe.stop();
@@ -129,7 +157,7 @@ public class GrabberManager {
                             NativeExecutor.restartNativeInstanceWithCurrentProfile();
                         }
                     } else {
-                        startPipeline(restartCounter, main, finalLinuxParams);
+                        startPipeline(restartCounter, main);
                     }
                     vc = new GStreamerGrabber();
                     GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
@@ -161,20 +189,19 @@ public class GrabberManager {
      *
      * @param restartCounter   An AtomicInteger used to track the number of restarts for the pipeline.
      * @param main             The MainSingleton instance containing shared configuration and state data.
-     * @param finalLinuxParams A String containing the pipeline configuration parameters for Linux systems.
      */
-    private void startPipeline(AtomicInteger restartCounter, MainSingleton main, String finalLinuxParams) {
+    private void startPipeline(AtomicInteger restartCounter, MainSingleton main) {
         log.info("Starting a new pipeline");
         restartCounter.set(0);
         GrabberSingleton.getInstance().pipe = new Pipeline();
         if (NativeExecutor.isWindows()) {
             String friendlyName = main.getConfig().getCaptureDeviceFriendlyName();
-            DisplayManager displayManager = new DisplayManager();
-            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(main.getConfig().getMonitorNumber()).getNativePeer());
             if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+                String monitorNativePeer = String.valueOf(new DisplayManager().getDisplayInfo(main.getConfig().getMonitorNumber()).getNativePeer());
                 bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11)
                         .replace("{0}", monitorNativePeer), true);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
+                String monitorNativePeer = String.valueOf(new DisplayManager().getDisplayInfo(main.getConfig().getMonitorNumber()).getNativePeer());
                 bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12)
                         .replace("{0}", monitorNativePeer), true);
             } else {
@@ -182,9 +209,12 @@ public class GrabberManager {
                         .replace("{0}", friendlyName), true);
             }
         } else if (NativeExecutor.isLinux()) {
+            if (linuxPipelineParams == null) {
+                linuxPipelineParams = PipelineManager.getLinuxPipelineParams();
+            }
             String devPath = main.getConfig().hasCaptureDevice() ? main.getConfig().getCaptureDevice().getDevPath() : "";
             int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
-            String runtimeParams = finalLinuxParams
+            String runtimeParams = linuxPipelineParams
                     .replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime))
                     .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
             if (!devPath.isEmpty()) {
@@ -194,6 +224,44 @@ public class GrabberManager {
         } else {
             bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_MAC), true);
         }
+    }
+
+    /**
+     * Returns a description of the missing configured source, or null when it is available.
+     */
+    private String getUnavailableCaptureSource() {
+        Configuration config = MainSingleton.getInstance().config;
+        String method = config.getCaptureMethod();
+        boolean usb = Configuration.CaptureMethod.WIN_USB_VIDEO.name().equals(method)
+                || Configuration.CaptureMethod.USB_VIDEO.name().equals(method)
+                || Configuration.CaptureMethod.USB_VIDEO_OPENGL.name().equals(method)
+                || Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name().equals(method)
+                || Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name().equals(method);
+        if (usb) {
+            var selected = config.getCaptureDevice();
+            if (selected == null) {
+                return CommonUtility.getWord(Constants.CAPTURE_SOURCE_USB_UNCONFIGURED);
+            }
+            String identity = NativeExecutor.isWindows() ? selected.getFriendlyName() : selected.getDevPath();
+            if (identity == null || identity.isBlank()) {
+                return CommonUtility.getWord(Constants.CAPTURE_SOURCE_USB_UNCONFIGURED);
+            }
+            boolean present = CaptureDeviceUtilities.discover().stream().anyMatch(device ->
+                    NativeExecutor.isWindows() ? identity.equalsIgnoreCase(device.getFriendlyName())
+                            : identity.equals(device.getDevPath()));
+            return present ? null : CommonUtility.getWord(Constants.CAPTURE_SOURCE_USB).replace("{0}", identity);
+        }
+        boolean monitor = Configuration.CaptureMethod.DDUPL_DX11.name().equals(method)
+                || Configuration.CaptureMethod.DDUPL_DX12.name().equals(method)
+                || Configuration.CaptureMethod.XIMAGESRC.name().equals(method)
+                || Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name().equals(method);
+        if (monitor) {
+            int index = config.getMonitorNumber();
+            if (index < 0 || new DisplayManager().getDisplayInfo(index) == null) {
+                return CommonUtility.getWord(Constants.CAPTURE_SOURCE_MONITOR).replace("{0}", String.valueOf(index));
+            }
+        }
+        return null;
     }
 
     /**
