@@ -36,6 +36,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
@@ -126,7 +127,7 @@ public class ModeTabController {
         for (Enums.AspectRatio ar : Enums.AspectRatio.values()) {
             aspectRatio.getItems().add(ar.getI18n());
         }
-        aspectRatio.getItems().add(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+        aspectRatio.getItems().add(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS));
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readProfileInUseConfig();
         if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
@@ -222,7 +223,7 @@ public class ModeTabController {
         resamplingFactor.setValue(Enums.ResamplingFactor.BALANCED.getI18n());
         monitorIndex = 0;
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
-        comWirelessLabel.setText(CommonUtility.getWord(Constants.SERIAL_PORT));
+        comWirelessLabel.setText(CommonUtility.getWord(LabelKey.SERIAL_PORT));
         if (NativeExecutor.isDarkTheme()) {
             theme.setValue(Enums.Theme.DARK_THEME_ORANGE.getI18n());
         } else {
@@ -239,7 +240,7 @@ public class ModeTabController {
         baudRate.setDisable(true);
         serialPort.setValue(Constants.SERIAL_PORT_AUTO);
         numberOfThreads.setText("1");
-        aspectRatio.setValue(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+        aspectRatio.setValue(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS));
         if (settingsController.currentConfig == null) {
             DisplayInfo screenInfo = settingsController.displayManager.getFirstInstanceDisplay();
             setDispInfo(screenInfo);
@@ -324,7 +325,7 @@ public class ModeTabController {
         }
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         if (currentConfig.isAutoDetectBlackBars()) {
-            aspectRatio.setValue(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+            aspectRatio.setValue(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS));
         } else {
             aspectRatio.setValue(LocalizedEnum.fromBaseStr(Enums.AspectRatio.class, currentConfig.getDefaultLedMatrix()).getI18n());
         }
@@ -491,8 +492,8 @@ public class ModeTabController {
                     }
                 }
                 if (!pluginsFound && !NativeExecutor.isRunningOnSandbox()) {
-                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.CUDA_ERROR_TITLE), CommonUtility.getWord(Constants.CUDA_ERROR_HEADER),
-                            CommonUtility.getWord(Constants.CUDA_ERROR_CONTEXT), Alert.AlertType.CONFIRMATION);
+                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(LabelKey.CUDA_ERROR_TITLE), CommonUtility.getWord(LabelKey.CUDA_ERROR_HEADER),
+                            CommonUtility.getWord(LabelKey.CUDA_ERROR_CONTEXT), Alert.AlertType.CONFIRMATION);
                     ButtonType button = result.orElse(ButtonType.OK);
                     if (button == ButtonType.OK) {
                         MainSingleton.getInstance().guiManager.surfToURL(Constants.LINUX_WIKI_URL);
@@ -509,8 +510,8 @@ public class ModeTabController {
             }
         });
         aspectRatio.valueProperty().addListener((_, _, newVal) -> {
-            if (aspectRatio.getSelectionModel().getSelectedItem().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS))) {
-                MainSingleton.getInstance().guiManager.trayIconManager.manageAspectRatioListener(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), false);
+            if (aspectRatio.getSelectionModel().getSelectedItem().equals(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS))) {
+                MainSingleton.getInstance().guiManager.trayIconManager.manageAspectRatioListener(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS), false);
             } else {
                 MainSingleton.getInstance().guiManager.trayIconManager.manageAspectRatioListener(LocalizedEnum.fromStr(Enums.AspectRatio.class, newVal).getBaseI18n(), false);
             }
@@ -571,9 +572,9 @@ public class ModeTabController {
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT, "")));
-        config.setDefaultLedMatrix(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) ?
+        config.setDefaultLedMatrix(aspectRatio.getValue().equals(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS)) ?
                 Enums.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Enums.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
-        config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)));
+        config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS)));
         monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
         if (monitorIndex >= 0 && monitorIndex < settingsController.displayManager.getDisplayList().size()) {
             config.setMonitorNumber(monitorIndex);
@@ -608,32 +609,32 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        GuiManager.createTooltip(Constants.INITIAL_CONTEXT, firmTypeFull);
-        GuiManager.createTooltip(Constants.INITIAL_CONTEXT, firmTypeLight);
-        GuiManager.createTooltip(Constants.TOOLTIP_RESET_WAYLAND, resetButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_SCREENWIDTH, screenWidth);
-        GuiManager.createTooltip(Constants.TOOLTIP_SCREENHEIGHT, screenHeight);
-        GuiManager.createTooltip(Constants.TOOLTIP_SCALING, scaling);
+        GuiManager.createTooltip(LabelKey.INITIAL_CONTEXT, firmTypeFull);
+        GuiManager.createTooltip(LabelKey.INITIAL_CONTEXT, firmTypeLight);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_RESET_WAYLAND, resetButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SCREENWIDTH, screenWidth);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SCREENHEIGHT, screenHeight);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SCALING, scaling);
         if (NativeExecutor.isWindows()) {
-            GuiManager.createTooltip(Constants.TOOLTIP_CAPTUREMETHOD, captureMethod);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_CAPTUREMETHOD, captureMethod);
         } else if (NativeExecutor.isMac()) {
-            GuiManager.createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD, captureMethod);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_MACCAPTUREMETHOD, captureMethod);
         } else {
-            GuiManager.createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD, captureMethod);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_LINUXCAPTUREMETHOD, captureMethod);
         }
-        GuiManager.createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS, numberOfThreads);
-        GuiManager.createTooltip(Constants.TOOLTIP_SIMD, simdOption);
-        GuiManager.createTooltip(Constants.TOOLTIP_SERIALPORT, serialPort);
-        GuiManager.createTooltip(Constants.TOOLTIP_ASPECTRATIO, aspectRatio);
-        GuiManager.createTooltip(Constants.TOOLTIP_MONITORNUMBER, monitorNumber);
-        GuiManager.createTooltip(Constants.TOOLTIP_BAUD_RATE, baudRate);
-        GuiManager.createTooltip(Constants.TOOLTIP_THEME, theme);
-        GuiManager.createTooltip(Constants.TOOLTIP_LANGUAGE, language);
-        GuiManager.createTooltip(Constants.TOOLTIP_RESAMPLING_FACTOR, resamplingFactor);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NUMBEROFTHREADS, numberOfThreads);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SIMD, simdOption);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SERIALPORT, serialPort);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ASPECTRATIO, aspectRatio);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MONITORNUMBER, monitorNumber);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BAUD_RATE, baudRate);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_THEME, theme);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LANGUAGE, language);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_RESAMPLING_FACTOR, resamplingFactor);
         if (currentConfig == null) {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL, saveSettingsButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVESETTINGSBUTTON_NULL, saveSettingsButton);
         } else {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, 200, saveSettingsButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVESETTINGSBUTTON, 200, saveSettingsButton);
         }
     }
 

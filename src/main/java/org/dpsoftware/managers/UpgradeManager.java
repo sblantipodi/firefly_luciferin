@@ -42,6 +42,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
 import org.dpsoftware.network.tcpUdp.TcpClient;
@@ -141,17 +142,17 @@ public class UpgradeManager {
     private static void showUpgradeResult(GlowWormDevice glowWormDevice, int responseCode) {
         String notificationContext = glowWormDevice.getDeviceName() + " ";
         if (HttpURLConnection.HTTP_OK == responseCode) {
-            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
+            log.info(CommonUtility.getWord(LabelKey.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
-                notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+                notificationContext += CommonUtility.getWord(LabelKey.DEVICEUPGRADE_SUCCESS_CDC);
             } else {
-                notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                notificationContext += CommonUtility.getWord(LabelKey.DEVICEUPGRADE_SUCCESS);
             }
-            MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(LabelKey.UPGRADE_SUCCESS), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
         } else {
-            log.error(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
-            notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_ERROR);
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            log.error(CommonUtility.getWord(LabelKey.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
+            notificationContext += CommonUtility.getWord(LabelKey.DEVICEUPGRADE_ERROR);
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(LabelKey.UPGRADE_ERROR), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
         }
     }
 
@@ -237,7 +238,7 @@ public class UpgradeManager {
         Group root = new Group();
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle(CommonUtility.getWord(Constants.DOWNLOADING) + " " + Constants.FIREFLY_LUCIFERIN + " v" + latestReleaseStr);
+        stage.setTitle(CommonUtility.getWord(LabelKey.DOWNLOADING) + " " + Constants.FIREFLY_LUCIFERIN + " v" + latestReleaseStr);
         GuiManager.setStageIcon(stage);
 
         Label label = new Label("");
@@ -286,7 +287,7 @@ public class UpgradeManager {
                     URL website = new URI(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename).toURL();
                     URLConnection connection = website.openConnection();
                     long expectedSize = connection.getContentLength();
-                    log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
+                    log.info(CommonUtility.getWord(LabelKey.EXPECTED_SIZE) + expectedSize);
                     String downloadPath = InstanceConfigurer.getConfigPath() + File.separator + filename;
                     try (InputStream is = connection.getInputStream();
                          FileOutputStream fos = new FileOutputStream(downloadPath)) {
@@ -296,10 +297,10 @@ public class UpgradeManager {
                         while (transferedSize < expectedSize) {
                             transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
                             percentage = ((transferedSize * 100) / expectedSize);
-                            updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
+                            updateMessage(CommonUtility.getWord(LabelKey.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
                             updateProgress(percentage, 100);
                         }
-                        log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
+                        log.info(transferedSize + CommonUtility.getWord(LabelKey.DOWNLOAD_COMPLETE));
                     }
                     Thread.sleep(1000);
                     if (NativeExecutor.isWindows()) {
@@ -341,16 +342,16 @@ public class UpgradeManager {
                 if (showChangelog) {
                     String upgradeContext;
                     if (NativeExecutor.isWindows()) {
-                        upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
+                        upgradeContext = CommonUtility.getWord(LabelKey.CLICK_OK_DOWNLOAD);
                     } else {
                         if (NativeExecutor.isRunningOnSandbox()) {
-                            upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE_SANDBOX);
+                            upgradeContext = CommonUtility.getWord(LabelKey.UPGRADE_AVAILABLE_SANDBOX);
                         } else {
-                            upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                            upgradeContext = CommonUtility.getWord(LabelKey.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(LabelKey.ONCE_DOWNLOAD_FINISHED);
                         }
                     }
                     Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
-                            CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
+                            CommonUtility.getWord(LabelKey.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
                             Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
                     ButtonType button = result.orElse(ButtonType.OK);
                     if (button == ButtonType.OK) {
@@ -359,7 +360,7 @@ public class UpgradeManager {
                         }
                     }
                 } else {
-                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE), CommonUtility.getWord(Constants.INSTALL_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(LabelKey.NEW_VERSION_AVAILABLE), CommonUtility.getWord(LabelKey.INSTALL_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
                 }
             }
         }
@@ -404,7 +405,7 @@ public class UpgradeManager {
                     postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANT_UPGRADE_TOO_OLD, Constants.MANUAL_UPGRADE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.CANT_UPGRADE_TOO_OLD, LabelKey.MANUAL_UPGRADE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
             }
         } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
@@ -499,7 +500,7 @@ public class UpgradeManager {
         URL website = new URI(downloadUrl).toURL();
         URLConnection connection = website.openConnection();
         long expectedSize = connection.getContentLength();
-        log.info("{}{}", CommonUtility.getWord(Constants.EXPECTED_SIZE), expectedSize);
+        log.info("{}{}", CommonUtility.getWord(LabelKey.EXPECTED_SIZE), expectedSize);
         String downloadPath = InstanceConfigurer.getConfigPath() + File.separator + filename;
         try (InputStream is = connection.getInputStream();
              FileOutputStream fos = new FileOutputStream(downloadPath)) {
@@ -508,7 +509,7 @@ public class UpgradeManager {
             while (transferedSize < expectedSize) {
                 transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
             }
-            log.info("{} {}", transferedSize, CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
+            log.info("{} {}", transferedSize, CommonUtility.getWord(LabelKey.DOWNLOAD_COMPLETE));
         }
     }
 
@@ -582,20 +583,20 @@ public class UpgradeManager {
                             .collect(Collectors.joining());
                     String deviceContent;
                     if (devicesToUpdate.size() == 1) {
-                        deviceContent = MainSingleton.getInstance().config.isFullFirmware() ? CommonUtility.getWord(Constants.DEVICE_UPDATED) : CommonUtility.getWord(Constants.DEVICE_UPDATED_LIGHT);
+                        deviceContent = MainSingleton.getInstance().config.isFullFirmware() ? CommonUtility.getWord(LabelKey.DEVICE_UPDATED) : CommonUtility.getWord(LabelKey.DEVICE_UPDATED_LIGHT);
                     } else {
-                        deviceContent = CommonUtility.getWord(Constants.DEVICES_UPDATED);
+                        deviceContent = CommonUtility.getWord(LabelKey.DEVICES_UPDATED);
                     }
                     String upgradeMessage;
                     if (NativeExecutor.isLinux()) {
-                        upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED_LINUX);
+                        upgradeMessage = CommonUtility.getWord(LabelKey.UPDATE_NEEDED_LINUX);
                     } else {
-                        upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
+                        upgradeMessage = CommonUtility.getWord(LabelKey.UPDATE_NEEDED);
                     }
                     boolean isAutomaticUpdateCapable = isAutomaticUpdateCapable(devicesToUpdate);
                     Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                            CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
-                                    + (isAutomaticUpdateCapable ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
+                            CommonUtility.getWord(LabelKey.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
+                                    + (isAutomaticUpdateCapable ? CommonUtility.getWord(LabelKey.UPDATE_BACKGROUND) : upgradeMessage)
                                     + "\n", Alert.AlertType.CONFIRMATION);
                     ButtonType button = result.orElse(ButtonType.OK);
                     if (isAutomaticUpdateCapable) {
@@ -632,7 +633,7 @@ public class UpgradeManager {
                     }
                 });
             } else if (showChangelog) {
-                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.LATEST_VERSION), CommonUtility.getWord(Constants.NO_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(LabelKey.LATEST_VERSION), CommonUtility.getWord(LabelKey.NO_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
             }
         }
     }

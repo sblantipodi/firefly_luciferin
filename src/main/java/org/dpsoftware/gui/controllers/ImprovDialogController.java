@@ -36,6 +36,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -143,18 +144,18 @@ public class ImprovDialogController {
      * Set tooltips
      */
     private void setTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_SSID, ssid);
-        GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_PWD, wifiPwd);
-        GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_COM, comPort);
-        GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_BAUD, baudrate);
-        GuiManager.createTooltip(Constants.TOOLTIP_DEV_NAME, deviceName);
-        GuiManager.createTooltip(Constants.TOOLTIP_ETHERNET, ethCombo);
-        GuiManager.createTooltip(Constants.TOOLTIP_ETHERNET, ethSelCombo);
-        GuiManager.createTooltip(Constants.TOOLTIP_ETHERNET, ethSelCombo);
-        GuiManager.createTooltip(Constants.TOOLTIP_ETHERNET, mi);
-        GuiManager.createTooltip(Constants.TOOLTIP_ETHERNET, mo);
-        GuiManager.createTooltip(Constants.TOOLTIP_ETHERNET, sck);
-        GuiManager.createTooltip(Constants.TOOLTIP_ETHERNET, cs);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_IMPROV_SSID, ssid);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_IMPROV_PWD, wifiPwd);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_IMPROV_COM, comPort);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_IMPROV_BAUD, baudrate);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_DEV_NAME, deviceName);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ETHERNET, ethCombo);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ETHERNET, ethSelCombo);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ETHERNET, ethSelCombo);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ETHERNET, mi);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ETHERNET, mo);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ETHERNET, sck);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ETHERNET, cs);
     }
 
     /**
@@ -214,8 +215,8 @@ public class ImprovDialogController {
         if ((ssid.getValue().isEmpty() || wifiPwd.getText().isEmpty()) && ethCombo.getValue().equals(Enums.EthernetOptions.ETH_NO_ETH.getI18n())) {
             log.error("WiFi is empty");
             MainSingleton.getInstance().guiManager.showLocalizedNotification(
-                    CommonUtility.getWord(Constants.FIRMWARE_PROVISION_NOTIFY),
-                    CommonUtility.getWord(Constants.FIRMWARE_IMPROV_ERROR_HEADER),
+                    CommonUtility.getWord(LabelKey.FIRMWARE_PROVISION_NOTIFY),
+                    CommonUtility.getWord(LabelKey.FIRMWARE_IMPROV_ERROR_HEADER),
                     Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
             return false;
         }
@@ -223,8 +224,8 @@ public class ImprovDialogController {
             if (mi.getText().isEmpty() || mo.getText().isEmpty() || sck.getText().isEmpty() || cs.getText().isEmpty()) {
                 log.error("MI, MO, SCK, CS are mandatory");
                 MainSingleton.getInstance().guiManager.showLocalizedNotification(
-                        CommonUtility.getWord(Constants.FIRMWARE_PROVISION_NOTIFY),
-                        CommonUtility.getWord(Constants.FIRMWARE_IMPROV_ERROR2_HEADER),
+                        CommonUtility.getWord(LabelKey.FIRMWARE_PROVISION_NOTIFY),
+                        CommonUtility.getWord(LabelKey.FIRMWARE_IMPROV_ERROR2_HEADER),
                         Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
                 return false;
             }
@@ -259,7 +260,7 @@ public class ImprovDialogController {
             if (!improvError || retryNumber.get() >= MAX_RETRY) {
                 scheduler.shutdown();
                 if (MainSingleton.getInstance().communicationError) {
-                    MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROVISION_NOTIFY), CommonUtility.getWord(Constants.FIRMWARE_PROVISION_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+                    MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(LabelKey.FIRMWARE_PROVISION_NOTIFY), CommonUtility.getWord(LabelKey.FIRMWARE_PROVISION_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
                 }
             }
         };

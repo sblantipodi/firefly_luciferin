@@ -37,6 +37,7 @@ import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
@@ -143,14 +144,14 @@ public class SerialManager {
             int baudrateToUse = baudrate.isEmpty() ? Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()) : Integer.parseInt(baudrate);
             MainSingleton.getInstance().serial.setComPortParameters(baudrateToUse, 8, 1, SerialPort.NO_PARITY);
             MainSingleton.getInstance().serial.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, readTimeout, writeTimeout);
-            log.info("{}{}", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
+            log.info("{}{}", CommonUtility.getWord(LabelKey.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
             GlowWormDevice gwDevice = createDefaultDevice();
             GuiSingleton.getInstance().deviceTableData.add(gwDevice);
             GuiManager guiManager = new GuiManager();
             if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO) && portName.isEmpty()) {
                 MainSingleton.getInstance().communicationError = true;
-                guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS, Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Constants.SERIAL_ERROR_TITLE, TrayIcon.MessageType.ERROR);
-                log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
+                guiManager.showLocalizedNotification(LabelKey.SERIAL_PORT_AMBIGUOUS, LabelKey.SERIAL_PORT_AMBIGUOUS_CONTEXT, LabelKey.SERIAL_ERROR_TITLE, TrayIcon.MessageType.ERROR);
+                log.error(CommonUtility.getWord(LabelKey.SERIAL_ERROR_OPEN_HEADER));
             }
             log.info("Connected: Serial {}", MainSingleton.getInstance().serial.getDescriptivePortName());
             if (MainSingleton.getInstance().guiManager != null) {
@@ -164,12 +165,12 @@ public class SerialManager {
             if (NativeExecutor.isLinux() && !alertSent) {
                 alertSent = true;
                 Platform.runLater(() -> {
-                    String content = CommonUtility.getWord(Constants.USB_NOT_AVAILABLE_CONTENT);
+                    String content = CommonUtility.getWord(LabelKey.USB_NOT_AVAILABLE_CONTENT);
                     if (NativeExecutor.isSnap()) {
-                        content += CommonUtility.getWord(Constants.USB_NOT_AVAILABLE_CONTENT_SNAP);
+                        content += CommonUtility.getWord(LabelKey.USB_NOT_AVAILABLE_CONTENT_SNAP);
                     }
-                    MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.USB_NOT_AVAILABLE_TITLE),
-                            CommonUtility.getWord(Constants.USB_NOT_AVAILABLE_HEADER), content, Alert.AlertType.WARNING);
+                    MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(LabelKey.USB_NOT_AVAILABLE_TITLE),
+                            CommonUtility.getWord(LabelKey.USB_NOT_AVAILABLE_HEADER), content, Alert.AlertType.WARNING);
                 });
             }
             MainSingleton.getInstance().communicationError = true;
@@ -600,9 +601,9 @@ public class SerialManager {
                         } else if (!MainSingleton.getInstance().getImprovActive().isEmpty() && inputLine.contains(Constants.SERIAL_IMPROV) || inputLine.contains(Constants.SERIAL_IMPROV_ETH)) {
                             MainSingleton.getInstance().improvActive = "";
                             MainSingleton.getInstance().guiManager.pipelineManager.startCapturePipeline();
-                            log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
-                            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
-                                    CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                            log.info(CommonUtility.getWord(LabelKey.FIRMWARE_PROGRAM_NOTIFY_HEADER));
+                            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(LabelKey.FIRMWARE_PROGRAM_NOTIFY),
+                                    CommonUtility.getWord(LabelKey.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
                         }
                     }
                 }

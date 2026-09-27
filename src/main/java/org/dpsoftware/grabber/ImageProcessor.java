@@ -32,12 +32,13 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.EnvConstants;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.HSLColor;
-import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -1065,7 +1066,7 @@ public class ImageProcessor {
                 }
                 return;
             } catch (Throwable e) {
-                log.error(CommonUtility.getWord(Constants.CANT_FIND_GSTREAMER));
+                log.error(CommonUtility.getWord(LabelKey.CANT_FIND_GSTREAMER));
             }
         } else if (NativeExecutor.isMac()) {
             String gstPath = System.getProperty(Constants.JNA_GSTREAMER_PATH, Constants.JNA_LIB_PATH_FOLDER);

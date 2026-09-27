@@ -27,11 +27,8 @@ import jdk.incubator.vector.IntVector;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.EnvConstants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.InstanceConfigurer;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
@@ -223,7 +220,7 @@ public final class NativeExecutor {
      * @param profileToUse write profilename to file, useful for systemctl restart
      */
     private static void writeProfileFile(String profileToUse) {
-        if (profileToUse != null && !profileToUse.isEmpty() && !Constants.DEFAULT.equals(profileToUse) && !CommonUtility.getWord(Constants.DEFAULT).equals(profileToUse)) {
+        if (profileToUse != null && !profileToUse.isEmpty() && !LabelKey.DEFAULT.equals(profileToUse) && !CommonUtility.getWord(LabelKey.DEFAULT).equals(profileToUse)) {
             new StorageManager().writeStartProfileFile(profileToUse);
         }
     }

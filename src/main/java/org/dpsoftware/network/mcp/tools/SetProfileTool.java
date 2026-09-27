@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.network.mcp.AbstractMcpTool;
 import org.dpsoftware.utilities.CommonUtility;
@@ -127,8 +127,8 @@ public class SetProfileTool extends AbstractMcpTool {
             log.warn("MCP {}", msg);
             return createToolErrorResult(msg);
         }
-        if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            NativeExecutor.restartNativeInstance(Constants.DEFAULT);
+        if (profileName.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+            NativeExecutor.restartNativeInstance(LabelKey.DEFAULT);
         } else {
             NativeExecutor.restartNativeInstance(profileName);
         }

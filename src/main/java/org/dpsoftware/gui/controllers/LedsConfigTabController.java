@@ -35,6 +35,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
@@ -251,19 +252,19 @@ public class LedsConfigTabController {
         switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
                 if ((currentConfig.getMultiMonitor() == 1)) {
-                    displayLabel.setText(CommonUtility.getWord(Constants.MAIN_DISPLAY));
+                    displayLabel.setText(CommonUtility.getWord(LabelKey.MAIN_DISPLAY));
                 } else {
-                    displayLabel.setText(CommonUtility.getWord(Constants.RIGHT_DISPLAY));
+                    displayLabel.setText(CommonUtility.getWord(LabelKey.RIGHT_DISPLAY));
                 }
             }
             case 2 -> {
                 if ((currentConfig.getMultiMonitor() == 2)) {
-                    displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
+                    displayLabel.setText(CommonUtility.getWord(LabelKey.LEFT_DISPLAY));
                 } else {
-                    displayLabel.setText(CommonUtility.getWord(Constants.CENTER_DISPLAY));
+                    displayLabel.setText(CommonUtility.getWord(LabelKey.CENTER_DISPLAY));
                 }
             }
-            case 3 -> displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
+            case 3 -> displayLabel.setText(CommonUtility.getWord(LabelKey.LEFT_DISPLAY));
         }
     }
 
@@ -441,24 +442,24 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        GuiManager.createTooltip(Constants.TOOLTIP_TOPLED, topLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_LEFTLED, leftLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_RIGHTLED, rightLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED, bottomLeftLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED, bottomRightLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMROWLED, bottomRowLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_ORIENTATION, orientation);
-        GuiManager.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET, ledStartOffset);
-        GuiManager.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW, splitBottomMargin);
-        GuiManager.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM, grabberAreaTopBottom);
-        GuiManager.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE, grabberSide);
-        GuiManager.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
-        GuiManager.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeSide);
-        GuiManager.createTooltip(Constants.TOOLTIP_GROUP_BY, groupBy);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_TOPLED, topLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LEFTLED, leftLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_RIGHTLED, rightLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BOTTOMLEFTLED, bottomLeftLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BOTTOMRIGHTLED, bottomRightLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BOTTOMROWLED, bottomRowLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ORIENTATION, orientation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LEDSTARTOFFSET, ledStartOffset);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SPLIT_BOTTOM_ROW, splitBottomMargin);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GRABBER_AREA_TOP_BOTTOM, grabberAreaTopBottom);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GRABBER_AREA_SIDE, grabberSide);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CORNER_GAP, gapTypeSide);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GROUP_BY, groupBy);
         if (currentConfig == null) {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
         } else {
-            GuiManager.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
         }
     }
 

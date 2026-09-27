@@ -35,6 +35,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.WebRtcStreamer;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
@@ -192,8 +193,7 @@ public class ConfigServer {
         // Include the active non-default profile.
         String profileArg = MainSingleton.getInstance().profileArg;
         if (profileArg != null && !profileArg.isEmpty()
-                && !Constants.DEFAULT.equals(profileArg)
-                && !CommonUtility.getWord(Constants.DEFAULT).equals(profileArg)) {
+                && !CommonUtility.getWord(LabelKey.DEFAULT).equals(profileArg)) {
             configNode.put("activeProfile", profileArg);
         }
         HttpResponses.sendJson(exchange, configNode);

@@ -31,6 +31,7 @@ import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
@@ -137,8 +138,8 @@ public class GrabberManager {
                             log.warn("Capture source unavailable; pipeline not started: {}", unavailableSource);
                             if (!main.isHeadlessMode() && main.guiManager != null) {
                                 Platform.runLater(() -> main.guiManager.showAlert(Constants.SCREEN_GRABBER,
-                                        CommonUtility.getWord(Constants.CAPTURE_SOURCE_UNAVAILABLE),
-                                        CommonUtility.getWord(Constants.CAPTURE_SOURCE_UNAVAILABLE_CONTEXT).replace("{0}", unavailableSource),
+                                        CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_UNAVAILABLE),
+                                        CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_UNAVAILABLE_CONTEXT).replace("{0}", unavailableSource),
                                         Alert.AlertType.WARNING));
                             }
                         }
@@ -240,16 +241,16 @@ public class GrabberManager {
         if (usb) {
             var selected = config.getCaptureDevice();
             if (selected == null) {
-                return CommonUtility.getWord(Constants.CAPTURE_SOURCE_USB_UNCONFIGURED);
+                return CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_USB_UNCONFIGURED);
             }
             String identity = NativeExecutor.isWindows() ? selected.getFriendlyName() : selected.getDevPath();
             if (identity == null || identity.isBlank()) {
-                return CommonUtility.getWord(Constants.CAPTURE_SOURCE_USB_UNCONFIGURED);
+                return CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_USB_UNCONFIGURED);
             }
             boolean present = CaptureDeviceUtilities.discover().stream().anyMatch(device ->
                     NativeExecutor.isWindows() ? identity.equalsIgnoreCase(device.getFriendlyName())
                             : identity.equals(device.getDevPath()));
-            return present ? null : CommonUtility.getWord(Constants.CAPTURE_SOURCE_USB).replace("{0}", identity);
+            return present ? null : CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_USB).replace("{0}", identity);
         }
         boolean monitor = Configuration.CaptureMethod.DDUPL_DX11.name().equals(method)
                 || Configuration.CaptureMethod.DDUPL_DX12.name().equals(method)
@@ -258,7 +259,7 @@ public class GrabberManager {
         if (monitor) {
             int index = config.getMonitorNumber();
             if (index < 0 || new DisplayManager().getDisplayInfo(index) == null) {
-                return CommonUtility.getWord(Constants.CAPTURE_SOURCE_MONITOR).replace("{0}", String.valueOf(index));
+                return CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_MONITOR).replace("{0}", String.valueOf(index));
             }
         }
         return null;
@@ -296,7 +297,7 @@ public class GrabberManager {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
             if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i % 3 == 0) {
                 robot = new Robot();
-                log.info(CommonUtility.getWord(Constants.SPAWNING_ROBOTS));
+                log.info(CommonUtility.getWord(LabelKey.SPAWNING_ROBOTS));
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
@@ -359,7 +360,7 @@ public class GrabberManager {
                     mqttFramerateDto.setEffect(MainSingleton.getInstance().config.getEffect());
                     mqttFramerateDto.setColorMode(String.valueOf(Enums.ColorMode.values()[MainSingleton.getInstance().config.getColorMode() - 1].getBaseI18n()));
                     mqttFramerateDto.setAspectRatio(MainSingleton.getInstance().config.isAutoDetectBlackBars() ?
-                            CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS) : MainSingleton.getInstance().config.getDefaultLedMatrix());
+                            CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS) : MainSingleton.getInstance().config.getDefaultLedMatrix());
                     mqttFramerateDto.setGamma(String.valueOf(MainSingleton.getInstance().config.getGamma()));
                     String adaptiveGamma = String.format("%.3f", Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get()));
                     if (NativeExecutor.isWindows())
@@ -367,8 +368,8 @@ public class GrabberManager {
                     mqttFramerateDto.setAdaptiveGamma(adaptiveGamma);
                     mqttFramerateDto.setSmoothingLvl((Enums.Ema.findByValue(MainSingleton.getInstance().config.getEmaAlpha()).getBaseI18n()));
                     mqttFramerateDto.setFrameGen((Enums.FrameGeneration.findByValue(MainSingleton.getInstance().config.getFrameInsertionTarget()).getBaseI18n()));
-                    mqttFramerateDto.setProfile(Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg) ?
-                            CommonUtility.getWord(Constants.DEFAULT) : MainSingleton.getInstance().profileArg);
+                    mqttFramerateDto.setProfile(LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg) ?
+                            CommonUtility.getWord(LabelKey.DEFAULT) : MainSingleton.getInstance().profileArg);
                     mqttFramerateDto.setCubeLut(MainSingleton.getInstance().config.getCubeLut());
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE),
                             CommonUtility.toJsonString(mqttFramerateDto));
@@ -446,11 +447,11 @@ public class GrabberManager {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
                     int suggestedFramerate = getSuggestedFramerate();
-                    log.error("{}. {}", CommonUtility.getWord(Constants.FRAMERATE_HEADER), CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
+                    log.error("{}. {}", CommonUtility.getWord(LabelKey.FRAMERATE_HEADER), CommonUtility.getWord(LabelKey.FRAMERATE_CONTEXT)
                             .replace("{0}", String.valueOf(suggestedFramerate)));
                     if (MainSingleton.getInstance().config.isSyncCheck() && (MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) || MainSingleton.getInstance().config.getFrameInsertionTarget() == 0)) {
-                        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.FRAMERATE_TITLE), CommonUtility.getWord(Constants.FRAMERATE_HEADER),
-                                CommonUtility.getWord(Constants.FRAMERATE_CONTEXT).replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
+                        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(LabelKey.FRAMERATE_TITLE), CommonUtility.getWord(LabelKey.FRAMERATE_HEADER),
+                                CommonUtility.getWord(LabelKey.FRAMERATE_CONTEXT).replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
                         ButtonType button = result.orElse(ButtonType.OK);
                         if (button == ButtonType.OK) {
                             try {

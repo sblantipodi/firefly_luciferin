@@ -32,6 +32,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.*;
 import org.dpsoftware.utilities.CommonUtility;
@@ -297,8 +298,8 @@ public class NetworkTabController {
     public void discoveryAdd() {
         log.info("Sending entities for MQTT auto discovery...");
         publishDiscoveryTopics(true);
-        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
-                Constants.MQTT_ADD_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+        MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.MQTT_DISCOVERY,
+                LabelKey.MQTT_ADD_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
     }
 
     /**
@@ -308,8 +309,8 @@ public class NetworkTabController {
     public void discoveryRemove() {
         log.info("Removing entities using MQTT auto discovery...");
         publishDiscoveryTopics(false);
-        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
-                Constants.MQTT_REMOVE_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+        MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.MQTT_DISCOVERY,
+                LabelKey.MQTT_REMOVE_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
     }
 
     /**
@@ -318,21 +319,21 @@ public class NetworkTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTHOST, mqttHost);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTPORT, mqttPort);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTTOPIC, mqttTopic);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC, mqttDiscoveryTopic);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_ADD, addButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE, removeButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTUSER, mqttUser);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTPWD, mqttPwd);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTENABLE, mqttEnable);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTSTREAM, mqttStream);
-        GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_CONTEXT, programDeviceButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTHOST, mqttHost);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTPORT, mqttPort);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTTOPIC, mqttTopic);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTDISCOVERYTOPIC, mqttDiscoveryTopic);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTDISCOVERYTOPIC_ADD, addButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE, removeButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTUSER, mqttUser);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTPWD, mqttPwd);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTENABLE, mqttEnable);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTSTREAM, mqttStream);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_IMPROV_CONTEXT, programDeviceButton);
         if (currentConfig == null) {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMQTTButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMQTTButton);
         }
-        GuiManager.createTooltip(Constants.TOOLTIP_STREAMTYPE, streamType);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_STREAMTYPE, streamType);
     }
 
     /**

@@ -34,6 +34,7 @@ import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.network.McpServer;
@@ -196,7 +197,7 @@ public class FireflyLuciferin extends Application {
     static void manageStartupArgs(MainSingleton main, String[] args) {
         if (args != null && args.length == 1 && Constants.HEADLESS_ARG.equals(args[0])) {
             // Launched with a single -h: start instance #1 with the default profile, headless.
-            args = new String[]{"1", Constants.DEFAULT, Constants.HEADLESS_ARG};
+            args = new String[]{"1", LabelKey.DEFAULT, Constants.HEADLESS_ARG};
         }
         if (args != null && args.length > 0 && Constants.RESTART_DELAY.equals(args[0])) {
             String[] newArray = new String[args.length - 1];
@@ -214,7 +215,7 @@ public class FireflyLuciferin extends Application {
             main.spawnInstances = false;
             CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
         }
-        main.profileArg = Constants.DEFAULT;
+        main.profileArg = LabelKey.DEFAULT;
         if (args != null && args.length > 1) {
             main.profileArg = args[1];
         }
@@ -391,7 +392,7 @@ public class FireflyLuciferin extends Application {
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
-            return CommonUtility.getWord(Constants.SOMETHING_WENT_WRONG);
+            return CommonUtility.getWord(LabelKey.SOMETHING_WENT_WRONG);
         }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(_ -> {
             clean();
             scheduledExecutorService.shutdownNow();

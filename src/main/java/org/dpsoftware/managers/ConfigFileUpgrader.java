@@ -28,6 +28,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -212,7 +213,7 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
             Map<String, Object> data;
             try {
                 data = mapper.readValue(new File(path + File.separator + filename), Map.class);
-                if (!data.get("frameInsertion").equals(CommonUtility.getWord(Constants.NO_SMOOTHING, Locale.ENGLISH))) {
+                if (!data.get("frameInsertion").equals(CommonUtility.getWord(LabelKey.NO_SMOOTHING, Locale.ENGLISH))) {
                     config.setFrameInsertionTarget(Constants.DEFAULT_FRAMGEN);
                     config.setEmaAlpha(Constants.DEFAULT_EMA);
                     config.setSmoothingType(Constants.DEFAULT_SMOOTHING);

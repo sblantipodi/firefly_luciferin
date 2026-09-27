@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
@@ -273,20 +274,20 @@ public class DisplayManager {
         String displayName = "";
         int screenNumber = displayNumber();
         if (screenNumber == 1) {
-            displayName = CommonUtility.getWord(Constants.SCREEN_MAIN);
+            displayName = CommonUtility.getWord(LabelKey.SCREEN_MAIN);
         } else if (screenNumber == 2) {
             if (monitorIndex == 0) {
-                displayName = CommonUtility.getWord(Constants.SCREEN_RIGHT);
+                displayName = CommonUtility.getWord(LabelKey.SCREEN_RIGHT);
             } else {
-                displayName = CommonUtility.getWord(Constants.SCREEN_LEFT);
+                displayName = CommonUtility.getWord(LabelKey.SCREEN_LEFT);
             }
         } else if (screenNumber >= 3) {
             if (monitorIndex == 0) {
-                displayName = CommonUtility.getWord(Constants.SCREEN_RIGHT);
+                displayName = CommonUtility.getWord(LabelKey.SCREEN_RIGHT);
             } else if (monitorIndex == 1) {
-                displayName = CommonUtility.getWord(Constants.SCREEN_CENTER);
+                displayName = CommonUtility.getWord(LabelKey.SCREEN_CENTER);
             } else {
-                displayName = CommonUtility.getWord(Constants.SCREEN_LEFT);
+                displayName = CommonUtility.getWord(LabelKey.SCREEN_LEFT);
             }
         }
         if (dispInfo == null) {

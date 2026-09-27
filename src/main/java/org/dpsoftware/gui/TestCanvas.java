@@ -696,7 +696,7 @@ public class TestCanvas {
         gc.setTextBaseline(VPos.CENTER);
         double padding = 12;
         double lineSpacing = 4;
-        String[] lines = CommonUtility.getWord(Constants.CANVAS_HELPER).split("\n");
+        String[] lines = CommonUtility.getWord(LabelKey.CANVAS_HELPER).split("\n");
         double textWidth = 0;
         double textHeight = 0;
         double[] lineHeights = new double[lines.length];
@@ -788,7 +788,7 @@ public class TestCanvas {
                 hslBefore = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
             }
             gc.setFill(new Color(hslBefore.getRed() / 255F, hslBefore.getGreen() / 255F, hslBefore.getBlue() / 255F, 1));
-            gc.fillText(CommonUtility.getWord(Constants.TC_BEFORE_TEXT).replace("{0}", String.valueOf(hslBefore.getRed())).replace("{1}", String.valueOf(hslBefore.getGreen())).replace("{2}", String.valueOf(hslBefore.getBlue())), scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
+            gc.fillText(CommonUtility.getWord(LabelKey.TC_BEFORE_TEXT).replace("{0}", String.valueOf(hslBefore.getRed())).replace("{1}", String.valueOf(hslBefore.getGreen())).replace("{2}", String.valueOf(hslBefore.getBlue())), scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
             var hslAfter = ImageProcessor.manageColors(hslBefore);
             ColorRGBW colorRGBW;
             if (hslAfter.getRGB() != hslBefore.getRGB()) {
@@ -817,7 +817,7 @@ public class TestCanvas {
         } else {
             gc.setFill(new Color(colorRGBW.getRed() / 255F, colorRGBW.getGreen() / 255F, colorRGBW.getBlue() / 255F, 1));
         }
-        String afterString = (MainSingleton.getInstance().config.getColorMode() > 1) ? CommonUtility.getWord(Constants.TC_AFTER_TEXT_RGBW) : CommonUtility.getWord(Constants.TC_AFTER_TEXT);
+        String afterString = (MainSingleton.getInstance().config.getColorMode() > 1) ? CommonUtility.getWord(LabelKey.TC_AFTER_TEXT_RGBW) : CommonUtility.getWord(LabelKey.TC_AFTER_TEXT);
         afterString = afterString.replace("{0}", String.valueOf(colorRGBW.getRed()));
         afterString = afterString.replace("{1}", String.valueOf(colorRGBW.getGreen()));
         afterString = afterString.replace("{2}", String.valueOf(colorRGBW.getBlue()));

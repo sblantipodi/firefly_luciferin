@@ -33,6 +33,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
@@ -146,8 +147,8 @@ public class StorageManager {
             filename = forceFilename;
         } else if (MainSingleton.getInstance().profileArg != null
                 && !MainSingleton.getInstance().profileArg.isEmpty()
-                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)
-                && !CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)) {
+                && !LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg)
+                && !CommonUtility.getWord(LabelKey.DEFAULT).equals(MainSingleton.getInstance().profileArg)) {
             filename = getProfileFileName(MainSingleton.getInstance().profileArg);
         } else {
             filename = switch (MainSingleton.getInstance().whoAmI) {
@@ -161,9 +162,9 @@ public class StorageManager {
         if (currentConfig != null) {
             File file = new File(path + File.separator + filename);
             if (file.delete()) {
-                log.info(CommonUtility.getWord(Constants.CLEANING_OLD_CONFIG));
+                log.info(CommonUtility.getWord(LabelKey.CLEANING_OLD_CONFIG));
             } else {
-                log.info(CommonUtility.getWord(Constants.FAILED_TO_CLEAN_CONFIG));
+                log.info(CommonUtility.getWord(LabelKey.FAILED_TO_CLEAN_CONFIG));
             }
         }
         mapper.writeValue(new File(path + File.separator + filename), config);
@@ -180,7 +181,7 @@ public class StorageManager {
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
         } catch (IOException e) {
-            log.error(CommonUtility.getWord(Constants.ERROR_READING_CONFIG));
+            log.error(CommonUtility.getWord(LabelKey.ERROR_READING_CONFIG));
         }
         return config;
     }
@@ -214,7 +215,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArg : Constants.DEFAULT);
+        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArg : LabelKey.DEFAULT);
     }
 
     /**
@@ -235,7 +236,7 @@ public class StorageManager {
     public Configuration readConfig(boolean readMainConfig, String profileName) {
         try {
             Configuration currentConfig;
-            if (!CommonUtility.getWord(Constants.DEFAULT).equals(profileName) && !Constants.DEFAULT.equals(profileName) && !readMainConfig) {
+            if (!CommonUtility.getWord(LabelKey.DEFAULT).equals(profileName) && !LabelKey.DEFAULT.equals(profileName) && !readMainConfig) {
                 currentConfig = readConfigFile(getProfileFileName(profileName));
             } else {
                 Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
@@ -268,41 +269,41 @@ public class StorageManager {
             MainSingleton.getInstance().setRestartNeeded(false);
             Set<String> restartReasons = new LinkedHashSet<>();
             if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage()))
-                restartReasons.add(Constants.TOOLTIP_LANGUAGE);
-            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
+                restartReasons.add(LabelKey.TOOLTIP_LANGUAGE);
+            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(LabelKey.TOOLTIP_THEME);
             if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
-                restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
+                restartReasons.add(LabelKey.TOOLTIP_BAUD_RATE);
             if (!defaultConfig.getCaptureDeviceFriendlyName().equals(profileConfig.getCaptureDeviceFriendlyName()))
-                restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
+                restartReasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
-                restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
+                restartReasons.add(LabelKey.TOOLTIP_CAPTUREMETHOD);
             if (profileConfig.getOutputDevice() != null && (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice())
                     || !defaultConfig.getStaticGlowWormIp().equals(profileConfig.getStaticGlowWormIp())))
-                restartReasons.add(Constants.TOOLTIP_SERIALPORT);
+                restartReasons.add(LabelKey.TOOLTIP_SERIALPORT);
             if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads())
-                restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
+                restartReasons.add(LabelKey.TOOLTIP_NUMBEROFTHREADS);
             if (defaultConfig.isFullFirmware() != profileConfig.isFullFirmware())
-                restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
+                restartReasons.add(LabelKey.TOOLTIP_WIFIENABLE);
             if (defaultConfig.isWirelessStream() != profileConfig.isWirelessStream())
-                restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTSTREAM);
             if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable())
-                restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTENABLE);
             if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType()))
-                restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
+                restartReasons.add(LabelKey.TOOLTIP_STREAMTYPE);
             if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer()))
-                restartReasons.add(Constants.TOOLTIP_MQTTHOST);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTHOST);
             if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic()))
-                restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTTOPIC);
             if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername()))
-                restartReasons.add(Constants.TOOLTIP_MQTTUSER);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTUSER);
             if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd()))
-                restartReasons.add(Constants.TOOLTIP_MQTTPWD);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTPWD);
             if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice())
-                restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
+                restartReasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
             if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
-                restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
+                restartReasons.add(LabelKey.TOOLTIP_MULTIMONITOR);
             if (defaultConfig.getSimdAvx() != profileConfig.getSimdAvx())
-                restartReasons.add(Constants.TOOLTIP_SIMD);
+                restartReasons.add(LabelKey.TOOLTIP_SIMD);
             if (!restartReasons.isEmpty()) {
                 MainSingleton.getInstance().setRestartNeeded(true);
                 log.info(String.join("\n", restartReasons));
