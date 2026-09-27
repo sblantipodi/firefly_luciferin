@@ -256,10 +256,12 @@ public class PipelineManager {
     /**
      * Reject unavailable element factories without invoking GStreamer's pipeline parser.
      */
+    @SuppressWarnings("all")
     public static void requireCaptureElements(String pipeline) {
         for (String element : captureElements(pipeline)) {
             ElementFactory factory;
             try {
+                // No autocloseable because this thread must not be terminated
                 factory = ElementFactory.find(element);
             } catch (IllegalArgumentException failure) {
                 throw new MissingCaptureElementException(element, failure);

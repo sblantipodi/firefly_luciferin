@@ -117,7 +117,7 @@ public class GrabberManager {
     /**
      * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
      */
-    @SuppressWarnings("resource") // The scheduled executor lives until shutdownCaptureScheduler().
+    @SuppressWarnings("all") // The scheduled executor lives until shutdownCaptureScheduler().
     public void launchAdvancedGrabber() {
         shutdownCaptureScheduler();
         MainSingleton main = MainSingleton.getInstance();
