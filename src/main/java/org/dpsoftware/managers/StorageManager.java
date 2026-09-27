@@ -43,8 +43,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,6 +61,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class StorageManager {
 
+    private static final Duration STALE_RESTART_LOCK_AGE = Duration.ofMinutes(5);
     private final ObjectMapper mapper;
     private final String path;
 
@@ -618,6 +624,9 @@ public class StorageManager {
                 }
             }
             Path rootDir = Paths.get(path);
+            if (MainSingleton.getInstance().whoAmI == 1) {
+                deleteStaleRestartLocks(rootDir);
+            }
             List<String> tempFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
             tempFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
             tempFiles.addAll(searchFilesWithWc(rootDir, Constants.SCREENSHOT_IMAGE_FILENAME_PATTERN));
@@ -628,6 +637,43 @@ public class StorageManager {
             deleteStartProfileFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Remove abandoned restart locks without touching an active restart.
+     *
+     * @param rootDir configuration directory containing the restart lock files
+     */
+    private void deleteStaleRestartLocks(Path rootDir) {
+        if (!Files.isDirectory(rootDir)) {
+            return;
+        }
+        Instant cutoff = Instant.now().minus(STALE_RESTART_LOCK_AGE);
+        try (DirectoryStream<Path> locks = Files.newDirectoryStream(rootDir, ".restart-*.lock")) {
+            for (Path lockPath : locks) {
+                String name = lockPath.getFileName().toString();
+                if (!name.matches("\\.restart-[0-9a-fA-F-]{36}\\.lock")) {
+                    continue;
+                }
+                try {
+                    if (Files.getLastModifiedTime(lockPath).toInstant().isAfter(cutoff)) {
+                        continue;
+                    }
+                    boolean unlocked;
+                    try (FileChannel channel = FileChannel.open(lockPath, StandardOpenOption.WRITE);
+                         FileLock lock = channel.tryLock()) {
+                        unlocked = lock != null;
+                    }
+                    if (unlocked) {
+                        Files.deleteIfExists(lockPath);
+                    }
+                } catch (IOException | OverlappingFileLockException e) {
+                    log.debug("Restart lock is still in use or cannot be removed: {}", lockPath, e);
+                }
+            }
+        } catch (IOException e) {
+            log.debug("Could not inspect restart locks", e);
         }
     }
 
