@@ -37,6 +37,10 @@
     --bs-border-color: var(--border);
 }
 
+.snowflake {
+    color: var(--muted);
+}
+
 body {
     background: var(--page-bg);
     color: var(--text);
