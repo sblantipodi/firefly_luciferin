@@ -107,6 +107,7 @@ public final class LabelKey {
     public static final String NEW_VERSION_AVAILABLE = "new.version.available";
     public static final String LATEST_VERSION = "latest.version";
     public static final String NO_UPDATES = "no.updates";
+    public static final String UPDATE_ALREADY_IN_PROGRESS = "update.already.in.progress";
     public static final String INSTALL_UPDATES = "new.version.install";
     public static final String UPGRADE_AVAILABLE_SANDBOX = "new.version.available.sandbox";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
