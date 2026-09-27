@@ -9,6 +9,8 @@ var deviceState = {on: true, whitetemp: 65};
 export var lastColor = {r: 255, g: 38, b: 0};
 var pollTimer = null;
 var outputDeviceTouched = false;
+var colorInputActive = false;
+var colorPendingUntil = 0;
 
 var DEVICE_COLUMNS = [
     {key: 'deviceName', label: 'Name'},
@@ -88,10 +90,13 @@ function applyPrefs(prefs) {
     if (prefs.cp && prefs.cp.length > 0) {
         var parts = prefs.cp.split(',');
         if (parts.length === 3) {
-            lastColor = {r: Number(parts[0]), g: Number(parts[1]), b: Number(parts[2])};
-            var picker = document.getElementById('picker');
-            if (picker && colorPicker) {
-                colorPicker.color.rgb = lastColor;
+            // A prefs request can return the previous color while the new one is still reaching the device.
+            if (!colorInputActive && Date.now() >= colorPendingUntil) {
+                lastColor = {r: Number(parts[0]), g: Number(parts[1]), b: Number(parts[2])};
+                var picker = document.getElementById('picker');
+                if (picker && colorPicker) {
+                    colorPicker.color.rgb = lastColor;
+                }
             }
             document.getElementById('effectSelect').value = prefs.effect;
         }
@@ -179,8 +184,16 @@ export function initColorPicker() {
         width: 288,
         color: '#0091ff'
     });
-    colorPicker.on(['input:end'], function (color) {
+    colorPicker.on('input:start', function () {
+        colorInputActive = true;
+    });
+    colorPicker.on('input:change', function (color) {
         lastColor = color.rgb;
+    });
+    colorPicker.on(['input:end'], function (color) {
+        colorInputActive = false;
+        lastColor = color.rgb;
+        colorPendingUntil = Date.now() + 7000;
         sendToDevice(buildPayload(), 'Color sent to device');
         syncDeviceFromPrefs();
     });
@@ -197,6 +210,7 @@ export function initColorPicker() {
     if (outputDeviceEl && outputDeviceEl.tagName === 'SELECT') {
         outputDeviceEl.addEventListener('change', function () {
             outputDeviceTouched = true;
+            colorPendingUntil = 0;
             deviceIp = null;
             resolveDeviceIp();
             syncDeviceFromPrefs();
