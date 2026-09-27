@@ -562,6 +562,7 @@ public class Constants {
     public static final String FIELD_OPTIONS_ENDPOINT = "/getFieldOptions";
     public static final String DEVICE_PREFS_ENDPOINT = "/devicePrefs";
     public static final String FPS_ENDPOINT = "/fps";
+    public static final String LOG_ENDPOINT = "/log";
     public static final String SET_CONFIG_ENDPOINT = "/setConfig";
     public static final String SET_CONFIG_PAGE_ENDPOINT = "/setConfigPage";
     public static final String SET_CONFIG_PAGE_JS_ENDPOINT = "/setConfig.js";

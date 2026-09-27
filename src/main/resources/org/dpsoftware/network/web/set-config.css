@@ -316,3 +316,11 @@ body.server-down > :not(#offlineOverlay) {
     border-color: #b02a37;
     color: #fff;
 }
+
+.app-log {
+    max-height: 28rem;
+    overflow: auto;
+    white-space: pre;
+    font-size: 0.8rem;
+    margin-bottom: 0;
+}
