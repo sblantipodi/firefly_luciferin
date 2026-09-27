@@ -94,6 +94,7 @@ public class SettingsController {
     @FXML
     public SmoothingDialogController smoothingDialogController;
     Configuration currentConfig;
+    private boolean automaticCaptureDisplayed;
     StorageManager sm;
     DisplayManager displayManager;
     // Inject children tab controllers
@@ -169,6 +170,8 @@ public class SettingsController {
                 modeTabController.monitorNumber.getItems().addAll(devices)
         );
         currentConfig = sm.readProfileInUseConfig();
+        automaticCaptureDisplayed = MainSingleton.getInstance().config != null
+                && MainSingleton.getInstance().config.isAutomaticCapturePending();
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
         initComboBox();
         if (NativeExecutor.isSystemTraySupported()) {
@@ -497,47 +500,15 @@ public class SettingsController {
      * @param config preferences
      */
     void setCaptureMethod(Configuration config) {
-        NativeExecutor nativeExecutor = new NativeExecutor();
+        config.setCaptureMethod(modeTabController.captureMethod.getValue().name());
         if (NativeExecutor.isWindows()) {
-            switch (modeTabController.captureMethod.getValue()) {
-                case DDUPL_DX11 -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX11.name());
-                case DDUPL_DX12 -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
-                case WIN_USB_VIDEO -> config.setCaptureMethod(Configuration.CaptureMethod.WIN_USB_VIDEO.name());
-                case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
-                case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
-            }
+            NativeExecutor nativeExecutor = new NativeExecutor();
             if (devicesTabController.startWithSystem.isSelected()) {
                 nativeExecutor.writeRegistryKey();
             } else {
                 nativeExecutor.deleteRegistryKey();
             }
             config.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
-        } else if (NativeExecutor.isMac()) {
-            if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
-                config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
-            }
-        } else {
-            if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
-                config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC_NVIDIA) {
-                config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG) {
-                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA) {
-                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL) {
-                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_OPENGL) {
-                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.USB_VIDEO) {
-                config.setCaptureMethod(Configuration.CaptureMethod.USB_VIDEO.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.USB_VIDEO_OPENGL) {
-                config.setCaptureMethod(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.USB_VIDEO_NVIDIA) {
-                config.setCaptureMethod(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name());
-            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL) {
-                config.setCaptureMethod(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name());
-            }
         }
     }
 
@@ -795,6 +766,7 @@ public class SettingsController {
      * Initializes the available capture methods for the capture method dropdown in the UI.
      **/
     void initCaptureMethods() {
+        Configuration.CaptureMethod selected = modeTabController.captureMethod.getValue();
         boolean isExtSrc = currentConfig != null && currentConfig.hasCaptureDevice();
         if (NativeExecutor.isWindows()) {
             if (!isExtSrc) {
@@ -815,6 +787,7 @@ public class SettingsController {
                             Configuration.CaptureMethod.PIPEWIREXDG,
                             Configuration.CaptureMethod.PIPEWIREXDG_OPENGL,
                             Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA,
+                            Configuration.CaptureMethod.PIPEWIREXDG_AMD_HIP,
                             Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL);
                 } else {
                     modeTabController.captureMethod.getItems().setAll(
@@ -826,9 +799,15 @@ public class SettingsController {
                         Configuration.CaptureMethod.USB_VIDEO,
                         Configuration.CaptureMethod.USB_VIDEO_OPENGL,
                         Configuration.CaptureMethod.USB_VIDEO_NVIDIA,
+                        Configuration.CaptureMethod.USB_VIDEO_AMD_HIP,
                         Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL);
             }
         }
+        modeTabController.captureMethod.getItems().addFirst(Configuration.CaptureMethod.AUTO);
+        Configuration.CaptureMethod restored = modeTabController.captureMethod.getItems().contains(selected)
+                ? selected : Configuration.CaptureMethod.AUTO;
+        modeTabController.captureMethod.setValue(restored);
+        modeTabController.captureMethod.getSelectionModel().select(restored);
     }
 
     /**
@@ -987,6 +966,31 @@ public class SettingsController {
         serialManager.sendSerialParams((int) (miscTabController.colorPicker.getValue().getRed() * 255),
                 (int) (miscTabController.colorPicker.getValue().getGreen() * 255),
                 (int) (miscTabController.colorPicker.getValue().getBlue() * 255));
+    }
+
+    /**
+     * Update only an unchanged automatic selection in a preloaded settings window.
+     */
+    public void refreshAutomaticCaptureMethod() {
+        Configuration running = MainSingleton.getInstance().config;
+        if (running == null || running.isAutomaticCapturePending() || currentConfig == null
+                || !automaticCaptureDisplayed
+                || modeTabController.captureMethod.getValue() != Configuration.CaptureMethod.AUTO) {
+            return;
+        }
+        String source = running.hasCaptureDevice()
+                ? running.getCaptureDeviceFriendlyName()
+                : displayManager.getDisplayName(running.getMonitorNumber());
+        if (!java.util.Objects.equals(source, modeTabController.monitorNumber.getValue())) {
+            return;
+        }
+        Configuration.CaptureMethod selected = Configuration.CaptureMethod.valueOf(running.getCaptureMethod());
+        if (modeTabController.captureMethod.getItems().contains(selected)) {
+            automaticCaptureDisplayed = false;
+            currentConfig.setCaptureMethod(selected.name());
+            modeTabController.captureMethod.setValue(selected);
+            checkProfileDifferences();
+        }
     }
 
     /**

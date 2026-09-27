@@ -23,6 +23,7 @@ package org.dpsoftware.managers;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
@@ -56,6 +57,7 @@ import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
 import org.freedesktop.dbus.messages.constants.MessageTypes;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.gstreamer.ElementFactory;
 
 import java.awt.*;
 import java.io.IOException;
@@ -173,11 +175,10 @@ public class PipelineManager {
 
             screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
 
-            var c = streamIdMaybe.thenApply(streamId -> {
-                FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
-                return new XdgStreamDetails(streamId, fileDescriptor);
-            }).get();
-            return c;
+            // Do not call the synchronous D-Bus method on the signal receiver thread.
+            int streamId = streamIdMaybe.get();
+            FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap());
+            return new XdgStreamDetails(streamId, fileDescriptor);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -201,47 +202,88 @@ public class PipelineManager {
      *
      * @return params for Linux Pipeline
      */
-    public static String getLinuxPipelineParams() {
+    public static String getLinuxPipelineParams(java.util.function.Supplier<XdgStreamDetails> streamDetails) {
         MainSingleton main = MainSingleton.getInstance();
-        String gstreamerPipeline;
-        String pipeline;
-        if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
-                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())
-                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())
-                || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
-            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA);
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL);
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL);
-            }  else {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_PIPEWIREXDG);
+        Configuration.CaptureMethod method = Configuration.CaptureMethod.valueOf(main.getConfig().getCaptureMethod());
+        String pipeline = getPipeline(switch (method) {
+            case PIPEWIREXDG -> Constants.GSTREAMER_PIPELINE_PIPEWIREXDG;
+            case PIPEWIREXDG_NVIDIA -> Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA;
+            case PIPEWIREXDG_AMD_HIP -> Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_HIP;
+            case PIPEWIREXDG_AMD_INTEL -> Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL;
+            case PIPEWIREXDG_OPENGL -> Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL;
+            case USB_VIDEO -> Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC;
+            case USB_VIDEO_NVIDIA -> Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA;
+            case USB_VIDEO_AMD_HIP -> Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_AMD_HIP;
+            case USB_VIDEO_AMD_INTEL -> Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL;
+            case USB_VIDEO_OPENGL -> Constants.GSTREAMER_PIPELINE_V4L2_OPENGL;
+            case XIMAGESRC_NVIDIA -> Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA;
+            case XIMAGESRC -> Constants.GSTREAMER_PIPELINE_XIMAGESRC;
+            default -> throw new IllegalArgumentException("Unsupported Linux capture method: " + method);
+        });
+        if (method.isUsb()) {
+            // Expanding MJPEG can add jpegdec, which must also pass preflight.
+            pipeline = setUsbVideoPipelineParams(pipeline);
+        }
+        if (EnvConstants.CUSTOM_GSTREAMER_PIPELINE == null) {
+            requireCaptureElements(pipeline);
+        }
+        if (method.isPipewire()) {
+            XdgStreamDetails details = streamDetails.get();
+            if (details == null) {
+                throw new IllegalStateException("Cannot acquire the Wayland capture stream");
             }
-            XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
-            assert xdgStreamDetails != null;
-            gstreamerPipeline = pipeline
-                    .replace("{1}", String.valueOf(xdgStreamDetails.fileDescriptor.getIntFileDescriptor()))
-                    .replace("{2}", xdgStreamDetails.streamId.toString());
-        } else {
-            if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name())) {
-                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC));
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
-                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_OPENGL));
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
-                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA));
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
-                gstreamerPipeline = setUsbVideoPipelineParams(getPipeline(Constants.GSTREAMER_PIPELINE_V4L2_AMD_INTEL));
-            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name())) {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA);
-                gstreamerPipeline = replaceWithMonitorInfo(main, pipeline);
-            } else {
-                pipeline = getPipeline(Constants.GSTREAMER_PIPELINE_XIMAGESRC);
-                gstreamerPipeline = replaceWithMonitorInfo(main, pipeline);
+            pipeline = pipeline.replace("{1}", String.valueOf(details.fileDescriptor.getIntFileDescriptor()))
+                    .replace("{2}", details.streamId.toString());
+        } else if (!method.isUsb()) {
+            pipeline = replaceWithMonitorInfo(main, pipeline);
+        }
+        log.debug("Pipeline: {}", pipeline);
+        return pipeline;
+    }
+
+    /**
+     * Exception carrying the unavailable element name for concise capture logs.
+     */
+    @Getter
+    public static final class MissingCaptureElementException extends IllegalStateException {
+        private final String element;
+        public MissingCaptureElementException(String element, Throwable cause) {
+            super("Missing GStreamer element: " + element, cause);
+            this.element = element;
+        }
+    }
+
+    /**
+     * Reject unavailable element factories without invoking GStreamer's pipeline parser.
+     */
+    public static void requireCaptureElements(String pipeline) {
+        for (String element : captureElements(pipeline)) {
+            ElementFactory factory;
+            try {
+                factory = ElementFactory.find(element);
+            } catch (IllegalArgumentException failure) {
+                throw new MissingCaptureElementException(element, failure);
+            }
+            factory.dispose();
+        }
+    }
+
+    /**
+     * Built-in pipelines are linear; caps and placeholders are not element factories.
+     */
+    static List<String> captureElements(String pipeline) {
+        List<String> elements = new ArrayList<>();
+        for (String segment : pipeline.split("!")) {
+            String trimmed = segment.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            String element = trimmed.split("\\s+", 2)[0];
+            if (!element.contains("/") && !element.startsWith("{") && !element.endsWith(".")) {
+                elements.add(element);
             }
         }
-        log.debug("Pipeline: {}", gstreamerPipeline);
-        return gstreamerPipeline;
+        return elements;
     }
 
     /**
@@ -630,19 +672,8 @@ public class PipelineManager {
         AudioLoopback audioLoopback = new AudioLoopback();
         audioLoopback.stopVolumeLevelMeter();
         MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-        if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.WIN_USB_VIDEO.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name()))
-                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
+        if (GrabberSingleton.getInstance().pipe != null
+                && Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod()).isGStreamer()) {
             GrabberSingleton.getInstance().pipe.stop();
         }
         MainSingleton.getInstance().FPS_PRODUCER_COUNTER = 0;
@@ -675,7 +706,7 @@ public class PipelineManager {
         return EnvConstants.CUSTOM_GSTREAMER_BO != null ? EnvConstants.CUSTOM_GSTREAMER_BO : defaultBo;
     }
 
-    record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
+    public record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
     }
 
 }

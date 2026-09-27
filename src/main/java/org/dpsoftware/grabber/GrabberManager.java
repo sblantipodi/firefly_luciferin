@@ -38,6 +38,8 @@ import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 import org.freedesktop.gstreamer.Bin;
+import org.freedesktop.gstreamer.Bus;
+import org.freedesktop.gstreamer.StateChangeReturn;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
 import org.freedesktop.gstreamer.Version;
@@ -51,6 +53,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -66,6 +69,15 @@ public class GrabberManager {
     public GStreamerGrabber vc;
     private boolean linuxPingUnavailable = false;
     private String linuxPipelineParams;
+    private PipelineManager.XdgStreamDetails xdgStreamDetails;
+    private static final long CAPTURE_PROBE_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(10);
+    private CaptureMethodSelection captureSelection;
+    private long captureProbeStarted;
+    private long captureRetryAfter;
+    private String probeUnavailableSource;
+    private ScheduledExecutorService linuxCaptureExecutor;
+    private ScheduledFuture<?> captureTask;
+    private final AtomicBoolean captureProbeFailed = new AtomicBoolean();
 
     /**
      * Get suggested framerate
@@ -105,83 +117,291 @@ public class GrabberManager {
     /**
      * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
      */
+    @SuppressWarnings("resource") // The scheduled executor lives until shutdownCaptureScheduler().
     public void launchAdvancedGrabber() {
+        shutdownCaptureScheduler();
         MainSingleton main = MainSingleton.getInstance();
         AtomicInteger restartCounter = new AtomicInteger();
         ImageProcessor.initGStreamerLibraryPaths();
         // WebRTC support in gst1-java is available from GStreamer 1.14. Supplying the minimum version here is also necessary for the binding's
         Gst.init(Version.of(1, 14), Constants.SCREEN_GRABBER, "");
         AtomicInteger pipelineRetry = new AtomicInteger();
+        if (main.getConfig().isAutomaticCapturePending()) {
+            boolean usb = main.getConfig().hasCaptureDevice() || main.isHeadlessMode();
+            captureSelection = new CaptureMethodSelection(NativeExecutor.isWindows(), NativeExecutor.isMac(),
+                    NativeExecutor.isWayland(), usb);
+        }
         AtomicReference<String> missingSource = new AtomicReference<>();
         AtomicInteger missingSourceTicks = new AtomicInteger();
-        Gst.getExecutor().scheduleAtFixedRate(() -> {
-            if (!ManagerSingleton.getInstance().pipelineStopping && main.RUNNING && main.FPS_PRODUCER_COUNTER == 0) {
-                pipelineRetry.getAndIncrement();
-                boolean pipeNull = GrabberSingleton.getInstance().pipe == null;
-                boolean notPlaying = !pipeNull && !GrabberSingleton.getInstance().pipe.isPlaying();
-                boolean tooManyRetries = pipelineRetry.get() >= 2;
-                log.debug("Watchdog tick #{}: pipeNull={}, notPlaying={}, tooManyRetries={}", pipelineRetry.get(), pipeNull, notPlaying, tooManyRetries);
-                if (pipeNull || notPlaying || tooManyRetries) {
-                    // Device discovery can be slow: retry every three seconds while the source is missing.
-                    if (missingSource.get() != null && missingSourceTicks.incrementAndGet() < 6) {
-                        disposePipeline();
-                        return;
-                    }
-                    missingSourceTicks.set(0);
-                    String unavailableSource = getUnavailableCaptureSource();
-                    if (unavailableSource != null) {
-                        if (GrabberSingleton.getInstance().pipe != null) {
-                            GrabberSingleton.getInstance().pipe.stop();
-                        }
-                        pipelineRetry.set(0);
-                        if (!unavailableSource.equals(missingSource.getAndSet(unavailableSource))) {
-                            log.warn("Capture source unavailable; pipeline not started: {}", unavailableSource);
-                            if (!main.isHeadlessMode() && main.guiManager != null) {
-                                Platform.runLater(() -> main.guiManager.showAlert(Constants.SCREEN_GRABBER,
-                                        CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_UNAVAILABLE),
-                                        CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_UNAVAILABLE_CONTEXT).replace("{0}", unavailableSource),
-                                        Alert.AlertType.WARNING));
-                            }
-                        }
-                        disposePipeline();
-                        return;
-                    }
-                    if (missingSource.getAndSet(null) != null) {
-                        log.info("Capture source available again; starting pipeline");
-                    }
-                    if (GrabberSingleton.getInstance().pipe != null) {
-                        log.info("Restarting pipeline (reason={})", (pipeNull ? "pipeNull" : (notPlaying ? "notPlaying" : "tooManyRetries")));
-                        GrabberSingleton.getInstance().pipe.stop();
-                        restartCounter.getAndIncrement();
-                        if (restartCounter.get() >= Constants.MAX_PIPELINE_RESTARTS) {
-                            log.error("Pipeline restarted too many times, restarting...");
-                            NativeExecutor.restartNativeInstanceWithCurrentProfile();
-                        }
-                    } else {
-                        startPipeline(restartCounter, main);
-                    }
-                    vc = new GStreamerGrabber();
-                    GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
-                    Pipeline.linkMany(bin, vc.getElement());
-                    if (!MainSingleton.getInstance().isHeadlessMode()) {
-                        JFrame f = new JFrame(Constants.SCREEN_GRABBER);
-                        JPanel panel = new JPanel();
-                        panel.setPreferredSize(new Dimension(main.getConfig().getScreenResX(), main.getConfig().getScreenResY()));
-                        panel.setBackground(Color.BLACK);
-                        f.add(panel);
-                        f.pack();
-                        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        GrabberSingleton.getInstance().pipe.play();
-                        f.setVisible(false);
-                    } else {
-                        GrabberSingleton.getInstance().pipe.play();
-                    }
+        // Linux portal and native state changes can block; keep the GStreamer bus executor free.
+        ScheduledExecutorService captureExecutor;
+        if (NativeExecutor.isLinux()) {
+            linuxCaptureExecutor = Executors.newSingleThreadScheduledExecutor(task -> {
+                Thread thread = new Thread(task, "capture-controller");
+                thread.setDaemon(true);
+                return thread;
+            });
+            captureExecutor = linuxCaptureExecutor;
+        } else {
+            captureExecutor = Gst.getExecutor();
+        }
+        captureTask = captureExecutor.scheduleAtFixedRate(() -> runCaptureTask(() ->
+                checkCapturePipeline(main, restartCounter, pipelineRetry, missingSource, missingSourceTicks)),
+                1, 500, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Cancel our capture task and close only the Linux executor owned by this manager.
+     */
+    public void shutdownCaptureScheduler() {
+        if (captureTask != null) {
+            captureTask.cancel(false);
+            captureTask = null;
+        }
+        if (linuxCaptureExecutor != null) {
+            linuxCaptureExecutor.shutdownNow();
+            linuxCaptureExecutor = null;
+        }
+    }
+
+    /**
+     * Check capture progress and source availability, then start or restart the pipeline when needed.
+     *
+     * @param main current application state and capture configuration
+     * @param restartCounter number of consecutive pipeline restarts
+     * @param pipelineRetry number of watchdog ticks without produced frames
+     * @param missingSource last unavailable source, used to avoid repeated alerts
+     * @param missingSourceTicks watchdog ticks while the source is unavailable
+     */
+    private void checkCapturePipeline(MainSingleton main, AtomicInteger restartCounter, AtomicInteger pipelineRetry,
+                                      AtomicReference<String> missingSource, AtomicInteger missingSourceTicks) {
+        if (captureSelection != null) {
+            probeCaptureMethod(restartCounter, main);
+            return;
+        }
+        if (!ManagerSingleton.getInstance().pipelineStopping && main.RUNNING && main.FPS_PRODUCER_COUNTER == 0) {
+            pipelineRetry.getAndIncrement();
+            boolean pipeNull = GrabberSingleton.getInstance().pipe == null;
+            boolean notPlaying = !pipeNull && !GrabberSingleton.getInstance().pipe.isPlaying();
+            boolean tooManyRetries = pipelineRetry.get() >= 2;
+            log.debug("Watchdog tick #{}: pipeNull={}, notPlaying={}, tooManyRetries={}", pipelineRetry.get(), pipeNull, notPlaying, tooManyRetries);
+            if (pipeNull || notPlaying || tooManyRetries) {
+                // Device discovery can be slow: retry every three seconds while the source is missing.
+                if (missingSource.get() != null && missingSourceTicks.incrementAndGet() < 6) {
+                    disposePipeline();
+                    return;
                 }
-            } else {
-                pipelineRetry.set(0);
+                missingSourceTicks.set(0);
+                String unavailableSource = getUnavailableCaptureSource();
+                if (unavailableSource != null) {
+                    if (GrabberSingleton.getInstance().pipe != null) {
+                        GrabberSingleton.getInstance().pipe.stop();
+                    }
+                    pipelineRetry.set(0);
+                    if (!unavailableSource.equals(missingSource.getAndSet(unavailableSource))) {
+                        log.warn("Capture source unavailable; pipeline not started: {}", unavailableSource);
+                        if (!main.isHeadlessMode() && main.guiManager != null) {
+                            Platform.runLater(() -> main.guiManager.showAlert(Constants.SCREEN_GRABBER,
+                                    CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_UNAVAILABLE),
+                                    CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_UNAVAILABLE_CONTEXT).replace("{0}", unavailableSource),
+                                    Alert.AlertType.WARNING));
+                        }
+                    }
+                    disposePipeline();
+                    return;
+                }
+                if (missingSource.getAndSet(null) != null) {
+                    log.info("Capture source available again; starting pipeline");
+                }
+                restartCapturePipeline(main, restartCounter,
+                        pipeNull ? "pipeNull" : (notPlaying ? "notPlaying" : "tooManyRetries"));
             }
-            disposePipeline();
-        }, 1, 500, TimeUnit.MILLISECONDS);
+        } else {
+            pipelineRetry.set(0);
+        }
+        disposePipeline();
+    }
+
+    /**
+     * Start or restart capture, attach the video sink and play the pipeline.
+     *
+     * @param main current application state and capture configuration
+     * @param restartCounter number of consecutive pipeline restarts
+     * @param reason watchdog condition that triggered the restart
+     */
+    private void restartCapturePipeline(MainSingleton main, AtomicInteger restartCounter, String reason) {
+        if (GrabberSingleton.getInstance().pipe != null) {
+            log.info("Restarting pipeline (reason={})", reason);
+            GrabberSingleton.getInstance().pipe.stop();
+            restartCounter.getAndIncrement();
+            if (restartCounter.get() >= Constants.MAX_PIPELINE_RESTARTS) {
+                log.error("Pipeline restarted too many times, restarting...");
+                NativeExecutor.restartNativeInstanceWithCurrentProfile();
+            }
+        } else {
+            startPipeline(restartCounter, main);
+        }
+        vc = new GStreamerGrabber();
+        GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
+        Pipeline.linkMany(bin, vc.getElement());
+        if (!MainSingleton.getInstance().isHeadlessMode()) {
+            JFrame f = new JFrame(Constants.SCREEN_GRABBER);
+            JPanel panel = new JPanel();
+            panel.setPreferredSize(new Dimension(main.getConfig().getScreenResX(), main.getConfig().getScreenResY()));
+            panel.setBackground(Color.BLACK);
+            f.add(panel);
+            f.pack();
+            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            GrabberSingleton.getInstance().pipe.play();
+            f.setVisible(false);
+        } else {
+            GrabberSingleton.getInstance().pipe.play();
+        }
+    }
+
+    /**
+     * Keep the periodic capture task alive even when startup or cleanup fails.
+     *
+     * @param task capture check to execute on this scheduler tick
+     */
+    void runCaptureTask(Runnable task) {
+        if (System.nanoTime() < captureRetryAfter) {
+            return;
+        }
+        try {
+            task.run();
+        } catch (RuntimeException e) {
+            captureRetryAfter = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+            if (e instanceof PipelineManager.MissingCaptureElementException missing) {
+                log.warn("GStreamer element {} unavailable; retrying capture in three seconds", missing.getElement());
+            } else {
+                log.warn("Capture pipeline unavailable; retrying in three seconds", e);
+            }
+            try {
+                releaseProbePipeline();
+            } catch (RuntimeException cleanupFailure) {
+                log.warn("Cannot release failed capture pipeline", cleanupFailure);
+            }
+        }
+    }
+
+    /**
+     * Try the configured backends until a real video frame reaches the appsink.
+     *
+     * @param restartCounter number of consecutive pipeline restarts
+     * @param main current application state and capture configuration
+     */
+    private void probeCaptureMethod(AtomicInteger restartCounter, MainSingleton main) {
+        if (!main.RUNNING || ManagerSingleton.getInstance().pipelineStopping) {
+            return;
+        }
+        try {
+            if (captureProbeStarted == 0) {
+                main.getConfig().setCaptureMethod(captureSelection.current().name());
+                linuxPipelineParams = null;
+                String unavailableSource = getUnavailableCaptureSource();
+                if (unavailableSource != null) {
+                    if (!unavailableSource.equals(probeUnavailableSource)) {
+                        log.warn("Waiting for capture source: {}", unavailableSource);
+                    }
+                    probeUnavailableSource = unavailableSource;
+                    captureRetryAfter = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+                    return;
+                }
+                probeUnavailableSource = null;
+                log.info("Trying capture method {}", captureSelection.current());
+                startPipeline(restartCounter, main);
+                captureProbeFailed.set(false);
+                GrabberSingleton.getInstance().pipe.getBus().connect((Bus.ERROR) (_, code, message) -> {
+                    log.warn("Capture probe failed: {} ({})", message, code);
+                    captureProbeFailed.set(true);
+                });
+                vc = new GStreamerGrabber();
+                GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
+                if (!Pipeline.linkMany(bin, vc.getElement())) {
+                    throw new IllegalStateException("Cannot link capture pipeline to video sink");
+                }
+                if (GrabberSingleton.getInstance().pipe.play() == StateChangeReturn.FAILURE) {
+                    throw new IllegalStateException("GStreamer could not start the capture pipeline");
+                }
+                captureProbeStarted = System.nanoTime();
+            } else if (vc != null && vc.isFrameReceived()) {
+                finishCaptureSelection(main, false);
+            } else if (captureProbeFailed.get()
+                    || System.nanoTime() - captureProbeStarted >= CAPTURE_PROBE_TIMEOUT_NANOS) {
+                failCaptureProbe(main);
+            }
+        } catch (RuntimeException e) {
+            if (e instanceof PipelineManager.MissingCaptureElementException missing) {
+                log.warn("Capture method {} unavailable: missing GStreamer element {}",
+                        main.getConfig().getCaptureMethod(), missing.getElement());
+            } else {
+                log.warn("Capture method {} unavailable", main.getConfig().getCaptureMethod(), e);
+            }
+            failCaptureProbe(main);
+        }
+    }
+
+    /**
+     * Release the failed candidate and advance to the next capture method.
+     *
+     * @param main current application state whose capture method may change
+     */
+    private void failCaptureProbe(MainSingleton main) {
+        releaseProbePipeline();
+        captureProbeStarted = 0;
+        if (!captureSelection.advance()) {
+            finishCaptureSelection(main, true);
+        }
+    }
+
+    /**
+     * Persist the selected capture method and clear the pending automatic selection.
+     *
+     * @param main current application state whose configuration is saved
+     * @param fallback true when every candidate failed and the final method is retained
+     */
+    private void finishCaptureSelection(MainSingleton main, boolean fallback) {
+        Configuration config = main.getConfig();
+        config.setCaptureMethod(captureSelection.current().name());
+        config.setAutomaticCapturePending(false);
+        captureSelection = null;
+        log.info("{} capture method {}", fallback ? "Using compatibility fallback" : "Selected", config.getCaptureMethod());
+        try {
+            new StorageManager().writeConfig(config, null);
+        } catch (IOException e) {
+            log.error("Cannot save selected capture method", e);
+        }
+        if (!main.isHeadlessMode() && main.guiManager != null) {
+            main.guiManager.refreshAutomaticCaptureMethod();
+        }
+    }
+
+    /**
+     * Stop and dispose the pipeline, bin and video sink of the current probe.
+     */
+    private void releaseProbePipeline() {
+        Pipeline pipeline = GrabberSingleton.getInstance().pipe;
+        GrabberSingleton.getInstance().pipe = null;
+        if (pipeline != null) {
+            try {
+                pipeline.stop();
+            } catch (RuntimeException e) {
+                log.warn("Cannot stop failed capture probe", e);
+            } finally {
+                pipeline.dispose();
+            }
+        }
+        if (bin != null) {
+            bin.dispose();
+            bin = null;
+        }
+        if (vc != null) {
+            vc.videosink.dispose();
+            vc.getElement().dispose();
+            vc = null;
+        }
+        GStreamerGrabber.ledMatrix = null;
     }
 
     /**
@@ -192,38 +412,54 @@ public class GrabberManager {
      * @param main             The MainSingleton instance containing shared configuration and state data.
      */
     private void startPipeline(AtomicInteger restartCounter, MainSingleton main) {
-        log.info("Starting a new pipeline");
-        restartCounter.set(0);
-        GrabberSingleton.getInstance().pipe = new Pipeline();
+        String description;
         if (NativeExecutor.isWindows()) {
             String friendlyName = main.getConfig().getCaptureDeviceFriendlyName();
             if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
                 String monitorNativePeer = String.valueOf(new DisplayManager().getDisplayInfo(main.getConfig().getMonitorNumber()).getNativePeer());
-                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11)
-                        .replace("{0}", monitorNativePeer), true);
+                description = PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11)
+                        .replace("{0}", monitorNativePeer);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
                 String monitorNativePeer = String.valueOf(new DisplayManager().getDisplayInfo(main.getConfig().getMonitorNumber()).getNativePeer());
-                bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12)
-                        .replace("{0}", monitorNativePeer), true);
+                description = PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12)
+                        .replace("{0}", monitorNativePeer);
             } else {
-                bin = Gst.parseBinFromDescription(PipelineManager.setUsbVideoPipelineParams(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC))
-                        .replace("{0}", friendlyName), true);
+                description = PipelineManager.setUsbVideoPipelineParams(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_WINDOWS_EXT_SRC))
+                        .replace("{0}", friendlyName);
             }
         } else if (NativeExecutor.isLinux()) {
             if (linuxPipelineParams == null) {
-                linuxPipelineParams = PipelineManager.getLinuxPipelineParams();
+                linuxPipelineParams = PipelineManager.getLinuxPipelineParams(() -> {
+                    if (xdgStreamDetails == null) {
+                        xdgStreamDetails = PipelineManager.getXdgStreamDetails();
+                    }
+                    return xdgStreamDetails;
+                });
             }
             String devPath = main.getConfig().hasCaptureDevice() ? main.getConfig().getCaptureDevice().getDevPath() : "";
             int keepAliveTime = Math.max(1, (1000 / GStreamerGrabber.getTargetFramerate()) / 2);
-            String runtimeParams = linuxPipelineParams
+            description = linuxPipelineParams
                     .replace(Constants.PIPEWIRE_KEEPALIVE, String.valueOf(keepAliveTime))
                     .replace(Constants.FPS_PLACEHOLDER, String.valueOf(GStreamerGrabber.getTargetFramerate()));
             if (!devPath.isEmpty()) {
-                runtimeParams = runtimeParams.replace("{0}", devPath);
+                description = description.replace("{0}", devPath);
             }
-            bin = Gst.parseBinFromDescription(runtimeParams, true);
         } else {
-            bin = Gst.parseBinFromDescription(PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_MAC), true);
+            description = PipelineManager.getPipeline(Constants.GSTREAMER_PIPELINE_MAC);
+        }
+        // Linux checks its complete element list before requesting the Wayland portal.
+        if (!NativeExecutor.isLinux() && org.dpsoftware.config.EnvConstants.CUSTOM_GSTREAMER_PIPELINE == null) {
+            PipelineManager.requireCaptureElements(description);
+        }
+        log.info("Starting a new pipeline");
+        restartCounter.set(0);
+        Pipeline pipeline = new Pipeline();
+        try {
+            bin = Gst.parseBinFromDescription(description, true);
+            GrabberSingleton.getInstance().pipe = pipeline;
+        } catch (RuntimeException e) {
+            pipeline.dispose();
+            throw e;
         }
     }
 
@@ -233,11 +469,7 @@ public class GrabberManager {
     private String getUnavailableCaptureSource() {
         Configuration config = MainSingleton.getInstance().config;
         String method = config.getCaptureMethod();
-        boolean usb = Configuration.CaptureMethod.WIN_USB_VIDEO.name().equals(method)
-                || Configuration.CaptureMethod.USB_VIDEO.name().equals(method)
-                || Configuration.CaptureMethod.USB_VIDEO_OPENGL.name().equals(method)
-                || Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name().equals(method)
-                || Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name().equals(method);
+        boolean usb = Configuration.CaptureMethod.valueOf(method).isUsb();
         if (usb) {
             var selected = config.getCaptureDevice();
             if (selected == null) {

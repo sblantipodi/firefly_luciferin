@@ -127,7 +127,11 @@ public class GuiManager {
      */
     public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(fxml + Constants.FXML), MainSingleton.getInstance().bundle);
-        return fxmlLoader.load();
+        Parent root = fxmlLoader.load();
+        if (fxmlLoader.getController() instanceof SettingsController controller) {
+            root.getProperties().put(SettingsController.class, controller);
+        }
+        return root;
     }
 
     /**
@@ -572,6 +576,20 @@ public class GuiManager {
     }
 
     /**
+     * Refresh a preloaded settings window after automatic capture selection.
+     */
+    public void refreshAutomaticCaptureMethod() {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(this::refreshAutomaticCaptureMethod);
+            return;
+        }
+        if (mainScene != null && mainScene.getRoot().getProperties().get(SettingsController.class)
+                instanceof SettingsController controller) {
+            controller.refreshAutomaticCaptureMethod();
+        }
+    }
+
+    /**
      * Show a dialog with all the settings
      *
      * @param preloadFxml if true, it preload the fxml without showing it
@@ -916,6 +934,9 @@ public class GuiManager {
             }
             getStage(stageName).resizableProperty().setValue(Boolean.FALSE);
             setScene(stageName, isMainStage, isClassicTheme);
+            if (isMainStage) {
+                refreshAutomaticCaptureMethod();
+            }
             String title = createWindowTitle();
             getStage(stageName).setTitle(title);
             setStageIcon(getStage(stageName));

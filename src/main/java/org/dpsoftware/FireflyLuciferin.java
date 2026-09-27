@@ -104,6 +104,7 @@ public class FireflyLuciferin extends Application {
         try {
             StorageManager storageManager = new StorageManager();
             MainSingleton.getInstance().config = storageManager.loadConfigurationYaml();
+            storageManager.resolveAutomaticCapture(main.getConfig());
             ledMatrixInUse = main.getConfig().getDefaultLedMatrix();
         } catch (NullPointerException e) {
             log.error("Please configure the app.");
@@ -365,20 +366,7 @@ public class FireflyLuciferin extends Application {
         MainSingleton main = MainSingleton.getInstance();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
         // Desktop Duplication API producers
-        if ((main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.WIN_USB_VIDEO.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name()))
-                || (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
+        if (Configuration.CaptureMethod.valueOf(main.getConfig().getCaptureMethod()).isGStreamer()) {
             grabberManager.launchAdvancedGrabber();
             GuiSingleton.getInstance().setGrabberManager(grabberManager);
         } else { // Standard Producers
@@ -664,6 +652,7 @@ public class FireflyLuciferin extends Application {
      * Clean and Close Serial Output Stream
      */
     private void clean() {
+        grabberManager.shutdownCaptureScheduler();
         MainSingleton main = MainSingleton.getInstance();
         if (main.output != null) {
             try {

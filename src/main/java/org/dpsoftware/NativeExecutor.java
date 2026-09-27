@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.*;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
@@ -635,6 +636,9 @@ public final class NativeExecutor {
         } catch (RuntimeException e) {
             log.error("Error during shutdown", e);
         } finally {
+            if (GuiSingleton.getInstance().getGrabberManager() != null) {
+                GuiSingleton.getInstance().getGrabberManager().shutdownCaptureScheduler();
+            }
             MainSingleton.getInstance().exitTriggered = true;
             CommonUtility.delaySeconds(() -> {
                 try {

@@ -291,7 +291,6 @@ public class Constants {
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
     public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin/releases";
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
-    public static final String LINUX_WIKI_URL = "https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#nvidia-cuda";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
@@ -361,6 +360,7 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! glupload ! glcolorscale ! glcolorconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! cudaupload ! cudascale ! cudaconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_HIP = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! hipupload ! hipscale ! hipconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! vapostproc ! videorate drop-only=true";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     // GStreamer Pipelines External Sources
@@ -368,6 +368,7 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC = "v4l2src device={0} ! {1} ! videorate ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! videoscale ! videoconvert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src device={0} ! {1} ! videorate ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! glupload ! glcolorconvert ! glcolorscale ! video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,framerate=FRAMERATE_PLACEHOLDER/1 ! gldownload ! videoconvert ! capsfilter caps=video/x-raw,format=BGRx ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA = "v4l2src device={0} ! {1} ! videorate ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! cudaupload ! cudascale ! cudaconvert ! cudadownload ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_AMD_HIP = "v4l2src device={0} ! {1} ! videorate ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! hipupload ! hipscale ! hipconvert ! hipdownload ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src device={0} ! {1} ! videorate ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! vapostproc ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_WEBRTC = "appsrc name=webrtcsrc is-live=true do-timestamp=true format=TIME ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0 ! videoconvert ! videoscale add-borders=true ! capsfilter name=webrtcpreviewcaps ! vp8enc deadline=1 target-bitrate=4000000 ! rtpvp8pay ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0 ! application/x-rtp,media=video,encoding-name=VP8,payload=97 ! webrtcbin name=webrtcbin stun-server=stun://stun.l.google.com:19302";
     public static final String GSTREAMER_DDUPL = "DDUPL";
@@ -379,11 +380,13 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_OPENGL = "video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_AMD_HIP = "video/x-raw(memory:HIPMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     // GStreamer Caps External Sources
     public static final String GSTREAMER_PIPELINE_WINDOWS_ETX_SRC = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_ETX_SRC = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_ETX_SRC_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC_AMD_HIP = "video/x-raw(memory:HIPMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_ETX_SRC_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     // GStreamer Format Caps
     public static final String BYTE_ORDER_BGR = "format=BGRx";
@@ -584,11 +587,9 @@ public class Constants {
     public static final String WEBRTC_PREVIEW_JS_ENDPOINT = "/webrtc-preview.js";
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
-    public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};
     public static final String[] CURL_HEAD_LINUX = {"curl", "-I", "--max-time", "4"};
-    public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudadownload"};
     public static final String OBJPATH_KDE_NIGHTLIGHT = "/org/kde/KWin/NightLight";
     public static final String PROP_KDE_NIGHTLIGHT = "enabled";
     public static final String BUSNAME_GNOME_NIGHTLIGHT = "org.gnome.SettingsDaemon.Color";
