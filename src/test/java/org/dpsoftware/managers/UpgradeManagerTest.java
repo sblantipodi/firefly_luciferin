@@ -21,15 +21,47 @@
 */
 package org.dpsoftware.managers;
 
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.config.Configuration;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link UpgradeManager#versionNumberToNumber(String)}.
  */
 class UpgradeManagerTest {
+
+    /**
+     * Headless checks skip Firefly and release the completion callback when firmware checks are disabled.
+     */
+    @Test
+    void headlessCheckSkipsFireflyUpdate() {
+        MainSingleton main = MainSingleton.getInstance();
+        Configuration previousConfig = main.config;
+        boolean previousHeadlessMode = main.headlessMode;
+        int previousInstanceNumber = main.whoAmI;
+        try {
+            main.config = mock(Configuration.class);
+            main.headlessMode = true;
+            main.whoAmI = 1;
+            UpgradeManager upgradeManager = spy(new UpgradeManager());
+            AtomicInteger completed = new AtomicInteger();
+
+            upgradeManager.checkForUpdates(true, completed::incrementAndGet);
+
+            verify(upgradeManager, never()).checkFireflyUpdates(true);
+            assertEquals(1, completed.get());
+        } finally {
+            main.config = previousConfig;
+            main.headlessMode = previousHeadlessMode;
+            main.whoAmI = previousInstanceNumber;
+        }
+    }
 
     @Test
     void versionNumberToNumber_basicVersions() {

@@ -114,7 +114,9 @@ public class DeviceEndpointHandler {
                     body = CommonUtility.JSON_MAPPER.writeValueAsString(prefsNode);
                 }
             } catch (Exception e) {
-                log.warn("Device prefs response is not valid JSON: {}", e.getMessage());
+                if (log.isTraceEnabled()) {
+                    log.warn("Device prefs response is not valid JSON: {}", e.getMessage());
+                }
             }
             HttpResponses.sendRawJson(exchange, response.statusCode(), body);
         } catch (InterruptedException e) {
