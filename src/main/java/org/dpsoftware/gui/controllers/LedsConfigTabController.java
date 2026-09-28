@@ -27,7 +27,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
-import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
@@ -36,7 +35,6 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.LabelKey;
-import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -44,7 +42,6 @@ import org.dpsoftware.utilities.CommonUtility;
 /**
  * LEDs Config Tab controller
  */
-@Slf4j
 public class LedsConfigTabController {
 
     // FXML binding
@@ -362,7 +359,6 @@ public class LedsConfigTabController {
      */
     @FXML
     public void save(Configuration config) {
-        checkIfCaptureRestartNeeded();
         config.setSplitBottomMargin(splitBottomMargin.getValue());
         config.setGrabberAreaTopBottom(grabberAreaTopBottom.getValue());
         config.setGrabberSide(grabberSide.getValue());
@@ -386,9 +382,9 @@ public class LedsConfigTabController {
     }
 
     /**
-     * Check if capture restart is needed
+     * Check if the LED settings differ from the active capture configuration.
      */
-    private void checkIfCaptureRestartNeeded() {
+    boolean isCaptureRestartNeeded() {
         if (MainSingleton.getInstance() != null && MainSingleton.getInstance().config != null) {
             boolean restartCapture = false;
             if (!MainSingleton.getInstance().config.getGrabberAreaTopBottom().equals(grabberAreaTopBottom.getValue())) {
@@ -420,10 +416,9 @@ public class LedsConfigTabController {
             } else if (MainSingleton.getInstance().config.getGroupBy() != groupBy.getValue()) {
                 restartCapture = true;
             }
-            if (restartCapture && MainSingleton.getInstance().RUNNING) {
-                PipelineManager.restartCapture(() -> log.info("Restarting capture due to a change in the LEDs configuration"));
-            }
+            return restartCapture;
         }
+        return false;
     }
 
     /**
