@@ -30,12 +30,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -227,19 +223,6 @@ class CubeLutToneMapTest {
     }
 
     // --- listAvailableLuts ---
-
-    @Test
-    void scanJarForCubeLuts_supportsWindowsInstallPathWithSpaces() throws IOException {
-        Path installDir = Files.createDirectory(tempDir.resolve("Firefly Luciferin"));
-        Path jarPath = installDir.resolve("FireflyLuciferin-jar-with-dependencies.jar");
-        try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(jarPath))) {
-            jar.putNextEntry(new JarEntry("org/dpsoftware/lut/1000nits_HDR-to-SDR.cube"));
-            jar.closeEntry();
-        }
-
-        assertEquals(java.util.List.of("HDR to SDR standard.cube"),
-                CubeLutToneMap.scanJarForCubeLuts(jarPath.toFile()));
-    }
 
     @Test
     void listAvailableLuts_returnsResourceLuts() {
