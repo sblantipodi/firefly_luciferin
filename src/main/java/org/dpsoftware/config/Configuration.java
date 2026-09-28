@@ -68,8 +68,9 @@ public class Configuration implements Cloneable {
     private int brightness;
     // Brightness limiter
     private Float brightnessLimiter = Enums.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getBrightnessLimitFloat();
-    // Windows Desktop Duplication API
-    private String captureMethod;
+    private volatile String captureMethod = CaptureMethod.AUTO.name();
+    @JsonIgnore
+    private transient volatile boolean automaticCapturePending;
     private boolean checkForUpdates = true;
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     // Used for RGB, RGBW strips (accurate, brighter)
@@ -285,6 +286,7 @@ public class Configuration implements Cloneable {
      */
     @Getter
     public enum CaptureMethod {
+        AUTO("Auto"),
         CPU("CPU"),
         WinAPI("WinAPI"),
         DDUPL_DX11("DX11 GPU"),
@@ -295,16 +297,38 @@ public class Configuration implements Cloneable {
         PIPEWIREXDG("CPU only"),
         PIPEWIREXDG_OPENGL("OpenGL GPU"),
         PIPEWIREXDG_NVIDIA("NVIDIA GPU"),
+        PIPEWIREXDG_AMD_HIP("AMD/NVIDIA HIP GPU"),
         PIPEWIREXDG_AMD_INTEL("AMD/INTEL GPU"),
         USB_VIDEO("CPU only"),
         USB_VIDEO_OPENGL("OpenGL GPU"),
         USB_VIDEO_NVIDIA("NVIDIA GPU"),
+        USB_VIDEO_AMD_HIP("AMD/NVIDIA HIP GPU"),
         USB_VIDEO_AMD_INTEL("AMD/INTEL GPU"),
         AVFVIDEOSRC("AVFVIDEOSRC");
         private final String captureMethod;
 
         CaptureMethod(String captureMethod) {
             this.captureMethod = captureMethod;
+        }
+
+        public boolean isUsb() {
+            return this == WIN_USB_VIDEO || name().startsWith("USB_VIDEO");
+        }
+
+        public boolean isPipewire() {
+            return name().startsWith("PIPEWIREXDG");
+        }
+
+        public boolean isGStreamer() {
+            return this != AUTO && this != CPU && this != WinAPI;
+        }
+
+        public static CaptureMethod defaultForSource(boolean usb) {
+            if (!usb) {
+                return defaultForOs();
+            }
+            return NativeExecutor.isWindows() ? WIN_USB_VIDEO
+                    : NativeExecutor.isMac() ? AVFVIDEOSRC : USB_VIDEO;
         }
 
         public static CaptureMethod defaultForOs() {

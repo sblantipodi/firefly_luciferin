@@ -44,9 +44,7 @@ import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 /**
  * Mode Tab controller
@@ -150,35 +148,15 @@ public class ModeTabController {
     public void setCaptureMethodConverter() {
         captureMethod.setConverter(new StringConverter<>() {
             @Override
-            public String toString(Configuration.CaptureMethod object) {
-                if (object != null) {
-                    return switch (object) {
-                        case CPU -> Configuration.CaptureMethod.CPU.getCaptureMethod();
-                        case WinAPI -> Configuration.CaptureMethod.WinAPI.getCaptureMethod();
-                        case DDUPL_DX11 -> Configuration.CaptureMethod.DDUPL_DX11.getCaptureMethod();
-                        case DDUPL_DX12 -> Configuration.CaptureMethod.DDUPL_DX12.getCaptureMethod();
-                        case WIN_USB_VIDEO -> Configuration.CaptureMethod.WIN_USB_VIDEO.getCaptureMethod();
-                        case XIMAGESRC -> Configuration.CaptureMethod.XIMAGESRC.getCaptureMethod();
-                        case XIMAGESRC_NVIDIA -> Configuration.CaptureMethod.XIMAGESRC_NVIDIA.getCaptureMethod();
-                        case PIPEWIREXDG -> Configuration.CaptureMethod.PIPEWIREXDG.getCaptureMethod();
-                        case PIPEWIREXDG_NVIDIA -> Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.getCaptureMethod();
-                        case PIPEWIREXDG_AMD_INTEL -> Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.getCaptureMethod();
-                        case PIPEWIREXDG_OPENGL -> Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.getCaptureMethod();
-                        case USB_VIDEO -> Configuration.CaptureMethod.USB_VIDEO.getCaptureMethod();
-                        case USB_VIDEO_OPENGL -> Configuration.CaptureMethod.USB_VIDEO_OPENGL.getCaptureMethod();
-                        case USB_VIDEO_NVIDIA -> Configuration.CaptureMethod.USB_VIDEO_NVIDIA.getCaptureMethod();
-                        case USB_VIDEO_AMD_INTEL -> Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.getCaptureMethod();
-                        default -> Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod()).getCaptureMethod();
-                    };
-                } else {
-                    return Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod()).getCaptureMethod();
-                }
+            public String toString(Configuration.CaptureMethod method) {
+                return method == null ? "" : method.getCaptureMethod();
             }
 
             @Override
-            public Configuration.CaptureMethod fromString(String string) {
-                if (string == null || string.isEmpty()) return null;
-                else return Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod());
+            public Configuration.CaptureMethod fromString(String value) {
+                return captureMethod.getItems().stream()
+                        .filter(method -> method.getCaptureMethod().equals(value))
+                        .findFirst().orElse(null);
             }
         });
     }
@@ -245,17 +223,7 @@ public class ModeTabController {
             DisplayInfo screenInfo = settingsController.displayManager.getFirstInstanceDisplay();
             setDispInfo(screenInfo);
             monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
-            if (NativeExecutor.isWindows()) {
-                captureMethod.setValue(Configuration.CaptureMethod.DDUPL_DX12);
-            } else if (NativeExecutor.isMac()) {
-                captureMethod.setValue(Configuration.CaptureMethod.AVFVIDEOSRC);
-            } else {
-                if (NativeExecutor.isWayland()) {
-                    captureMethod.setValue(Configuration.CaptureMethod.PIPEWIREXDG);
-                } else {
-                    captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
-                }
-            }
+            applyCaptureMethod(Configuration.CaptureMethod.AUTO);
         }
         if (GuiSingleton.getInstance().isFirmTypeFull()) {
             firmTypeFull.setSelected(true);
@@ -308,7 +276,9 @@ public class ModeTabController {
                 scaling.setValue((CommonUtility.removeChars(scaling.getValue())) + Constants.PERCENT);
             }
         });
-        captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
+        captureMethod.setValue((MainSingleton.getInstance().config != null
+                && MainSingleton.getInstance().config.isAutomaticCapturePending())
+                ? Configuration.CaptureMethod.AUTO : Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         if (currentConfig.isWirelessStream() && Constants.SERIAL_PORT_AUTO.equals(currentConfig.getOutputDevice())
                 && ((currentConfig.getMultiMonitor() == 1) || (currentConfig.isMultiScreenSingleDevice()))) {
             if (NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
@@ -344,10 +314,7 @@ public class ModeTabController {
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         theme.setValue(LocalizedEnum.fromBaseStr(Enums.Theme.class, currentConfig.getTheme()).getI18n());
         language.setValue(LocalizedEnum.fromBaseStr(Enums.Language.class, currentConfig.getLanguage() == null ? MainSingleton.getInstance().config.getLanguage() : currentConfig.getLanguage()).getI18n());
-        resetButton.setVisible(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG)
-                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA)
-                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL)
-                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL));
+        resetButton.setVisible(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).isPipewire());
         simdOption.setValue(Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getI18n());
         evalutateSimdCpuThreadCombo();
     }
@@ -425,22 +392,14 @@ public class ModeTabController {
      * Set the default capture method for the current OS (display capture)
      */
     void setCaptureMethod() {
-        applyCaptureMethod(Configuration.CaptureMethod.defaultForOs());
+        applyCaptureMethod(Configuration.CaptureMethod.AUTO);
     }
 
     /**
      * Set the default capture method for external USB video devices
      */
     void setCaptureMethodUsbVideo() {
-        Configuration.CaptureMethod newMethod;
-        if (NativeExecutor.isWindows()) {
-            newMethod = Configuration.CaptureMethod.WIN_USB_VIDEO;
-        } else if (NativeExecutor.isMac()) {
-            newMethod = Configuration.CaptureMethod.AVFVIDEOSRC;
-        } else {
-            newMethod = Configuration.CaptureMethod.USB_VIDEO;
-        }
-        applyCaptureMethod(newMethod);
+        applyCaptureMethod(Configuration.CaptureMethod.AUTO);
     }
 
     /**
@@ -482,26 +441,7 @@ public class ModeTabController {
                 settingsController.checkProfileDifferences();
             }
         });
-        captureMethod.valueProperty().addListener((_, _, newVal) -> {
-            if (newVal != null && (newVal.equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA) || newVal.equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA))) {
-                List<String> scrProcess = NativeExecutor.runNative(Constants.CMD_CUDA_CHECK, Constants.CMD_WAIT_DELAY);
-                boolean pluginsFound = true;
-                for (String plugin : Constants.CUDA_REQUIRED_PLUGINS) {
-                    if (scrProcess.stream().noneMatch(str -> str.trim().contains(plugin))) {
-                        pluginsFound = false;
-                    }
-                }
-                if (!pluginsFound && !NativeExecutor.isRunningOnSandbox()) {
-                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(LabelKey.CUDA_ERROR_TITLE), CommonUtility.getWord(LabelKey.CUDA_ERROR_HEADER),
-                            CommonUtility.getWord(LabelKey.CUDA_ERROR_CONTEXT), Alert.AlertType.CONFIRMATION);
-                    ButtonType button = result.orElse(ButtonType.OK);
-                    if (button == ButtonType.OK) {
-                        MainSingleton.getInstance().guiManager.surfToURL(Constants.LINUX_WIKI_URL);
-                    }
-                }
-            }
-            evalutateSimdCpuThreadCombo();
-        });
+        captureMethod.valueProperty().addListener((_, _, _) -> evalutateSimdCpuThreadCombo());
         simdOption.valueProperty().addListener((_, oldVal, newVal) -> {
             if (MainSingleton.getInstance().config != null) {
                 if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {

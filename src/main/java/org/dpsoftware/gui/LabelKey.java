@@ -88,9 +88,6 @@ public final class LabelKey {
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
     public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
-    public static final String CUDA_ERROR_TITLE = "cuda.error.title";
-    public static final String CUDA_ERROR_HEADER = "cuda.error.header";
-    public static final String CUDA_ERROR_CONTEXT = "cuda.error.context";
     public static final String WAYLAND_SCREEN_REC_PERMISSION = "wayland.screen.rec.permission";
     public static final String WAYLAND_SCREEN_REC_PERMISSION_CONTEXT = "wayland.screen.rec.permission.context";
     public static final String START = "tray.icon.start";

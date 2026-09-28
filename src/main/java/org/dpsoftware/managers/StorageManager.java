@@ -142,12 +142,36 @@ public class StorageManager {
     }
 
     /**
+     * Save a safe startup method before attempting any automatic native capture probe.
+     *
+     * @param config file
+     */
+    public void resolveAutomaticCapture(Configuration config) throws IOException {
+        if (config.getCaptureMethod() == null || config.getCaptureMethod().isBlank()
+                || Configuration.CaptureMethod.AUTO.name().equals(config.getCaptureMethod())) {
+            config.setAutomaticCapturePending(true);
+            config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.hasCaptureDevice()).name());
+            writeConfig(config, null);
+            log.info("Automatic capture: saved startup default {}", config.getCaptureMethod());
+        }
+    }
+
+    /**
      * Write params inside the configuration file
      * @param config file
      * @param forceFilename where to write the config
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
+        if (config.isAutomaticCapturePending()) {
+            try {
+                config = (Configuration) config.clone();
+                // Other settings can be saved during a probe; never persist its unverified candidate.
+                config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.hasCaptureDevice()).name());
+            } catch (CloneNotSupportedException e) {
+                throw new IOException("Cannot preserve safe capture default", e);
+            }
+        }
         String filename;
         if (forceFilename != null) {
             filename = forceFilename;
@@ -368,7 +392,7 @@ public class StorageManager {
         defaultConfig.setLedMatrix(new LinkedHashMap<>());
         defaultConfig.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
         defaultConfig.setTheme(Enums.Theme.CLASSIC.getBaseI18n());
-        defaultConfig.setCaptureMethod(Configuration.CaptureMethod.defaultForOs().name());
+        defaultConfig.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
         defaultConfig.setFullFirmware(true);
         defaultConfig.setWirelessStream(true);
         defaultConfig.setLanguage("English");

@@ -60,6 +60,8 @@ public class GStreamerGrabber {
     private final Lock bufferLock = new ReentrantLock();
     public AppSink videosink;
     public volatile ByteBuffer lastRgbBuffer;
+    @Getter
+    private volatile boolean frameReceived;
     // Optional WebRTC streamer that consumes the captured frame when a live preview session is active.
     public static volatile WebRtcStreamer webRtcStreamer;
     private final int[] reusableRgbTotals = new int[4];
@@ -108,6 +110,8 @@ public class GStreamerGrabber {
         } else {
             if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_CUDA);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_HIP.name())) {
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_AMD_HIP);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_AMD_INTEL);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name())) {
@@ -118,6 +122,8 @@ public class GStreamerGrabber {
                 return;
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_NVIDIA.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC_CUDA);
+            } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_HIP.name())) {
+                gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC_AMD_HIP);
             } else if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL.name())) {
                 gstreamerPipeline = PipelineManager.getCap(Constants.GSTREAMER_PIPELINE_ETX_SRC_AMD_INTEL);
             } else {
@@ -653,6 +659,9 @@ public class GStreamerGrabber {
             Buffer buffer = sample.getBuffer();
             ByteBuffer bb = buffer.map(false);
             if (bb != null) {
+                if (w > 0 && h > 0 && bb.hasRemaining()) {
+                    frameReceived = true;
+                }
                 try {
                     rgbFrame(w, h, bb);
                 } catch (ArrayIndexOutOfBoundsException ignored) {

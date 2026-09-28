@@ -1078,24 +1078,24 @@ public class ImageProcessor {
                     System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + gstPath);
                 }
             }
-        } else if (NativeExecutor.isLinux() && MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.USB_VIDEO_OPENGL.name())) {
-            try {
-                if (System.getenv(EnvConstants.GST_GL_WINDOW) == null) {
-                    if (MainSingleton.getInstance().isHeadlessMode()) {
-                        LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_WINDOW, Constants.SURFACELESS, 0);
-                    } else {
-                        LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_WINDOW, Constants.X11, 0);
+        } else if (NativeExecutor.isLinux() && MainSingleton.getInstance().config != null) {
+            Configuration config = MainSingleton.getInstance().config;
+            if (config.isAutomaticCapturePending()
+                    || Configuration.CaptureMethod.PIPEWIREXDG_OPENGL.name().equals(config.getCaptureMethod())
+                    || Configuration.CaptureMethod.USB_VIDEO_OPENGL.name().equals(config.getCaptureMethod())) {
+                boolean headless = MainSingleton.getInstance().isHeadlessMode();
+                boolean wayland = NativeExecutor.isWayland();
+                String window = headless ? Constants.SURFACELESS : (wayland ? Constants.WAYLAND : Constants.X11);
+                String platform = headless || wayland ? Constants.EGL : Constants.GLX;
+                try {
+                    // Set these before GStreamer creates its first GL context; preserve user overrides.
+                    if (LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_WINDOW, window, 0) != 0
+                            || LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_PLATFORM, platform, 0) != 0) {
+                        log.warn("Could not set GStreamer GL environment variables");
                     }
+                } catch (LinkageError | RuntimeException e) {
+                    log.warn("Could not set GStreamer GL environment variables: {}", e.getMessage());
                 }
-                if (System.getenv(EnvConstants.GST_GL_PLATFORM) == null) {
-                    if (MainSingleton.getInstance().isHeadlessMode()) {
-                        LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_PLATFORM, Constants.EGL, 0);
-                    } else {
-                        LinuxLibC.INSTANCE.setenv(EnvConstants.GST_GL_PLATFORM, Constants.GLX, 0);
-                    }
-                }
-            } catch (Throwable t) {
-                log.warn("Could not set GStreamer GL environment variables: {}", t.getMessage());
             }
         }
         String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
