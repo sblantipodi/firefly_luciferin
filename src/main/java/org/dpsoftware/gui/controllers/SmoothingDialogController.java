@@ -34,6 +34,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.SmoothingOptions;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -134,15 +135,7 @@ public class SmoothingDialogController {
      * @param currentConfig current config file
      */
     private String captureFramerateLabel(Configuration currentConfig) {
-        int targetFramerate = Enums.FrameGeneration.findByValue(currentConfig.getFrameInsertionTarget()).getFrameGenerationTarget();
-        if (targetFramerate == 0) {
-            targetFramerate = Integer.parseInt(currentConfig.getDesiredFramerate());
-        } else if (currentConfig.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
-            targetFramerate = targetFramerate * 2;
-        } else if (currentConfig.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
-            targetFramerate = targetFramerate / 2;
-        }
-        return targetFramerate + " FPS";
+        return SmoothingOptions.captureFramerateLabel(currentConfig);
     }
 
     /**
@@ -209,12 +202,10 @@ public class SmoothingDialogController {
     private void evaluateSmoothing(Configuration config) {
         float alpha = LocalizedEnum.fromStr(Enums.Ema.class, smoothingLvl.getValue()).getEmaAlpha();
         int target = LocalizedEnum.fromStr(Enums.FrameGeneration.class, frameGen.getValue()).getFrameGenerationTarget();
-        config.setEmaAlpha(alpha);
-        config.setFrameInsertionTarget(target);
-        config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());
-        config.setSmoothingTargetFramerate(Enums.SmoothingTarget.findByExtendedVal(targetFramerate.getValue()).getSmoothingTargetValue());
+        SmoothingOptions.applyControls(config, alpha, target,
+                Enums.SmoothingTarget.findByExtendedVal(targetFramerate.getValue()).getSmoothingTargetValue());
         captureFramerate.setText(captureFramerateLabel(config));
-        targetFramerate.setDisable((Enums.Smoothing.findByFramerateAndAlpha(target, alpha) == Enums.Smoothing.DISABLED) || target == 0);
+        targetFramerate.setDisable(Enums.Smoothing.DISABLED.getBaseI18n().equals(config.getSmoothingType()) || target == 0);
         settingsController.miscTabController.evaluateSmoothing();
     }
 

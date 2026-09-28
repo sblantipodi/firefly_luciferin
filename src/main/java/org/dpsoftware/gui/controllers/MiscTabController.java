@@ -34,9 +34,6 @@ import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.audio.AudioLoopbackSoftware;
-import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -44,9 +41,9 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.WidgetFactory;
+import org.dpsoftware.gui.controllers.options.MiscTabOptions;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
-import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.StateDto;
@@ -150,47 +147,16 @@ public class MiscTabController {
      * Init audio combo
      */
     private void initAudioCombo() {
-        if (MainSingleton.getInstance().config != null && AudioSingleton.getInstance().audioDevices.isEmpty()) {
-            AudioUtility audioLoopback = new AudioLoopbackSoftware();
-            for (AudioDevice device : audioLoopback.getLoopbackDevices().values()) {
-                addStaticDevices();
-                if (device.getDeviceName().contains(Constants.LOOPBACK) || device.getDeviceName().contains(Constants.SHARED)) {
-                    audioDevice.getItems().add(device.getDeviceName());
-                }
-            }
-        } else {
-            for (AudioDevice device : AudioSingleton.getInstance().audioDevices.values()) {
-                addStaticDevices();
-                if (!audioDevice.getItems().contains(device.getDeviceName())) {
-                    audioDevice.getItems().add(device.getDeviceName());
-                }
-            }
-        }
-    }
-
-    /**
-     * Add static devices
-     */
-    private void addStaticDevices() {
-        if (NativeExecutor.isWindows() && !audioDevice.getItems().contains(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n())) {
-            audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
-        }
-        if (!audioDevice.getItems().contains(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n())) {
-            audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
-        }
+        MiscTabOptions.audioDeviceNames().stream()
+                .filter(name -> !audioDevice.getItems().contains(name))
+                .forEach(audioDevice.getItems()::add);
     }
 
     /**
      * Manage framerate field
      */
     private void manageFramerate() {
-        for (Enums.Framerate fps : Enums.Framerate.values()) {
-            if (fps.getBaseI18n().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
-                framerate.getItems().add(fps.getI18n());
-            } else {
-                framerate.getItems().add(fps.getI18n() + Constants.FPS_VAL);
-            }
-        }
+        MiscTabOptions.captureFramerates().forEach(choice -> framerate.getItems().add(choice.label()));
         framerate.setEditable(true);
         framerate.setOnKeyPressed(event -> {
             if (MainSingleton.getInstance().config != null) {
@@ -242,20 +208,14 @@ public class MiscTabController {
      * @param config currecnt config file
      */
     private void setFramerateIntoConfig(Configuration config) {
-        if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-            config.setDesiredFramerate(framerate.getValue().replace(Constants.FPS_VAL, ""));
-        } else {
-            config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
-        }
+        config.setDesiredFramerate(MiscTabOptions.storedFramerate(framerate.getValue()));
     }
 
     /**
      * Init combo boxes
      */
     void initComboBox() {
-        for (Enums.Gamma gma : Enums.Gamma.values()) {
-            gamma.getItems().add(gma.getGamma());
-        }
+        gamma.getItems().addAll(MiscTabOptions.gammaValues());
         for (Enums.Effect ef : Enums.Effect.values()) {
             effect.getItems().add(ef.getI18n());
         }
@@ -393,11 +353,7 @@ public class MiscTabController {
      * Setup the context menu based on the selected effect
      */
     public void setContextMenu() {
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-        if (Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
+        if (MiscTabOptions.isAudioEffect(MainSingleton.getInstance().config.getEffect())) {
             colorPicker.setVisible(false);
             contextChooseColorChooseLoopback.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_AUDIO_DEVICE));
             gamma.setVisible(false);
@@ -779,8 +735,8 @@ public class MiscTabController {
         config.setNightModeFrom(nightModeFrom.getValue().toString());
         config.setNightModeTo(nightModeTo.getValue().toString());
         config.setNightModeBrightness(nightModeBrightness.getValue());
-        config.setBrightness((int) (brightness.getValue() / 100 * 255));
-        config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
+        config.setBrightness(MiscTabOptions.storedBrightness(brightness.getValue()));
+        config.setWhiteTemperature(MiscTabOptions.storedWhiteTemperature(whiteTemp.getValue()));
         config.setAudioChannels(LocalizedEnum.fromStr(Enums.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
         var audioDeviceFromConfig = LocalizedEnum.fromStr(Enums.Audio.class, audioDevice.getValue());
@@ -792,8 +748,9 @@ public class MiscTabController {
         }
         config.setAudioDevice(audioDeviceToStore);
         config.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, effect.getValue()).getBaseI18n());
-        config.setColorChooser((int) (colorPicker.getValue().getRed() * 255) + "," + (int) (colorPicker.getValue().getGreen() * 255) + ","
-                + (int) (colorPicker.getValue().getBlue() * 255) + "," + (int) (colorPicker.getValue().getOpacity() * 255));
+        config.setColorChooser(MiscTabOptions.colorChooser((int) (colorPicker.getValue().getRed() * 255),
+                (int) (colorPicker.getValue().getGreen() * 255), (int) (colorPicker.getValue().getBlue() * 255),
+                (int) (colorPicker.getValue().getOpacity() * 255)));
     }
 
     /**
@@ -1068,20 +1025,7 @@ public class MiscTabController {
             if (smooth == null) {
                 smooth = LocalizedEnum.fromStr(Enums.Smoothing.class, newVal);
             }
-            MainSingleton.getInstance().config.setSmoothingType(smooth.getBaseI18n());
-            if (smooth == Enums.Smoothing.DISABLED) {
-                MainSingleton.getInstance().config.setFrameInsertionTarget(0);
-                MainSingleton.getInstance().config.setEmaAlpha(0F);
-                MainSingleton.getInstance().config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
-            } else if (smooth == Enums.Smoothing.CUSTOM) {
-                MainSingleton.getInstance().config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
-                MainSingleton.getInstance().config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
-                MainSingleton.getInstance().config.setSmoothingTargetFramerate(MainSingleton.getInstance().config.getSmoothingTargetFramerate());
-            } else {
-                MainSingleton.getInstance().config.setFrameInsertionTarget(smooth.getFrameInsertionFramerate());
-                MainSingleton.getInstance().config.setEmaAlpha(smooth.getEmaAlpha());
-                MainSingleton.getInstance().config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
-            }
+            MiscTabOptions.applySmoothing(MainSingleton.getInstance().config, newVal);
             setFramerateEditable(smooth);
             if (settingsController != null && settingsController.smoothingDialogController != null) {
                 settingsController.smoothingDialogController.initValuesFromSettingsFile(MainSingleton.getInstance().config);

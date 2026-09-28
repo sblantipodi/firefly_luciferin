@@ -36,7 +36,9 @@ import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
 import org.dpsoftware.gui.controllers.options.ImprovOptions;
+import org.dpsoftware.gui.controllers.options.MiscTabOptions;
 import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
+import org.dpsoftware.gui.controllers.options.SmoothingOptions;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
@@ -413,12 +415,18 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void handleGetFieldOptions(HttpExchange exchange) throws IOException {
-        ObjectNode response = CommonUtility.JSON_MAPPER.createObjectNode();
-        response.set("options", CommonUtility.JSON_MAPPER.valueToTree(FieldOptions.getFieldOptions()));
-        Map<String, String> labels = FieldOptions.getFieldLabels();
-        FieldOptions.applyToggleLedLabels(labels);
-        response.set("labels", CommonUtility.JSON_MAPPER.valueToTree(labels));
-        HttpResponses.sendJson(exchange, response);
+        try {
+            ObjectNode response = CommonUtility.JSON_MAPPER.createObjectNode();
+            response.set("options", CommonUtility.JSON_MAPPER.valueToTree(FieldOptions.getFieldOptions()));
+            response.set("smoothingPresets", CommonUtility.JSON_MAPPER.valueToTree(SmoothingOptions.presets()));
+            Map<String, String> labels = FieldOptions.getFieldLabels();
+            FieldOptions.applyToggleLedLabels(labels);
+            response.set("labels", CommonUtility.JSON_MAPPER.valueToTree(labels));
+            HttpResponses.sendJson(exchange, response);
+        } catch (RuntimeException e) {
+            log.error("Unable to build web field options", e);
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to load field options");
+        }
     }
 
     /**
@@ -449,8 +457,12 @@ public class ConfigServer {
         String comboName = payload.has(WebFieldNames.COMBO_NAME) ? payload.get(WebFieldNames.COMBO_NAME).asText() : "";
         JsonNode valueNode = payload.has(WebFieldNames.VALUE) ? payload.get(WebFieldNames.VALUE) : null;
         log.info("Web combo change: {} = {}", comboName, valueNode);
-        applyComboChange(comboName, valueNode);
-        HttpResponses.sendOk(exchange);
+        try {
+            applyComboChange(comboName, valueNode);
+            HttpResponses.sendOk(exchange);
+        } catch (IllegalArgumentException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
+        }
     }
 
     /**
@@ -460,6 +472,20 @@ public class ConfigServer {
      * @param value     the newly selected value, as a JSON node (string or boolean)
      */
     private void applyComboChange(String comboName, JsonNode value) {
+        if (Set.of(WebFieldNames.EMA_ALPHA, WebFieldNames.FRAME_INSERTION_TARGET,
+                WebFieldNames.SMOOTHING_TARGET_FRAMERATE).contains(comboName)) {
+            if (value == null || value.isNull()) throw new IllegalArgumentException("Missing smoothing value");
+            Configuration config = MainSingleton.getInstance().config;
+            float alpha = comboName.equals(WebFieldNames.EMA_ALPHA) ? Float.parseFloat(value.asText()) : config.getEmaAlpha();
+            int frames = comboName.equals(WebFieldNames.FRAME_INSERTION_TARGET) ? Integer.parseInt(value.asText()) : config.getFrameInsertionTarget();
+            int target = comboName.equals(WebFieldNames.SMOOTHING_TARGET_FRAMERATE) ? Integer.parseInt(value.asText()) : config.getSmoothingTargetFramerate();
+            SmoothingOptions.applyControls(config, alpha, frames, target);
+            PipelineManager.restartCapture(CommonUtility::run);
+            return;
+        }
+        if (MiscTabOptions.applyWebChange(MainSingleton.getInstance().config, comboName, value)) {
+            return;
+        }
         String valueText = value != null ? value.asText() : "";
         if (valueText == null || valueText.isEmpty()) {
             return;
@@ -467,10 +493,6 @@ public class ConfigServer {
         switch (comboName) {
             case WebFieldNames.CUBE_LUT ->
                     CommonUtility.delayMilliseconds(() -> DisplayDialogController.handleCubeLutCombo(valueText), 200);
-            case WebFieldNames.DESIRED_FRAMERATE -> CommonUtility.delayMilliseconds(() -> {
-                MainSingleton.getInstance().config.setDesiredFramerate(valueText);
-                PipelineManager.restartCapture(CommonUtility::run);
-            }, 200);
             case WebFieldNames.RESAMPLING_FACTOR -> CommonUtility.delayMilliseconds(() -> {
                 Enums.ResamplingFactor rf = Enums.ResamplingFactor.findByValue(Integer.parseInt(valueText));
                 if (rf != null) {
@@ -488,22 +510,6 @@ public class ConfigServer {
                 if (effect != null) {
                     NetworkManager.setEffect(effect.getBaseI18n());
                 }
-            }
-            case WebFieldNames.TOGGLE_LED -> {
-                boolean on;
-                if (value.isBoolean()) {
-                    on = value.asBoolean();
-                } else {
-                    on = Boolean.parseBoolean(valueText);
-                }
-                CommonUtility.delayMilliseconds(() -> {
-                    MainSingleton.getInstance().config.setToggleLed(on);
-                    if (on) {
-                        CommonUtility.turnOnLEDs();
-                    } else {
-                        CommonUtility.turnOffLEDs(MainSingleton.getInstance().config);
-                    }
-                }, 200);
             }
             default -> {
                 // Not yet wired

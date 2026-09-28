@@ -3,6 +3,7 @@ export const state = {
     fieldOptions: {},
     fieldLabels: {},
     sectionTitles: {},
+    smoothingPresets: {},
     lastConfig: undefined,
     devices: undefined
 };

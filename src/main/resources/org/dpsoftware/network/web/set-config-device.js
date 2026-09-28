@@ -134,7 +134,7 @@ function schedulePoll() {
     }, 5000);
 }
 
-// Updates the LED toggle button and the form checkbox to reflect the on/off state, keeping both in sync.
+// Updates the device picker and Misc LED buttons to reflect the same on/off state.
 function setToggleUi(on) {
     deviceState.on = on;
     var toggle = document.getElementById('toggleLED');
@@ -144,9 +144,12 @@ function setToggleUi(on) {
         toggle.classList.toggle('btn-outline-primary', !on);
         toggle.classList.toggle('active', on);
     }
-    var formCheckbox = document.getElementById('toggleLed');
-    if (formCheckbox) {
-        formCheckbox.checked = on;
+    var formButton = document.getElementById('toggleLed');
+    if (formButton) {
+        formButton.setAttribute('aria-pressed', String(on));
+        formButton.textContent = on ? state.fieldLabels.turnLedOff : state.fieldLabels.turnLedOn;
+        formButton.classList.toggle('btn-primary', on);
+        formButton.classList.toggle('btn-outline-primary', !on);
     }
 }
 
