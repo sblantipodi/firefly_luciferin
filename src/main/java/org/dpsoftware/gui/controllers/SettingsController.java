@@ -43,6 +43,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.ModeTabOptions;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
@@ -151,8 +152,9 @@ public class SettingsController {
         sm = new StorageManager();
         displayManager = new DisplayManager();
         displayManager.logDisplayInfo();
-        for (int i = 0; i < displayManager.displayNumber(); i++) {
-            modeTabController.monitorNumber.getItems().add(displayManager.getDisplayName(i));
+        var displayNames = ModeTabOptions.displayNames(displayManager);
+        for (int i = 0; i < displayNames.size(); i++) {
+            modeTabController.monitorNumber.getItems().add(displayNames.get(i));
             switch (i) {
                 case 0 ->
                         devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(LabelKey.MULTIMONITOR_1));
@@ -162,7 +164,7 @@ public class SettingsController {
                         devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(LabelKey.MULTIMONITOR_3));
             }
         }
-        displayManager.getExtVideoCaptureDevices(devices ->
+        ModeTabOptions.loadExternalCaptureDeviceNames(devices ->
                 modeTabController.monitorNumber.getItems().addAll(devices)
         );
         currentConfig = sm.readProfileInUseConfig();
@@ -712,42 +714,7 @@ public class SettingsController {
     void initCaptureMethods() {
         Configuration.CaptureMethod selected = modeTabController.captureMethod.getValue();
         boolean isExtSrc = currentConfig != null && currentConfig.hasCaptureDevice();
-        if (NativeExecutor.isWindows()) {
-            if (!isExtSrc) {
-                modeTabController.captureMethod.getItems().setAll(
-                        Configuration.CaptureMethod.DDUPL_DX12,
-                        Configuration.CaptureMethod.DDUPL_DX11,
-                        Configuration.CaptureMethod.WinAPI,
-                        Configuration.CaptureMethod.CPU);
-            } else {
-                modeTabController.captureMethod.getItems().setAll(Configuration.CaptureMethod.WIN_USB_VIDEO);
-            }
-        } else if (NativeExecutor.isMac()) {
-            modeTabController.captureMethod.getItems().setAll(Configuration.CaptureMethod.AVFVIDEOSRC);
-        } else {
-            if (!isExtSrc) {
-                if (NativeExecutor.isWayland()) {
-                    modeTabController.captureMethod.getItems().setAll(
-                            Configuration.CaptureMethod.PIPEWIREXDG,
-                            Configuration.CaptureMethod.PIPEWIREXDG_OPENGL,
-                            Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA,
-                            Configuration.CaptureMethod.PIPEWIREXDG_AMD_HIP,
-                            Configuration.CaptureMethod.PIPEWIREXDG_AMD_INTEL);
-                } else {
-                    modeTabController.captureMethod.getItems().setAll(
-                            Configuration.CaptureMethod.XIMAGESRC,
-                            Configuration.CaptureMethod.XIMAGESRC_NVIDIA);
-                }
-            } else {
-                modeTabController.captureMethod.getItems().setAll(
-                        Configuration.CaptureMethod.USB_VIDEO,
-                        Configuration.CaptureMethod.USB_VIDEO_OPENGL,
-                        Configuration.CaptureMethod.USB_VIDEO_NVIDIA,
-                        Configuration.CaptureMethod.USB_VIDEO_AMD_HIP,
-                        Configuration.CaptureMethod.USB_VIDEO_AMD_INTEL);
-            }
-        }
-        modeTabController.captureMethod.getItems().addFirst(Configuration.CaptureMethod.AUTO);
+        modeTabController.captureMethod.getItems().setAll(ModeTabOptions.captureMethods(isExtSrc));
         Configuration.CaptureMethod restored = modeTabController.captureMethod.getItems().contains(selected)
                 ? selected : Configuration.CaptureMethod.AUTO;
         modeTabController.captureMethod.setValue(restored);

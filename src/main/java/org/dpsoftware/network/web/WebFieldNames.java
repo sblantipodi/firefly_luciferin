@@ -67,6 +67,7 @@ public final class WebFieldNames {
     public static final String AUTO_DETECT_BLACK_BARS = "autoDetectBlackBars";
     public static final String ALGO = "algo";
     public static final String LANGUAGE = "language";
+    public static final String WEB_MCP_SERVER_ENABLED = "webMcpServerEnabled";
     // MQTT fields
     public static final String MQTT_ENABLE = "mqttEnable";
     public static final String WIRELESS_STREAM = "wirelessStream";

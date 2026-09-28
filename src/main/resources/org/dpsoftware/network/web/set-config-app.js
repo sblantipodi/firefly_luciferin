@@ -11,15 +11,15 @@ import {showToast} from './set-config-ui.js';
 
 // Collects the form payload and POSTs it to 'setConfig'; on success the server restarts to apply the settings.
 function saveForm() {
-    if (!confirm('Luciferin needs to restart to apply these settings. Proceed?')) {
-        return;
-    }
     var payload;
     try {
         payload = collectPayload();
     } catch (e) {
-        showToast('Collect error: ' + e.message, 'bg-danger text-white');
+        showToast((state.fieldLabels['web.collectError'] || 'Invalid value:') + ' ' + e.message, 'bg-danger text-white');
         console.error('collectPayload failed', e);
+        return;
+    }
+    if (!confirm(state.fieldLabels['web.restartConfirm'] || 'Luciferin needs to restart to apply these settings. Proceed?')) {
         return;
     }
     var body = JSON.stringify(payload);
@@ -33,12 +33,33 @@ function saveForm() {
             if (!r.ok) {
                 throw new Error(t || r.statusText);
             }
-            showToast('Settings saved', 'bg-success text-white');
+            showToast(state.fieldLabels['web.settingsSaved'] || 'Settings saved', 'bg-success text-white');
         });
     }).catch(function (err) {
         showToast('Error: ' + err.message, 'bg-danger text-white');
         console.error('saveForm failed', err);
     });
+}
+
+// Applies server-provided translations to fixed controls outside the generated form.
+function localizeSettingsPage() {
+    var fields = [
+        ['saveSettings', 'saveSettings', 'textContent'],
+        ['showLivePreview', 'showPreview', 'textContent'],
+        ['newProfileName', 'newProfileName', 'placeholder'],
+        ['addProfile', 'addProfile', 'textContent'],
+        ['appLog', 'openLog', 'textContent']
+    ];
+    fields.forEach(function (entry) {
+        var label = state.fieldLabels['web.' + entry[1]];
+        if (label) {
+            document.getElementById(entry[0])[entry[2]] = label;
+        }
+    });
+    var profileHelp = document.querySelector('#section-profiles .form-text');
+    if (profileHelp && state.fieldLabels['web.profileHelp']) {
+        profileHelp.textContent = state.fieldLabels['web.profileHelp'];
+    }
 }
 
 // Notifies the server (comboChange endpoint) whenever a select control or the LED toggle changes, so dependent field options can be refreshed.
@@ -174,6 +195,7 @@ $(function () {
         state.fieldOptions = (data && data.options) || {};
         state.fieldLabels = (data && data.labels) || {};
         buildForm();
+        localizeSettingsPage();
         wireLogAccordion();
         document.getElementById('saveSettings').addEventListener('click', saveForm);
         document.getElementById('addProfile').addEventListener('click', addProfile);
@@ -189,7 +211,7 @@ $(function () {
         var profile = cfg && cfg.activeProfile;
         var profileEl = document.getElementById('activeProfile');
         if (profileEl) {
-            profileEl.textContent = profile ? ('Profile: ' + profile) : '';
+            profileEl.textContent = profile ? ((state.fieldLabels['web.profilePrefix'] || 'Profile:') + ' ' + profile) : '';
         }
         syncDeviceFromPrefs();
         return fetchJson('listProfiles');
