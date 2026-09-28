@@ -294,14 +294,7 @@ public class ImprovDialogController {
     }
 
     /**
-     * Send improv wifi msg with a custom DPsoftware protocol
-     *
-     * @return error
-     * @throws IOException can't open port
-     */
-    /**
      * Save button from main controller
-     *
      */
     @FXML
     @SuppressWarnings("Duplicates")
