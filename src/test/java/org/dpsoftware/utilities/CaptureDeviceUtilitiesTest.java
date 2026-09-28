@@ -21,9 +21,6 @@
 */
 package org.dpsoftware.utilities;
 
-import org.freedesktop.gstreamer.Structure;
-import org.freedesktop.gstreamer.device.Device;
-import org.freedesktop.gstreamer.device.DeviceMonitor;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -40,44 +37,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * GstValueList&lt;Fraction&gt; values.
  */
 class CaptureDeviceUtilitiesTest {
-
-    @Test
-    void print_raw_device_properties() {
-        CaptureDeviceUtilities.initGStreamer();
-        try (DeviceMonitor monitor = new DeviceMonitor()) {
-            monitor.addFilter("Video/Source", null);
-            if (!monitor.start()) return;
-            for (Device dev : monitor.getDevices()) {
-                System.out.println("=== " + dev.getDisplayName() + " ===");
-                Structure props = dev.getProperties();
-                if (props != null) {
-                    System.out.println("  Properties toString: " + props);
-                } else {
-                    System.out.println("  Properties: null");
-                }
-            }
-            monitor.stop();
-        }
-    }
-
-    @Test
-    void print_devices(){
-        List<CaptureDeviceUtilities.CaptureDevice> devices = CaptureDeviceUtilities.discover();
-        if (devices.isEmpty()) {
-            return;
-        }
-        for (CaptureDeviceUtilities.CaptureDevice dev : devices) {
-            System.out.printf("Device: %s (ID: %d, path: %s)%n", dev.getFriendlyName(), dev.getDeviceId(), dev.getDevPath());
-            System.out.println("----------------------------------------");
-            for (CaptureDeviceUtilities.PixelFormat fmt : dev.getFormats()) {
-                System.out.printf("  Format: %s%n", fmt.getName());
-                for (CaptureDeviceUtilities.Resolution res : fmt.getResolutions()) {
-                    System.out.printf("    %s%n", res);
-                }
-            }
-            System.out.println();
-        }
-    }
 
     // --- Resolution ---
 
