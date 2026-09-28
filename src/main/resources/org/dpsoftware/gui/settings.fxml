@@ -4,13 +4,13 @@
 <?import javafx.scene.layout.AnchorPane?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="shadowPane" maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity"
-            minWidth="-Infinity" prefHeight="435.0" prefWidth="420.0"
+            minWidth="-Infinity" prefHeight="455.0" prefWidth="420.0"
             stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal"
             fx:controller="org.dpsoftware.gui.controllers.SettingsController">
 
     <TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity"
              minHeight="-Infinity"
-             minWidth="-Infinity" prefHeight="435.0" prefWidth="420.0" stylesheets="@css/main.css"
+             minWidth="-Infinity" prefHeight="455.0" prefWidth="420.0" stylesheets="@css/main.css"
              tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/20.0.2">
 
         <Tab text="%fxml.setting.controls">

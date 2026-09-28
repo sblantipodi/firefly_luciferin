@@ -34,6 +34,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.DialogManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
@@ -913,7 +914,9 @@ public class CommonUtility {
     public static void closeCurrentStage(InputEvent e) {
         Node source = (Node) e.getSource();
         Stage stage = (Stage) source.getScene().getWindow();
-        stage.close();
+        if (!DialogManager.fadeOutAndClose(stage)) {
+            stage.close();
+        }
     }
 
     /**

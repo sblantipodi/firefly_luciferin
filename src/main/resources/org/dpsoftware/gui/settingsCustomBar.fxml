@@ -8,11 +8,11 @@
 <?import javafx.scene.text.Font?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="shadowPane" maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity"
-            minWidth="-Infinity" prefHeight="480.0" prefWidth="440.0"
+            minWidth="-Infinity" prefHeight="500.0" prefWidth="440.0"
             stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal"
             fx:controller="org.dpsoftware.gui.controllers.SettingsController">
-    <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="460.0" prefWidth="420.0">
-        <VBox prefHeight="460.0" prefWidth="420.0">
+    <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="480.0" prefWidth="420.0">
+        <VBox prefHeight="480.0" prefWidth="420.0">
             <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="420.0">
                 <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="320.0">
                     <ImageView fitHeight="17.0" fitWidth="17.0" nodeOrientation="RIGHT_TO_LEFT" pickOnBounds="true"
@@ -46,7 +46,7 @@
                 </HBox>
             </HBox>
 
-            <TabPane fx:id="mainTabPane" prefHeight="435.0" prefWidth="420.0" tabClosingPolicy="UNAVAILABLE">
+            <TabPane fx:id="mainTabPane" prefHeight="455.0" prefWidth="420.0" tabClosingPolicy="UNAVAILABLE">
 
                 <Tab text="%fxml.setting.controls">
                     <fx:include fx:id="controlTab" source="controlTab.fxml"/>

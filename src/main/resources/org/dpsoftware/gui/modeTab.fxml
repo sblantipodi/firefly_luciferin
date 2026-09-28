@@ -1,30 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ModeTabController">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="455.0" prefWidth="420.0"
+            xmlns="http://javafx.com/javafx/17.0.12" fx:controller="org.dpsoftware.gui.controllers.ModeTabController">
 
-    <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="420.0">
+    <GridPane prefHeight="425.0" prefWidth="420.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="51.666666666666686" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="35.0" minHeight="35.0" prefHeight="35.0" vgrow="NEVER"/>
         </rowConstraints>
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+            <Insets bottom="16.0" left="20.0" right="20.0" top="10.0"/>
         </padding>
         <Label text="%fxml.modetab.screenresolution" wrapText="true" GridPane.rowIndex="1" />
         <TextField id="screenWidth" fx:id="screenWidth" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
@@ -37,34 +39,57 @@
         <Label text="%fxml.modetab.capturemethod" wrapText="true" GridPane.rowIndex="6" />
         <Label fx:id="cpuThreadsLabel" text="%fxml.modetab.numberofcputhreads" wrapText="true" GridPane.rowIndex="7" />
         <TextField id="numberOfThreads" fx:id="numberOfThreads" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-        <ComboBox id="serialPort" fx:id="serialPort" editable="true" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-        <Label fx:id="comWirelessLabel" text="%fxml.modetab.serialport" wrapText="true" GridPane.rowIndex="9" />
+        <Label text="%fxml.devicestab.checks" wrapText="true" GridPane.rowIndex="8"/>
+        <GridPane GridPane.columnIndex="1" GridPane.rowIndex="8" GridPane.valignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50.0"/>
+                <ColumnConstraints percentWidth="50.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
+            <CheckBox fx:id="syncCheck" mnemonicParsing="false" text="%fxml.devicestab.sync.check" wrapText="true"
+                      GridPane.fillHeight="false" GridPane.valignment="CENTER"/>
+            <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" text="%fxml.devicestab.check.updates"
+                      wrapText="true" GridPane.columnIndex="1" GridPane.fillHeight="false"
+                      GridPane.valignment="CENTER"/>
+        </GridPane>
+        <Label text="%fxml.devicestab.system" wrapText="true" GridPane.rowIndex="9"/>
+        <GridPane GridPane.columnIndex="1" GridPane.rowIndex="9" GridPane.valignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50.0"/>
+                <ColumnConstraints percentWidth="50.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
+            <CheckBox fx:id="startWithSystem" mnemonicParsing="false" text="%fxml.misctab.runlogin" wrapText="true"
+                      GridPane.fillHeight="false" GridPane.valignment="CENTER"/>
+            <CheckBox fx:id="webMcpServerEnabled" mnemonicParsing="false" onAction="#saveButtonHover"
+                      text="Web / MCP server" wrapText="true" GridPane.columnIndex="1" GridPane.fillHeight="false"
+                      GridPane.valignment="CENTER"/>
+        </GridPane>
         <Label text="%fxml.modetab.binddisplay" wrapText="true" GridPane.rowIndex="2" />
-        <HBox prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+        <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1"
+              GridPane.fillHeight="false" GridPane.rowIndex="2" GridPane.valignment="CENTER">
             <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="220.0">
                 <HBox.margin>
-                    <Insets right="8.0" top="7.0"/>
+                    <Insets right="8.0"/>
                 </HBox.margin>
             </ComboBox>
-            <Button fx:id="displayDialogBtn" minWidth="30.0" mnemonicParsing="false"
-                    onMouseClicked="#openDisplayDialog" prefWidth="30.0" text="☰">
-                <HBox.margin>
-                    <Insets top="7.0"/>
-                </HBox.margin>
+            <Button fx:id="displayDialogBtn" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#openDisplayDialog"
+                    prefWidth="30.0" text="☰">
             </Button>
         </HBox>
-        <Label text="%fxml.modetab.baudrate" wrapText="true" GridPane.rowIndex="8" />
-        <ComboBox fx:id="baudRate" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-        <Button fx:id="saveSettingsButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="10">
-            <GridPane.margin>
-                <Insets />
-            </GridPane.margin>
-        </Button>
+        <Button fx:id="saveSettingsButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
+                text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="10"
+                GridPane.valignment="BOTTOM"/>
         <Label text="%fxml.modetab.theme.language" wrapText="true" GridPane.rowIndex="5" />
         <ComboBox fx:id="theme" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
         <ComboBox fx:id="language" onAction="#saveButtonHover" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
         <ComboBox fx:id="algo" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
-        <Button fx:id="resetButton" mnemonicParsing="false" onMouseClicked="#reset" text="%fxml.reset" visible="false" GridPane.rowIndex="10" />
+        <Button fx:id="resetButton" mnemonicParsing="false" onMouseClicked="#reset" text="%fxml.reset" visible="false"
+                GridPane.rowIndex="10" GridPane.valignment="BOTTOM"/>
         <RadioButton fx:id="firmTypeLight" maxWidth="115.0" mnemonicParsing="false" text="%light.firm.short" toggleGroup="$firmwareTypeGrp" wrapText="true" GridPane.columnIndex="1">
             <GridPane.margin>
                 <Insets left="127.0" />

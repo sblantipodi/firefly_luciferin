@@ -72,6 +72,7 @@ public class Configuration implements Cloneable {
     @JsonIgnore
     private transient volatile boolean automaticCapturePending;
     private boolean checkForUpdates = true;
+    private boolean webMcpServerEnabled = true;
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     // Used for RGB, RGBW strips (accurate, brighter)
     private int colorMode = 1;

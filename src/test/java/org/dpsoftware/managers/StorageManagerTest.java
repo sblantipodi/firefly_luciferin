@@ -149,6 +149,18 @@ class StorageManagerTest {
     }
 
     @Test
+    void checkProfileDifferences_webMcpServerChangeTriggersRestart() {
+        Configuration defaultConfig = createConfig();
+        Configuration profileConfig = createConfig();
+        profileConfig.setWebMcpServerEnabled(false);
+
+        StorageManager sm = new StorageManager();
+        sm.checkProfileDifferences(defaultConfig, profileConfig);
+
+        assertTrue(mockedInstance.restartNeeded);
+    }
+
+    @Test
     void checkProfileDifferences_nullProfileConfigDoesNothing() {
         Configuration defaultConfig = createConfig();
         mockedInstance.setRestartNeeded(true);
