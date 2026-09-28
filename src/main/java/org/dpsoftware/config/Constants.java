@@ -596,8 +596,6 @@ public class Constants {
     public static final String PROP_GNOME_NIGHTLIGHT = "NightLightActive";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static final String WAYLAND = "wayland";
-    public static final String RESTART_DELAY = "RESTART_DELAY";
-    public static final int RESTART_DELAY_SECONDS = 3;
     public static final String HEADLESS_ARG = "-h";
     public static final int RESTART_TIMEOUT = -180;
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};

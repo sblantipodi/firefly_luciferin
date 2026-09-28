@@ -186,7 +186,7 @@ public class FireflyLuciferin extends Application {
     /**
      * Parse the startup arguments and apply the related side effects:
      * a single h argument starts instance #1 with the default profile in headless mode,
-     * RESTART_DELAY as first arg is stripped and a delay is applied,
+     * a restart lock argument makes the replacement wait for the previous process to exit,
      * -h as third arg enables headless mode,
      * args[0] is the instance number whoAmI and disables instance spawning,
      * args[1] is the profile to use, defaults to the default profile.
@@ -199,12 +199,11 @@ public class FireflyLuciferin extends Application {
             // Launched with a single -h: start instance #1 with the default profile, headless.
             args = new String[]{"1", LabelKey.DEFAULT, Constants.HEADLESS_ARG};
         }
-        if (args != null && args.length > 0 && Constants.RESTART_DELAY.equals(args[0])) {
-            String[] newArray = new String[args.length - 1];
-            System.arraycopy(args, 1, newArray, 0, newArray.length);
-            args = newArray;
-            CommonUtility.sleepSeconds(Constants.RESTART_DELAY_SECONDS);
+        if (args != null && args.length > 0 && NativeExecutor.isRestartLockArgument(args[0])) {
+            NativeExecutor.waitForRestartLock(args[0]);
+            args = Arrays.copyOfRange(args, 1, args.length);
         }
+        JavaFXStarter.startupArgs = args;
         if (java.awt.GraphicsEnvironment.isHeadless() || (args != null && args.length > 2 && Constants.HEADLESS_ARG.equals(args[2]))) {
             log.info("Running in headless mode");
             main.setHeadlessMode(true);
