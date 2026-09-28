@@ -429,6 +429,7 @@ public class StorageManager {
         defaultConfig.setHueMap(ColorCorrectionDialogController.initHSLMap());
         defaultConfig.regenerateLedMatrix();
         defaultConfig.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(""));
+        defaultConfig.setCubeLut(Constants.DEFAULT_CUBE_LUT);
         writeConfig(defaultConfig, null);
         config = readProfileInUseConfig();
         return config;

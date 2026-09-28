@@ -21,15 +21,15 @@
 */
 package org.dpsoftware.gui.controllers;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.input.InputEvent;
-import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -38,15 +38,12 @@ import java.util.List;
 /**
  * Gamma dialog controller
  */
-@Slf4j
 public class DisplayDialogController {
 
     @FXML
     public ComboBox<String> cubeLutCombo;
     @FXML
     public Button okButton;
-    @FXML
-    public Button applyButton;
     @FXML
     public Button cancelButton;
 
@@ -63,23 +60,12 @@ public class DisplayDialogController {
     }
 
     /**
-     * Initialize controller with system's specs
-     */
-    @FXML
-    protected void initialize() {
-        Platform.runLater(() -> {
-//            for (Enums.GammaLevel gammaVal : Enums.GammaLevel.values()) {
-//                cubeLutCombo.getItems().add(gammaVal.getI18n());
-//            }
-            cubeLutCombo.setOnAction(_ -> toggleValues());
-        });
-    }
-
-    /**
      * Init default values
      */
     public void initDefaultValues() {
-//        gammaLevel.setValue(Constants.DEFAULT_CUBE_LUT);
+        cubeLutCombo.getItems().setAll(CubeLutToneMap.listAvailableLuts());
+        cubeLutCombo.setValue(Constants.DISABLED);
+        setTooltips();
     }
 
     /**
@@ -90,15 +76,13 @@ public class DisplayDialogController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         List<String> luts = CubeLutToneMap.listAvailableLuts();
         cubeLutCombo.getItems().setAll(luts);
-        String current = MainSingleton.getInstance().config.getCubeLut();
+        String current = currentConfig.getCubeLut();
         if (current != null && !current.isBlank() && !cubeLutCombo.getItems().contains(current)) {
             // A configured LUT not present in the available list (e.g. deleted file);
             // keep it selectable so the user can see and fix it.
             cubeLutCombo.getItems().add(current);
         }
-        cubeLutCombo.setValue(current != null && !current.isBlank() ? current : Constants.DEFAULT_CUBE_LUT);
-//        gammaLevel.setValue(Enums.GammaLevel.findByValue(currentConfig.getGammaLevel()).getI18n());
-        toggleValues();
+        cubeLutCombo.setValue(current != null && !current.isBlank() ? current : Constants.DISABLED);
         setTooltips();
     }
 
@@ -113,21 +97,10 @@ public class DisplayDialogController {
     }
 
     /**
-     * Toggle combo box based on checkbox state
-     */
-    private void toggleValues() {
-//        gammaLevel.setDisable(!enableAutomaticGammaCheck.isSelected());
-        log.info("3D LUT changed: " + cubeLutCombo.getValue());
-        handleCubeLutCombo(cubeLutCombo.getValue());
-    }
-
-    /**
      * Set tooltips
      */
     private void setTooltips() {
-//        GuiManager.createTooltip(LabelKey.TOOLTIP_GAMMA_ENABLE_AUTO, enableAutomaticGammaCheck);
-//        GuiManager.createTooltip(LabelKey.TOOLTIP_GAMMA_LEVEL, gammaLevel);
-
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CUBE_LUT, cubeLutCombo);
     }
 
     /**
@@ -160,6 +133,7 @@ public class DisplayDialogController {
     public void apply(InputEvent e) {
         settingsController.injectDisplayController(this);
         settingsController.save(e);
+        CubeLutToneMap.refresh();
     }
 
     /**
@@ -169,11 +143,8 @@ public class DisplayDialogController {
      */
     @FXML
     public void save(Configuration config) {
-
-//        config.setEnableAutomaticGamma(enableAutomaticGammaCheck.isSelected());
-//        config.setGammaLevel(LocalizedEnum.fromStr(Enums.GammaLevel.class, gammaLevel.getValue()).getBaseI18n());
-
-
+        String selected = cubeLutCombo.isEditable() ? cubeLutCombo.getEditor().getText() : cubeLutCombo.getValue();
+        config.setCubeLut(selected != null && !selected.isBlank() ? selected.trim() : Constants.DISABLED);
     }
 
 }
