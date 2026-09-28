@@ -41,7 +41,21 @@ function buildFieldHtml(f) {
         return '<div id="devicesTable" class="table-responsive"></div>';
     }
     if (f.type === 'note') {
-        return '<div class="form-text">' + f.note + '</div>';
+        return '<div class="form-text">' + escapeHtml(f.noteKey ? fieldLabel(f) : f.note) + '</div>';
+    }
+    if (f.type === 'action' && f.id === 'improvAction') {
+        return '<button type="button" id="improvProvisionButton" class="btn btn-primary">' + escapeHtml(lbl) + '</button>';
+    }
+    if (f.type === 'combo') {
+        var choices = optionsFor(f).map(function (option) {
+            return '<option value="' + escapeHtml(option.value) + '"></option>';
+        }).join('');
+        return '<div class="form-group"><label for="' + f.id + '">' + escapeHtml(lbl) + '</label><input type="text" class="form-control" id="' + f.id + '" list="' + f.id + 'List"><datalist id="' + f.id + 'List">' + choices + '</datalist></div>';
+    }
+    if (f.type === 'actions' && f.id === 'mqttDiscoveryActions') {
+        var addLabel = escapeHtml(state.fieldLabels.mqttDiscoveryAdd || 'Add');
+        var removeLabel = escapeHtml(state.fieldLabels.mqttDiscoveryRemove || 'Remove');
+        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><div class="d-flex gap-2"><button type="button" id="addButton" class="btn btn-outline-success" title="' + addLabel + '" aria-label="' + addLabel + '">✔</button><button type="button" id="removeButton" class="btn btn-outline-danger" title="' + removeLabel + '" aria-label="' + removeLabel + '">✖</button></div></div>';
     }
     if (f.type === 'checkbox') {
         return '<div class="form-check d-flex flex-column align-items-start ps-0"><label class="form-check-label mb-1" for="' + f.id + '">' + lbl + '</label><input type="checkbox" class="form-check-input mt-0 ms-0" id="' + f.id + '"></div>';
@@ -71,8 +85,9 @@ function buildFieldHtml(f) {
 function buildFieldsGrid(fields) {
     var html = '<div class="row g-3">';
     fields.forEach(function (f) {
-        var colClass = (f.id === 'devicesContent') ? 'col-12' : 'col-12 col-md-6 col-lg-3';
-        html += '<div class="' + colClass + '">' + buildFieldHtml(f) + '</div>';
+        var colClass = (f.id === 'devicesContent' || f.id === 'improvContext' || f.id === 'improvAction')
+            ? 'col-12' : 'col-12 col-md-6 col-lg-3';
+        html += '<div class="' + colClass + '"' + (f.provisioning ? ' id="field-' + f.id + '"' : '') + '>' + buildFieldHtml(f) + '</div>';
     });
     html += '</div>';
     return html;
@@ -134,13 +149,16 @@ export function buildForm() {
     accordion.appendChild(logs);
     document.getElementById('settingsContainer').replaceChildren(page);
     fillPickerControls();
-    for (var id of [...ledCountIds, 'bottomRowLed', 'screenResX', 'screenResY']) {
+    for (var id of [...ledCountIds, 'bottomRowLed', 'screenResX', 'screenResY', 'mqttPort',
+        'improvMi', 'improvMo', 'improvSck', 'improvCs']) {
         document.getElementById(id).addEventListener('input', function (event) {
             var clean = event.target.value.replace(/[^0-9]/g, '');
             if (event.target.value !== clean) {
                 event.target.value = clean;
             }
-            updateGroupByOptions();
+            if (event.target.id !== 'mqttPort' && !event.target.id.startsWith('improv')) {
+                updateGroupByOptions();
+            }
         });
     }
     document.getElementById('monitorNumber').addEventListener('change', function () {
@@ -185,7 +203,7 @@ function updateGroupByOptions() {
 
 // Sets a single form control from the configuration value (handles checkboxes, selects with missing options, list fields and the staticGlowWormIp 'Auto' alias).
 function fillField(f, cfg) {
-    if (f.type === 'note') {
+    if (f.type === 'note' || f.type === 'actions' || f.provisioning) {
         return;
     }
     if (f.list) {
@@ -195,6 +213,14 @@ function fillField(f, cfg) {
         return;
     }
     var value = cfg[f.id];
+    if (f.id === 'mqttHost') {
+        var mqttAddress = String(cfg.mqttServer || '').replace(/^tcp:\/\//, '');
+        value = mqttAddress.substring(0, mqttAddress.lastIndexOf(':')) || mqttAddress;
+    } else if (f.id === 'mqttPort') {
+        value = String(cfg.mqttServer || '').split(':').pop() || '1883';
+    } else if (f.id === 'mqttUser') {
+        value = cfg.mqttUsername;
+    }
     if (f.id === 'monitorNumber' && cfg.captureDevice && cfg.captureDevice.friendlyName) {
         value = 'device:' + cfg.captureDevice.friendlyName;
     }
@@ -253,11 +279,14 @@ export function fillForm(cfg) {
 
 // Reads a single form control back into the payload object, casting to the field type and applying field-specific conversions (e.g. 'Auto' to '-').
 function collectField(f, payload) {
-    if (f.type === 'note') {
+    if (f.type === 'note' || f.type === 'actions' || f.provisioning) {
         return;
     }
     var el = document.getElementById(f.id);
     if (!el) {
+        return;
+    }
+    if (f.id === 'mqttHost' || f.id === 'mqttPort') {
         return;
     }
     if (f.list) {
@@ -299,6 +328,14 @@ function collectField(f, payload) {
         }
     } else {
         var txt = el.value;
+        if (f.id === 'mqttUser') {
+            payload.mqttUsername = txt;
+            return;
+        }
+        if (['mqttTopic', 'mqttPwd', 'mqttDiscoveryTopic'].includes(f.id)) {
+            payload[f.id] = txt;
+            return;
+        }
         if (txt !== '') {
             // When staticGlowWormIp shows "Auto" (stored as "-"), send "-" to the server.
             payload[f.id] = (f.id === 'staticGlowWormIp' && txt === 'Auto') ? '-' : txt;
@@ -309,6 +346,14 @@ function collectField(f, payload) {
 // Collects all edited form values into the JSON payload sent to the server: normalizes arrays, applies the outputDevice/staticGlowWormIp
 // rule and appends the current color picker color.
 export function collectPayload() {
+    var mqttHost = document.getElementById('mqttHost').value.trim();
+    var mqttPort = document.getElementById('mqttPort').value.trim();
+    if (!/^[^\s:\/]+$/.test(mqttHost)) {
+        throw new Error(fieldLabel({id: 'mqttHost'}) + ': invalid host');
+    }
+    if (!/^\d{1,5}$/.test(mqttPort) || Number(mqttPort) < 1 || Number(mqttPort) > 65535) {
+        throw new Error(fieldLabel({id: 'mqttPort'}) + ': 1–65535');
+    }
     for (var dimension of ['screenResX', 'screenResY']) {
         var dimensionValue = document.getElementById(dimension).value;
         if (!/^\d+$/.test(dimensionValue) || !Number.isSafeInteger(Number(dimensionValue))) {
@@ -331,6 +376,7 @@ export function collectPayload() {
         throw new Error(fieldLabel({id: 'groupBy'}) + ': ' + (state.fieldLabels['web.validGroup'] || 'Select a valid value'));
     }
     var payload = {};
+    payload.mqttServer = 'tcp://' + mqttHost + ':' + mqttPort;
     sections.forEach(function (s) {
         s.fields.forEach(function (f) {
             collectField(f, payload);

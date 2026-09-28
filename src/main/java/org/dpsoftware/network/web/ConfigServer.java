@@ -35,6 +35,8 @@ import org.dpsoftware.grabber.WebRtcStreamer;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
+import org.dpsoftware.gui.controllers.options.ImprovOptions;
+import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
@@ -48,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 /**
@@ -198,9 +201,97 @@ public class ConfigServer {
             return;
         }
         log.info("Configuration updated via setConfig endpoint");
+        if (NetworkTabOptions.requiresDeviceProgramming(savedConfig, updatedConfig)) {
+            var device = CommonUtility.getDeviceToUse();
+            if (device != null && device.getDeviceName() != null
+                    && (device.getDeviceName().equals(updatedConfig.getOutputDevice())
+                    || Objects.equals(device.getDeviceIP(), updatedConfig.getOutputDevice())
+                    || Constants.SERIAL_PORT_AUTO.equals(updatedConfig.getOutputDevice()))) {
+                var firmwareConfig = NetworkTabOptions.firmwareConfig(updatedConfig, device,
+                        String.valueOf(updatedConfig.getColorMode()), null);
+                NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfig), true);
+            }
+        }
         HttpResponses.sendOk(exchange);
         // Restart with the active profile and headless mode.
         NativeExecutor.restartNativeInstanceWithCurrentProfile();
+    }
+
+    /**
+     * Adds or removes MQTT discovery entities using the same action as the JavaFX network tab.
+     *
+     * @param exchange HTTP request and response
+     * @throws IOException if the request or response cannot be processed
+     */
+    private void handleMqttDiscovery(HttpExchange exchange) throws IOException {
+        JsonNode request;
+        try (InputStream body = exchange.getRequestBody()) {
+            request = CommonUtility.JSON_MAPPER.readTree(body);
+        } catch (IOException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            return;
+        }
+        String action = request == null ? "" : request.path("action").asText();
+        if (!action.equals("add") && !action.equals("remove")) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid discovery action");
+            return;
+        }
+        Configuration config = storageManager.readProfileInUseConfig();
+        if (config == null || !config.isMqttEnable()) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "MQTT is disabled");
+            return;
+        }
+        NetworkTabOptions.publishDiscoveryTopics(action.equals("add"));
+        HttpResponses.sendOk(exchange);
+    }
+
+    /**
+     * Returns currently detected Wi-Fi networks and serial ports for provisioning.
+     *
+     * @param exchange HTTP request and response
+     * @throws IOException if the response cannot be written
+     */
+    private void handleProvisioningOptions(HttpExchange exchange) throws IOException {
+        HttpResponses.sendJson(exchange, Map.of(
+                "ssids", ImprovOptions.wifiSsids(),
+                "ports", ImprovOptions.serialPorts()));
+    }
+
+    /**
+     * Validates and sends the Improv provisioning command to a selected serial device.
+     *
+     * @param exchange HTTP request and response
+     * @throws IOException if the request or response cannot be processed
+     */
+    private void handleProvisionDevice(HttpExchange exchange) throws IOException {
+        ImprovOptions.ProvisionRequest request;
+        try (InputStream body = exchange.getRequestBody()) {
+            request = ImprovOptions.fromJson(CommonUtility.JSON_MAPPER.readTree(body));
+        } catch (IOException | IllegalArgumentException e) {
+            log.warn("Invalid provisioning request ({})", e.getClass().getSimpleName());
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid provisioning request");
+            return;
+        }
+        String errorKey = ImprovOptions.validationError(request);
+        if (errorKey != null) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, CommonUtility.getWord(errorKey));
+            return;
+        }
+        try {
+            boolean sent = ImprovOptions.provision(request).get(12, TimeUnit.SECONDS);
+            if (sent) {
+                HttpResponses.sendOk(exchange);
+            } else {
+                HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR,
+                        CommonUtility.getWord(LabelKey.FIRMWARE_PROVISION_NOTIFY_HEADER));
+            }
+        } catch (IllegalStateException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_CONFLICT, e.getMessage());
+        } catch (Exception e) {
+            log.warn("Device provisioning failed: {}", e.getMessage());
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR,
+                    CommonUtility.getWord(LabelKey.FIRMWARE_PROVISION_NOTIFY_HEADER));
+        }
     }
 
     /**
@@ -279,6 +370,9 @@ public class ConfigServer {
                 server.createContext(Constants.SET_CONFIG_DARK_CSS_ENDPOINT, withGuard(webResourceServer::handleSetConfigDarkCss, GET_METHOD));
                 server.createContext(Constants.WEBRTC_PREVIEW_JS_ENDPOINT, withGuard(webResourceServer::handleWebrtcPreviewJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
+                server.createContext("/mqttDiscovery", withGuard(this::handleMqttDiscovery, POST_METHOD));
+                server.createContext("/provisioningOptions", withGuard(this::handleProvisioningOptions, GET_METHOD));
+                server.createContext("/provisionDevice", withGuard(this::handleProvisionDevice, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(deviceEndpointHandler::handleDevicePrefs, GET_METHOD));
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
                 server.createContext(Constants.LOG_ENDPOINT, withGuard(this::handleGetLog, GET_METHOD));

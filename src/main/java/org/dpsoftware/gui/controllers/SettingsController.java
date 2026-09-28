@@ -44,6 +44,7 @@ import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.options.ModeTabOptions;
+import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
@@ -423,12 +424,7 @@ public class SettingsController {
      * @return true if something changed
      */
     public boolean isMqttParamChanged() {
-        return currentConfig.isWirelessStream() != networkTabController.mqttStream.isSelected()
-                || currentConfig.isMqttEnable() != networkTabController.mqttEnable.isSelected()
-                || !currentConfig.getMqttServer().equals(Constants.DEFAULT_MQTT_PROTOCOL + networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText())
-                || !currentConfig.getMqttTopic().equals(networkTabController.mqttTopic.getText())
-                || !currentConfig.getMqttUsername().equals(networkTabController.mqttUser.getText())
-                || !currentConfig.getMqttPwd().equals(networkTabController.mqttPwd.getText());
+        return NetworkTabOptions.requiresDeviceProgramming(currentConfig, MainSingleton.getInstance().config);
     }
 
     /**
@@ -519,35 +515,10 @@ public class SettingsController {
                 && (CommonUtility.getDeviceToUse().getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice())
                 || CommonUtility.getDeviceToUse().getMac().equals(macToProgram))) {
             var device = CommonUtility.getDeviceToUse();
-            FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-            firmwareConfigDto.setDeviceName(device.getDeviceName());
-            firmwareConfigDto.setMicrocontrollerIP(device.isDhcpInUse() ? "" : device.getDeviceIP());
-            firmwareConfigDto.setMqttCheckbox(networkTabController.mqttEnable.isSelected());
-            firmwareConfigDto.setSsid("");
-            firmwareConfigDto.setWifipwd("");
-            if (networkTabController.mqttEnable.isSelected()) {
-                firmwareConfigDto.setMqttIP(networkTabController.mqttHost.getText());
-                firmwareConfigDto.setMqttPort(networkTabController.mqttPort.getText());
-                firmwareConfigDto.setMqttTopic(networkTabController.mqttTopic.getText());
-                firmwareConfigDto.setMqttuser(networkTabController.mqttUser.getText());
-                firmwareConfigDto.setMqttpass(networkTabController.mqttPwd.getText());
-            }
-            firmwareConfigDto.setAdditionalParam(device.getGpio());
-            firmwareConfigDto.setColorMode(String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1));
-            if (changeBaudrate) {
-                firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(devicesTabController.baudRate.getValue()).getBaudRateValue());
-            } else if (device.getBaudRate() != null) {
-                if (device.getBaudRate().isEmpty()) {
-                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(MainSingleton.getInstance().config.getBaudRate()).getBaudRateValue());
-                } else {
-                    try {
-                        firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
-                    } catch (Exception nullPointerException) {
-                        firmwareConfigDto.setBr(Enums.BaudRate.BAUD_RATE_115200.getBaudRateValue());
-                    }
-                }
-            }
-            firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
+            FirmwareConfigDto firmwareConfigDto = NetworkTabOptions.firmwareConfig(
+                    MainSingleton.getInstance().config, device,
+                    String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1),
+                    changeBaudrate ? devicesTabController.baudRate.getValue() : null);
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
             if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
                 log.info(CommonUtility.getWord(LabelKey.FIRMWARE_PROGRAM_NOTIFY_HEADER));

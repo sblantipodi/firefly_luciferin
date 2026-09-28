@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigurationPayloadTest {
 
@@ -71,6 +70,28 @@ class ConfigurationPayloadTest {
     }
 
     @Test
+    void preservesNetworkFieldsHiddenFromWebAccordion() throws IOException {
+        Configuration saved = savedConfig();
+        saved.setStreamType("UDP");
+        saved.setMqttServer("tcp://old-host:1883");
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("mqttTopic", "new-topic");
+
+        Configuration updated = ConfigurationPayload.apply(payload, saved);
+
+        assertEquals("UDP", updated.getStreamType());
+        assertEquals("tcp://old-host:1883", updated.getMqttServer());
+        assertEquals("new-topic", updated.getMqttTopic());
+    }
+
+    @Test
+    void rejectsInvalidMqttServerPort() {
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("mqttServer", "tcp://broker:70000");
+        assertThrows(IllegalArgumentException.class, () -> ConfigurationPayload.apply(payload, savedConfig()));
+    }
+
+    @Test
     void rejectsNonnumericScreenDimensions() {
         ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
         payload.put("screenResX", "1920px");
@@ -86,7 +107,7 @@ class ConfigurationPayloadTest {
 
         Configuration updated = ConfigurationPayload.apply(payload, saved);
 
-        assertEquals(true, updated.isAutoDetectBlackBars());
+        assertTrue(updated.isAutoDetectBlackBars());
         assertEquals(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), updated.getDefaultLedMatrix());
     }
 }

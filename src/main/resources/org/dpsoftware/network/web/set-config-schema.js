@@ -59,15 +59,33 @@ export const sections = [
     },
     {
         id: 'network', fields: [
-            {id: 'mqttEnable', type: 'checkbox', numeric: false},
             {id: 'wirelessStream', type: 'checkbox', numeric: false},
-            {id: 'streamType', type: 'select'},
-            {id: 'mqttServer', type: 'text', numeric: false},
+            {id: 'mqttEnable', type: 'checkbox', numeric: false},
+            {id: 'mqttHost', type: 'text', numeric: false},
+            {id: 'mqttPort', type: 'text', numeric: true, digitsOnly: true, min: 1, max: 65535},
             {id: 'mqttTopic', type: 'text', numeric: false},
+            {id: 'mqttUser', type: 'text', numeric: false},
+            {id: 'mqttPwd', type: 'password', numeric: false},
             {id: 'mqttDiscoveryTopic', type: 'text', numeric: false},
-            {id: 'mqttUsername', type: 'text', numeric: false},
-            {id: 'mqttPwd', type: 'text', numeric: false}
-        ]
+            {id: 'mqttDiscoveryActions', type: 'actions'}
+        ],
+        subAccordions: [{
+            id: 'provisioning', fields: [
+                {id: 'improvContext', type: 'note', noteKey: 'improvContext', provisioning: true},
+                {id: 'improvSsid', type: 'combo', provisioning: true},
+                {id: 'improvWifiPwd', type: 'password', provisioning: true},
+                {id: 'improvDeviceName', type: 'text', provisioning: true},
+                {id: 'improvEthernetMode', type: 'select', provisioning: true},
+                {id: 'improvEthernetBoard', type: 'select', provisioning: true},
+                {id: 'improvMi', type: 'text', numeric: true, digitsOnly: true, provisioning: true},
+                {id: 'improvMo', type: 'text', numeric: true, digitsOnly: true, provisioning: true},
+                {id: 'improvSck', type: 'text', numeric: true, digitsOnly: true, provisioning: true},
+                {id: 'improvCs', type: 'text', numeric: true, digitsOnly: true, provisioning: true},
+                {id: 'improvComPort', type: 'combo', provisioning: true},
+                {id: 'improvBaudrate', type: 'select', provisioning: true},
+                {id: 'improvAction', type: 'action', provisioning: true}
+            ]
+        }]
     },
     {
         id: 'misc', fields: [

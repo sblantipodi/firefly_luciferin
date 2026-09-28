@@ -51,6 +51,7 @@ final class ConfigurationPayload {
             WebFieldNames.GAP_TYPE_TOP_BOTTOM, 40,
             WebFieldNames.GAP_TYPE_SIDE, 40);
     private static final Pattern PERCENT = Pattern.compile("^(0|[1-9][0-9]?)%$");
+    private static final Pattern MQTT_SERVER = Pattern.compile("^tcp://[^\\s:/]+:[0-9]{1,5}$");
 
     /**
      * Prevents instantiation.
@@ -112,6 +113,11 @@ final class ConfigurationPayload {
      * @param payload the incoming web configuration values
      */
     private static void validateFields(JsonNode payload) {
+        JsonNode mqttServer = payload.get(WebFieldNames.MQTT_SERVER);
+        if (mqttServer != null && (!mqttServer.isTextual() || !MQTT_SERVER.matcher(mqttServer.textValue()).matches()
+                || !validMqttPort(mqttServer.textValue()))) {
+            throw new IllegalArgumentException("mqttServer must contain a host and a port from 1 to 65535");
+        }
         for (String field : List.of(WebFieldNames.SCREEN_RES_X, WebFieldNames.SCREEN_RES_Y)) {
             JsonNode value = payload.get(field);
             if (value != null && (!value.isIntegralNumber() || !value.canConvertToInt() || value.intValue() < 0)) {
@@ -139,6 +145,17 @@ final class ConfigurationPayload {
                 throw new IllegalArgumentException(field + " must be between 0% and " + maximum + "%");
             }
         });
+    }
+
+    /**
+     * Checks the port component of a stored MQTT server URL.
+     *
+     * @param server MQTT server URL
+     * @return true when its port is valid
+     */
+    private static boolean validMqttPort(String server) {
+        int port = Integer.parseInt(server.substring(server.lastIndexOf(':') + 1));
+        return port >= 1 && port <= 65535;
     }
 
     /**

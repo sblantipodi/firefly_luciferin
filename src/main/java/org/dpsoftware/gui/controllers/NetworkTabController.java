@@ -33,9 +33,8 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.LabelKey;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.dto.mqttdiscovery.*;
-import org.dpsoftware.utilities.CommonUtility;
+import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
+import org.dpsoftware.managers.dto.mqttdiscovery.DiscoveryObject;
 
 import java.awt.*;
 
@@ -82,46 +81,17 @@ public class NetworkTabController {
      * @param createEntity if true create the MQTT entity, if false it destroys the entity
      */
     public static void publishDiscoveryTopics(boolean createEntity) {
-        publishDiscoveryTopic(new SensorLastUpdateFFDiscovery(), createEntity);
-        publishDiscoveryTopic(new LightDiscovery(), createEntity);
-        publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectEmaDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectFrameGenDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectProfileDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectCubeLutDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorConsumingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorProducingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorVersionDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLedsDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLastUpdateDiscovery(), createEntity);
-        publishDiscoveryTopic(new SwitchRebootDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectAspectRatioDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorAspectRatioDiscovery(), createEntity);
-        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
-            publishDiscoveryTopic(new SelectColorModeDiscovery(), createEntity);
-        }
-        publishDiscoveryTopic(new SelectEffectDiscovery(), createEntity);
-        publishDiscoveryTopic(new SwitchBiasLightDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorGpioDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorWiFiDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorGammaDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLdrDiscovery(), createEntity);
+        NetworkTabOptions.publishDiscoveryTopics(createEntity);
     }
 
     /**
-     * Publish to a discovery topic to create or destroy the MQTT entity
+     * Publish one MQTT discovery entity through the shared network options.
      *
      * @param discoveryObject MQTT entity object
-     * @param createEntity    if true create the MQTT entity, if false it destroys the entity
+     * @param createEntity whether to create the entity
      */
     public static void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
-        log.info("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
-        log.info("Message sent: {}", discoveryObject.getCreateEntityStr());
-        NetworkManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
-                discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true, 0);
-        CommonUtility.sleepMilliseconds(Constants.MQTT_DISCOVERY_CALL_DELAY);
+        NetworkTabOptions.publishDiscoveryTopic(discoveryObject, createEntity);
     }
 
     /**
@@ -168,8 +138,9 @@ public class NetworkTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        mqttHost.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf("/") + 1, currentConfig.getMqttServer().lastIndexOf(":")));
-        mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
+        NetworkTabOptions.MqttAddress address = NetworkTabOptions.splitServer(currentConfig.getMqttServer());
+        mqttHost.setText(address.host());
+        mqttPort.setText(address.port());
         mqttTopic.setText(Constants.TOPIC_DEFAULT_MQTT.equals(currentConfig.getMqttTopic()) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
         mqttDiscoveryTopic.setText(currentConfig.getMqttDiscoveryTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
@@ -273,7 +244,7 @@ public class NetworkTabController {
      */
     @FXML
     public void save(Configuration config) {
-        config.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + mqttHost.getText() + ":" + mqttPort.getText());
+        config.setMqttServer(NetworkTabOptions.server(mqttHost.getText(), mqttPort.getText()));
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttDiscoveryTopic(mqttDiscoveryTopic.getText());
         config.setMqttUsername(mqttUser.getText());
