@@ -53,7 +53,7 @@ class WebRtcToneMapTest {
         var config = MainSingleton.getInstance().config;
         String previous = config.getCubeLut();
         try {
-            config.setCubeLut("1000nits_HDR-to-SDR.cube");
+            config.setCubeLut("HDR to SDR standard.cube");
             CubeLutToneMap.refresh();
             assertTrue(CubeLutToneMap.snapshot().isAvailable());
             int[] expected = CubeLutToneMap.lookup(100, 150, 200);
@@ -90,7 +90,7 @@ class WebRtcToneMapTest {
         var config = MainSingleton.getInstance().config;
         String previous = config.getCubeLut();
         try {
-            config.setCubeLut("1000nits_HDR-to-SDR.cube");
+            config.setCubeLut("HDR to SDR standard.cube");
             CubeLutToneMap.refresh();
             var snapshot = CubeLutToneMap.snapshot();
             float[] expected = CubeLutToneMap.lookup(100f, 150f, 200f);

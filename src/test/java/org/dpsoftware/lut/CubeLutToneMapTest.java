@@ -237,7 +237,7 @@ class CubeLutToneMapTest {
             jar.closeEntry();
         }
 
-        assertEquals(java.util.List.of("1000nits_HDR-to-SDR.cube"),
+        assertEquals(java.util.List.of("HDR to SDR standard.cube"),
                 CubeLutToneMap.scanJarForCubeLuts(jarPath.toFile()));
     }
 
@@ -247,7 +247,7 @@ class CubeLutToneMapTest {
         assertNotNull(luts, "listAvailableLuts must not return null");
         assertFalse(luts.isEmpty(), "At least the bundled LUT resources should be listed");
         // Bundled resources are listed with their full filenames.
-        assertTrue(luts.contains("1000nits_HDR-to-SDR.cube"),
+        assertTrue(luts.contains("HDR to SDR standard.cube"),
                 "Bundled default LUT should be listed, got: " + luts);
         // Sorted and deduplicated.
         java.util.List<String> sorted = new java.util.ArrayList<>(luts);
@@ -274,7 +274,7 @@ class CubeLutToneMapTest {
     void refresh_changedNameReloadsLut() {
         String original = mockedInstance.config.getCubeLut();
         try {
-            mockedInstance.config.setCubeLut("1000nits_HDR-to-SDR.cube");
+            mockedInstance.config.setCubeLut("HDR to SDR standard.cube");
             CubeLutToneMap.refresh();
             int[] result = CubeLutToneMap.lookup(255, 255, 255);
             assertNotNull(result);

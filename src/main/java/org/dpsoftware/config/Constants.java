@@ -37,7 +37,7 @@ public class Constants {
     public static final String FIRMWARE_NAME = "Glow Worm Luciferin";
     public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
     public static final Color DEFAULT_COLOR = Color.rgb(255, 82, 0);
-    public static final String DEFAULT_CUBE_LUT = "1000nits_HDR-to-SDR.cube";
+    public static final String DEFAULT_CUBE_LUT = "HDR to SDR high precision.cube";
     public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
     public static final String DEFAULT_BAUD_RATE = Enums.BaudRate.BAUD_RATE_500000.getBaudRate();
     public static final String DEFAULT_FRAMERATE = "30";

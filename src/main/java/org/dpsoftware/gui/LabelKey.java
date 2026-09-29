@@ -156,6 +156,7 @@ public final class LabelKey {
     public static final String TOOLTIP_GAMMA = "tooltip.gamma";
     public static final String TOOLTIP_GAMMA_ENABLE_AUTO = "tooltip.gamma.enable.auto";
     public static final String TOOLTIP_GAMMA_LEVEL = "tooltip.gamma.level";
+    public static final String TOOLTIP_CUBE_LUT = "tooltip.cube.lut";
     public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
     public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";
