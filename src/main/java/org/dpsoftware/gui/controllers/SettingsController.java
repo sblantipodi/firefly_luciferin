@@ -44,10 +44,7 @@ import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.DisplayInfo;
-import org.dpsoftware.managers.DisplayManager;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.SerialManager;
-import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.managers.dto.TcpResponse;
@@ -291,6 +288,7 @@ public class SettingsController {
     @FXML
     public void save(InputEvent e, String profileName) {
         try {
+            boolean restartCapture = ledsConfigTabController.isCaptureRestartNeeded();
             resetLedMatrixWithConditions();
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
             Configuration config;
@@ -339,7 +337,11 @@ public class SettingsController {
                 writeDefaultConfig(e, config, firstStartup);
             } else {
                 sm.writeConfig(config, profileName);
+                MainSingleton.getInstance().config = config;
                 saveExitRestart(e, config);
+            }
+            if (restartCapture && MainSingleton.getInstance().RUNNING && !MainSingleton.getInstance().isRestartNeeded()) {
+                PipelineManager.restartCapture(() -> log.info("Restarting capture due to a change in the LEDs configuration"));
             }
             if (colorCorrectionDialogController != null && colorCorrectionDialogController.testCanvas != null) {
                 colorCorrectionDialogController.testCanvas.drawTestShapes(config, 0);
