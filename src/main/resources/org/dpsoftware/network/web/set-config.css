@@ -303,6 +303,33 @@ body.server-down > :not(#offlineOverlay) {
     color: #fff;
 }
 
+/* Smart-system and satellite actions stay filled in both themes. */
+#addButton,
+#satelliteAdd {
+    background-color: #198754;
+    border-color: #198754;
+    color: #fff;
+}
+
+#addButton:hover,
+#satelliteAdd:hover {
+    background-color: #157347;
+    border-color: #157347;
+    color: #fff;
+}
+
+#removeButton {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+#removeButton:hover {
+    background-color: #bb2d3b;
+    border-color: #bb2d3b;
+    color: #fff;
+}
+
 /* Color picker, fixed width to match the iro picker size. */
 #picker {
     max-width: 288px;

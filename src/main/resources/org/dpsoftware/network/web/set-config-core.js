@@ -80,7 +80,7 @@ function buildFieldHtml(f) {
     if (f.type === 'actions' && f.id === 'mqttDiscoveryActions') {
         var addLabel = escapeHtml(state.fieldLabels.mqttDiscoveryAdd || 'Add');
         var removeLabel = escapeHtml(state.fieldLabels.mqttDiscoveryRemove || 'Remove');
-        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><div class="d-flex gap-2"><button type="button" id="addButton" class="btn btn-outline-success" title="' + addLabel + '" aria-label="' + addLabel + '">✔</button><button type="button" id="removeButton" class="btn btn-outline-danger" title="' + removeLabel + '" aria-label="' + removeLabel + '">✖</button></div></div>';
+        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><div class="d-flex gap-2"><button type="button" id="addButton" class="btn btn-success" title="' + addLabel + '" aria-label="' + addLabel + '">✔</button><button type="button" id="removeButton" class="btn btn-danger" title="' + removeLabel + '" aria-label="' + removeLabel + '">✖</button></div></div>';
     }
     if (f.type === 'checkbox') {
         return '<div class="form-check d-flex flex-column align-items-start ps-0"><label class="form-check-label mb-1" for="' + f.id + '">' + lbl + '</label><input type="checkbox" class="form-check-input mt-0 ms-0" id="' + f.id + '"></div>';
