@@ -304,30 +304,60 @@ body.server-down > :not(#offlineOverlay) {
 }
 
 /* Smart-system and satellite actions stay filled in both themes. */
+.symbol-button {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff;
+    font-family: Arial, sans-serif;
+}
+
 #addButton,
-#satelliteAdd {
+#satelliteAdd,
+#calibrateLDR {
     background-color: #198754;
     border-color: #198754;
     color: #fff;
 }
 
 #addButton:hover,
-#satelliteAdd:hover {
+#satelliteAdd:hover,
+#calibrateLDR:hover {
     background-color: #157347;
     border-color: #157347;
     color: #fff;
 }
 
-#removeButton {
+#removeButton,
+#resetLDR {
     background-color: #dc3545;
     border-color: #dc3545;
     color: #fff;
 }
 
-#removeButton:hover {
+#removeButton:hover,
+#resetLDR:hover {
     background-color: #bb2d3b;
     border-color: #bb2d3b;
     color: #fff;
+}
+
+/* Light theme accents use the Firefly orange rather than Bootstrap blue. */
+#toggleLed,
+#improvProvisionButton {
+    background-color: orange;
+    border-color: orange;
+    color: #fff;
+}
+
+#toggleLed:hover,
+#improvProvisionButton:hover {
+    background-color: darkorange;
+    border-color: darkorange;
+    color: #fff;
+}
+
+#whiteTemperature,
+#brightness {
+    accent-color: orange;
 }
 
 /* Color picker, fixed width to match the iro picker size. */
