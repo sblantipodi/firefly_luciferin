@@ -28,6 +28,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FieldOptionsResponseTest {
 
@@ -45,6 +46,8 @@ class FieldOptionsResponseTest {
         response.set("labels", CommonUtility.JSON_MAPPER.valueToTree(labels));
         assertNotNull(response.get("options").get("smoothingType"));
         assertNotNull(response.get("options").get("gammaLevel"));
+        assertTrue(response.get("options").get("cubeLut").get("options").size() > 1);
+        assertTrue(response.get("options").get("multiMonitor").get("options").size() >= 1);
         assertNotNull(response.get("labels").get("enableAutomaticGamma"));
         assertNotNull(CommonUtility.JSON_MAPPER.writeValueAsString(response));
     }

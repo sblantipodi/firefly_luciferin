@@ -249,6 +249,31 @@ function renderOutputDeviceSuggestions() {
     }
 }
 
+// Refreshes the editable device selector from serial ports or discovered wireless devices.
+export function refreshSerialPortSuggestions() {
+    var input = document.getElementById('serialPort');
+    if (!input) {
+        return;
+    }
+    var wireless = document.getElementById('wirelessStream').checked;
+    document.querySelector('label[for="serialPort"]').textContent = wireless
+        ? state.fieldLabels.serialPortWirelessLabel : state.fieldLabels.serialPort;
+    var key = wireless ? 'serialPortWireless' : 'serialPortSerial';
+    var configured = ((state.fieldOptions[key] || {}).options || []).map(function (option) {
+        return String(option.value);
+    });
+    var connected = wireless ? (state.devices || []).map(function (device) {
+        return device.deviceName;
+    }).filter(Boolean) : [];
+    var multiMonitor = Number(document.getElementById('multiMonitor').value);
+    var choices = Array.from(new Set(configured.concat(connected))).filter(function (choice) {
+        return multiMonitor === 1 || choice !== 'AUTO';
+    });
+    document.getElementById('serialPortList').innerHTML = choices.map(function (choice) {
+        return '<option value="' + escapeHtml(choice) + '"></option>';
+    }).join('');
+}
+
 // Fetches the list of connected devices from the server, renders the device table and updates the auto output device resolution.
 export function refreshDevices() {
     fetchJson('getDevices').then(function (devices) {
@@ -266,6 +291,7 @@ export function refreshDevices() {
 function renderDevices(devices) {
     state.devices = Array.isArray(devices) ? devices : [];
     renderOutputDeviceSuggestions();
+    refreshSerialPortSuggestions();
     var el = document.getElementById('devicesTable');
     if (!el) {
         return;

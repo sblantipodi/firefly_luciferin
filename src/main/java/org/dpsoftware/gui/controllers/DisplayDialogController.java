@@ -30,6 +30,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.DisplayDialogOptions;
 import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -63,7 +64,7 @@ public class DisplayDialogController {
      * Init default values
      */
     public void initDefaultValues() {
-        cubeLutCombo.getItems().setAll(CubeLutToneMap.listAvailableLuts());
+        cubeLutCombo.getItems().setAll(DisplayDialogOptions.availableLuts());
         cubeLutCombo.setValue(Constants.DISABLED);
         setTooltips();
     }
@@ -74,7 +75,7 @@ public class DisplayDialogController {
      * @param currentConfig current configuration
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        List<String> luts = CubeLutToneMap.listAvailableLuts();
+        List<String> luts = DisplayDialogOptions.availableLuts();
         cubeLutCombo.getItems().setAll(luts);
         String current = currentConfig.getCubeLut();
         if (current != null && !current.isBlank() && !cubeLutCombo.getItems().contains(current)) {
@@ -82,7 +83,7 @@ public class DisplayDialogController {
             // keep it selectable so the user can see and fix it.
             cubeLutCombo.getItems().add(current);
         }
-        cubeLutCombo.setValue(current != null && !current.isBlank() ? current : Constants.DISABLED);
+        cubeLutCombo.setValue(DisplayDialogOptions.selectedLut(current));
         setTooltips();
     }
 
@@ -144,7 +145,7 @@ public class DisplayDialogController {
     @FXML
     public void save(Configuration config) {
         String selected = cubeLutCombo.isEditable() ? cubeLutCombo.getEditor().getText() : cubeLutCombo.getValue();
-        config.setCubeLut(selected != null && !selected.isBlank() ? selected.trim() : Constants.DISABLED);
+        config.setCubeLut(DisplayDialogOptions.selectedLut(selected));
     }
 
 }

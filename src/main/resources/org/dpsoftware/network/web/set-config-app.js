@@ -3,7 +3,13 @@
 import {state} from './set-config-state.js';
 import {fetchJson, notifyComboChange} from './set-config-api.js';
 import {buildForm, collectPayload, fillForm} from './set-config-core.js';
-import {applyAutoOutputDevice, initColorPicker, refreshDevices, syncDeviceFromPrefs} from './set-config-device.js';
+import {
+    applyAutoOutputDevice,
+    initColorPicker,
+    refreshDevices,
+    refreshSerialPortSuggestions,
+    syncDeviceFromPrefs
+} from './set-config-device.js';
 import {addProfile, renderProfiles} from './set-config-profiles.js';
 import {wireLivePreviewButton} from './set-config-preview.js';
 import {pollServerStatus} from './set-config-status.js';
@@ -39,6 +45,12 @@ function saveForm() {
         showToast('Error: ' + err.message, 'bg-danger text-white');
         console.error('saveForm failed', err);
     });
+}
+
+// Enables the single-device checkbox when the detected displays offer multiple monitor choices.
+function syncSingleDeviceAvailability() {
+    document.getElementById('multiScreenSingleDevice').disabled =
+        ((state.fieldOptions.multiMonitor || {}).options || []).length < 2;
 }
 
 // Sends the add or remove action for MQTT discovery entities and reports the result.
@@ -417,6 +429,11 @@ $(function () {
         localizeSettingsPage();
         wireLogAccordion();
         document.getElementById('saveSettings').addEventListener('click', saveForm);
+        document.getElementById('wirelessStream').addEventListener('change', refreshSerialPortSuggestions);
+        document.getElementById('multiMonitor').addEventListener('change', function () {
+            refreshSerialPortSuggestions();
+            syncSingleDeviceAvailability();
+        });
         document.getElementById('addButton').addEventListener('click', function () {
             runMqttDiscovery('add');
         });
@@ -442,6 +459,8 @@ $(function () {
     }).then(function (cfg) {
         state.lastConfig = cfg || {};
         fillForm(cfg);
+        syncSingleDeviceAvailability();
+        refreshSerialPortSuggestions();
         syncMiscEffectFields();
         syncGammaControls();
         refreshSmoothingPreview();

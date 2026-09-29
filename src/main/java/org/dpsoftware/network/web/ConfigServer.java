@@ -200,16 +200,25 @@ public class ConfigServer {
             return;
         }
         log.info("Configuration updated via setConfig endpoint");
-        if (NetworkTabOptions.requiresDeviceProgramming(savedConfig, updatedConfig)) {
+        boolean baudRateChanged = DevicesTabOptions.baudRateChanged(savedConfig, updatedConfig);
+        if (NetworkTabOptions.requiresDeviceProgramming(savedConfig, updatedConfig)
+                || (baudRateChanged && updatedConfig.isFullFirmware())) {
             var device = CommonUtility.getDeviceToUse();
             if (device != null && device.getDeviceName() != null
                     && (device.getDeviceName().equals(updatedConfig.getOutputDevice())
                     || Objects.equals(device.getDeviceIP(), updatedConfig.getOutputDevice())
+                    || Objects.equals(device.getDeviceIP(), updatedConfig.getStaticGlowWormIp())
                     || Constants.SERIAL_PORT_AUTO.equals(updatedConfig.getOutputDevice()))) {
                 var firmwareConfig = NetworkTabOptions.firmwareConfig(updatedConfig, device,
-                        String.valueOf(updatedConfig.getColorMode()), null);
+                        String.valueOf(updatedConfig.getColorMode()),
+                        baudRateChanged ? updatedConfig.getBaudRate() : null);
                 NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfig), true);
             }
+        }
+        if (baudRateChanged && !updatedConfig.isFullFirmware()) {
+            String[] channels = updatedConfig.getColorChooser().split(",");
+            DevicesTabOptions.programLegacyBaudRate(updatedConfig,
+                    Integer.parseInt(channels[0]), Integer.parseInt(channels[1]), Integer.parseInt(channels[2]));
         }
         HttpResponses.sendOk(exchange);
         // Restart with the active profile and headless mode.

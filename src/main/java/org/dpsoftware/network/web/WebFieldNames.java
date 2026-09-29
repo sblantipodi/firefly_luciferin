@@ -121,7 +121,6 @@ public final class WebFieldNames {
     public static final String SECTION_NETWORK = "network";
     public static final String SECTION_MISC = "misc";
     public static final String SECTION_DEVICES = "devices";
-    public static final String SECTION_LDR = "ldr";
     public static final String SECTION_DISPLAY = "display";
     public static final String SECTION_COLOR_CORR = "colorCorr";
     public static final String SECTION_EYE_CARE = "eyeCare";
