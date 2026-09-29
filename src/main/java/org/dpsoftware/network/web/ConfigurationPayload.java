@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.controllers.options.GammaOptions;
 import org.dpsoftware.gui.controllers.options.MiscTabOptions;
 import org.dpsoftware.gui.controllers.options.SmoothingOptions;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
@@ -113,6 +114,9 @@ final class ConfigurationPayload {
             configTree.put(WebFieldNames.DEFAULT_LED_MATRIX, Enums.AspectRatio.FULLSCREEN.getBaseI18n());
         }
         Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
+        if (payload.has(WebFieldNames.ENABLE_AUTOMATIC_GAMMA) || payload.has(WebFieldNames.GAMMA_LEVEL)) {
+            GammaOptions.apply(updatedConfig, updatedConfig.isEnableAutomaticGamma(), updatedConfig.getGammaLevel());
+        }
         if (payload.has(WebFieldNames.EMA_ALPHA) && payload.has(WebFieldNames.FRAME_INSERTION_TARGET)
                 && payload.has(WebFieldNames.SMOOTHING_TARGET_FRAMERATE)) {
             SmoothingOptions.applyControls(updatedConfig, updatedConfig.getEmaAlpha(),

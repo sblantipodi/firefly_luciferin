@@ -30,9 +30,9 @@ import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.GammaOptions;
 import org.dpsoftware.utilities.CommonUtility;
 
 /**
@@ -70,7 +70,7 @@ public class GammaDialogController {
     @FXML
     protected void initialize() {
         Platform.runLater(() -> {
-            for (Enums.GammaLevel gammaVal : Enums.GammaLevel.values()) {
+            for (Enums.GammaLevel gammaVal : GammaOptions.levels()) {
                 gammaLevel.getItems().add(gammaVal.getI18n());
             }
             enableAutomaticGammaCheck.selectedProperty().addListener((_, _, _) -> toggleValues());
@@ -101,7 +101,7 @@ public class GammaDialogController {
      * Toggle combo box based on checkbox state
      */
     private void toggleValues() {
-        gammaLevel.setDisable(!enableAutomaticGammaCheck.isSelected());
+        gammaLevel.setDisable(!GammaOptions.isLevelEditable(enableAutomaticGammaCheck.isSelected()));
     }
 
     /**
@@ -151,8 +151,7 @@ public class GammaDialogController {
      */
     @FXML
     public void save(Configuration config) {
-        config.setEnableAutomaticGamma(enableAutomaticGammaCheck.isSelected());
-        config.setGammaLevel(LocalizedEnum.fromStr(Enums.GammaLevel.class, gammaLevel.getValue()).getBaseI18n());
+        GammaOptions.apply(config, enableAutomaticGammaCheck.isSelected(), gammaLevel.getValue());
     }
 
 }

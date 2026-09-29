@@ -44,6 +44,8 @@ class FieldOptionsResponseTest {
         FieldOptions.applyToggleLedLabels(labels);
         response.set("labels", CommonUtility.JSON_MAPPER.valueToTree(labels));
         assertNotNull(response.get("options").get("smoothingType"));
+        assertNotNull(response.get("options").get("gammaLevel"));
+        assertNotNull(response.get("labels").get("enableAutomaticGamma"));
         assertNotNull(CommonUtility.JSON_MAPPER.writeValueAsString(response));
     }
 }

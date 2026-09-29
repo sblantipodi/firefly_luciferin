@@ -166,6 +166,11 @@ function syncMiscEffectFields() {
     });
 }
 
+// Enables the adaptive gamma level only when the dialog's checkbox is selected.
+function syncGammaControls() {
+    document.getElementById('gammaLevel').disabled = !document.getElementById('enableAutomaticGamma').checked;
+}
+
 // Shows the advanced smoothing fields only for the custom level.
 function syncSmoothingAdvancedVisibility() {
     var selected = document.getElementById('smoothingType').value;
@@ -422,6 +427,11 @@ $(function () {
         syncMqttDiscoveryButtons();
         wireProvisioning();
         document.getElementById('effect').addEventListener('change', syncMiscEffectFields);
+        document.getElementById('enableAutomaticGamma').addEventListener('change', function (event) {
+            syncGammaControls();
+            sendLiveChange('enableAutomaticGamma', event.target.checked).catch(function () {
+            });
+        });
         wireSmoothingControls();
         document.getElementById('addProfile').addEventListener('click', addProfile);
         initColorPicker();
@@ -433,6 +443,7 @@ $(function () {
         state.lastConfig = cfg || {};
         fillForm(cfg);
         syncMiscEffectFields();
+        syncGammaControls();
         refreshSmoothingPreview();
         document.getElementById('improvDeviceName').value = cfg.outputDevice || '';
         syncMqttDiscoveryButtons();

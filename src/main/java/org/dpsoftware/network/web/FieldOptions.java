@@ -25,6 +25,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.GammaOptions;
 import org.dpsoftware.gui.controllers.options.ImprovOptions;
 import org.dpsoftware.gui.controllers.options.MiscTabOptions;
 import org.dpsoftware.gui.controllers.options.ModeTabOptions;
@@ -105,7 +106,8 @@ public record FieldOptions(List<Option> options, String type) {
                     Enums.Audio known = LocalizedEnum.fromStr(Enums.Audio.class, name);
                     return new Option(known == null ? name : known.getBaseI18n(), name);
                 }).toList(), "string"));
-        options.put(WebFieldNames.GAMMA_LEVEL, localized(Enums.GammaLevel.class));
+        options.put(WebFieldNames.GAMMA_LEVEL, new FieldOptions(GammaOptions.levels().stream()
+                .map(level -> new Option(level.getBaseI18n(), level.getI18n())).toList(), "string"));
         options.put(WebFieldNames.NIGHT_LIGHT, localized(Enums.NightLight.class));
         options.put(WebFieldNames.BRIGHTNESS_LIMITER, new FieldOptions(Arrays.stream(Enums.BrightnessLimiter.values())
                 .map(b -> new FieldOptions.Option(String.valueOf(b.getBrightnessLimitFloat()), b.getBaseI18n())).toList(), "number"));
@@ -297,7 +299,7 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.LUMINOSITY_THRESHOLD, CommonUtility.getWord("fxml.eyecare.luminosity.threshold"));
         labels.put(WebFieldNames.BRIGHTNESS_LIMITER, CommonUtility.getWord("fxml.eyecare.brightness.limiter"));
         labels.put(WebFieldNames.ENABLE_AUTOMATIC_GAMMA, CommonUtility.getWord("fxml.gamma.enable.automatic"));
-        labels.put(WebFieldNames.GAMMA_LEVEL, CommonUtility.getWord("fxml.gamma.level"));
+        labels.put(WebFieldNames.GAMMA_LEVEL, CommonUtility.getWord("fxml.gamma.brightness.floor"));
         labels.put(WebFieldNames.CHECK_FULL_SCREEN, CommonUtility.getWord("fxml.profile.fullscreen.cb"));
         labels.put(WebFieldNames.GPU_THRESHOLD, CommonUtility.getWord("fxml.profile.gpu"));
         labels.put(WebFieldNames.CPU_THRESHOLD, CommonUtility.getWord("fxml.profile.cpu"));
@@ -344,7 +346,7 @@ public record FieldOptions(List<Option> options, String type) {
         titles.put(WebFieldNames.SECTION_DISPLAY, CommonUtility.getWord("fxml.ledsconfigtab.display"));
         titles.put(WebFieldNames.SECTION_COLOR_CORR, CommonUtility.getWord("fxml.misctab.colorcorrection"));
         titles.put(WebFieldNames.SECTION_EYE_CARE, CommonUtility.getWord("fxml.misctab.eyecare"));
-        titles.put(WebFieldNames.SECTION_GAMMA, CommonUtility.getWord("fxml.misctab.gamma"));
+        titles.put(WebFieldNames.SECTION_GAMMA, CommonUtility.getWord("fxml.gamma.title"));
         titles.put(WebFieldNames.SECTION_PROFILE, CommonUtility.getWord("fxml.misctab.profiles"));
         titles.put(WebFieldNames.SECTION_SMOOTHING, CommonUtility.getWord("fxml.dialog.smoothing.title"));
         titles.put(WebFieldNames.SECTION_CONNECTED_DEVICES, CommonUtility.getWord("fxml.devicestab.connected.devices"));
