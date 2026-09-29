@@ -27,8 +27,7 @@ import org.dpsoftware.gui.controllers.options.SmoothingOptions;
 import org.dpsoftware.utilities.CommonUtility;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FieldOptionsResponseTest {
 
@@ -50,6 +49,14 @@ class FieldOptionsResponseTest {
         assertTrue(response.get("options").get("multiMonitor").get("options").size() >= 1);
         assertTrue(response.get("options").get("satelliteZone").get("options").size() > 1);
         assertTrue(response.get("options").get("satelliteOrientation").get("options").size() > 1);
+        assertTrue(response.get("options").get("brightnessLimiter").get("options").size() > 1);
+        assertTrue(response.get("options").get("minimumBrightness").get("options").size() > 1);
+        assertEquals(8, response.get("options").get("ldrInterval").get("options").size());
+        assertEquals("0", response.get("options").get("ldrInterval").get("options").get(0).get("value").asText());
+        assertEquals(10, response.get("options").get("minimumBrightness").get("options").size());
+        assertEquals("1.0", response.get("options").get("brightnessLimiter").get("options").get(0).get("value").asText());
+        assertNotNull(response.get("labels").get("ldrLabel"));
+        assertNotNull(response.get("labels").get("web.logLevel"));
         assertNotNull(response.get("labels").get("satelliteAdd"));
         assertNotNull(response.get("labels").get("enableAutomaticGamma"));
         assertNotNull(CommonUtility.JSON_MAPPER.writeValueAsString(response));

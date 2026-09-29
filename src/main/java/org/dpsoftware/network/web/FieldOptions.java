@@ -123,8 +123,14 @@ public record FieldOptions(List<Option> options, String type) {
         options.put(WebFieldNames.GAMMA_LEVEL, new FieldOptions(GammaOptions.levels().stream()
                 .map(level -> new Option(level.getBaseI18n(), level.getI18n())).toList(), "string"));
         options.put(WebFieldNames.NIGHT_LIGHT, localized(Enums.NightLight.class));
-        options.put(WebFieldNames.BRIGHTNESS_LIMITER, new FieldOptions(Arrays.stream(Enums.BrightnessLimiter.values())
-                .map(b -> new FieldOptions.Option(String.valueOf(b.getBrightnessLimitFloat()), b.getBaseI18n())).toList(), "number"));
+        options.put(WebFieldNames.BRIGHTNESS_LIMITER, new FieldOptions(EyeCareOptions.brightnessLimiters().stream()
+                .map(limit -> new Option(String.valueOf(limit.getBrightnessLimitFloat()), limit.getI18n())).toList(), "number"));
+        options.put(WebFieldNames.LUMINOSITY_THRESHOLD, new FieldOptions(EyeCareOptions.luminosityThresholdValues().stream()
+                .map(value -> new Option(String.valueOf(value), value + Constants.PERCENT)).toList(), "number"));
+        options.put(WebFieldNames.LDR_INTERVAL, new FieldOptions(EyeCareOptions.ldrIntervals().stream()
+                .map(interval -> new Option(String.valueOf(interval.getLdrIntervalInteger()), interval.getI18n())).toList(), "number"));
+        options.put("minimumBrightness", new FieldOptions(EyeCareOptions.minimumBrightnessValues().stream()
+                .map(value -> new Option(String.valueOf(value), value + Constants.PERCENT)).toList(), "number"));
         options.put(WebFieldNames.POWER_SAVING, localized(Enums.PowerSaving.class));
         options.put(WebFieldNames.MULTI_MONITOR, new FieldOptions(DevicesTabOptions.availableMonitorChoices().stream()
                 .map(choice -> new Option(String.valueOf(choice.count()), choice.label())).toList(), "number"));
@@ -232,7 +238,7 @@ public record FieldOptions(List<Option> options, String type) {
     public static Map<String, String> getFieldLabels() {
         Map<String, String> labels = new LinkedHashMap<>();
         for (String key : List.of("saveSettings", "showPreview", "hidePreview", "newProfileName",
-                "addProfile", "profileHelp", "openLog", "restartConfirm", "settingsSaved",
+                "addProfile", "profileHelp", "openLog", "logLevel", "restartConfirm", "settingsSaved",
                 "wholeNumber", "validGroup", "profilePrefix", "collectError")) {
             labels.put("web." + key, CommonUtility.getWord("web." + key));
         }
@@ -350,10 +356,19 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put("satelliteIpError", CommonUtility.getWord("satellite.ip.error.content"));
         labels.put(WebFieldNames.CHECK_FOR_UPDATES, CommonUtility.getWord("fxml.devicestab.check.updates"));
         labels.put(WebFieldNames.SYNC_CHECK, CommonUtility.getWord("fxml.devicestab.sync.check"));
-        labels.put(WebFieldNames.ENABLE_LDR, CommonUtility.getWord("fxml.eyecare.enableldr"));
+        labels.put(WebFieldNames.ENABLE_LDR, CommonUtility.getWord("ldr.alert.enabled"));
+        labels.put("ldrLabel", CommonUtility.getWord("fxml.eyecare.ldr.current.value"));
         labels.put(WebFieldNames.LDR_INTERVAL, CommonUtility.getWord("fxml.eyecare.ldr.interval"));
         labels.put(WebFieldNames.LDR_MIN, CommonUtility.getWord("fxml.eyecare.ldr.min.bright"));
+        labels.put("minimumBrightness", CommonUtility.getWord("fxml.eyecare.ldr.min.bright"));
         labels.put(WebFieldNames.LDR_TURN_OFF, CommonUtility.getWord("fxml.eyecare.ldr.turnoff"));
+        labels.put("ldrCalibration", CommonUtility.getWord("fxml.eyecare.ldr.calibrate"));
+        labels.put("calibrateLDR", CommonUtility.getWord("tooltip.ldr.calibrateldr"));
+        labels.put("resetLDR", CommonUtility.getWord("tooltip.ldr.resetldr"));
+        labels.put("ldrConfirm", CommonUtility.getWord("ldr.alert.continue"));
+        labels.put("ldrCalibrated", CommonUtility.getWord("ldr.alert.cal.header"));
+        labels.put("ldrReset", CommonUtility.getWord("ldr.alert.reset.header"));
+        labels.put("ldrError", CommonUtility.getWord("ldr.alert.content.error"));
         return labels;
     }
 
@@ -384,6 +399,7 @@ public record FieldOptions(List<Option> options, String type) {
         titles.put(WebFieldNames.SECTION_DISPLAY, CommonUtility.getWord("fxml.ledsconfigtab.display"));
         titles.put(WebFieldNames.SECTION_COLOR_CORR, CommonUtility.getWord("fxml.misctab.colorcorrection"));
         titles.put(WebFieldNames.SECTION_EYE_CARE, CommonUtility.getWord("fxml.misctab.eyecare"));
+        titles.put("advancedEyeCare", CommonUtility.getWord("fxml.eyecare.title"));
         titles.put(WebFieldNames.SECTION_GAMMA, CommonUtility.getWord("fxml.gamma.title"));
         titles.put(WebFieldNames.SECTION_PROFILE, CommonUtility.getWord("fxml.misctab.profiles"));
         titles.put(WebFieldNames.SECTION_SMOOTHING, CommonUtility.getWord("fxml.dialog.smoothing.title"));

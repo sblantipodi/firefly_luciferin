@@ -21,7 +21,6 @@
 */
 package org.dpsoftware.gui.controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -40,13 +39,11 @@ import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.WidgetFactory;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.dto.LdrDto;
+import org.dpsoftware.gui.controllers.options.EyeCareOptions;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -109,29 +106,25 @@ public class EyeCareDialogController {
     protected void initialize() {
         Platform.runLater(() -> {
             ldrValue.setValue(Constants.DASH);
-            for (int i = 10; i <= 100; i += 10) {
+            for (int i : EyeCareOptions.minimumBrightnessValues()) {
                 minimumBrightness.getItems().add(i + Constants.PERCENT);
             }
-            for (Enums.BrightnessLimiter brightnessLimit : Enums.BrightnessLimiter.values()) {
+            for (Enums.BrightnessLimiter brightnessLimit : EyeCareOptions.brightnessLimiters()) {
                 brightnessLimiter.getItems().add(brightnessLimit.getI18n());
             }
-            for (Enums.LdrInterval ldrVal : Enums.LdrInterval.values()) {
+            for (Enums.LdrInterval ldrVal : EyeCareOptions.ldrIntervals()) {
                 ldrInterval.getItems().add(ldrVal.getI18n());
             }
             for (Enums.NightLight nightLightVal : Enums.NightLight.values()) {
                 nightLight.getItems().add(nightLightVal.getI18n());
             }
-            try {
-                if (MainSingleton.getInstance().config.isFullFirmware()) {
-                    TcpResponse tcp = NetworkManager.publishToTopic(Constants.HTTP_LDR, "", true);
-                    JsonNode ldrDto = CommonUtility.fromJsonToObject(Objects.requireNonNull(tcp).getResponse());
-                    enableLDR.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_ENABLED).asText().equals("1"));
-                    ldrTurnOff.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_TURNOFF).asText().equals("1"));
-                    ldrInterval.setValue(Enums.LdrInterval.findByValue(ldrDto.get(Constants.HTTP_LDR_INTERVAL).asInt()).getI18n());
-                    minimumBrightness.setValue(ldrDto.get(Constants.HTTP_LDR_MIN).asText() + Constants.PERCENT);
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage());
+            if (MainSingleton.getInstance().config.isFullFirmware()) {
+                EyeCareOptions.firmwareLdrControls().ifPresent(controls -> {
+                    enableLDR.setSelected(controls.enabled());
+                    ldrTurnOff.setSelected(controls.turnOff());
+                    ldrInterval.setValue(Enums.LdrInterval.findByValue(controls.interval()).getI18n());
+                    minimumBrightness.setValue(controls.minimum() + Constants.PERCENT);
+                });
             }
             ldrLabel.textProperty().bind(ldrValueProperty());
             startAnimationTimer();
@@ -282,10 +275,9 @@ public class EyeCareDialogController {
     @FXML
     @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
-        config.setEnableLDR(enableLDR.isSelected());
-        config.setLdrTurnOff(ldrTurnOff.isSelected());
-        config.setLdrInterval(LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
-        config.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
+        EyeCareOptions.applyLdrControls(config, enableLDR.isSelected(), ldrTurnOff.isSelected(),
+                LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger(),
+                Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
         config.setBrightnessLimiter(LocalizedEnum.fromStr(Enums.BrightnessLimiter.class, brightnessLimiter.getValue()).getBrightnessLimitFloat());
         config.setNightLight(LocalizedEnum.fromStr(Enums.NightLight.class, nightLight.getValue()).getBaseI18n());
         config.setNightLightLvl(nightLightLvl.getValue());
@@ -347,7 +339,8 @@ public class EyeCareDialogController {
      */
     private void programMicrocontroller(int ldrAction, String ldrAlertResetHeader, String ldrAlertResetContent) {
         TcpResponse tcpResponse = setLdrDto(ldrAction);
-        if (!MainSingleton.getInstance().config.isFullFirmware() || tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
+        if (!MainSingleton.getInstance().config.isFullFirmware()
+                || (tcpResponse != null && tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS)) {
             MainSingleton.getInstance().guiManager.showLocalizedNotification(ldrAlertResetHeader,
                     ldrAlertResetContent, LabelKey.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
         } else {
@@ -363,37 +356,14 @@ public class EyeCareDialogController {
      * @return TCP response
      */
     private TcpResponse setLdrDto(int ldrAction) {
-        LdrDto ldrDto = new LdrDto();
-        ldrDto.setLdrEnabled(enableLDR.isSelected());
-        ldrDto.setLdrTurnOff(ldrTurnOff.isSelected());
-        ldrDto.setLdrInterval(LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
-        ldrDto.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
-        ldrDto.setLdrAction(ldrAction);
-        MainSingleton.getInstance().config.setEnableLDR(ldrDto.isLdrEnabled());
-        MainSingleton.getInstance().config.setLdrTurnOff(ldrDto.isLdrTurnOff());
-        MainSingleton.getInstance().config.setLdrInterval(ldrDto.getLdrInterval());
-        MainSingleton.getInstance().config.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
-        boolean toggleLed = false;
-        if (ldrAction == 2 && settingsController.miscTabController.toggleLed.isSelected()) {
-            if (ldrTurnOff.isSelected()) {
-                settingsController.miscTabController.toggleLed.fire();
-                toggleLed = true;
-            }
-            CommonUtility.sleepSeconds(4);
-        }
-        TcpResponse tcpResponse = null;
-        MainSingleton.getInstance().ldrAction = ldrAction;
-        if (MainSingleton.getInstance().config.isFullFirmware()) {
-            // Note: this is HTTP only not MQTT.
-            tcpResponse = NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.HTTP_SET_LDR), CommonUtility.toJsonString(ldrDto), true);
-        } else {
-            settingsController.sendSerialParams();
-        }
-        if (toggleLed) {
-            CommonUtility.sleepSeconds(2);
-            settingsController.miscTabController.toggleLed.fire();
-        }
-        return tcpResponse;
+        Configuration config = MainSingleton.getInstance().config;
+        EyeCareOptions.applyLdrControls(config, enableLDR.isSelected(), ldrTurnOff.isSelected(),
+                LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger(),
+                Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
+        return EyeCareOptions.programWithCalibrationLighting(config, ldrAction,
+                () -> settingsController.miscTabController.toggleLed.fire(),
+                () -> settingsController.miscTabController.toggleLed.fire(),
+                () -> EyeCareOptions.programLdr(config, ldrAction, settingsController::sendSerialParams));
     }
 
     public StringProperty ldrValueProperty() {

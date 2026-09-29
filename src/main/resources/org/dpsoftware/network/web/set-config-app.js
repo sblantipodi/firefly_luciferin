@@ -8,6 +8,7 @@ import {
     initColorPicker,
     initializeSatellites,
     refreshDevices,
+    refreshLdrLabel,
     refreshSerialPortSuggestions,
     syncDeviceFromPrefs,
     wireSatellites
@@ -242,6 +243,56 @@ function wireSmoothingControls() {
     });
 }
 
+// Enables LDR controls only when readings are active and respects the continuous-reading interval.
+function syncLdrControls() {
+    var enabled = document.getElementById('enableLDR').checked;
+    var interval = Number(document.getElementById('ldrInterval').value);
+    ['ldrInterval', 'minimumBrightness', 'calibrateLDR', 'resetLDR'].forEach(function (id) {
+        document.getElementById(id).disabled = !enabled;
+    });
+    document.getElementById('ldrTurnOff').disabled = !enabled || interval === 0;
+    document.getElementById('ldrLabel').classList.toggle('text-muted', !enabled);
+}
+
+// Confirms and sends the current LDR controls for calibration or reset.
+function runLdrAction(action) {
+    if (!confirm(state.fieldLabels.ldrConfirm)) {
+        return;
+    }
+    var button = document.getElementById(action === 2 ? 'calibrateLDR' : 'resetLDR');
+    button.disabled = true;
+    var payload = {
+        action: action,
+        enableLDR: document.getElementById('enableLDR').checked,
+        ldrTurnOff: document.getElementById('ldrTurnOff').checked,
+        ldrInterval: Number(document.getElementById('ldrInterval').value),
+        ldrMin: Number(document.getElementById('minimumBrightness').value)
+    };
+    fetch('ldrAction', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+    }).then(function (response) {
+        return response.text().then(function (body) {
+            if (!response.ok) throw new Error(body || response.statusText);
+            showToast(action === 2 ? state.fieldLabels.ldrCalibrated : state.fieldLabels.ldrReset,
+                'bg-success text-white');
+        });
+    }).catch(function (error) {
+        showToast(state.fieldLabels.ldrError + ': ' + error.message, 'bg-danger text-white');
+    }).finally(syncLdrControls);
+}
+
+// Connects the eye-care accordion's LDR controls and action buttons.
+function wireLdrControls() {
+    document.getElementById('enableLDR').addEventListener('change', syncLdrControls);
+    document.getElementById('ldrInterval').addEventListener('change', syncLdrControls);
+    document.getElementById('calibrateLDR').addEventListener('click', function () {
+        runLdrAction(2);
+    });
+    document.getElementById('resetLDR').addEventListener('click', function () {
+        runLdrAction(3);
+    });
+}
+
 // Applies server-provided translations to fixed controls outside the generated form.
 function localizeSettingsPage() {
     var fields = [
@@ -249,7 +300,8 @@ function localizeSettingsPage() {
         ['showLivePreview', 'showPreview', 'textContent'],
         ['newProfileName', 'newProfileName', 'placeholder'],
         ['addProfile', 'addProfile', 'textContent'],
-        ['appLog', 'openLog', 'textContent']
+        ['appLog', 'openLog', 'textContent'],
+        ['runtimeLogLevelLabel', 'logLevel', 'textContent']
     ];
     fields.forEach(function (entry) {
         var label = state.fieldLabels['web.' + entry[1]];
@@ -284,7 +336,8 @@ function setMiscLedButton(on) {
 function wireSelectChangeListeners() {
     document.querySelectorAll('select').forEach(function (el) {
         el.addEventListener('change', function () {
-            if (!el.id.startsWith('improv')) {
+            if (!el.id.startsWith('improv') && !['luminosityThreshold', 'brightnessLimiter',
+                'ldrInterval', 'minimumBrightness'].includes(el.id)) {
                 sendLiveChange(el.id, el.value).then(function () {
                     if (el.id === 'effect') setMiscLedButton(true);
                 }).catch(function () {
@@ -424,10 +477,11 @@ $(function () {
         state.sectionTitles = titles || {};
     }).catch(function () {
     }).then(function () {
-        return fetchJson('getFieldOptions');
+        return fetchJson('getFieldOptions', {cache: 'no-store'});
     }).then(function (data) {
         state.fieldOptions = (data && data.options) || {};
         state.smoothingPresets = (data && data.smoothingPresets) || {};
+        state.bottomRowLayouts = (data && data.bottomRowLayouts) || {};
         state.fieldLabels = (data && data.labels) || {};
         buildForm();
         localizeSettingsPage();
@@ -455,15 +509,18 @@ $(function () {
             });
         });
         wireSmoothingControls();
+        wireLdrControls();
         document.getElementById('addProfile').addEventListener('click', addProfile);
         initColorPicker();
         wireLivePreviewButton();
         wireSelectChangeListeners();
         revealSettingsPage();
-        return fetchJson('getConfig');
+        return fetchJson('getConfig', {cache: 'no-store'});
     }).then(function (cfg) {
         state.lastConfig = cfg || {};
         fillForm(cfg);
+        syncLdrControls();
+        refreshLdrLabel();
         initializeSatellites(cfg);
         syncSingleDeviceAvailability();
         refreshSerialPortSuggestions();

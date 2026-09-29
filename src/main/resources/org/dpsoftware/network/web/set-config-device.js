@@ -294,6 +294,7 @@ function renderDevices(devices) {
     renderOutputDeviceSuggestions();
     refreshSerialPortSuggestions();
     refreshSatelliteDeviceSuggestions();
+    refreshLdrLabel();
     var el = document.getElementById('devicesTable');
     if (!el) {
         return;
@@ -320,7 +321,7 @@ function renderDevices(devices) {
                 text = '—';
             } else if (c.key === 'deviceIP' && ipRe.test(String(v))) {
                 var ip = escapeHtml(String(v));
-                text = '<a href="http://' + ip + '" target="_blank" rel="noopener">' + ip + '</a>';
+                text = '<a class="orange-link" href="http://' + ip + '" target="_blank" rel="noopener">' + ip + '</a>';
             } else {
                 text = escapeHtml(v);
             }
@@ -330,6 +331,21 @@ function renderDevices(devices) {
     });
     html += '</tbody></table>';
     el.innerHTML = html;
+}
+
+// Shows the current room brightness reported by the configured device in the LDR readout.
+export function refreshLdrLabel() {
+    var label = document.getElementById('ldrLabel');
+    if (!label) {
+        return;
+    }
+    var config = state.lastConfig || {};
+    var devices = state.devices || [];
+    var selected = devices.find(function (device) {
+        return device.deviceIP === config.staticGlowWormIp || device.deviceIP === config.outputDevice
+            || device.deviceName === config.outputDevice;
+    }) || (config.outputDevice === 'AUTO' ? devices[0] : null);
+    label.textContent = selected && selected.ldrValue ? selected.ldrValue : '-';
 }
 
 // Selects the matching device name in the output device select based on the configured AUTO/static IP, unless the user manually touched the select.
