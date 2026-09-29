@@ -23,7 +23,6 @@ package org.dpsoftware.managers;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
-import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import lombok.NoArgsConstructor;
@@ -39,7 +38,6 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static java.util.Comparator.comparing;
 
@@ -300,26 +298,6 @@ public class DisplayManager {
             }
         }
         return displayName;
-    }
-
-    /**
-     * Detects and sets up an external device by retrieving its friendly name for video capture.
-     */
-    public void getExtVideoCaptureDevices(Consumer<List<String>> onComplete) {
-        CommonUtility.delayMilliseconds(() -> {
-            List<CaptureDeviceUtilities.CaptureDevice> captureDevices = ManagerSingleton.getInstance().getCaptureDevices();
-            captureDevices.addAll(CaptureDeviceUtilities.discover());
-            if (captureDevices.isEmpty()) {
-                log.debug("No video capture devices found.");
-                return;
-            }
-            List<String> extSrcFriendlyNames = new ArrayList<>();
-            for (CaptureDeviceUtilities.CaptureDevice dev : captureDevices) {
-                extSrcFriendlyNames.add(dev.getFriendlyName());
-            }
-            Platform.runLater(() -> onComplete.accept(extSrcFriendlyNames));
-        }, 10);
-        onComplete.accept(new ArrayList<>());
     }
 
 }

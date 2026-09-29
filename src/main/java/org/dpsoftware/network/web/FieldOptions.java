@@ -25,7 +25,9 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.ModeTabOptions;
 import org.dpsoftware.lut.CubeLutToneMap;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.*;
@@ -46,18 +48,27 @@ public record FieldOptions(List<Option> options, String type) {
     public static Map<String, FieldOptions> getFieldOptions() {
         Map<String, FieldOptions> options = new LinkedHashMap<>();
         options.put(WebFieldNames.ORIENTATION, localized(Enums.Orientation.class));
-        options.put(WebFieldNames.DEFAULT_LED_MATRIX, localized(Enums.AspectRatio.class));
+        List<Option> aspectRatios = new ArrayList<>(localized(Enums.AspectRatio.class).options());
+        aspectRatios.add(new Option("AUTO", CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS)));
+        options.put(WebFieldNames.DEFAULT_LED_MATRIX, new FieldOptions(aspectRatios, "string"));
+        options.put(WebFieldNames.OS_SCALING, new FieldOptions(ModeTabOptions.scalingRatios().stream()
+                .map(value -> new Option(value.replace("%", ""), value)).toList(), "number"));
+        options.put(WebFieldNames.MONITOR_NUMBER, monitorOptions());
+        options.put(WebFieldNames.CAPTURE_METHOD, captureMethods(false));
+        options.put("captureMethodExternal", captureMethods(true));
         options.put(WebFieldNames.BAUD_RATE, new FieldOptions(Arrays.stream(Enums.BaudRate.values())
                 .map(b -> new FieldOptions.Option(b.getBaudRate(), b.getBaudRate())).toList(), "string"));
         options.put(WebFieldNames.DESIRED_FRAMERATE, new FieldOptions(Arrays.stream(Enums.Framerate.values())
                 .map(f -> new FieldOptions.Option(f.getBaseI18n(), f.getBaseI18n())).toList(), "string"));
         options.put(WebFieldNames.SIMD_AVX, new FieldOptions(Arrays.stream(Enums.SimdAvxOption.values())
-                .map(s -> new FieldOptions.Option(String.valueOf(s.getSimdOptionNumeric()), s.getBaseI18n())).toList(), "number"));
+                .filter(s -> ModeTabOptions.simdOptions(MainSingleton.getInstance().getSupportedSpeciesLengthSimd()).contains(s))
+                .map(s -> new FieldOptions.Option(String.valueOf(s.getSimdOptionNumeric()), s.getI18n())).toList(), "number"));
         options.put(WebFieldNames.RESAMPLING_FACTOR, new FieldOptions(Arrays.stream(Enums.ResamplingFactor.values())
-                .map(r -> new FieldOptions.Option(String.valueOf(r.getResamplingFactorValue()), r.getBaseI18n())).toList(), "number"));
+                .map(r -> new FieldOptions.Option(String.valueOf(r.getResamplingFactorValue()), r.getI18n())).toList(), "number"));
         options.put(WebFieldNames.ALGO, localized(Enums.Algo.class));
         options.put(WebFieldNames.THEME, localized(Enums.Theme.class));
-        options.put(WebFieldNames.LANGUAGE, localized(Enums.Language.class));
+        options.put(WebFieldNames.LANGUAGE, new FieldOptions(Arrays.stream(Enums.Language.values())
+                .map(language -> new Option(language.getI18n(), language.getI18n())).toList(), "string"));
         options.put(WebFieldNames.SMOOTHING_TYPE, localized(Enums.Smoothing.class));
         options.put(WebFieldNames.STREAM_TYPE, new FieldOptions(Arrays.stream(Enums.StreamType.values())
                 .map(s -> new FieldOptions.Option(s.getStreamType(), s.getStreamType())).toList(), "string"));
@@ -70,13 +81,49 @@ public record FieldOptions(List<Option> options, String type) {
                 .map(b -> new FieldOptions.Option(String.valueOf(b.getBrightnessLimitFloat()), b.getBaseI18n())).toList(), "number"));
         options.put(WebFieldNames.POWER_SAVING, localized(Enums.PowerSaving.class));
         options.put(WebFieldNames.MULTI_MONITOR, new FieldOptions(List.of(
-                new FieldOptions.Option("1", "Disabled"),
-                new FieldOptions.Option("2", "Dual display"),
-                new FieldOptions.Option("3", "Triple display")), "number"));
+                new FieldOptions.Option("1", CommonUtility.getWord("multimonitor.disabled")),
+                new FieldOptions.Option("2", CommonUtility.getWord("multimonitor.dual")),
+                new FieldOptions.Option("3", CommonUtility.getWord("multimonitor.triple"))), "number"));
         // 3D LUT (color tone map) options, the available .cube LUTs (classpath + config dir) with "Disabled" pinned at the top
         options.put(WebFieldNames.CUBE_LUT, new FieldOptions(CubeLutToneMap.listAvailableLuts().stream()
                 .map(name -> new FieldOptions.Option(name, name)).toList(), "string"));
         return options;
+    }
+
+    /**
+     * Converts the shared capture method choices into web select options.
+     *
+     * @param external whether the selected source is an external video device
+     * @return capture method options for the web form
+     */
+    private static FieldOptions captureMethods(boolean external) {
+        return new FieldOptions(ModeTabOptions.captureMethods(external).stream()
+                .map(method -> new Option(method.name(), method.getCaptureMethod())).toList(), "string");
+    }
+
+    /**
+     * Builds web monitor choices from the shared display and device lists.
+     *
+     * @return monitor options with display indices or external device names as values
+     */
+    private static FieldOptions monitorOptions() {
+        List<Option> monitors = new ArrayList<>();
+        DisplayManager displayManager = new DisplayManager();
+        try {
+            List<String> names = ModeTabOptions.displayNames(displayManager);
+            for (int i = 0; i < names.size(); i++) {
+                monitors.add(new Option(String.valueOf(i), names.get(i)));
+            }
+        } catch (RuntimeException | LinkageError ignored) {
+            // The JavaFX display list can be unavailable during headless startup.
+        }
+        try {
+            ModeTabOptions.externalCaptureDeviceNames().forEach(name ->
+                    monitors.add(new Option("device:" + name, name)));
+        } catch (RuntimeException | LinkageError ignored) {
+            // Native capture discovery can be unavailable during headless startup.
+        }
+        return new FieldOptions(monitors, "string");
     }
 
     /**
@@ -117,7 +164,7 @@ public record FieldOptions(List<Option> options, String type) {
      */
     private static <E extends Enum<E> & LocalizedEnum> FieldOptions localized(Class<E> enumClass) {
         List<FieldOptions.Option> opts = Arrays.stream(enumClass.getEnumConstants())
-                .map(e -> new FieldOptions.Option(e.getBaseI18n(), e.getBaseI18n()))
+                .map(e -> new FieldOptions.Option(e.getBaseI18n(), e.getI18n()))
                 .toList();
         return new FieldOptions(opts, "string");
     }
@@ -129,6 +176,11 @@ public record FieldOptions(List<Option> options, String type) {
      */
     public static Map<String, String> getFieldLabels() {
         Map<String, String> labels = new LinkedHashMap<>();
+        for (String key : List.of("saveSettings", "showPreview", "hidePreview", "newProfileName",
+                "addProfile", "profileHelp", "openLog", "restartConfirm", "settingsSaved",
+                "wholeNumber", "validGroup", "profilePrefix", "collectError")) {
+            labels.put("web." + key, CommonUtility.getWord("web." + key));
+        }
         labels.put(WebFieldNames.TOP_LED, CommonUtility.getWord("fxml.ledsconfigtab.toprow"));
         labels.put(WebFieldNames.LEFT_LED, CommonUtility.getWord("fxml.ledsconfigtab.leftcol"));
         labels.put(WebFieldNames.RIGHT_LED, CommonUtility.getWord("fxml.ledsconfigtab.rightcol"));
@@ -155,13 +207,14 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.RESAMPLING_FACTOR, CommonUtility.getWord("fxml.modetab.scaling"));
         labels.put(WebFieldNames.CAPTURE_METHOD, CommonUtility.getWord("fxml.modetab.capturemethod"));
         labels.put(WebFieldNames.MONITOR_NUMBER, CommonUtility.getWord("fxml.modetab.binddisplay"));
-        labels.put(WebFieldNames.SCREEN_RES_X, CommonUtility.getWord("fxml.modetab.screenresolution"));
-        labels.put(WebFieldNames.SCREEN_RES_Y, CommonUtility.getWord("fxml.modetab.screenresolution"));
-        labels.put(WebFieldNames.OS_SCALING, CommonUtility.getWord("fxml.modetab.os.scaling"));
+        labels.put(WebFieldNames.SCREEN_RES_X, CommonUtility.getWord("web.mode.screenWidth"));
+        labels.put(WebFieldNames.SCREEN_RES_Y, CommonUtility.getWord("web.mode.screenHeight"));
+        labels.put(WebFieldNames.OS_SCALING, CommonUtility.getWord("web.mode.scaling"));
         labels.put(WebFieldNames.DEFAULT_LED_MATRIX, CommonUtility.getWord("fxml.modetab.aspectratio"));
         labels.put(WebFieldNames.AUTO_DETECT_BLACK_BARS, CommonUtility.getWord("fxml.modetab.autodetect"));
-        labels.put(WebFieldNames.ALGO, CommonUtility.getWord("fxml.modetab.algo"));
-        labels.put(WebFieldNames.LANGUAGE, CommonUtility.getWord("fxml.misctab.language"));
+        labels.put(WebFieldNames.ALGO, CommonUtility.getWord("web.mode.algo"));
+        labels.put(WebFieldNames.LANGUAGE, CommonUtility.getWord("web.mode.language"));
+        labels.put(WebFieldNames.WEB_MCP_SERVER_ENABLED, CommonUtility.getWord("web.mode.webMcpServer"));
         labels.put(WebFieldNames.MQTT_ENABLE, CommonUtility.getWord("fxml.mqtttab.enablemqtt"));
         labels.put(WebFieldNames.WIRELESS_STREAM, CommonUtility.getWord("fxml.mqtttab.wirelessstream"));
         labels.put(WebFieldNames.STREAM_TYPE, CommonUtility.getWord("fxml.mqtttab.streamtype"));

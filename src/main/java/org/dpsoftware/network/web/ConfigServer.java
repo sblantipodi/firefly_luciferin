@@ -182,7 +182,13 @@ public class ConfigServer {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
             return;
         }
-        Configuration updatedConfig = ConfigurationPayload.apply(payload, savedConfig);
+        Configuration updatedConfig;
+        try {
+            updatedConfig = ConfigurationPayload.apply(payload, savedConfig);
+        } catch (IllegalArgumentException | IOException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid configuration: " + e.getMessage());
+            return;
+        }
         try {
             // Persist to the active or main configuration.
             updatedConfig.setEffect(LocalizedEnum.fromTextToBase(Enums.Effect.class, updatedConfig.getEffect()));

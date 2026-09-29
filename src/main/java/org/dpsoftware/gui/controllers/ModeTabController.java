@@ -35,6 +35,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.ModeTabOptions;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
@@ -163,10 +164,7 @@ public class ModeTabController {
      * Init combo boxes
      */
     public void initComboBox() {
-        scaling.getItems().add(Enums.ScalingRatio.RATIO_100.getScalingRatio());
-        for (Enums.ScalingRatio scalingRatio : Enums.ScalingRatio.values()) {
-            scaling.getItems().add(scalingRatio.getScalingRatio());
-        }
+        scaling.getItems().addAll(ModeTabOptions.scalingRatios());
         for (Enums.Theme th : Enums.Theme.values()) {
             theme.getItems().add(th.getI18n());
         }
@@ -176,17 +174,8 @@ public class ModeTabController {
         for (Enums.ResamplingFactor resFactor : Enums.ResamplingFactor.values()) {
             resamplingFactor.getItems().add(resFactor.getI18n());
         }
-        simdOption.getItems().add(Enums.SimdAvxOption.AUTO.getI18n());
-        if (MainSingleton.getInstance().getSupportedSpeciesLengthSimd() >= 16) {
-            simdOption.getItems().add(Enums.SimdAvxOption.AVX512.getI18n());
-        }
-        if (MainSingleton.getInstance().getSupportedSpeciesLengthSimd() >= 8) {
-            simdOption.getItems().add(Enums.SimdAvxOption.AVX256.getI18n());
-        }
-        if (MainSingleton.getInstance().getSupportedSpeciesLengthSimd() >= 8) {
-            simdOption.getItems().add(Enums.SimdAvxOption.AVX.getI18n());
-        }
-        simdOption.getItems().add(Enums.SimdAvxOption.DISABLED.getI18n());
+        ModeTabOptions.simdOptions(MainSingleton.getInstance().getSupportedSpeciesLengthSimd())
+                .forEach(option -> simdOption.getItems().add(option.getI18n()));
     }
 
     /**

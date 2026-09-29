@@ -3,50 +3,58 @@
 export const sections = [
     {
         id: 'leds', fields: [
-            {id: 'topLed', type: 'number', numeric: true, min: 0},
-            {id: 'leftLed', type: 'number', numeric: true, min: 0},
-            {id: 'rightLed', type: 'number', numeric: true, min: 0},
-            {id: 'bottomLeftLed', type: 'number', numeric: true, min: 0},
-            {id: 'bottomRightLed', type: 'number', numeric: true, min: 0},
-            {id: 'bottomRowLed', type: 'number', numeric: true, min: 0},
+            {id: 'topLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
+            {id: 'leftLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
+            {id: 'rightLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
+            {id: 'bottomLeftLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
+            {id: 'bottomRightLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
+            {id: 'bottomRowLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
             {id: 'ledStartOffset', type: 'number', numeric: true, min: 0},
             {id: 'orientation', type: 'select'},
-            {id: 'groupBy', type: 'number', numeric: true, min: 0},
-            {id: 'splitBottomMargin', type: 'text', numeric: false},
-            {id: 'grabberAreaTopBottom', type: 'number', numeric: true, min: 0},
-            {id: 'grabberSide', type: 'number', numeric: true, min: 0},
-            {id: 'gapTypeTopBottom', type: 'text', numeric: false},
-            {id: 'gapTypeSide', type: 'text', numeric: false}
+            {
+                id: 'grabberAreaTopBottom',
+                type: 'select',
+                options: Array.from({length: 41}, (_, i) => i + '%'),
+                direction: 'vertical'
+            },
+            {
+                id: 'grabberSide',
+                type: 'select',
+                options: Array.from({length: 41}, (_, i) => i + '%'),
+                direction: 'horizontal'
+            },
+            {
+                id: 'gapTypeTopBottom',
+                type: 'select',
+                options: Array.from({length: 41}, (_, i) => i + '%'),
+                direction: 'vertical'
+            },
+            {
+                id: 'gapTypeSide',
+                type: 'select',
+                options: Array.from({length: 41}, (_, i) => i + '%'),
+                direction: 'horizontal'
+            },
+            {id: 'groupBy', type: 'select', numeric: true},
+            {id: 'splitBottomMargin', type: 'select', options: Array.from({length: 96}, (_, i) => i + '%')}
         ]
     },
     {
         id: 'mode', fields: [
-            {id: 'outputDevice', type: 'text', numeric: false},
-            {id: 'baudRate', type: 'select'},
-            {id: 'staticGlowWormIp', type: 'text', numeric: false},
-            {id: 'desiredFramerate', type: 'select'},
-            {id: 'smoothingType', type: 'select'},
-            {id: 'smoothingTargetFramerate', type: 'number', numeric: true, min: 0, max: 240},
-            {id: 'frameInsertionTarget', type: 'number', numeric: true, min: 0, max: 120},
-            {id: 'emaAlpha', type: 'number', numeric: true, step: '0.05', min: 0, max: 1},
-            {id: 'simdAvx', type: 'select'},
-            {id: 'resamplingFactor', type: 'select'},
-            {id: 'captureMethod', type: 'text', numeric: false},
-            {id: 'monitorNumber', type: 'number', numeric: true, min: 1, max: 8},
-            {id: 'screenResX', type: 'number', numeric: true, min: 0},
-            {id: 'screenResY', type: 'number', numeric: true, min: 0},
-            {id: 'osScaling', type: 'number', numeric: true, min: 100, max: 500},
+            {id: 'screenResX', type: 'number', numeric: true, digitsOnly: true, min: 0},
+            {id: 'screenResY', type: 'number', numeric: true, digitsOnly: true, min: 0},
+            {id: 'monitorNumber', type: 'select'},
+            {id: 'osScaling', type: 'select', numeric: true},
+            {id: 'resamplingFactor', type: 'select', numeric: true},
             {id: 'defaultLedMatrix', type: 'select'},
-            {id: 'autoDetectBlackBars', type: 'checkbox', numeric: false},
+            {id: 'language', type: 'select'},
+            {id: 'captureMethod', type: 'select'},
             {id: 'algo', type: 'select'},
-            {id: 'language', type: 'select'}
-        ],
-        subAccordions: [
-            {
-                id: 'display', fields: [
-                    {id: 'cubeLut', type: 'select'}
-                ]
-            }
+            {id: 'simdAvx', type: 'select', numeric: true},
+            {id: 'syncCheck', type: 'checkbox', numeric: false},
+            {id: 'checkForUpdates', type: 'checkbox', numeric: false},
+            {id: 'startWithSystem', type: 'checkbox', numeric: false},
+            {id: 'webMcpServerEnabled', type: 'checkbox', numeric: false}
         ]
     },
     {
@@ -72,7 +80,6 @@ export const sections = [
             {id: 'nightModeTo', type: 'text', numeric: false},
             {id: 'nightModeBrightness', type: 'text', numeric: false},
             {id: 'toggleLed', type: 'checkbox', numeric: false},
-            {id: 'startWithSystem', type: 'checkbox', numeric: false},
             {id: 'runtimeLogLevel', type: 'text', numeric: false}
         ],
         subAccordions: [
@@ -125,9 +132,7 @@ export const sections = [
         id: 'devices', fields: [
             {id: 'powerSaving', type: 'select'},
             {id: 'multiMonitor', type: 'select'},
-            {id: 'multiScreenSingleDevice', type: 'checkbox', numeric: false},
-            {id: 'checkForUpdates', type: 'checkbox', numeric: false},
-            {id: 'syncCheck', type: 'checkbox', numeric: false}
+            {id: 'multiScreenSingleDevice', type: 'checkbox', numeric: false}
         ],
         subAccordions: [
             {

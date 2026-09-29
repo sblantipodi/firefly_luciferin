@@ -1,5 +1,6 @@
 // Live preview toggle for the settings page: starts/stops the preview using WebRTC when available, falling back to polled image screenshots otherwise.
 import {showToast} from './set-config-ui.js';
+import {state} from './set-config-state.js';
 
 var livePreviewOn = false;
 var livePreviewTimer = null;
@@ -47,7 +48,7 @@ function setLivePreview(on, useWebrtc) {
     livePreviewOn = on;
     var btn = document.getElementById('showLivePreview');
     if (btn) {
-        btn.textContent = on ? 'Hide Live Preview' : 'Show Live Preview';
+        btn.textContent = on ? (state.fieldLabels['web.hidePreview'] || 'Hide Live Preview') : (state.fieldLabels['web.showPreview'] || 'Show Live Preview');
         btn.classList.toggle('active', on);
     }
     var img = document.getElementById('screenshot');

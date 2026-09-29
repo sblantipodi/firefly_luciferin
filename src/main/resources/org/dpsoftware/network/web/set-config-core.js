@@ -50,14 +50,19 @@ function buildFieldHtml(f) {
         var opts = optionsFor(f).map(function (o) {
             return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
         }).join('');
+        if (f.direction) {
+            var before = f.direction === 'vertical' ? 'up' : 'left';
+            var after = f.direction === 'vertical' ? 'down' : 'right';
+            return '<div class="form-group directional-field"><label for="' + f.id + '"><i class="fa-solid fa-arrow-' + before + '" aria-hidden="true"></i><span>' + escapeHtml(lbl) + '</span><i class="fa-solid fa-arrow-' + after + '" aria-hidden="true"></i></label><select class="form-select" id="' + f.id + '">' + opts + '</select></div>';
+        }
         return '<div class="form-group"><label for="' + f.id + '">' + lbl + '</label> <select class="form-select" id="' + f.id + '">' + opts + '</select></div>';
     }
-    var inputType = f.type === 'number' ? 'text' : f.type;
+    var inputType = f.digitsOnly ? 'text' : f.type;
     var inputHtml;
     if (f.id === 'outputDevice') {
         inputHtml = '<select class="form-select" id="' + f.id + '"><option value="">--</option></select>';
     } else {
-        inputHtml = '<input type="' + inputType + '" class="form-control" id="' + f.id + '"' + (f.numeric ? ' inputmode="numeric"' : '') + '>';
+        inputHtml = '<input type="' + inputType + '" class="form-control" id="' + f.id + '"' + (f.numeric ? ' inputmode="numeric"' + (f.digitsOnly ? ' pattern="[0-9]+"' : ' step="' + (f.step || '1') + '"') + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') : '') + '>';
     }
     return '<div class="form-group"><label for="' + f.id + '">' + lbl + '</label> ' + inputHtml + '</div>';
 }
@@ -129,6 +134,53 @@ export function buildForm() {
     accordion.appendChild(logs);
     document.getElementById('settingsContainer').replaceChildren(page);
     fillPickerControls();
+    for (var id of [...ledCountIds, 'bottomRowLed', 'screenResX', 'screenResY']) {
+        document.getElementById(id).addEventListener('input', function (event) {
+            var clean = event.target.value.replace(/[^0-9]/g, '');
+            if (event.target.value !== clean) {
+                event.target.value = clean;
+            }
+            updateGroupByOptions();
+        });
+    }
+    document.getElementById('monitorNumber').addEventListener('change', function () {
+        updateCaptureMethodOptions(true);
+    });
+}
+
+const ledCountIds = ['topLed', 'leftLed', 'rightLed', 'bottomLeftLed', 'bottomRightLed'];
+
+// Rebuilds capture method choices for the selected monitor or external device.
+function updateCaptureMethodOptions(resetSelection = false) {
+    var monitor = document.getElementById('monitorNumber').value;
+    var select = document.getElementById('captureMethod');
+    var previous = select.value;
+    var key = monitor.startsWith('device:') ? 'captureMethodExternal' : 'captureMethod';
+    var available = (state.fieldOptions[key] || {}).options || [];
+    select.replaceChildren();
+    available.forEach(function (entry) {
+        select.add(new Option(entry.label, entry.value));
+    });
+    select.value = !resetSelection && available.some(function (entry) {
+        return entry.value === previous;
+    }) ? previous : 'AUTO';
+}
+
+// Keeps the LED grouping choices between 1 and the smallest configured row count.
+function updateGroupByOptions() {
+    var select = document.getElementById('groupBy');
+    var previous = select.value;
+    var counts = ledCountIds.map(function (id) {
+        return Number(document.getElementById(id).value);
+    });
+    var minimum = counts.every(function (n) {
+        return Number.isSafeInteger(n) && n > 0;
+    }) ? Math.min(...counts) : 0;
+    select.replaceChildren();
+    for (var i = 1; i <= minimum; i++) {
+        select.add(new Option(String(i), String(i)));
+    }
+    select.value = Number(previous) <= minimum && Number(previous) >= 1 ? previous : (minimum ? '1' : '');
 }
 
 // Sets a single form control from the configuration value (handles checkboxes, selects with missing options, list fields and the staticGlowWormIp 'Auto' alias).
@@ -143,6 +195,12 @@ function fillField(f, cfg) {
         return;
     }
     var value = cfg[f.id];
+    if (f.id === 'monitorNumber' && cfg.captureDevice && cfg.captureDevice.friendlyName) {
+        value = 'device:' + cfg.captureDevice.friendlyName;
+    }
+    if (f.id === 'defaultLedMatrix' && cfg.autoDetectBlackBars) {
+        value = 'AUTO';
+    }
     if (value == null) {
         return;
     }
@@ -159,13 +217,13 @@ function fillField(f, cfg) {
             var present = Array.prototype.some.call(el.options, function (o) {
                 return o.value === val;
             });
-            if (!present) {
+            if (!present && !['groupBy', 'splitBottomMargin', 'grabberAreaTopBottom', 'grabberSide', 'gapTypeTopBottom', 'gapTypeSide'].includes(f.id)) {
                 var opt = document.createElement('option');
                 opt.value = val;
                 opt.textContent = val;
                 el.appendChild(opt);
             }
-            el.value = val;
+            el.value = present || !['splitBottomMargin', 'grabberAreaTopBottom', 'grabberSide', 'gapTypeTopBottom', 'gapTypeSide'].includes(f.id) ? val : '0%';
         } else {
             el.value = value;
         }
@@ -177,6 +235,9 @@ export function fillForm(cfg) {
     sections.forEach(function (s) {
         s.fields.forEach(function (f) {
             fillField(f, cfg);
+            if (f.id === 'monitorNumber') {
+                updateCaptureMethodOptions();
+            }
         });
         (s.subAccordions || []).forEach(function (sub) {
             sub.fields.forEach(function (f) {
@@ -184,6 +245,10 @@ export function fillForm(cfg) {
             });
         });
     });
+    updateGroupByOptions();
+    if (Number.isInteger(cfg.groupBy) && cfg.groupBy >= 1 && cfg.groupBy <= Number(document.getElementById('groupBy').lastElementChild?.value)) {
+        document.getElementById('groupBy').value = String(cfg.groupBy);
+    }
 }
 
 // Reads a single form control back into the payload object, casting to the field type and applying field-specific conversions (e.g. 'Auto' to '-').
@@ -210,6 +275,22 @@ function collectField(f, payload) {
         if (sel === '') {
             return;
         }
+        if (f.id === 'monitorNumber') {
+            if (sel.startsWith('device:')) {
+                payload.monitorNumber = 0;
+                payload.captureDeviceName = sel.substring('device:'.length);
+            } else {
+                payload.monitorNumber = Number(sel);
+            }
+            return;
+        }
+        if (f.id === 'defaultLedMatrix') {
+            payload.autoDetectBlackBars = sel === 'AUTO';
+            if (sel !== 'AUTO') {
+                payload.defaultLedMatrix = sel;
+            }
+            return;
+        }
         payload[f.id] = (selectType(f) === 'number') ? Number(sel) : sel;
     } else if (f.numeric) {
         var num = el.value;
@@ -228,6 +309,27 @@ function collectField(f, payload) {
 // Collects all edited form values into the JSON payload sent to the server: normalizes arrays, applies the outputDevice/staticGlowWormIp
 // rule and appends the current color picker color.
 export function collectPayload() {
+    for (var dimension of ['screenResX', 'screenResY']) {
+        var dimensionValue = document.getElementById(dimension).value;
+        if (!/^\d+$/.test(dimensionValue) || !Number.isSafeInteger(Number(dimensionValue))) {
+            throw new Error(fieldLabel({id: dimension}) + ': ' + (state.fieldLabels['web.wholeNumber'] || 'Enter a whole number'));
+        }
+    }
+    var counts = ledCountIds.map(function (id) {
+        var value = document.getElementById(id).value;
+        if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value))) {
+            throw new Error(fieldLabel({id: id}) + ': ' + (state.fieldLabels['web.wholeNumber'] || 'Enter a whole number'));
+        }
+        return Number(value);
+    });
+    var bottom = document.getElementById('bottomRowLed').value;
+    if (!/^\d+$/.test(bottom) || !Number.isSafeInteger(Number(bottom))) {
+        throw new Error(fieldLabel({id: 'bottomRowLed'}) + ': ' + (state.fieldLabels['web.wholeNumber'] || 'Enter a whole number'));
+    }
+    var group = Number(document.getElementById('groupBy').value);
+    if (!Number.isInteger(group) || group < 1 || group > Math.min(...counts)) {
+        throw new Error(fieldLabel({id: 'groupBy'}) + ': ' + (state.fieldLabels['web.validGroup'] || 'Select a valid value'));
+    }
     var payload = {};
     sections.forEach(function (s) {
         s.fields.forEach(function (f) {
