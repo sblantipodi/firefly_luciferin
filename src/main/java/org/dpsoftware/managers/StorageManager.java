@@ -330,6 +330,8 @@ public class StorageManager {
                 restartReasons.add(LabelKey.TOOLTIP_MQTTPWD);
             if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice())
                 restartReasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
+            if (defaultConfig.isWebMcpServerEnabled() != profileConfig.isWebMcpServerEnabled())
+                restartReasons.add(LabelKey.TOOLTIP_WEB_MCP_SERVER);
             if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
                 restartReasons.add(LabelKey.TOOLTIP_MULTIMONITOR);
             if (defaultConfig.getSimdAvx() != profileConfig.getSimdAvx())

@@ -38,8 +38,14 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.basic.BasicMenuItemUI;
+import javax.swing.plaf.basic.BasicMenuUI;
+import javax.swing.plaf.basic.BasicPopupMenuUI;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.RoundRectangle2D;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -75,9 +81,11 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         css = loadColors(theme.getCssPath());
         setMenuItemStyle(null, null, null);
         GuiSingleton.getInstance().popupMenu = new JPopupMenu();
-        GuiSingleton.getInstance().popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, css.get(Constants.CSS_TRAY_MENU_BORDER)));
+        stylePopupMenu(GuiSingleton.getInstance().popupMenu);
         aspectRatioSubMenu = createSubMenuItem(CommonUtility.getWord(LabelKey.ASPECT_RATIO) + " ");
         profilesSubMenu = createSubMenuItem(CommonUtility.getWord(LabelKey.PROFILES) + " ");
+        stylePopupMenu(aspectRatioSubMenu.getPopupMenu());
+        stylePopupMenu(profilesSubMenu.getPopupMenu());
         initMenuListener();
     }
 
@@ -249,46 +257,21 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     }
 
     /**
-     * Populate tray with icons
+     * Paint a rounded highlight for an armed or selected menu item.
+     *
+     * @param g              graphics context
+     * @param item           menu item to highlight
+     * @param selectionColor highlight color from the theme
      */
-    private void populateTrayWithItems() {
-        // create menu item for the default action
-        GuiSingleton.getInstance().popupMenu.removeAll();
-        profilesSubMenu.removeAll();
-        aspectRatioSubMenu.removeAll();
-        if (MainSingleton.getInstance().RUNNING || ManagerSingleton.getInstance().pipelineStarting) {
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.STOP)));
-        } else {
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.START)));
+    private static void paintMenuSelection(Graphics g, JMenuItem item, Color selectionColor) {
+        if (!item.getModel().isArmed() && !item.getModel().isSelected()) {
+            return;
         }
-        if (MainSingleton.getInstance().config.isToggleLed()) {
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_OFF).toLowerCase())));
-        } else {
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_ON).toLowerCase())));
-        }
-        addSeparator();
-        populateAspectRatio();
-        aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, css.get(Constants.CSS_TRAY_MENU_BORDER)));
-        populateProfiles();
-        profilesSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, css.get(Constants.CSS_TRAY_MENU_BORDER)));
-        GuiSingleton.getInstance().popupMenu.add(aspectRatioSubMenu);
-        GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
-        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.SETTINGS)));
-        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.WEB_INTERFACE)));
-        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.INFO)));
-        if ((MainSingleton.getInstance().whoAmI == 1)) {
-            if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
-                addSeparator();
-                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.INSTALL_UPDATE)));
-            } else {
-                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.CHECK_UPDATE)));
-            }
-        }
-        addSeparator();
-        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.TRAY_EXIT)));
-        if (popupMenuHeight == 0) {
-            popupMenuHeight = GuiSingleton.getInstance().popupMenu.getPreferredSize().height;
-        }
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(selectionColor);
+        g2.fillRoundRect(2, 1, item.getWidth() - 4, item.getHeight() - 2, 10, 10);
+        g2.dispose();
     }
 
     /**
@@ -312,6 +295,47 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
             profilesSubMenu.add(createMenuItem(profile), index++);
         }
         profilesSubMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.DEFAULT)));
+    }
+
+    /**
+     * Populate tray with icons
+     */
+    private void populateTrayWithItems() {
+        // create menu item for the default action
+        GuiSingleton.getInstance().popupMenu.removeAll();
+        profilesSubMenu.removeAll();
+        aspectRatioSubMenu.removeAll();
+        if (MainSingleton.getInstance().RUNNING || ManagerSingleton.getInstance().pipelineStarting) {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.STOP)));
+        } else {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.START)));
+        }
+        if (MainSingleton.getInstance().config.isToggleLed()) {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_OFF).toLowerCase())));
+        } else {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_ON).toLowerCase())));
+        }
+        addSeparator();
+        populateAspectRatio();
+        populateProfiles();
+        GuiSingleton.getInstance().popupMenu.add(aspectRatioSubMenu);
+        GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.SETTINGS)));
+        if (MainSingleton.getInstance().config.isWebMcpServerEnabled()) {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.WEB_INTERFACE)));
+        }
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.INFO)));
+        if ((MainSingleton.getInstance().whoAmI == 1)) {
+            if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
+                addSeparator();
+                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.INSTALL_UPDATE)));
+            } else {
+                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.CHECK_UPDATE)));
+            }
+        }
+        addSeparator();
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(LabelKey.TRAY_EXIT)));
+        popupMenuHeight = GuiSingleton.getInstance().popupMenu.getPreferredSize().height;
     }
 
     /**
@@ -362,6 +386,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                     int screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
                     Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
                     Rectangle bounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().getBounds();
+                    populateTrayWithItems();
                     int popupMenuWidth = (int) GuiSingleton.getInstance().popupMenu.getPreferredSize().getWidth();
                     int popupMenuPositionX = scaleDownResolution(e.getX(), mainScreenOsScaling);
                     int popupMenuPositionY = scaleDownResolution(e.getY(), mainScreenOsScaling);
@@ -385,13 +410,13 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                     log.trace("Tray popup at ({},{}) | taskbar insets t={} b={} l={} r={} | screen {}x{} | bounds {}",
                             popupMenuPositionX, popupMenuPositionY, screenInsets.top, screenInsets.bottom, screenInsets.left, screenInsets.right,
                             screenWidth, screenHeight, bounds);
-                    populateTrayWithItems();
                     GuiSingleton.getInstance().popupMenu.setLocation(popupMenuPositionX, popupMenuPositionY);
                     hiddenDialog.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), scaleDownResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     GuiSingleton.getInstance().popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
                     GuiSingleton.getInstance().popupMenu.setVisible(true);
+                    clipPopupWindow(GuiSingleton.getInstance().popupMenu);
                 }
                 if (e.getButton() == MouseEvent.BUTTON2) {
                     manageOnOff();
@@ -416,14 +441,19 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      */
     public JMenuItem createMenuItem(String menuLabel) {
         final JMenuItem jMenuItem = new JMenuItem(menuLabel);
-        jMenuItem.setOpaque(true);
+        jMenuItem.setUI(new BasicMenuItemUI() {
+            @Override
+            protected void paintBackground(Graphics g, JMenuItem item, Color background) {
+                paintMenuSelection(g, item, css.get(Constants.CSS_TRAY_ITEM_SELECTIONBACKGROUND));
+            }
+        });
+        jMenuItem.setOpaque(false);
         Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
-        Font f = new Font(Constants.TRAY_MENU_FONT_TYPE, Font.BOLD, Constants.TRAY_MENU_FONT_SIZE);
+        Font f = new Font(Constants.TRAY_MENU_FONT_TYPE, Font.BOLD, Constants.TRAY_MENU_FONT_SIZE + 1);
         jMenuItem.setFont(f);
         setMenuItemStyle(menuLabel, jMenuItem, menuItemText);
-        jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 7, css.get(Constants.CSS_TRAY_ITEM_BORDER)));
-        jMenuItem.setBorderPainted(false);
+        jMenuItem.setBorder(new EmptyBorder(5, 13, 5, 11));
         jMenuItem.addActionListener(menuListener);
         jMenuItem.setBackground(css.get("tray_background"));
         return jMenuItem;
@@ -437,14 +467,19 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      */
     public JMenu createSubMenuItem(String menuLabel) {
         final JMenu menu = new JMenu(menuLabel);
-        menu.setOpaque(true);
+        menu.setUI(new BasicMenuUI() {
+            @Override
+            protected void paintBackground(Graphics g, JMenuItem item, Color background) {
+                paintMenuSelection(g, item, css.get(Constants.CSS_TRAY_SELECTIONBACKGROUND));
+            }
+        });
+        menu.setOpaque(false);
         Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : menu.getText();
-        Font f = new Font(Constants.TRAY_MENU_FONT_TYPE, Font.BOLD, Constants.TRAY_MENU_FONT_SIZE);
+        Font f = new Font(Constants.TRAY_MENU_FONT_TYPE, Font.BOLD, Constants.TRAY_MENU_FONT_SIZE + 1);
         menu.setFont(f);
         setMenuItemStyle(menuLabel, menu, menuItemText);
-        menu.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 7, css.get(Constants.CSS_TRAY_ITEM_BORDER)));
-        menu.setBorderPainted(false);
+        menu.setBorder(new EmptyBorder(5, 13, 5, 11));
         menu.setBackground(css.get("tray_background"));
         return menu;
     }
@@ -453,12 +488,74 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      * Add a separator between menuitems
      */
     private void addSeparator() {
-        JSeparator s = new JSeparator();
-        s.setOrientation(JSeparator.HORIZONTAL);
-        s.setBackground(css.get("tray_separator"));
-        s.setForeground(css.get("tray_separator"));
-        s.setBorder(new EmptyBorder(0, 0, 0, 0));
+        JSeparator s = new JSeparator() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(css.get("tray_separator"));
+                g.drawLine(12, getHeight() / 2, getWidth() - 13, getHeight() / 2);
+            }
+        };
+        s.setOpaque(false);
+        s.setBorder(new EmptyBorder(5, 0, 5, 0));
         GuiSingleton.getInstance().popupMenu.add(s);
+    }
+
+    /**
+     * Paint the popup with the theme background and rounded corners.
+     *
+     * @param popupMenu menu to style
+     */
+    private void stylePopupMenu(JPopupMenu popupMenu) {
+        popupMenu.setUI(new BasicPopupMenuUI() {
+            @Override
+            public void paint(Graphics g, JComponent component) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(css.get("tray_background"));
+                g2.fillRoundRect(0, 0, component.getWidth(), component.getHeight(), 14, 14);
+                g2.dispose();
+            }
+        });
+        popupMenu.setOpaque(false);
+        popupMenu.setBackground(css.get("tray_background"));
+        popupMenu.setBorder(new EmptyBorder(6, 6, 6, 6));
+        popupMenu.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent event) {
+                SwingUtilities.invokeLater(() -> clipPopupWindow(popupMenu));
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent event) {
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent event) {
+            }
+        });
+    }
+
+    /**
+     * Clip the popup's native window so its corners do not show the window background.
+     *
+     * @param popupMenu visible popup whose window should be clipped
+     */
+    private void clipPopupWindow(JPopupMenu popupMenu) {
+        Window window = SwingUtilities.getWindowAncestor(popupMenu);
+        if (!(window instanceof JWindow) || !popupMenu.isShowing() || window.getWidth() < 1 || window.getHeight() < 1) {
+            return;
+        }
+        GraphicsDevice device = window.getGraphicsConfiguration().getDevice();
+        popupMenu.setOpaque(false);
+        if (device.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.PERPIXEL_TRANSLUCENT)) {
+            window.setBackground(new Color(0, 0, 0, 0));
+        }
+        if (device.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.PERPIXEL_TRANSPARENT)) {
+            window.setShape(new RoundRectangle2D.Float(0, 0, window.getWidth(), window.getHeight(), 14, 14));
+        } else {
+            // Keep the CSS background in the corners on systems without shaped windows.
+            popupMenu.setOpaque(true);
+        }
     }
 
     /**

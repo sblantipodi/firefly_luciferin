@@ -21,13 +21,16 @@
 */
 package org.dpsoftware.gui;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.Region;
@@ -36,6 +39,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -57,7 +61,10 @@ import java.util.Optional;
  * Alerts, notifications, web content, and secondary dialogs.
  */
 @Slf4j
-class DialogManager {
+public class DialogManager {
+
+    private static final String FADE_DIALOG_ON_CLOSE = "fadeDialogOnClose";
+    private static final String FADE_DIALOG_CLOSING = "fadeDialogClosing";
 
     private final GuiManager guiManager;
     private final WebView wv;
@@ -348,6 +355,27 @@ class DialogManager {
     }
 
     /**
+     * Fade out a secondary dialog before closing it, if fading is enabled for its root.
+     *
+     * @param stage stage requested to close
+     * @return {@code true} if this dialog handles its own close, {@code false} otherwise
+     */
+    public static boolean fadeOutAndClose(Stage stage) {
+        Node root = stage.getScene().getRoot();
+        if (!Boolean.TRUE.equals(root.getProperties().get(FADE_DIALOG_ON_CLOSE))) {
+            return false;
+        }
+        if (!Boolean.TRUE.equals(root.getProperties().get(FADE_DIALOG_CLOSING))) {
+            root.getProperties().put(FADE_DIALOG_CLOSING, true);
+            FadeTransition fade = new FadeTransition(Duration.millis(190), root);
+            fade.setToValue(0);
+            fade.setOnFinished(_ -> stage.close());
+            fade.play();
+        }
+        return true;
+    }
+
+    /**
      * Show a secondary stage dialog
      *
      * @param classForCast controller class used to initialize the dialog
@@ -412,10 +440,25 @@ class DialogManager {
         Stage stage = initStage(root);
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setAlwaysOnTop(true);
+        root.getProperties().put(FADE_DIALOG_ON_CLOSE, true);
+        root.setOpacity(0);
+        stage.setOnShown(_ -> {
+            FadeTransition fade = new FadeTransition(Duration.millis(240), root);
+            fade.setToValue(1);
+            fade.play();
+        });
         Platform.runLater(() -> {
             Stage parentStage = guiManager.getStage(Constants.FXML_SETTINGS);
             stage.setX(parentStage.getX() + (parentStage.getWidth() / 2) - (stage.getWidth() / 2));
-            stage.setY(parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2));
+            double dialogY = parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2);
+            Node tabHeader = settingsController.mainTabPane.lookup(".tab-header-area");
+            if (tabHeader != null) {
+                Bounds headerBounds = tabHeader.localToScreen(tabHeader.getBoundsInLocal());
+                if (headerBounds != null) {
+                    dialogY = Math.max(dialogY, headerBounds.getMaxY() + 20);
+                }
+            }
+            stage.setY(dialogY);
         });
         stage.showAndWait();
     }

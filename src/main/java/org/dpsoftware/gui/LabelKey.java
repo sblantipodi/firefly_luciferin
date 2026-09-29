@@ -188,6 +188,7 @@ public final class LabelKey {
     public static final String TOOLTIP_MQTTSTREAM = "tooltip.mqttstream";
     public static final String TOOLTIP_STREAMTYPE = "tooltip.streamtype";
     public static final String TOOLTIP_START_WITH_SYSTEM = "tooltip.start.with.system";
+    public static final String TOOLTIP_WEB_MCP_SERVER = "tooltip.web.mcp.server";
     public static final String TOOLTIP_CHECK_UPDATES = "tooltip.check.updates";
     public static final String TOOLTIP_PLAYBUTTON_NULL = "tooltip.playbutton.null";
     public static final String TOOLTIP_SYNC_CHECK = "tooltip.sync.check";

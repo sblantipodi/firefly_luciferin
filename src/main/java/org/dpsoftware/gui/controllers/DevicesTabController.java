@@ -28,7 +28,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
-import javafx.scene.layout.RowConstraints;
+import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -42,14 +42,12 @@ import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.NetworkManager;
+import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -60,7 +58,7 @@ public class DevicesTabController {
 
     // FXML binding
     @FXML
-    public CheckBox checkForUpdates;
+    public ComboBox<String> baudRate;
     @FXML
     public CheckBox multiScreenSingleDevice;
     @FXML
@@ -72,16 +70,12 @@ public class DevicesTabController {
     @FXML
     public ComboBox<String> multiMonitor;
     @FXML
-    public CheckBox syncCheck;
+    public ComboBox<String> serialPort; // For multi display this contains the MQTT device name to stream to
     @FXML
     public TableColumn<GlowWormDevice, String> gpioClockColumn;
     @FXML
-    public CheckBox startWithSystem;
+    public Label comWirelessLabel;
     boolean cellEdit = false;
-    @FXML
-    RowConstraints runLoginRow;
-    @FXML
-    Label runAtLoginLabel;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -213,12 +207,9 @@ public class DevicesTabController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
-        if (NativeExecutor.isLinux()) {
-            runLoginRow.setPrefHeight(0);
-            runLoginRow.setMinHeight(0);
-            runLoginRow.setPercentHeight(0);
-            runAtLoginLabel.setVisible(false);
-            startWithSystem.setVisible(false);
+        if (MainSingleton.getInstance().config != null && CommonUtility.isSingleDeviceOtherInstance()) {
+            baudRate.setDisable(true);
+            serialPort.setDisable(true);
         }
     }
 
@@ -424,13 +415,14 @@ public class DevicesTabController {
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
         powerSaving.setValue(Enums.PowerSaving.MINUTES_30.getI18n());
         multiMonitor.setValue(CommonUtility.getWord(LabelKey.MULTIMONITOR_1));
-        checkForUpdates.setSelected(true);
-        syncCheck.setSelected(true);
+        comWirelessLabel.setText(CommonUtility.getWord(LabelKey.SERIAL_PORT));
+        baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
+        baudRate.setDisable(true);
+        serialPort.setValue(Constants.SERIAL_PORT_AUTO);
         multiScreenSingleDevice.setSelected(false);
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
         deviceTable.setPlaceholder(new Label(CommonUtility.getWord(LabelKey.NO_DEVICE_FOUND)));
-        startWithSystem.setSelected(true);
     }
 
     /**
@@ -439,9 +431,24 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        if (NativeExecutor.isWindows()) {
-            startWithSystem.setSelected(MainSingleton.getInstance().config.isStartWithSystem());
+        if ((currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3)
+                && serialPort.getItems() != null && !serialPort.getItems().isEmpty()) {
+            serialPort.getItems().removeFirst();
         }
+        if (currentConfig.isWirelessStream() && Constants.SERIAL_PORT_AUTO.equals(currentConfig.getOutputDevice())
+                && ((currentConfig.getMultiMonitor() == 1) || currentConfig.isMultiScreenSingleDevice())) {
+            if (NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
+                serialPort.setValue(MainSingleton.getInstance().config.getStaticGlowWormIp());
+            } else {
+                serialPort.setValue(MainSingleton.getInstance().config.getOutputDevice());
+            }
+        } else if (NetworkManager.isValidIp(currentConfig.getStaticGlowWormIp())) {
+            serialPort.setValue(currentConfig.getStaticGlowWormIp());
+        } else {
+            serialPort.setValue(currentConfig.getOutputDevice());
+        }
+        baudRate.setValue(currentConfig.getBaudRate());
+        baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         evaluateSatelliteBtn(currentConfig.isFullFirmware());
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
@@ -457,9 +464,7 @@ public class DevicesTabController {
         }
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
-        checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
         multiScreenSingleDevice.setSelected(CommonUtility.isSingleDeviceMultiScreen());
-        syncCheck.setSelected(currentConfig.isSyncCheck());
     }
 
     /**
@@ -475,9 +480,72 @@ public class DevicesTabController {
      * Init combo boxes
      */
     void initComboBox() {
+        for (Enums.BaudRate br : Enums.BaudRate.values()) {
+            baudRate.getItems().add(br.getBaudRate());
+        }
         for (Enums.PowerSaving pwr : Enums.PowerSaving.values()) {
             powerSaving.getItems().add(pwr.getI18n());
         }
+    }
+
+    /**
+     * Keep the output device choices in sync with the monitor count.
+     */
+    void initListeners() {
+        serialPort.valueProperty().addListener((_, oldVal, newVal) -> {
+            if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
+                settingsController.checkProfileDifferences();
+            }
+        });
+        multiMonitor.valueProperty().addListener((_, _, value) -> {
+            if (!serialPort.isFocused()) {
+                if (!value.equals(CommonUtility.getWord(LabelKey.MULTIMONITOR_1))) {
+                    if (!serialPort.getItems().isEmpty() && serialPort.getItems().getFirst().equals(Constants.SERIAL_PORT_AUTO)) {
+                        serialPort.getItems().removeFirst();
+                        if (NativeExecutor.isWindows()) {
+                            serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
+                        } else {
+                            serialPort.setValue(Constants.SERIAL_PORT_TTY + 1);
+                        }
+                    }
+                } else if (!serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
+                    serialPort.getItems().addFirst(Constants.SERIAL_PORT_AUTO);
+                }
+            }
+        });
+    }
+
+    /**
+     * Highlight available serial ports in the output device chooser.
+     */
+    void setSerialPortAvailableCombo() {
+        SerialManager serialManager = new SerialManager();
+        Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
+        serialPort.setCellFactory(new Callback<>() {
+            @Override
+            public ListCell<String> call(ListView<String> param) {
+                return new ListCell<>() {
+                    @Override
+                    public void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item != null) {
+                            setText(item);
+                            this.getStyleClass().remove(Constants.CSS_CLASS_BOLD);
+                            availableDevices.forEach((portName, isAvailable) -> {
+                                if (item.contains(portName) && isAvailable) {
+                                    this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
+                                } else if (item.contains(portName) && !isAvailable) {
+                                    this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
+                                    this.getStyleClass().add(Constants.CSS_CLASS_RED);
+                                }
+                            });
+                        } else {
+                            setText(null);
+                        }
+                    }
+                };
+            }
+        });
     }
 
     /**
@@ -578,11 +646,18 @@ public class DevicesTabController {
      */
     @FXML
     public void save(Configuration config) {
+        serialPort.commitValue();
+        if (NetworkManager.isValidIp(serialPort.getValue())) {
+            config.setOutputDevice(Constants.DASH);
+            config.setStaticGlowWormIp(serialPort.getValue());
+        } else {
+            config.setOutputDevice(serialPort.getValue());
+            config.setStaticGlowWormIp(Constants.DASH);
+        }
+        config.setBaudRate(baudRate.getValue());
         config.setPowerSaving(LocalizedEnum.fromStr(Enums.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
         config.setMultiMonitor(multiMonitor.getSelectionModel().getSelectedIndex() + 1);
-        config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setMultiScreenSingleDevice(multiScreenSingleDevice.isSelected());
-        config.setSyncCheck(syncCheck.isSelected());
     }
 
     /**
@@ -602,13 +677,10 @@ public class DevicesTabController {
         GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_BTN, manageSatButton);
         GuiManager.createTooltip(LabelKey.TOOLTIP_POWER_SAVING, powerSaving);
         GuiManager.createTooltip(LabelKey.TOOLTIP_MULTIMONITOR, multiMonitor);
-        GuiManager.createTooltip(LabelKey.TOOLTIP_CHECK_UPDATES, checkForUpdates);
-        GuiManager.createTooltip(LabelKey.TOOLTIP_SYNC_CHECK, syncCheck);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SERIALPORT, serialPort);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BAUD_RATE, baudRate);
         if (currentConfig == null) {
             GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
-        }
-        if (NativeExecutor.isWindows()) {
-            GuiManager.createTooltip(LabelKey.TOOLTIP_START_WITH_SYSTEM, startWithSystem);
         }
     }
 

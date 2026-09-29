@@ -148,8 +148,9 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             populateProfiles();
             // Settings menu item
             addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.SETTINGS), this::settingsAction);
-            // Web Interface menu item
-            addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.WEB_INTERFACE), this::webInterfaceAction);
+            if (MainSingleton.getInstance().config.isWebMcpServerEnabled()) {
+                addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.WEB_INTERFACE), this::webInterfaceAction);
+            }
             // Info menu item
             addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.INFO), this::infoAction);
             // Upgrade menu item

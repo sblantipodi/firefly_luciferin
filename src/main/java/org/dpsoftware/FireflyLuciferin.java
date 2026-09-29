@@ -305,8 +305,12 @@ public class FireflyLuciferin extends Application {
         storageManager.updateConfigFile(main.getConfig());
         setRuntimeLogLevel();
         if (main.whoAmI == 1) {
-            mcpServer.start();
-            configServer.start();
+            if (main.getConfig().isWebMcpServerEnabled()) {
+                mcpServer.start();
+            }
+            if (main.getConfig().isWebMcpServerEnabled() || main.isHeadlessMode()) {
+                configServer.start();
+            }
         }
         // Manage tray icon and framerate dialog
         main.guiManager = new GuiManager(true);

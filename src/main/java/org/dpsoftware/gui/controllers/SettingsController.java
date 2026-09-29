@@ -31,7 +31,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
@@ -249,62 +248,12 @@ public class SettingsController {
      * Init all the settings listener
      */
     private void initListeners() {
-        CommonUtility.delayMilliseconds(this::setSerialPortAvailableCombo, 10);
+        CommonUtility.delayMilliseconds(devicesTabController::setSerialPortAvailableCombo, 10);
         networkTabController.initListeners();
         modeTabController.initListeners();
+        devicesTabController.initListeners();
         miscTabController.initListeners(currentConfig);
         ledsConfigTabController.initListeners();
-        devicesTabController.multiMonitor.valueProperty().addListener((_, _, value) -> {
-            if (!modeTabController.serialPort.isFocused()) {
-                if (!value.equals(CommonUtility.getWord(LabelKey.MULTIMONITOR_1))) {
-                    if (!modeTabController.serialPort.getItems().isEmpty() && modeTabController.serialPort.getItems().getFirst().equals(Constants.SERIAL_PORT_AUTO)) {
-                        modeTabController.serialPort.getItems().removeFirst();
-                        if (NativeExecutor.isWindows()) {
-                            modeTabController.serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
-                        } else {
-                            modeTabController.serialPort.setValue(Constants.SERIAL_PORT_TTY + 1);
-                        }
-                    }
-                } else {
-                    if (!modeTabController.serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
-                        modeTabController.serialPort.getItems().addFirst(Constants.SERIAL_PORT_AUTO);
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Add bold style to the available serial ports
-     */
-    void setSerialPortAvailableCombo() {
-        SerialManager serialManager = new SerialManager();
-        Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
-        modeTabController.serialPort.setCellFactory(new Callback<>() {
-            @Override
-            public ListCell<String> call(ListView<String> param) {
-                return new ListCell<>() {
-                    @Override
-                    public void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (item != null) {
-                            setText(item);
-                            this.getStyleClass().remove(Constants.CSS_CLASS_BOLD);
-                            availableDevices.forEach((portName, isAvailable) -> {
-                                if (item.contains(portName) && isAvailable) {
-                                    this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
-                                } else if (item.contains(portName) && !isAvailable) {
-                                    this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
-                                    this.getStyleClass().add(Constants.CSS_CLASS_RED);
-                                }
-                            });
-                        } else {
-                            setText(null);
-                        }
-                    }
-                };
-            }
-        });
     }
 
     /**
@@ -415,8 +364,8 @@ public class SettingsController {
             Configuration mainConfig = sm.readMainConfig();
             mainConfig.setGamma(config.getGamma());
             mainConfig.setWhiteTemperature(config.getWhiteTemperature());
-            mainConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
-            mainConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
+            mainConfig.setCheckForUpdates(modeTabController.checkForUpdates.isSelected());
+            mainConfig.setSyncCheck(modeTabController.syncCheck.isSelected());
             setConfig(config, mainConfig);
             sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
         }
@@ -456,7 +405,7 @@ public class SettingsController {
      */
     private void saveExitRestart(InputEvent e, Configuration config) throws IOException {
         String oldBaudrate = currentConfig.getBaudRate();
-        boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
+        boolean isBaudRateChanged = !devicesTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
         if (isBaudRateChanged || isMqttParamChanged()) {
             programFirmware(config, e, oldBaudrate, isBaudRateChanged, isMqttParamChanged());
         } else if (MainSingleton.getInstance().isRestartNeeded()) {
@@ -501,15 +450,7 @@ public class SettingsController {
      */
     void setCaptureMethod(Configuration config) {
         config.setCaptureMethod(modeTabController.captureMethod.getValue().name());
-        if (NativeExecutor.isWindows()) {
-            NativeExecutor nativeExecutor = new NativeExecutor();
-            if (devicesTabController.startWithSystem.isSelected()) {
-                nativeExecutor.writeRegistryKey();
-            } else {
-                nativeExecutor.deleteRegistryKey();
-            }
-            config.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
-        }
+        modeTabController.saveStartupPreference(config);
     }
 
     /**
@@ -525,11 +466,11 @@ public class SettingsController {
         AtomicReference<String> macToProgram = new AtomicReference<>("");
         if (currentConfig.isFullFirmware()) {
             if (GuiSingleton.getInstance().deviceTableData != null && !GuiSingleton.getInstance().deviceTableData.isEmpty()) {
-                if (Constants.SERIAL_PORT_AUTO.equals(modeTabController.serialPort.getValue())) {
+                if (Constants.SERIAL_PORT_AUTO.equals(devicesTabController.serialPort.getValue())) {
                     macToProgram.set(GuiSingleton.getInstance().deviceTableData.getFirst().getMac());
                 }
                 GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
-                    if (glowWormDevice.getDeviceName().equals(modeTabController.serialPort.getValue()) || glowWormDevice.getDeviceIP().equals(modeTabController.serialPort.getValue())) {
+                    if (glowWormDevice.getDeviceName().equals(devicesTabController.serialPort.getValue()) || glowWormDevice.getDeviceIP().equals(devicesTabController.serialPort.getValue())) {
                         macToProgram.set(glowWormDevice.getMac());
                     }
                 });
@@ -546,7 +487,7 @@ public class SettingsController {
                 if (currentConfig.isFullFirmware()) {
                     setFirmwareConfig(macToProgram.get(), true);
                 } else {
-                    MainSingleton.getInstance().baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
+                    MainSingleton.getInstance().baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + devicesTabController.baudRate.getValue()).getBaudRateValue();
                     SerialManager serialManager = new SerialManager();
                     serialManager.sendSerialParams((int) (miscTabController.colorPicker.getValue().getRed() * 255),
                             (int) (miscTabController.colorPicker.getValue().getGreen() * 255),
@@ -555,7 +496,7 @@ public class SettingsController {
                 exit(e);
             } else if (button == ButtonType.CANCEL) {
                 config.setBaudRate(oldBaudrate);
-                modeTabController.baudRate.setValue(oldBaudrate);
+                devicesTabController.baudRate.setValue(oldBaudrate);
                 sm.writeConfig(config, null);
             }
         } else if (isMqttParamChanged) {
@@ -590,7 +531,7 @@ public class SettingsController {
             firmwareConfigDto.setAdditionalParam(device.getGpio());
             firmwareConfigDto.setColorMode(String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1));
             if (changeBaudrate) {
-                firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
+                firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(devicesTabController.baudRate.getValue()).getBaudRateValue());
             } else if (device.getBaudRate() != null) {
                 if (device.getBaudRate().isEmpty()) {
                     firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(MainSingleton.getInstance().config.getBaudRate()).getBaudRateValue());
@@ -635,8 +576,8 @@ public class SettingsController {
     void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException {
         Configuration otherConfig = sm.readConfigFile(otherConfigFilename);
         if (otherConfig != null) {
-            otherConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
-            otherConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
+            otherConfig.setCheckForUpdates(modeTabController.checkForUpdates.isSelected());
+            otherConfig.setSyncCheck(modeTabController.syncCheck.isSelected());
             otherConfig.setLanguage(currentConfig.getLanguage());
             otherConfig.setTheme(config.getTheme());
             otherConfig.setLanguage(config.getLanguage());
@@ -666,7 +607,7 @@ public class SettingsController {
         otherConfig.setAudioChannels(config.getAudioChannels());
         otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
         if (NativeExecutor.isWindows()) {
-            otherConfig.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
+            otherConfig.setStartWithSystem(modeTabController.startWithSystem.isSelected());
         }
         if (config.isMultiScreenSingleDevice() && config.getMultiMonitor() > 1) {
             otherConfig.setOutputDevice(config.getOutputDevice());
@@ -692,6 +633,7 @@ public class SettingsController {
         }
         otherConfig.setCheckForUpdates(config.isCheckForUpdates());
         otherConfig.setSyncCheck(config.isSyncCheck());
+        otherConfig.setWebMcpServerEnabled(config.isWebMcpServerEnabled());
     }
 
     /**
@@ -729,21 +671,21 @@ public class SettingsController {
      */
     public void initOutputDeviceChooser(boolean initCaptureMethod) {
         if (!networkTabController.mqttStream.isSelected()) {
-            String deviceInUse = modeTabController.serialPort.getValue();
-            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(LabelKey.OUTPUT_DEVICE));
-            modeTabController.serialPort.getItems().clear();
-            modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
+            String deviceInUse = devicesTabController.serialPort.getValue();
+            devicesTabController.comWirelessLabel.setText(CommonUtility.getWord(LabelKey.OUTPUT_DEVICE));
+            devicesTabController.serialPort.getItems().clear();
+            devicesTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
             SerialManager serialManager = new SerialManager();
             Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
-            availableDevices.forEach((portName, _) -> modeTabController.serialPort.getItems().add(portName));
-            modeTabController.serialPort.setValue(deviceInUse);
+            availableDevices.forEach((portName, _) -> devicesTabController.serialPort.getItems().add(portName));
+            devicesTabController.serialPort.setValue(deviceInUse);
         } else {
-            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(LabelKey.OUTPUT_DEVICE));
-            if (!modeTabController.serialPort.isFocused()) {
-                String deviceInUse = modeTabController.serialPort.getValue();
-                modeTabController.serialPort.getItems().clear();
-                GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> modeTabController.serialPort.getItems().add(glowWormDevice.getDeviceName()));
-                modeTabController.serialPort.setValue(deviceInUse);
+            devicesTabController.comWirelessLabel.setText(CommonUtility.getWord(LabelKey.OUTPUT_DEVICE));
+            if (!devicesTabController.serialPort.isFocused()) {
+                String deviceInUse = devicesTabController.serialPort.getValue();
+                devicesTabController.serialPort.getItems().clear();
+                GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> devicesTabController.serialPort.getItems().add(glowWormDevice.getDeviceName()));
+                devicesTabController.serialPort.setValue(deviceInUse);
             }
         }
         if (initCaptureMethod) {
@@ -752,11 +694,11 @@ public class SettingsController {
         if (MainSingleton.getInstance().config != null) {
             if ((MainSingleton.getInstance().config.isWirelessStream() && !networkTabController.mqttStream.isSelected())
                     || (!MainSingleton.getInstance().config.isWirelessStream() && networkTabController.mqttStream.isSelected())) {
-                modeTabController.serialPort.setValue(Constants.SERIAL_PORT_AUTO);
+                devicesTabController.serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             }
-            if (!modeTabController.serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)
+            if (!devicesTabController.serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)
                     && MainSingleton.getInstance().config.getMultiMonitor() == 1) {
-                modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
+                devicesTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
             }
         }
         modeTabController.setCaptureMethodConverter();
@@ -1050,6 +992,8 @@ public class SettingsController {
                 currentSettingsInUse.setMultiMonitor(1);
             }
             currentSettingsInUse.setMultiScreenSingleDevice(devicesTabController.multiScreenSingleDevice.isSelected());
+            currentSettingsInUse.setBaudRate(devicesTabController.baudRate.getValue());
+            currentSettingsInUse.setOutputDevice(devicesTabController.serialPort.getValue());
         }
     }
 
@@ -1079,14 +1023,13 @@ public class SettingsController {
     private void setModeTabParams(Configuration currentSettingsInUse) {
         if (currentSettingsInUse != null) {
             currentSettingsInUse.setTheme(modeTabController.theme.getValue());
-            currentSettingsInUse.setBaudRate(modeTabController.baudRate.getValue());
             currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
             currentSettingsInUse.setLanguage(modeTabController.language.getValue());
             currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
             if (modeTabController.captureMethod.getValue() != null)
                 currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
-            currentSettingsInUse.setOutputDevice(modeTabController.serialPort.getValue());
             currentSettingsInUse.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, modeTabController.simdOption.getValue()).getSimdOptionNumeric());
+            currentSettingsInUse.setWebMcpServerEnabled(modeTabController.webMcpServerEnabled.isSelected());
         }
     }
 
