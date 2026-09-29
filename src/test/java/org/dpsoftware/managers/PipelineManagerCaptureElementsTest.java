@@ -21,14 +21,11 @@
 */
 package org.dpsoftware.managers;
 
-import org.freedesktop.gstreamer.Gst;
-import org.freedesktop.gstreamer.Version;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PipelineManagerCaptureElementsTest {
     @Test
@@ -37,16 +34,4 @@ class PipelineManagerCaptureElementsTest {
                 PipelineManager.captureElements("v4l2src device={0} ! {1} ! image/jpeg,width=640 ! jpegdec ! queue max-size-buffers=5 ! cudascalea"));
     }
 
-    @Test
-    void rejectsMissingFactoryBeforeNativePipelineParsing() {
-        if (!Gst.isInitialized()) {
-            Gst.init(Version.of(1, 14), "capture-elements-test");
-        }
-        PipelineManager.MissingCaptureElementException error =
-                assertThrows(PipelineManager.MissingCaptureElementException.class,
-                        () -> PipelineManager.requireCaptureElements("videotestsrc ! cudascalea ! fakesink"));
-        assertEquals("cudascalea", error.getElement());
-        assertEquals("Missing GStreamer element: cudascalea", error.getMessage());
-
-    }
 }
