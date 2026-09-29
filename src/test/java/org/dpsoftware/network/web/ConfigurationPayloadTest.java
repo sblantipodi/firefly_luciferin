@@ -234,6 +234,33 @@ class ConfigurationPayloadTest {
     }
 
     /**
+     * Checks satellite additions, base-value storage and removal through the web payload.
+     */
+    @Test
+    void savesSatelliteRows() throws IOException {
+        Configuration saved = savedConfig();
+        var original = new org.dpsoftware.gui.elements.Satellite("Top", "Normal", "2",
+                "192.168.1.20", "Old satellite", "Average color");
+        saved.getSatellites().put(original.getDeviceIp(), original);
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        ObjectNode satellites = payload.putObject("satellites");
+        satellites.putObject("192.168.1.21")
+                .put("deviceIp", "192.168.1.21")
+                .put("zone", Enums.PossibleZones.TOP.getBaseI18n())
+                .put("orientation", Enums.Direction.NORMAL.getBaseI18n())
+                .put("ledNum", "3")
+                .put("algo", Enums.Algo.AVG_COLOR.getBaseI18n());
+
+        Configuration updated = ConfigurationPayload.apply(payload, saved);
+
+        assertEquals(1, updated.getSatellites().size());
+        assertEquals("3", updated.getSatellites().get("192.168.1.21").getLedNum());
+        assertTrue(ConfigurationPayload.toWebConfig(updated).path("satellites").has("192.168.1.21"));
+        satellites.remove("192.168.1.21");
+        assertTrue(ConfigurationPayload.apply(payload, saved).getSatellites().isEmpty());
+    }
+
+    /**
      * Checks that web adaptive gamma changes use the dialog's stored level format.
      */
     @Test

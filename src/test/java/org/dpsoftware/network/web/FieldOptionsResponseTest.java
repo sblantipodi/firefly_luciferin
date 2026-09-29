@@ -48,6 +48,9 @@ class FieldOptionsResponseTest {
         assertNotNull(response.get("options").get("gammaLevel"));
         assertTrue(response.get("options").get("cubeLut").get("options").size() > 1);
         assertTrue(response.get("options").get("multiMonitor").get("options").size() >= 1);
+        assertTrue(response.get("options").get("satelliteZone").get("options").size() > 1);
+        assertTrue(response.get("options").get("satelliteOrientation").get("options").size() > 1);
+        assertNotNull(response.get("labels").get("satelliteAdd"));
         assertNotNull(response.get("labels").get("enableAutomaticGamma"));
         assertNotNull(CommonUtility.JSON_MAPPER.writeValueAsString(response));
     }

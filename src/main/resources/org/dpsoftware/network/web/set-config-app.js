@@ -6,16 +6,18 @@ import {buildForm, collectPayload, fillForm} from './set-config-core.js';
 import {
     applyAutoOutputDevice,
     initColorPicker,
+    initializeSatellites,
     refreshDevices,
     refreshSerialPortSuggestions,
-    syncDeviceFromPrefs
+    syncDeviceFromPrefs,
+    wireSatellites
 } from './set-config-device.js';
 import {addProfile, renderProfiles} from './set-config-profiles.js';
 import {wireLivePreviewButton} from './set-config-preview.js';
 import {pollServerStatus} from './set-config-status.js';
 import {showToast} from './set-config-ui.js';
 
-// Collects the form payload and POSTs it to 'setConfig'; on success the server restarts to apply the settings.
+// Collects and saves the form, returning whether the request succeeded before the server restarts.
 function saveForm() {
     var payload;
     try {
@@ -23,14 +25,14 @@ function saveForm() {
     } catch (e) {
         showToast((state.fieldLabels['web.collectError'] || 'Invalid value:') + ' ' + e.message, 'bg-danger text-white');
         console.error('collectPayload failed', e);
-        return;
+        return Promise.resolve(false);
     }
     if (!confirm(state.fieldLabels['web.restartConfirm'] || 'Luciferin needs to restart to apply these settings. Proceed?')) {
-        return;
+        return Promise.resolve(false);
     }
     var body = JSON.stringify(payload);
     console.log('saveForm POST setConfig, body length', body.length);
-    fetch('setConfig', {
+    return fetch('setConfig', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: body
@@ -40,10 +42,12 @@ function saveForm() {
                 throw new Error(t || r.statusText);
             }
             showToast(state.fieldLabels['web.settingsSaved'] || 'Settings saved', 'bg-success text-white');
+            return true;
         });
     }).catch(function (err) {
         showToast('Error: ' + err.message, 'bg-danger text-white');
         console.error('saveForm failed', err);
+        return false;
     });
 }
 
@@ -443,6 +447,7 @@ $(function () {
         document.getElementById('mqttEnable').addEventListener('change', syncMqttDiscoveryButtons);
         syncMqttDiscoveryButtons();
         wireProvisioning();
+        wireSatellites();
         document.getElementById('effect').addEventListener('change', syncMiscEffectFields);
         document.getElementById('enableAutomaticGamma').addEventListener('change', function (event) {
             syncGammaControls();
@@ -459,6 +464,7 @@ $(function () {
     }).then(function (cfg) {
         state.lastConfig = cfg || {};
         fillForm(cfg);
+        initializeSatellites(cfg);
         syncSingleDeviceAvailability();
         refreshSerialPortSuggestions();
         syncMiscEffectFields();

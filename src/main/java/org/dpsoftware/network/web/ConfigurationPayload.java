@@ -25,11 +25,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.options.*;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -73,6 +76,7 @@ final class ConfigurationPayload {
         ObjectNode configTree = CommonUtility.JSON_MAPPER.valueToTree(savedConfig);
         for (Map.Entry<String, JsonNode> entry : payload.properties()) {
             if (!EXCLUDED_FIELDS.contains(entry.getKey()) && !entry.getKey().equals("captureDeviceName")
+                    && !entry.getKey().equals("satellites")
                     && !entry.getValue().isNull()) {
                 configTree.set(entry.getKey(), entry.getValue());
             }
@@ -117,6 +121,10 @@ final class ConfigurationPayload {
         }
         if (payload.has(WebFieldNames.CUBE_LUT)) {
             updatedConfig.setCubeLut(DisplayDialogOptions.selectedLut(payload.path(WebFieldNames.CUBE_LUT).asText()));
+        }
+        if (payload.has("satellites")) {
+            SatellitesOptions.apply(updatedConfig, satelliteRows(payload.get("satellites")),
+                    GuiSingleton.getInstance().deviceTableData);
         }
         if (payload.has(WebFieldNames.ENABLE_AUTOMATIC_GAMMA) || payload.has(WebFieldNames.GAMMA_LEVEL)) {
             GammaOptions.apply(updatedConfig, updatedConfig.isEnableAutomaticGamma(), updatedConfig.getGammaLevel());
@@ -225,6 +233,31 @@ final class ConfigurationPayload {
     private static boolean validMqttPort(String server) {
         int port = Integer.parseInt(server.substring(server.lastIndexOf(':') + 1));
         return port >= 1 && port <= 65535;
+    }
+
+    /**
+     * Reads edited satellite rows without accepting arbitrary configuration fields in them.
+     *
+     * @param node satellite map keyed by device IP
+     * @return rows to validate and store
+     */
+    private static List<Satellite> satelliteRows(JsonNode node) {
+        if (node == null || !node.isObject()) {
+            throw new IllegalArgumentException("satellites must be an object");
+        }
+        List<Satellite> rows = new ArrayList<>();
+        for (Map.Entry<String, JsonNode> entry : node.properties()) {
+            JsonNode value = entry.getValue();
+            if (!value.isObject() || !entry.getKey().equals(value.path("deviceIp").asText())
+                    || !value.path("zone").isTextual() || !value.path("orientation").isTextual()
+                    || !value.path("ledNum").isTextual() || !value.path("algo").isTextual()) {
+                throw new IllegalArgumentException("Invalid satellite row");
+            }
+            rows.add(new Satellite(value.path("zone").asText(), value.path("orientation").asText(),
+                    value.path("ledNum").asText(), entry.getKey(), value.path("deviceName").asText(""),
+                    value.path("algo").asText()));
+        }
+        return rows;
     }
 
     /**

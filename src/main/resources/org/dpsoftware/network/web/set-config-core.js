@@ -3,7 +3,7 @@
 import {sections} from './set-config-schema.js';
 import {state} from './set-config-state.js';
 import {escapeHtml} from './set-config-ui.js';
-import {fillPickerControls} from './set-config-device.js';
+import {buildSatellitesHtml, collectSatellites, fillPickerControls} from './set-config-device.js';
 
 // Resolves the option list for a select field, preferring the server-provided options over the static schema defaults.
 function optionsFor(f) {
@@ -40,6 +40,9 @@ function buildFieldHtml(f) {
     if (f.id === 'devicesContent') {
         return '<div id="devicesTable" class="table-responsive"></div>';
     }
+    if (f.id === 'satelliteManager') {
+        return buildSatellitesHtml();
+    }
     if (f.id === 'profilesControl') {
         return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><div id="miscProfilesHost"></div></div>';
     }
@@ -47,7 +50,7 @@ function buildFieldHtml(f) {
         return '<div class="form-text">' + escapeHtml(f.noteKey ? fieldLabel(f) : f.note) + '</div>';
     }
     if (f.id === 'softwareVersion') {
-        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><a href="https://github.com/sblantipodi/firefly_luciferin/releases" target="_blank" rel="noopener">'
+        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><a class="orange-link" href="https://github.com/sblantipodi/firefly_luciferin/releases" target="_blank" rel="noopener">'
             + escapeHtml(state.fieldLabels.softwareVersionValue || '') + '</a></div>';
     }
     if (f.type === 'readonly') {
@@ -102,7 +105,7 @@ function buildFieldsGrid(fields) {
     var html = '<div class="row g-3">';
     fields.forEach(function (f) {
         var colClass = (f.id === 'devicesContent' || f.id === 'improvContext' || f.id === 'improvAction'
-            || f.id === 'profilesControl')
+            || f.id === 'profilesControl' || f.id === 'satelliteManager')
             ? 'col-12' : 'col-12 col-md-6 col-lg-3';
         html += '<div class="' + colClass + '" id="field-' + f.id + '">' + buildFieldHtml(f) + '</div>';
     });
@@ -224,7 +227,7 @@ function updateGroupByOptions() {
 
 // Sets a single form control from the configuration value (handles checkboxes, selects with missing options, list fields and the staticGlowWormIp 'Auto' alias).
 function fillField(f, cfg) {
-    if (f.type === 'note' || f.type === 'info' || f.type === 'action' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
+    if (f.type === 'note' || f.type === 'info' || f.type === 'action' || f.type === 'satelliteManager' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
         return;
     }
     if (f.list) {
@@ -323,7 +326,7 @@ export function fillForm(cfg) {
 
 // Reads a single form control back into the payload object, casting to the field type and applying field-specific conversions (e.g. 'Auto' to '-').
 function collectField(f, payload) {
-    if (f.type === 'note' || f.type === 'info' || f.type === 'action' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
+    if (f.type === 'note' || f.type === 'info' || f.type === 'action' || f.type === 'satelliteManager' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
         return;
     }
     var el = document.getElementById(f.id);
@@ -447,5 +450,6 @@ export function collectPayload() {
     if (payload.outputDevice && payload.staticGlowWormIp && payload.staticGlowWormIp !== 'Auto' && payload.staticGlowWormIp !== '-') {
         payload.outputDevice = '-';
     }
+    payload.satellites = collectSatellites();
     return payload;
 }
