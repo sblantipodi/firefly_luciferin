@@ -151,6 +151,76 @@ function wireProvisioning() {
     syncImprovEthernetFields();
 }
 
+// Shows the audio or color controls used by the selected effect in the Misc tab.
+function syncMiscEffectFields() {
+    var effect = document.getElementById('effect').value;
+    var audioValues = ((state.fieldOptions.miscAudioEffects || {}).options || []).map(function (option) {
+        return option.value;
+    });
+    var audio = audioValues.includes(effect);
+    ['audioDevice', 'audioChannels', 'audioLoopbackGain'].forEach(function (id) {
+        document.getElementById('field-' + id).hidden = !audio;
+    });
+    ['colorMode', 'gamma'].forEach(function (id) {
+        document.getElementById('field-' + id).hidden = audio;
+    });
+}
+
+// Shows the advanced smoothing fields only for the custom level.
+function syncSmoothingAdvancedVisibility() {
+    var selected = document.getElementById('smoothingType').value;
+    var custom = Object.keys(state.smoothingPresets).length > 0 && !state.smoothingPresets[selected];
+    ['emaAlpha', 'smoothingCaptureFramerate', 'frameInsertionTarget', 'smoothingTargetFramerate']
+        .forEach(function (id) {
+            document.getElementById('field-' + id).hidden = !custom;
+        });
+}
+
+// Updates the read-only capture rate, target control, and advanced field visibility.
+function refreshSmoothingPreview() {
+    var frames = Number(document.getElementById('frameInsertionTarget').value);
+    var target = Number(document.getElementById('smoothingTargetFramerate').value);
+    var rate = frames === 0 ? document.getElementById('desiredFramerate').value.replace(/ FPS$/, '')
+        : String(target === 120 ? frames * 2 : target === 30 ? Math.floor(frames / 2) : frames);
+    document.getElementById('smoothingCaptureFramerate').value = /^\d+$/.test(rate) ? rate + ' FPS' : rate;
+    document.getElementById('smoothingTargetFramerate').disabled = frames === 0;
+    syncSmoothingAdvancedVisibility();
+}
+
+// Applies a named preset locally or recognizes a custom combination of dialog controls.
+function syncSmoothingControls(changedId) {
+    var type = document.getElementById('smoothingType');
+    if (changedId === 'smoothingType') {
+        var preset = state.smoothingPresets[type.value];
+        if (preset) {
+            ['emaAlpha', 'frameInsertionTarget', 'smoothingTargetFramerate'].forEach(function (id) {
+                document.getElementById(id).value = String(preset[id]);
+            });
+        }
+    } else if (changedId !== 'desiredFramerate') {
+        var match = Object.entries(state.smoothingPresets).find(function (entry) {
+            return ['emaAlpha', 'frameInsertionTarget', 'smoothingTargetFramerate'].every(function (id) {
+                return Number(document.getElementById(id).value) === Number(entry[1][id]);
+            });
+        });
+        var custom = Array.from(type.options).find(function (option) {
+            return !state.smoothingPresets[option.value];
+        });
+        type.value = match ? match[0] : (custom ? custom.value : type.value);
+    }
+    refreshSmoothingPreview();
+}
+
+// Wires all smoothing controls, including the capture rate readout.
+function wireSmoothingControls() {
+    ['smoothingType', 'emaAlpha', 'frameInsertionTarget', 'smoothingTargetFramerate',
+        'desiredFramerate'].forEach(function (id) {
+        document.getElementById(id).addEventListener('change', function () {
+            syncSmoothingControls(id);
+        });
+    });
+}
+
 // Applies server-provided translations to fixed controls outside the generated form.
 function localizeSettingsPage() {
     var fields = [
@@ -166,27 +236,58 @@ function localizeSettingsPage() {
             document.getElementById(entry[0])[entry[2]] = label;
         }
     });
-    var profileHelp = document.querySelector('#section-profiles .form-text');
+    var profileHelp = document.querySelector('#miscProfilesHost .form-text');
     if (profileHelp && state.fieldLabels['web.profileHelp']) {
         profileHelp.textContent = state.fieldLabels['web.profileHelp'];
     }
 }
 
-// Notifies the server (comboChange endpoint) whenever a select control or the LED toggle changes, so dependent field options can be refreshed.
+// Applies live Misc controls and reports any server-side validation or device error.
+function sendLiveChange(name, value) {
+    return notifyComboChange(name, value).catch(function (error) {
+        showToast('Error: ' + error.message, 'bg-danger text-white');
+        throw error;
+    });
+}
+
+// Keeps the LED button text and pressed state aligned with the running state.
+function setMiscLedButton(on) {
+    var button = document.getElementById('toggleLed');
+    button.setAttribute('aria-pressed', String(on));
+    button.textContent = on ? state.fieldLabels.turnLedOff : state.fieldLabels.turnLedOn;
+    button.classList.toggle('btn-primary', on);
+    button.classList.toggle('btn-outline-primary', !on);
+}
+
+// Wires selects and editable Misc controls to their live server actions.
 function wireSelectChangeListeners() {
     document.querySelectorAll('select').forEach(function (el) {
         el.addEventListener('change', function () {
             if (!el.id.startsWith('improv')) {
-                notifyComboChange(el.id, el.value);
+                sendLiveChange(el.id, el.value).then(function () {
+                    if (el.id === 'effect') setMiscLedButton(true);
+                }).catch(function () {
+                });
             }
         });
     });
-    var toggleLed = document.getElementById('toggleLed');
-    if (toggleLed) {
-        toggleLed.addEventListener('change', function () {
-            notifyComboChange('toggleLed', toggleLed.checked);
+    ['brightness', 'whiteTemperature', 'audioLoopbackGain', 'desiredFramerate'].forEach(function (id) {
+        document.getElementById(id).addEventListener('change', function (event) {
+            sendLiveChange(id, event.target.value).catch(function () {
+            });
         });
-    }
+    });
+    var toggleLed = document.getElementById('toggleLed');
+    toggleLed.addEventListener('click', function () {
+        var on = toggleLed.getAttribute('aria-pressed') !== 'true';
+        toggleLed.disabled = true;
+        sendLiveChange('toggleLed', on).then(function () {
+            setMiscLedButton(on);
+        }).catch(function () {
+        }).finally(function () {
+            toggleLed.disabled = false;
+        });
+    });
 }
 
 function revealSettingsPage() {
@@ -305,6 +406,7 @@ $(function () {
         return fetchJson('getFieldOptions');
     }).then(function (data) {
         state.fieldOptions = (data && data.options) || {};
+        state.smoothingPresets = (data && data.smoothingPresets) || {};
         state.fieldLabels = (data && data.labels) || {};
         buildForm();
         localizeSettingsPage();
@@ -319,6 +421,8 @@ $(function () {
         document.getElementById('mqttEnable').addEventListener('change', syncMqttDiscoveryButtons);
         syncMqttDiscoveryButtons();
         wireProvisioning();
+        document.getElementById('effect').addEventListener('change', syncMiscEffectFields);
+        wireSmoothingControls();
         document.getElementById('addProfile').addEventListener('click', addProfile);
         initColorPicker();
         wireLivePreviewButton();
@@ -328,6 +432,8 @@ $(function () {
     }).then(function (cfg) {
         state.lastConfig = cfg || {};
         fillForm(cfg);
+        syncMiscEffectFields();
+        refreshSmoothingPreview();
         document.getElementById('improvDeviceName').value = cfg.outputDevice || '';
         syncMqttDiscoveryButtons();
         applyAutoOutputDevice();

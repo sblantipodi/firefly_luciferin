@@ -1,3 +1,24 @@
+/*
+  ConfigurationPayloadTest.java
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package org.dpsoftware.network.web;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -89,6 +110,78 @@ class ConfigurationPayloadTest {
         ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
         payload.put("mqttServer", "tcp://broker:70000");
         assertThrows(IllegalArgumentException.class, () -> ConfigurationPayload.apply(payload, savedConfig()));
+    }
+
+    /**
+     * Checks that Misc controls use GUI units while configuration retains stored units.
+     */
+    @Test
+    void convertsMiscTabControlsToStoredValues() throws IOException {
+        Configuration saved = savedConfig();
+        saved.setColorChooser("10,20,30,128");
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("brightness", 50);
+        payload.put("whiteTemperature", 6500);
+        payload.put("colorChooserHex", "#ff8040");
+        payload.put("desiredFramerate", "60 FPS");
+
+        Configuration updated = ConfigurationPayload.apply(payload, saved);
+
+        assertEquals(127, updated.getBrightness());
+        assertEquals(65, updated.getWhiteTemperature());
+        assertEquals("255,128,64,128", updated.getColorChooser());
+        assertEquals("60", updated.getDesiredFramerate());
+    }
+
+    /**
+     * Checks that a built-in smoothing level updates its dependent settings.
+     */
+    @Test
+    void appliesMiscSmoothingDependencies() throws IOException {
+        Configuration saved = savedConfig();
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("smoothingType", Enums.Smoothing.SMOOTHING_LVL_2.getBaseI18n());
+
+        Configuration updated = ConfigurationPayload.apply(payload, saved);
+
+        assertEquals(30, updated.getFrameInsertionTarget());
+        assertEquals(0.30F, updated.getEmaAlpha());
+    }
+
+    /**
+     * Checks that web dialog controls derive a custom smoothing level on save.
+     */
+    @Test
+    void savesSmoothingDialogControls() throws IOException {
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("emaAlpha", 0.25);
+        payload.put("frameInsertionTarget", 30);
+        payload.put("smoothingTargetFramerate", 120);
+        payload.put("smoothingType", Enums.Smoothing.CUSTOM.getBaseI18n());
+
+        Configuration updated = ConfigurationPayload.apply(payload, savedConfig());
+
+        assertEquals(0.25f, updated.getEmaAlpha());
+        assertEquals(30, updated.getFrameInsertionTarget());
+        assertEquals(120, updated.getSmoothingTargetFramerate());
+        assertEquals(Enums.Smoothing.CUSTOM.getBaseI18n(), updated.getSmoothingType());
+    }
+
+    /**
+     * Checks that removing night controls from the form preserves their saved values.
+     */
+    @Test
+    void preservesHiddenNightModeValues() throws IOException {
+        Configuration saved = savedConfig();
+        saved.setNightModeFrom("22:00");
+        saved.setNightModeTo("06:00");
+        saved.setNightModeBrightness("40%");
+
+        Configuration updated = ConfigurationPayload.apply(CommonUtility.JSON_MAPPER.createObjectNode(), saved);
+
+        assertEquals("22:00", updated.getNightModeFrom());
+        assertEquals("06:00", updated.getNightModeTo());
+        assertEquals("40%", updated.getNightModeBrightness());
     }
 
     @Test

@@ -27,10 +27,5 @@ export function postResponse(url, body) {
 }
 
 export function notifyComboChange(name, value) {
-    fetch('comboChange', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({comboName: name, value: value})
-    }).catch(function () {
-    });
+    return postResponse('comboChange', JSON.stringify({comboName: name, value: value}));
 }

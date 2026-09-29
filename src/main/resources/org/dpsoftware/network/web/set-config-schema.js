@@ -89,60 +89,29 @@ export const sections = [
     },
     {
         id: 'misc', fields: [
+            {id: 'toggleLed', type: 'toggleButton', numeric: false},
             {id: 'effect', type: 'select'},
+            {id: 'audioDevice', type: 'select'},
+            {id: 'audioChannels', type: 'select'},
             {id: 'colorMode', type: 'select'},
-            {id: 'gamma', type: 'number', numeric: true, step: '0.1', min: 0, max: 4},
-            {id: 'whiteTemperature', type: 'number', numeric: true, min: 0, max: 30000},
-            {id: 'brightness', type: 'number', numeric: true, min: 0, max: 100},
-            {id: 'nightModeFrom', type: 'text', numeric: false},
-            {id: 'nightModeTo', type: 'text', numeric: false},
-            {id: 'nightModeBrightness', type: 'text', numeric: false},
-            {id: 'toggleLed', type: 'checkbox', numeric: false},
-            {id: 'runtimeLogLevel', type: 'text', numeric: false}
+            {id: 'gamma', type: 'select', numeric: true},
+            {id: 'audioLoopbackGain', type: 'range', numeric: true, min: -5, max: 5, step: '0.1'},
+            {id: 'whiteTemperature', type: 'range', numeric: true, min: 2000, max: 11000, step: '50'},
+            {id: 'brightness', type: 'range', numeric: true, min: 0, max: 100, step: '1'},
+            {id: 'desiredFramerate', type: 'combo'},
         ],
         subAccordions: [
             {
-                id: 'colorCorr', fields: [
-                    {
-                        id: 'ccInfo',
-                        type: 'note',
-                        note: 'Exposed via the hueMap field, currently not available from the web API (excluded by the server). Manage it from the JavaFX interface.'
-                    }
-                ]
-            },
-            {
-                id: 'eyeCare', fields: [
-                    {id: 'nightLight', type: 'select'},
-                    {id: 'nightLightLvl', type: 'number', numeric: true, min: 1, max: 100},
-                    {id: 'luminosityThreshold', type: 'number', numeric: true, min: 0},
-                    {id: 'brightnessLimiter', type: 'select'}
-                ]
-            },
-            {
-                id: 'gamma', fields: [
-                    {id: 'enableAutomaticGamma', type: 'checkbox', numeric: false},
-                    {id: 'gammaLevel', type: 'select'}
-                ]
-            },
-            {
-                id: 'profile', fields: [
-                    {id: 'checkFullScreen', type: 'checkbox', numeric: false},
-                    {id: 'gpuThreshold', type: 'number', numeric: true, min: 0, max: 100},
-                    {id: 'cpuThreshold', type: 'number', numeric: true, min: 0, max: 100},
-                    {id: 'profileProcess1', type: 'text', numeric: false, list: 'profileProcesses', index: 0},
-                    {id: 'profileProcess2', type: 'text', numeric: false, list: 'profileProcesses', index: 1},
-                    {id: 'profileProcess3', type: 'text', numeric: false, list: 'profileProcesses', index: 2}
-                ]
-            },
-            {
                 id: 'smoothing', fields: [
-                    {id: 'smoothingTargetFramerate', type: 'number', numeric: true, min: 0, max: 240},
-                    {
-                        id: 'smoothingNote',
-                        type: 'note',
-                        note: 'EMA alpha, frame insertion and smoothing type are derived from the target and managed by the app.'
-                    }
+                    {id: 'smoothingType', type: 'select'},
+                    {id: 'emaAlpha', type: 'select', numeric: true},
+                    {id: 'smoothingCaptureFramerate', type: 'readonly'},
+                    {id: 'frameInsertionTarget', type: 'select', numeric: true},
+                    {id: 'smoothingTargetFramerate', type: 'select', numeric: true}
                 ]
+            },
+            {
+                id: 'profiles', fields: [{id: 'profilesControl', type: 'profiles'}]
             }
         ]
     },

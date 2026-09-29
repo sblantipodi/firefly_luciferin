@@ -25,6 +25,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.controllers.options.MiscTabOptions;
+import org.dpsoftware.gui.controllers.options.SmoothingOptions;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -40,7 +42,7 @@ import java.util.regex.Pattern;
  */
 final class ConfigurationPayload {
 
-    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix");
+    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix", "colorChooserHex");
     private static final List<String> LED_FIELDS = List.of(WebFieldNames.TOP_LED, WebFieldNames.LEFT_LED,
             WebFieldNames.RIGHT_LED, WebFieldNames.BOTTOM_LEFT_LED, WebFieldNames.BOTTOM_RIGHT_LED,
             WebFieldNames.BOTTOM_ROW_LED);
@@ -76,6 +78,22 @@ final class ConfigurationPayload {
                 configTree.set(entry.getKey(), entry.getValue());
             }
         }
+        if (payload.has("colorChooserHex")) {
+            configTree.put("colorChooser", MiscTabOptions.colorChooserFromHex(
+                    payload.path("colorChooserHex").asText(), savedConfig.getColorChooser()));
+        }
+        if (payload.has(WebFieldNames.BRIGHTNESS)) {
+            configTree.put(WebFieldNames.BRIGHTNESS,
+                    MiscTabOptions.storedBrightness(payload.path(WebFieldNames.BRIGHTNESS).asDouble()));
+        }
+        if (payload.has(WebFieldNames.WHITE_TEMPERATURE)) {
+            configTree.put(WebFieldNames.WHITE_TEMPERATURE,
+                    MiscTabOptions.storedWhiteTemperature(payload.path(WebFieldNames.WHITE_TEMPERATURE).asDouble()));
+        }
+        if (payload.has(WebFieldNames.DESIRED_FRAMERATE)) {
+            configTree.put(WebFieldNames.DESIRED_FRAMERATE,
+                    MiscTabOptions.storedFramerate(payload.path(WebFieldNames.DESIRED_FRAMERATE).asText()));
+        }
         if (payload.has(WebFieldNames.MONITOR_NUMBER)) {
             String deviceName = payload.path("captureDeviceName").asText("");
             if (!deviceName.isBlank()) {
@@ -95,6 +113,14 @@ final class ConfigurationPayload {
             configTree.put(WebFieldNames.DEFAULT_LED_MATRIX, Enums.AspectRatio.FULLSCREEN.getBaseI18n());
         }
         Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
+        if (payload.has(WebFieldNames.EMA_ALPHA) && payload.has(WebFieldNames.FRAME_INSERTION_TARGET)
+                && payload.has(WebFieldNames.SMOOTHING_TARGET_FRAMERATE)) {
+            SmoothingOptions.applyControls(updatedConfig, updatedConfig.getEmaAlpha(),
+                    updatedConfig.getFrameInsertionTarget(), updatedConfig.getSmoothingTargetFramerate());
+        } else if (payload.has(WebFieldNames.SMOOTHING_TYPE)
+                && !payload.path(WebFieldNames.SMOOTHING_TYPE).asText().equals(savedConfig.getSmoothingType())) {
+            SmoothingOptions.applyPreset(updatedConfig, payload.path(WebFieldNames.SMOOTHING_TYPE).asText());
+        }
         int minimum = Math.min(Math.min(updatedConfig.getTopLed(), updatedConfig.getLeftLed()),
                 Math.min(Math.min(updatedConfig.getRightLed(), updatedConfig.getBottomLeftLed()),
                         updatedConfig.getBottomRightLed()));
@@ -113,6 +139,23 @@ final class ConfigurationPayload {
      * @param payload the incoming web configuration values
      */
     private static void validateFields(JsonNode payload) {
+        JsonNode brightness = payload.get(WebFieldNames.BRIGHTNESS);
+        if (brightness != null && (!brightness.isNumber() || brightness.asDouble() < 0 || brightness.asDouble() > 100)) {
+            throw new IllegalArgumentException("brightness must be between 0 and 100%");
+        }
+        JsonNode whiteTemperature = payload.get(WebFieldNames.WHITE_TEMPERATURE);
+        if (whiteTemperature != null && (!whiteTemperature.isNumber()
+                || whiteTemperature.asDouble() < 2000 || whiteTemperature.asDouble() > 11000)) {
+            throw new IllegalArgumentException("whiteTemperature must be between 2000 and 11000 K");
+        }
+        JsonNode audioGain = payload.get("audioLoopbackGain");
+        if (audioGain != null && (!audioGain.isNumber() || audioGain.asDouble() < -5 || audioGain.asDouble() > 5)) {
+            throw new IllegalArgumentException("audioLoopbackGain must be between -5 and 5");
+        }
+        JsonNode color = payload.get("colorChooserHex");
+        if (color != null && (!color.isTextual() || !color.textValue().matches("#[0-9a-fA-F]{6}"))) {
+            throw new IllegalArgumentException("colorChooserHex must be a six-digit color");
+        }
         JsonNode mqttServer = payload.get(WebFieldNames.MQTT_SERVER);
         if (mqttServer != null && (!mqttServer.isTextual() || !MQTT_SERVER.matcher(mqttServer.textValue()).matches()
                 || !validMqttPort(mqttServer.textValue()))) {

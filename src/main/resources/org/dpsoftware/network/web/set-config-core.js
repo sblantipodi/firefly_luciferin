@@ -3,7 +3,7 @@
 import {sections} from './set-config-schema.js';
 import {state} from './set-config-state.js';
 import {escapeHtml} from './set-config-ui.js';
-import {fillPickerControls, lastColor} from './set-config-device.js';
+import {fillPickerControls} from './set-config-device.js';
 
 // Resolves the option list for a select field, preferring the server-provided options over the static schema defaults.
 function optionsFor(f) {
@@ -40,8 +40,14 @@ function buildFieldHtml(f) {
     if (f.id === 'devicesContent') {
         return '<div id="devicesTable" class="table-responsive"></div>';
     }
+    if (f.id === 'profilesControl') {
+        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><div id="miscProfilesHost"></div></div>';
+    }
     if (f.type === 'note') {
         return '<div class="form-text">' + escapeHtml(f.noteKey ? fieldLabel(f) : f.note) + '</div>';
+    }
+    if (f.type === 'readonly') {
+        return '<div class="form-group"><label for="' + f.id + '">' + escapeHtml(lbl) + '</label><input class="form-control" id="' + f.id + '" readonly></div>';
     }
     if (f.type === 'action' && f.id === 'improvAction') {
         return '<button type="button" id="improvProvisionButton" class="btn btn-primary">' + escapeHtml(lbl) + '</button>';
@@ -60,6 +66,9 @@ function buildFieldHtml(f) {
     if (f.type === 'checkbox') {
         return '<div class="form-check d-flex flex-column align-items-start ps-0"><label class="form-check-label mb-1" for="' + f.id + '">' + lbl + '</label><input type="checkbox" class="form-check-input mt-0 ms-0" id="' + f.id + '"></div>';
     }
+    if (f.type === 'toggleButton') {
+        return '<div class="form-group"><label class="d-block" for="' + f.id + '">' + escapeHtml(lbl) + '</label><button type="button" class="btn btn-outline-primary" id="' + f.id + '" aria-pressed="false"></button></div>';
+    }
     if (f.type === 'select') {
         var opts = optionsFor(f).map(function (o) {
             return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
@@ -76,7 +85,10 @@ function buildFieldHtml(f) {
     if (f.id === 'outputDevice') {
         inputHtml = '<select class="form-select" id="' + f.id + '"><option value="">--</option></select>';
     } else {
-        inputHtml = '<input type="' + inputType + '" class="form-control" id="' + f.id + '"' + (f.numeric ? ' inputmode="numeric"' + (f.digitsOnly ? ' pattern="[0-9]+"' : ' step="' + (f.step || '1') + '"') + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') : '') + '>';
+        inputHtml = '<input type="' + inputType + '" class="form-control" id="' + f.id + '"' + (f.numeric ? ' inputmode="numeric"' + (f.digitsOnly ? ' pattern="[0-9]+"' : ' step="' + (f.step || '1') + '"') + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') : '') + (f.type === 'time' && f.step ? ' step="' + f.step + '"' : '') + '>';
+    }
+    if (f.type === 'range') {
+        inputHtml += '<output class="d-block" id="' + f.id + 'Value" for="' + f.id + '"></output>';
     }
     return '<div class="form-group"><label for="' + f.id + '">' + lbl + '</label> ' + inputHtml + '</div>';
 }
@@ -85,9 +97,10 @@ function buildFieldHtml(f) {
 function buildFieldsGrid(fields) {
     var html = '<div class="row g-3">';
     fields.forEach(function (f) {
-        var colClass = (f.id === 'devicesContent' || f.id === 'improvContext' || f.id === 'improvAction')
+        var colClass = (f.id === 'devicesContent' || f.id === 'improvContext' || f.id === 'improvAction'
+            || f.id === 'profilesControl')
             ? 'col-12' : 'col-12 col-md-6 col-lg-3';
-        html += '<div class="' + colClass + '"' + (f.provisioning ? ' id="field-' + f.id + '"' : '') + '>' + buildFieldHtml(f) + '</div>';
+        html += '<div class="' + colClass + '" id="field-' + f.id + '">' + buildFieldHtml(f) + '</div>';
     });
     html += '</div>';
     return html;
@@ -126,7 +139,7 @@ function buildSubAccordions(section) {
     return accordion;
 }
 
-// Builds and inserts the whole settings page: one accordion section per schema section (with sub-accordions), a profiles section, then initializes the picker.
+// Builds and inserts the settings accordions, their nested sections, the profiles controls, and the picker.
 export function buildForm() {
     var page = document.getElementById('settingsPageTemplate').content.cloneNode(true);
     var accordion = page.querySelector('#settingsAccordion');
@@ -141,9 +154,7 @@ export function buildForm() {
         }
         accordion.appendChild(item);
     });
-    var profiles = buildAccordion('section-profiles', sectionTitle('profile'), accordion.id);
-    profiles.querySelector('.accordion-body').appendChild(document.getElementById('profilesTemplate').content.cloneNode(true));
-    accordion.appendChild(profiles);
+    page.querySelector('#miscProfilesHost').appendChild(document.getElementById('profilesTemplate').content.cloneNode(true));
     var logs = buildAccordion('section-log', 'LOG', accordion.id);
     logs.querySelector('.accordion-body').appendChild(document.getElementById('logTemplate').content.cloneNode(true));
     accordion.appendChild(logs);
@@ -161,6 +172,12 @@ export function buildForm() {
             }
         });
     }
+    ['brightness', 'whiteTemperature', 'audioLoopbackGain'].forEach(function (id) {
+        var control = document.getElementById(id);
+        control.addEventListener('input', function () {
+            document.getElementById(id + 'Value').textContent = control.value + (id === 'brightness' ? '%' : id === 'whiteTemperature' ? ' K' : '');
+        });
+    });
     document.getElementById('monitorNumber').addEventListener('change', function () {
         updateCaptureMethodOptions(true);
     });
@@ -203,7 +220,7 @@ function updateGroupByOptions() {
 
 // Sets a single form control from the configuration value (handles checkboxes, selects with missing options, list fields and the staticGlowWormIp 'Auto' alias).
 function fillField(f, cfg) {
-    if (f.type === 'note' || f.type === 'actions' || f.provisioning) {
+    if (f.type === 'note' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
         return;
     }
     if (f.list) {
@@ -213,6 +230,15 @@ function fillField(f, cfg) {
         return;
     }
     var value = cfg[f.id];
+    if (f.id === 'brightness') {
+        value = Math.round(Number(cfg.brightness || 0) / 255 * 100);
+    } else if (f.id === 'whiteTemperature') {
+        value = Number(cfg.whiteTemperature || 0) * 100;
+    } else if (f.id === 'desiredFramerate') {
+        var rates = optionsFor(f);
+        value = /^\d+$/.test(String(cfg.desiredFramerate || ''))
+            ? cfg.desiredFramerate + ' FPS' : (rates.length ? rates[rates.length - 1].label : cfg.desiredFramerate);
+    }
     if (f.id === 'mqttHost') {
         var mqttAddress = String(cfg.mqttServer || '').replace(/^tcp:\/\//, '');
         value = mqttAddress.substring(0, mqttAddress.lastIndexOf(':')) || mqttAddress;
@@ -230,7 +256,13 @@ function fillField(f, cfg) {
     if (value == null) {
         return;
     }
-    if (f.type === 'checkbox') {
+    if (f.type === 'toggleButton') {
+        el = document.getElementById(f.id);
+        el.setAttribute('aria-pressed', String(!!value));
+        el.textContent = value ? state.fieldLabels.turnLedOff : state.fieldLabels.turnLedOn;
+        el.classList.toggle('btn-primary', !!value);
+        el.classList.toggle('btn-outline-primary', !value);
+    } else if (f.type === 'checkbox') {
         document.getElementById(f.id).checked = !!value;
     } else {
         // When staticGlowWormIp is "-" display "Auto" in the form.
@@ -252,6 +284,10 @@ function fillField(f, cfg) {
             el.value = present || !['splitBottomMargin', 'grabberAreaTopBottom', 'grabberSide', 'gapTypeTopBottom', 'gapTypeSide'].includes(f.id) ? val : '0%';
         } else {
             el.value = value;
+        }
+        if (f.type === 'range') {
+            document.getElementById(f.id + 'Value').textContent = el.value
+                + (f.id === 'brightness' ? '%' : f.id === 'whiteTemperature' ? ' K' : '');
         }
     }
 }
@@ -279,7 +315,7 @@ export function fillForm(cfg) {
 
 // Reads a single form control back into the payload object, casting to the field type and applying field-specific conversions (e.g. 'Auto' to '-').
 function collectField(f, payload) {
-    if (f.type === 'note' || f.type === 'actions' || f.provisioning) {
+    if (f.type === 'note' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
         return;
     }
     var el = document.getElementById(f.id);
@@ -297,7 +333,9 @@ function collectField(f, payload) {
         payload[f.list][f.index] = v;
         return;
     }
-    if (f.type === 'checkbox') {
+    if (f.type === 'toggleButton') {
+        payload[f.id] = el.getAttribute('aria-pressed') === 'true';
+    } else if (f.type === 'checkbox') {
         payload[f.id] = el.checked;
     } else if (f.type === 'select') {
         var sel = el.value;
@@ -397,6 +435,5 @@ export function collectPayload() {
     if (payload.outputDevice && payload.staticGlowWormIp && payload.staticGlowWormIp !== 'Auto' && payload.staticGlowWormIp !== '-') {
         payload.outputDevice = '-';
     }
-    payload.colorChooser = lastColor.r + ',' + lastColor.g + ',' + lastColor.b + ',255';
     return payload;
 }

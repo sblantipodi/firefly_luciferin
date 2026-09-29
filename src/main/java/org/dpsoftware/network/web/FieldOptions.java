@@ -26,6 +26,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.options.ImprovOptions;
+import org.dpsoftware.gui.controllers.options.MiscTabOptions;
 import org.dpsoftware.gui.controllers.options.ModeTabOptions;
 import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.DisplayManager;
@@ -59,8 +60,8 @@ public record FieldOptions(List<Option> options, String type) {
         options.put("captureMethodExternal", captureMethods(true));
         options.put(WebFieldNames.BAUD_RATE, new FieldOptions(Arrays.stream(Enums.BaudRate.values())
                 .map(b -> new FieldOptions.Option(b.getBaudRate(), b.getBaudRate())).toList(), "string"));
-        options.put(WebFieldNames.DESIRED_FRAMERATE, new FieldOptions(Arrays.stream(Enums.Framerate.values())
-                .map(f -> new FieldOptions.Option(f.getBaseI18n(), f.getBaseI18n())).toList(), "string"));
+        options.put(WebFieldNames.DESIRED_FRAMERATE, new FieldOptions(MiscTabOptions.captureFramerates().stream()
+                .map(choice -> new Option(choice.label(), choice.label())).toList(), "string"));
         options.put(WebFieldNames.SIMD_AVX, new FieldOptions(Arrays.stream(Enums.SimdAvxOption.values())
                 .filter(s -> ModeTabOptions.simdOptions(MainSingleton.getInstance().getSupportedSpeciesLengthSimd()).contains(s))
                 .map(s -> new FieldOptions.Option(String.valueOf(s.getSimdOptionNumeric()), s.getI18n())).toList(), "number"));
@@ -71,6 +72,12 @@ public record FieldOptions(List<Option> options, String type) {
         options.put(WebFieldNames.LANGUAGE, new FieldOptions(Arrays.stream(Enums.Language.values())
                 .map(language -> new Option(language.getI18n(), language.getI18n())).toList(), "string"));
         options.put(WebFieldNames.SMOOTHING_TYPE, localized(Enums.Smoothing.class));
+        options.put(WebFieldNames.EMA_ALPHA, new FieldOptions(Arrays.stream(Enums.Ema.values())
+                .map(ema -> new Option(String.valueOf(ema.getEmaAlpha()), ema.getI18n())).toList(), "number"));
+        options.put(WebFieldNames.FRAME_INSERTION_TARGET, new FieldOptions(Arrays.stream(Enums.FrameGeneration.values())
+                .map(frame -> new Option(String.valueOf(frame.getFrameGenerationTarget()), frame.getI18n())).toList(), "number"));
+        options.put(WebFieldNames.SMOOTHING_TARGET_FRAMERATE, new FieldOptions(Arrays.stream(Enums.SmoothingTarget.values())
+                .map(target -> new Option(String.valueOf(target.getSmoothingTargetValue()), target.getSmoothingTarget())).toList(), "number"));
         options.put(WebFieldNames.STREAM_TYPE, new FieldOptions(Arrays.stream(Enums.StreamType.values())
                 .map(s -> new FieldOptions.Option(s.getStreamType(), s.getStreamType())).toList(), "string"));
         // TODO check here don't remove this todo
@@ -85,8 +92,19 @@ public record FieldOptions(List<Option> options, String type) {
         options.put("improvEthernetBoard", new FieldOptions(Arrays.stream(Enums.EthernetBoards.values())
                 .map(board -> new Option(board.getValue(), board.getValue())).toList(), "string"));
         options.put(WebFieldNames.EFFECT, effectOptions());
+        options.put("miscAudioEffects", new FieldOptions(Arrays.stream(Enums.Effect.values())
+                .filter(effect -> MiscTabOptions.isAudioEffect(effect.getBaseI18n()))
+                .map(effect -> new Option(effect.getBaseI18n(), effect.getI18n())).toList(), "string"));
         options.put(WebFieldNames.COLOR_MODE, new FieldOptions(Arrays.stream(Enums.ColorMode.values())
-                .map(c -> new FieldOptions.Option(String.valueOf(c.ordinal() + 1), c.getBaseI18n())).toList(), "number"));
+                .map(c -> new FieldOptions.Option(String.valueOf(c.ordinal() + 1), c.getI18n())).toList(), "number"));
+        options.put(WebFieldNames.GAMMA, new FieldOptions(MiscTabOptions.gammaValues().stream()
+                .map(value -> new Option(value, value)).toList(), "number"));
+        options.put("audioChannels", localized(Enums.AudioChannels.class));
+        options.put("audioDevice", new FieldOptions(MiscTabOptions.audioDeviceNames().stream()
+                .map(name -> {
+                    Enums.Audio known = LocalizedEnum.fromStr(Enums.Audio.class, name);
+                    return new Option(known == null ? name : known.getBaseI18n(), name);
+                }).toList(), "string"));
         options.put(WebFieldNames.GAMMA_LEVEL, localized(Enums.GammaLevel.class));
         options.put(WebFieldNames.NIGHT_LIGHT, localized(Enums.NightLight.class));
         options.put(WebFieldNames.BRIGHTNESS_LIMITER, new FieldOptions(Arrays.stream(Enums.BrightnessLimiter.values())
@@ -161,10 +179,12 @@ public record FieldOptions(List<Option> options, String type) {
      * Build a single effect option from a localized i18n key.
      *
      * @param i18nKey the i18n key of the effect
-     * @return the option with value and label both set to the localized word
+     * @return the stored effect value and its localized label
      */
     private static FieldOptions.Option effectOption(String i18nKey) {
-        return new FieldOptions.Option(CommonUtility.getWord(i18nKey), CommonUtility.getWord(i18nKey));
+        Enums.Effect effect = Arrays.stream(Enums.Effect.values())
+                .filter(candidate -> candidate.getValue().equals(i18nKey)).findFirst().orElseThrow();
+        return new FieldOptions.Option(effect.getBaseI18n(), effect.getI18n());
     }
 
     /**
@@ -211,10 +231,11 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.BAUD_RATE, CommonUtility.getWord("fxml.modetab.baudrate"));
         labels.put(WebFieldNames.STATIC_GLOW_WORM_IP, CommonUtility.getWord("fxml.modetab.serialport"));
         labels.put(WebFieldNames.DESIRED_FRAMERATE, CommonUtility.getWord("fxml.misctab.captureframerate"));
-        labels.put(WebFieldNames.SMOOTHING_TYPE, CommonUtility.getWord("fxml.dialog.smoothing.type"));
+        labels.put(WebFieldNames.SMOOTHING_TYPE, CommonUtility.getWord("web.misc.smoothing"));
         labels.put(WebFieldNames.SMOOTHING_TARGET_FRAMERATE, CommonUtility.getWord("fxml.dialog.smoothing.target.framerate"));
-        labels.put(WebFieldNames.FRAME_INSERTION_TARGET, CommonUtility.getWord("fxml.dialog.smoothing.frameinsertion"));
-        labels.put(WebFieldNames.EMA_ALPHA, CommonUtility.getWord("fxml.dialog.smoothing.emaalpha"));
+        labels.put(WebFieldNames.FRAME_INSERTION_TARGET, CommonUtility.getWord("fxml.dialog.smoothing.fg"));
+        labels.put(WebFieldNames.EMA_ALPHA, CommonUtility.getWord("fxml.dialog.smoothing.ema"));
+        labels.put("smoothingCaptureFramerate", CommonUtility.getWord("fxml.dialog.smoothing.capture.framerate"));
         labels.put(WebFieldNames.SIMD_AVX, CommonUtility.getWord("fxml.modetab.simdavx"));
         labels.put(WebFieldNames.RESAMPLING_FACTOR, CommonUtility.getWord("fxml.modetab.scaling"));
         labels.put(WebFieldNames.CAPTURE_METHOD, CommonUtility.getWord("fxml.modetab.capturemethod"));
@@ -255,14 +276,18 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put("improvComPort", CommonUtility.getWord("fxml.improv.comport"));
         labels.put("improvBaudrate", CommonUtility.getWord("fxml.improv.baudrate"));
         labels.put("improvAction", CommonUtility.getWord("fxml.mqtttab.provision.device"));
-        labels.put(WebFieldNames.EFFECT, CommonUtility.getWord("fxml.misctab.effect"));
+        labels.put(WebFieldNames.EFFECT, CommonUtility.getWord("web.misc.effect"));
+        labels.put("audioDevice", CommonUtility.getWord("context.menu.audio.device"));
+        labels.put("audioChannels", CommonUtility.getWord("web.misc.audioChannels"));
+        labels.put("audioLoopbackGain", CommonUtility.getWord("context.menu.audio.gain"));
+        labels.put("profilesControl", CommonUtility.getWord("fxml.misctab.profiles"));
         labels.put(WebFieldNames.COLOR_MODE, CommonUtility.getWord("fxml.devicestab.colormode"));
         labels.put(WebFieldNames.GAMMA, CommonUtility.getWord("fxml.misctab.gamma"));
         labels.put(WebFieldNames.WHITE_TEMPERATURE, CommonUtility.getWord("fxml.misctab.whitetemp"));
         labels.put(WebFieldNames.BRIGHTNESS, CommonUtility.getWord("fxml.misctab.brightness"));
-        labels.put(WebFieldNames.NIGHT_MODE_FROM, CommonUtility.getWord("fxml.misctab.nightmode.from"));
-        labels.put(WebFieldNames.NIGHT_MODE_TO, CommonUtility.getWord("fxml.misctab.nightmode.to"));
-        labels.put(WebFieldNames.NIGHT_MODE_BRIGHTNESS, CommonUtility.getWord("fxml.misctab.nightmode.brightness"));
+        labels.put(WebFieldNames.NIGHT_MODE_FROM, CommonUtility.getWord("web.misc.nightFrom"));
+        labels.put(WebFieldNames.NIGHT_MODE_TO, CommonUtility.getWord("web.misc.nightTo"));
+        labels.put(WebFieldNames.NIGHT_MODE_BRIGHTNESS, CommonUtility.getWord("web.misc.nightBrightness"));
         labels.put(WebFieldNames.TOGGLE_LED, CommonUtility.getWord("fxml.misctab.ledcontrol"));
         labels.put(WebFieldNames.START_WITH_SYSTEM, CommonUtility.getWord("fxml.misctab.runlogin"));
         labels.put(WebFieldNames.RUNTIME_LOG_LEVEL, CommonUtility.getWord("fxml.misctab.runtimelog"));
@@ -292,15 +317,11 @@ public record FieldOptions(List<Option> options, String type) {
     }
 
     /**
-     * Enrich the field labels with the current LED toggle state, so the client can show the
-     * right "turn on/off" wording.
+     * Adds the localized LED button captions for both toggle states.
      *
      * @param labels the labels map to update in place
      */
     public static void applyToggleLedLabels(Map<String, String> labels) {
-        labels.put(WebFieldNames.TOGGLE_LED, CommonUtility.getWord(
-                MainSingleton.getInstance().config.isToggleLed()
-                        ? LabelKey.TURN_LED_OFF : LabelKey.TURN_LED_ON));
         labels.put(WebFieldNames.TURN_LED_ON, CommonUtility.getWord(LabelKey.TURN_LED_ON));
         labels.put(WebFieldNames.TURN_LED_OFF, CommonUtility.getWord(LabelKey.TURN_LED_OFF));
     }
@@ -317,6 +338,7 @@ public record FieldOptions(List<Option> options, String type) {
         titles.put(WebFieldNames.SECTION_NETWORK, CommonUtility.getWord("fxml.setting.wifimqtt"));
         titles.put("provisioning", CommonUtility.getWord("fxml.mqtttab.provision.device"));
         titles.put(WebFieldNames.SECTION_MISC, CommonUtility.getWord("fxml.setting.misc"));
+        titles.put("profiles", CommonUtility.getWord("fxml.misctab.profiles"));
         titles.put(WebFieldNames.SECTION_DEVICES, CommonUtility.getWord("fxml.setting.devices"));
         titles.put(WebFieldNames.SECTION_LDR, CommonUtility.getWord("fxml.setting.ldr"));
         titles.put(WebFieldNames.SECTION_DISPLAY, CommonUtility.getWord("fxml.ledsconfigtab.display"));
