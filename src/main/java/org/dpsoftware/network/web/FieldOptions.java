@@ -25,6 +25,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.ImprovOptions;
 import org.dpsoftware.gui.controllers.options.ModeTabOptions;
 import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.DisplayManager;
@@ -72,6 +73,17 @@ public record FieldOptions(List<Option> options, String type) {
         options.put(WebFieldNames.SMOOTHING_TYPE, localized(Enums.Smoothing.class));
         options.put(WebFieldNames.STREAM_TYPE, new FieldOptions(Arrays.stream(Enums.StreamType.values())
                 .map(s -> new FieldOptions.Option(s.getStreamType(), s.getStreamType())).toList(), "string"));
+        // TODO check here don't remove this todo
+        options.put("improvSsid", new FieldOptions(ImprovOptions.wifiSsids().stream()
+                .map(ssid -> new Option(ssid, ssid)).toList(), "string"));
+        options.put("improvComPort", new FieldOptions(ImprovOptions.serialPorts().stream()
+                .map(port -> new Option(port, port)).toList(), "string"));
+        options.put("improvBaudrate", new FieldOptions(ImprovOptions.baudRates().stream()
+                .map(baud -> new Option(baud, baud)).toList(), "string"));
+        options.put("improvEthernetMode", new FieldOptions(Arrays.stream(Enums.EthernetOptions.values())
+                .map(mode -> new Option(mode.name(), mode.getI18n())).toList(), "string"));
+        options.put("improvEthernetBoard", new FieldOptions(Arrays.stream(Enums.EthernetBoards.values())
+                .map(board -> new Option(board.getValue(), board.getValue())).toList(), "string"));
         options.put(WebFieldNames.EFFECT, effectOptions());
         options.put(WebFieldNames.COLOR_MODE, new FieldOptions(Arrays.stream(Enums.ColorMode.values())
                 .map(c -> new FieldOptions.Option(String.valueOf(c.ordinal() + 1), c.getBaseI18n())).toList(), "number"));
@@ -219,10 +231,30 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.WIRELESS_STREAM, CommonUtility.getWord("fxml.mqtttab.wirelessstream"));
         labels.put(WebFieldNames.STREAM_TYPE, CommonUtility.getWord("fxml.mqtttab.streamtype"));
         labels.put(WebFieldNames.MQTT_SERVER, CommonUtility.getWord("fxml.mqtttab.mqttserverhost"));
+        // TODO check here don't remove this todo
+        labels.put("mqttHost", CommonUtility.getWord("fxml.mqtttab.mqttserverhost"));
+        labels.put("mqttPort", CommonUtility.getWord("fxml.mqtttab.mqttport"));
         labels.put(WebFieldNames.MQTT_TOPIC, CommonUtility.getWord("fxml.mqtttab.mqttbasetopic"));
         labels.put(WebFieldNames.MQTT_DISCOVERY_TOPIC, CommonUtility.getWord("fxml.mqtttab.mqttdiscoverytopic"));
         labels.put(WebFieldNames.MQTT_USERNAME, CommonUtility.getWord("fxml.mqtttab.mqttusername"));
+        labels.put("mqttUser", CommonUtility.getWord("fxml.mqtttab.mqttusername"));
         labels.put(WebFieldNames.MQTT_PWD, CommonUtility.getWord("fxml.mqtttab.mqttpwd"));
+        labels.put("mqttDiscoveryAdd", CommonUtility.getWord("tooltip.mqttdiscoverytopic.add"));
+        labels.put("mqttDiscoveryRemove", CommonUtility.getWord("tooltip.mqttdiscoverytopic.remove"));
+        labels.put("mqttDiscoveryActions", CommonUtility.getWord("web.addToSmartSystems"));
+        labels.put("improvContext", CommonUtility.getWord("fxml.mqtttab.improv.context"));
+        labels.put("improvSsid", CommonUtility.getWord("fxml.improv.wifi"));
+        labels.put("improvWifiPwd", CommonUtility.getWord("fxml.improv.pwd"));
+        labels.put("improvDeviceName", CommonUtility.getWord("fxml.devicestab.device.name"));
+        labels.put("improvEthernetMode", CommonUtility.getWord("web.provisioning.ethernet"));
+        labels.put("improvEthernetBoard", CommonUtility.getWord("fxml.mqtttab.improv.prebuilt.eth"));
+        labels.put("improvMi", "MI");
+        labels.put("improvMo", "MO");
+        labels.put("improvSck", "SCK");
+        labels.put("improvCs", "CS");
+        labels.put("improvComPort", CommonUtility.getWord("fxml.improv.comport"));
+        labels.put("improvBaudrate", CommonUtility.getWord("fxml.improv.baudrate"));
+        labels.put("improvAction", CommonUtility.getWord("fxml.mqtttab.provision.device"));
         labels.put(WebFieldNames.EFFECT, CommonUtility.getWord("fxml.misctab.effect"));
         labels.put(WebFieldNames.COLOR_MODE, CommonUtility.getWord("fxml.devicestab.colormode"));
         labels.put(WebFieldNames.GAMMA, CommonUtility.getWord("fxml.misctab.gamma"));
@@ -283,6 +315,7 @@ public record FieldOptions(List<Option> options, String type) {
         titles.put(WebFieldNames.SECTION_LEDS, CommonUtility.getWord("fxml.setting.ledsconfig"));
         titles.put(WebFieldNames.SECTION_MODE, CommonUtility.getWord("fxml.setting.mode"));
         titles.put(WebFieldNames.SECTION_NETWORK, CommonUtility.getWord("fxml.setting.wifimqtt"));
+        titles.put("provisioning", CommonUtility.getWord("fxml.mqtttab.provision.device"));
         titles.put(WebFieldNames.SECTION_MISC, CommonUtility.getWord("fxml.setting.misc"));
         titles.put(WebFieldNames.SECTION_DEVICES, CommonUtility.getWord("fxml.setting.devices"));
         titles.put(WebFieldNames.SECTION_LDR, CommonUtility.getWord("fxml.setting.ldr"));

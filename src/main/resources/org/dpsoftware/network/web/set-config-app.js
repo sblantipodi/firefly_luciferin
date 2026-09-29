@@ -41,6 +41,116 @@ function saveForm() {
     });
 }
 
+// Sends the add or remove action for MQTT discovery entities and reports the result.
+function runMqttDiscovery(action) {
+    var button = document.getElementById(action === 'add' ? 'addButton' : 'removeButton');
+    button.disabled = true;
+    fetch('mqttDiscovery', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: action})
+    }).then(function (response) {
+        return response.text().then(function (body) {
+            if (!response.ok) {
+                throw new Error(body || response.statusText);
+            }
+            showToast(state.fieldLabels[action === 'add' ? 'mqttDiscoveryAdd' : 'mqttDiscoveryRemove'], 'bg-success text-white');
+        });
+    }).catch(function (error) {
+        showToast('Error: ' + error.message, 'bg-danger text-white');
+    }).finally(function () {
+        button.disabled = false;
+    });
+}
+
+// Enables MQTT discovery actions only while the saved broker connection is active.
+function syncMqttDiscoveryButtons() {
+    var enabled = document.getElementById('mqttEnable').checked && !!state.lastConfig.mqttEnable;
+    document.getElementById('addButton').disabled = !enabled;
+    document.getElementById('removeButton').disabled = !enabled;
+}
+
+// Shows the prebuilt board or custom SPI pins required by the selected Ethernet mode.
+function syncImprovEthernetFields() {
+    var mode = document.getElementById('improvEthernetMode').value;
+    document.getElementById('field-improvEthernetBoard').hidden = mode !== 'ETH_PREBUILT';
+    ['improvMi', 'improvMo', 'improvSck', 'improvCs'].forEach(function (id) {
+        document.getElementById('field-' + id).hidden = mode !== 'ETH_CUSTOM_SPI';
+    });
+}
+
+// Replaces an editable combo box's suggestions while preserving a manually entered value.
+function updateImprovSuggestions(id, values) {
+    var input = document.getElementById(id);
+    var list = document.getElementById(id + 'List');
+    list.replaceChildren();
+    (values || []).forEach(function (value) {
+        var option = document.createElement('option');
+        option.value = value;
+        list.appendChild(option);
+    });
+    if (!input.value && values && values.length && id === 'improvComPort') {
+        input.value = values[0];
+    }
+}
+
+// Refreshes Wi-Fi and serial port suggestions when the provisioning accordion opens.
+function refreshProvisioningOptions() {
+    fetchJson('provisioningOptions').then(function (options) {
+        updateImprovSuggestions('improvSsid', options.ssids);
+        updateImprovSuggestions('improvComPort', options.ports);
+    }).catch(function (error) {
+        showToast('Error: ' + error.message, 'bg-danger text-white');
+    });
+}
+
+// Sends only provisioning values to the serial endpoint; these fields are not saved as configuration.
+function runProvisioning() {
+    var button = document.getElementById('improvProvisionButton');
+    var value = function (id) {
+        return document.getElementById(id).value;
+    };
+    var request = {
+        ssid: value('improvSsid'), wifiPassword: value('improvWifiPwd'),
+        deviceName: value('improvDeviceName'), comPort: value('improvComPort'),
+        baudRate: value('improvBaudrate'), ethernetMode: value('improvEthernetMode'),
+        ethernetBoard: value('improvEthernetBoard'), mi: value('improvMi'),
+        mo: value('improvMo'), sck: value('improvSck'), cs: value('improvCs'),
+        mqttEnabled: document.getElementById('mqttEnable').checked,
+        mqttHost: value('mqttHost'), mqttPort: value('mqttPort'),
+        mqttUser: value('mqttUser'), mqttPassword: value('mqttPwd')
+    };
+    button.disabled = true;
+    fetch('provisionDevice', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(request)
+    }).then(function (response) {
+        return response.text().then(function (body) {
+            if (!response.ok) {
+                throw new Error(body || response.statusText);
+            }
+            showToast(state.fieldLabels.improvAction, 'bg-success text-white');
+        });
+    }).catch(function (error) {
+        showToast('Error: ' + error.message, 'bg-danger text-white');
+    }).finally(function () {
+        button.disabled = false;
+    });
+}
+
+// Installs the provisioning controls and their default values from the JavaFX dialog.
+function wireProvisioning() {
+    document.getElementById('improvEthernetMode').value = 'ETH_NO_ETH';
+    document.getElementById('improvBaudrate').value = '115200';
+    document.getElementById('improvEthernetBoard').selectedIndex = 0;
+    updateImprovSuggestions('improvComPort', (state.fieldOptions.improvComPort || {}).options?.map(function (option) {
+        return option.value;
+    }) || []);
+    document.getElementById('improvEthernetMode').addEventListener('change', syncImprovEthernetFields);
+    document.getElementById('improvProvisionButton').addEventListener('click', runProvisioning);
+    document.getElementById('sub-network-provisioning').addEventListener('shown.bs.collapse', refreshProvisioningOptions);
+    syncImprovEthernetFields();
+}
+
 // Applies server-provided translations to fixed controls outside the generated form.
 function localizeSettingsPage() {
     var fields = [
@@ -66,7 +176,9 @@ function localizeSettingsPage() {
 function wireSelectChangeListeners() {
     document.querySelectorAll('select').forEach(function (el) {
         el.addEventListener('change', function () {
-            notifyComboChange(el.id, el.value);
+            if (!el.id.startsWith('improv')) {
+                notifyComboChange(el.id, el.value);
+            }
         });
     });
     var toggleLed = document.getElementById('toggleLed');
@@ -198,6 +310,15 @@ $(function () {
         localizeSettingsPage();
         wireLogAccordion();
         document.getElementById('saveSettings').addEventListener('click', saveForm);
+        document.getElementById('addButton').addEventListener('click', function () {
+            runMqttDiscovery('add');
+        });
+        document.getElementById('removeButton').addEventListener('click', function () {
+            runMqttDiscovery('remove');
+        });
+        document.getElementById('mqttEnable').addEventListener('change', syncMqttDiscoveryButtons);
+        syncMqttDiscoveryButtons();
+        wireProvisioning();
         document.getElementById('addProfile').addEventListener('click', addProfile);
         initColorPicker();
         wireLivePreviewButton();
@@ -207,6 +328,8 @@ $(function () {
     }).then(function (cfg) {
         state.lastConfig = cfg || {};
         fillForm(cfg);
+        document.getElementById('improvDeviceName').value = cfg.outputDevice || '';
+        syncMqttDiscoveryButtons();
         applyAutoOutputDevice();
         var profile = cfg && cfg.activeProfile;
         var profileEl = document.getElementById('activeProfile');
