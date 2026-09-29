@@ -239,7 +239,8 @@ public record FieldOptions(List<Option> options, String type) {
         Map<String, String> labels = new LinkedHashMap<>();
         for (String key : List.of("saveSettings", "showPreview", "hidePreview", "newProfileName",
                 "addProfile", "profileHelp", "openLog", "logLevel", "restartConfirm", "settingsSaved",
-                "wholeNumber", "validGroup", "profilePrefix", "collectError")) {
+                "wholeNumber", "validGroup", "profilePrefix", "collectError",
+                "device.reachable", "device.unreachable")) {
             labels.put("web." + key, CommonUtility.getWord("web." + key));
         }
         labels.put(WebFieldNames.TOP_LED, CommonUtility.getWord("fxml.ledsconfigtab.toprow"));
