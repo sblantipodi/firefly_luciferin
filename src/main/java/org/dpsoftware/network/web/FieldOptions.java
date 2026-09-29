@@ -29,6 +29,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.options.*;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -61,7 +62,7 @@ public record FieldOptions(List<Option> options, String type) {
         options.put(WebFieldNames.BAUD_RATE, new FieldOptions(Arrays.stream(Enums.BaudRate.values())
                 .map(b -> new FieldOptions.Option(b.getBaudRate(), b.getBaudRate())).toList(), "string"));
         List<String> connectedNames = GuiSingleton.getInstance().deviceTableData == null ? List.of()
-                : GuiSingleton.getInstance().deviceTableData.stream().map(device -> device.getDeviceName())
+                : GuiSingleton.getInstance().deviceTableData.stream().map(GlowWormDevice::getDeviceName)
                 .filter(Objects::nonNull).toList();
         Configuration deviceConfig = MainSingleton.getInstance().config;
         List<String> serialChoices = DevicesTabOptions.outputChoices(false, 1, List.of());
