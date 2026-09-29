@@ -769,9 +769,11 @@ public class MiscTabController {
         if (MainSingleton.getInstance().config != null) {
             config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
             config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
+            config.setSmoothingTargetFramerate(MainSingleton.getInstance().config.getSmoothingTargetFramerate());
         } else {
             config.setFrameInsertionTarget(smooth.getFrameInsertionFramerate());
             config.setEmaAlpha(smooth.getEmaAlpha());
+            config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
         }
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
