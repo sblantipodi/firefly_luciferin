@@ -507,8 +507,6 @@ public class Constants {
     public static final String TC_NO_BOLD_TEXT = "-fx-font-weight: normal;";
     public static final String CSS_UNDERLINE = "-fx-underline: true;";
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
-    public static final String CSS_TRAY_MENU_BORDER = "tray_menu_border";
-    public static final String CSS_TRAY_ITEM_BORDER = "tray_menu_item_border";
     public static final String CSS_TRAY_ITEM_TEXT = "tray_menu_item_text";
     public static final String CSS_TRAY_ITEM_SELECTIONBACKGROUND = "tray_menu_item_selectionbackground";
     public static final String CSS_TRAY_ITEM_SELECTIONBACKGROUND_KEY = "MenuItem.selectionBackground";
