@@ -4,6 +4,7 @@ export const state = {
     fieldLabels: {},
     sectionTitles: {},
     smoothingPresets: {},
+    bottomRowLayouts: {},
     lastConfig: undefined,
     devices: undefined
 };

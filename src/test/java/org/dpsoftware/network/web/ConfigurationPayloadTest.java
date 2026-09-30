@@ -28,6 +28,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -258,6 +259,63 @@ class ConfigurationPayloadTest {
         assertTrue(ConfigurationPayload.toWebConfig(updated).path("satellites").has("192.168.1.21"));
         satellites.remove("192.168.1.21");
         assertTrue(ConfigurationPayload.apply(payload, saved).getSatellites().isEmpty());
+    }
+
+    /**
+     * Checks the selected eye care settings are stored in configuration units.
+     */
+    @Test
+    void savesAdvancedEyeCareControls() throws IOException {
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("luminosityThreshold", 25);
+        payload.put("brightnessLimiter", Enums.BrightnessLimiter.BRIGHTNESS_LIMIT_70.getBrightnessLimitFloat());
+        payload.put("enableLDR", true);
+        payload.put("ldrTurnOff", true);
+        payload.put("ldrInterval", Enums.LdrInterval.MINUTES_20.getLdrIntervalInteger());
+        payload.put("ldrMin", 30);
+
+        Configuration updated = ConfigurationPayload.apply(payload, savedConfig());
+
+        assertEquals(25, updated.getLuminosityThreshold());
+        assertEquals(0.7f, updated.getBrightnessLimiter());
+        assertTrue(updated.isEnableLDR());
+        assertTrue(updated.isLdrTurnOff());
+        assertEquals(20, updated.getLdrInterval());
+        assertEquals(30, updated.getLdrMin());
+        ObjectNode webConfig = ConfigurationPayload.toWebConfig(updated);
+        assertTrue(webConfig.path("enableLDR").asBoolean());
+        assertEquals(20, webConfig.path("ldrInterval").asInt());
+        assertEquals(30, webConfig.path("ldrMin").asInt());
+        assertEquals(0.7, webConfig.path("brightnessLimiter").asDouble(), 0.0001);
+    }
+
+    /**
+     * Checks the LDR and threshold controls reject values outside the JavaFX choices.
+     */
+    @Test
+    void rejectsInvalidAdvancedEyeCareControls() {
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("luminosityThreshold", 51);
+        assertThrows(IllegalArgumentException.class, () -> ConfigurationPayload.apply(payload, savedConfig()));
+        payload.remove("luminosityThreshold");
+        payload.put("ldrInterval", 15);
+        assertThrows(IllegalArgumentException.class, () -> ConfigurationPayload.apply(payload, savedConfig()));
+    }
+
+    /**
+     * Checks each supported log level is saved and an unsupported level is rejected.
+     */
+    @Test
+    void savesRuntimeLogLevel() throws IOException {
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        for (String level : List.of("ERROR", "WARN", "INFO", "DEBUG", "TRACE")) {
+            payload.put("runtimeLogLevel", level);
+            Configuration updated = ConfigurationPayload.apply(payload, savedConfig());
+            assertEquals(level, updated.getRuntimeLogLevel());
+            assertEquals(level, ConfigurationPayload.toWebConfig(updated).path("runtimeLogLevel").asText());
+        }
+        payload.put("runtimeLogLevel", "OFF");
+        assertThrows(IllegalArgumentException.class, () -> ConfigurationPayload.apply(payload, savedConfig()));
     }
 
     /**

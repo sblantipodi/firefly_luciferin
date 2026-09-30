@@ -43,6 +43,18 @@ function buildFieldHtml(f) {
     if (f.id === 'satelliteManager') {
         return buildSatellitesHtml();
     }
+    if (f.id === 'ldrLabel') {
+        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl)
+            + '</label><output id="ldrLabel">-</output></div>';
+    }
+    if (f.id === 'ldrCalibration') {
+        var calibrate = escapeHtml(state.fieldLabels.calibrateLDR);
+        var reset = escapeHtml(state.fieldLabels.resetLDR);
+        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl)
+            + '</label><div class="d-flex gap-2"><button type="button" class="btn btn-outline-success" id="calibrateLDR" title="'
+            + calibrate + '" aria-label="' + calibrate + '">✔</button><button type="button" class="btn btn-outline-danger" id="resetLDR" title="'
+            + reset + '" aria-label="' + reset + '">✖</button></div></div>';
+    }
     if (f.id === 'profilesControl') {
         return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><div id="miscProfilesHost"></div></div>';
     }
@@ -188,9 +200,22 @@ export function buildForm() {
     document.getElementById('monitorNumber').addEventListener('change', function () {
         updateCaptureMethodOptions(true);
     });
+    document.getElementById('splitBottomMargin').addEventListener('change', updateBottomLedVisibility);
+    updateBottomLedVisibility();
 }
 
 const ledCountIds = ['topLed', 'leftLed', 'rightLed', 'bottomLeftLed', 'bottomRightLed'];
+
+// Shows the bottom LED fields selected by the shared Java layout rule for the lower margin.
+function updateBottomLedVisibility() {
+    var margin = document.getElementById('splitBottomMargin').value;
+    var layouts = state.bottomRowLayouts || {};
+    var split = Object.prototype.hasOwnProperty.call(layouts, margin)
+        ? layouts[margin] : Number.parseInt(margin, 10) > 0;
+    document.getElementById('field-bottomLeftLed').hidden = !split;
+    document.getElementById('field-bottomRightLed').hidden = !split;
+    document.getElementById('field-bottomRowLed').hidden = split;
+}
 
 // Rebuilds capture method choices for the selected monitor or external device.
 function updateCaptureMethodOptions(resetSelection = false) {
@@ -240,6 +265,8 @@ function fillField(f, cfg) {
     if (f.id === 'serialPort') {
         value = cfg.staticGlowWormIp && cfg.staticGlowWormIp !== '-'
             ? cfg.staticGlowWormIp : cfg.outputDevice;
+    } else if (f.id === 'minimumBrightness') {
+        value = cfg.ldrMin;
     }
     if (f.id === 'brightness') {
         value = Math.round(Number(cfg.brightness || 0) / 255 * 100);
@@ -283,6 +310,15 @@ function fillField(f, cfg) {
         var el = document.getElementById(f.id);
         if (el.tagName === 'SELECT') {
             var val = String(value);
+            // Match numeric options by value so a saved 1 selects the server's "1.0" choice.
+            if (selectType(f) === 'number') {
+                var matchingNumber = Array.prototype.find.call(el.options, function (option) {
+                    return option.value !== '' && Number(option.value) === Number(value);
+                });
+                if (matchingNumber) {
+                    val = matchingNumber.value;
+                }
+            }
             var present = Array.prototype.some.call(el.options, function (o) {
                 return o.value === val;
             });
@@ -319,9 +355,14 @@ export function fillForm(cfg) {
         });
     });
     updateGroupByOptions();
+    updateBottomLedVisibility();
     if (Number.isInteger(cfg.groupBy) && cfg.groupBy >= 1 && cfg.groupBy <= Number(document.getElementById('groupBy').lastElementChild?.value)) {
         document.getElementById('groupBy').value = String(cfg.groupBy);
     }
+    var logLevel = document.getElementById('runtimeLogLevel');
+    logLevel.value = Array.prototype.some.call(logLevel.options, function (option) {
+        return option.value === cfg.runtimeLogLevel;
+    }) ? cfg.runtimeLogLevel : 'INFO';
 }
 
 // Reads a single form control back into the payload object, casting to the field type and applying field-specific conversions (e.g. 'Auto' to '-').
@@ -364,6 +405,10 @@ function collectField(f, payload) {
             } else {
                 payload.monitorNumber = Number(sel);
             }
+            return;
+        }
+        if (f.id === 'minimumBrightness') {
+            payload.ldrMin = Number(sel);
             return;
         }
         if (f.id === 'defaultLedMatrix') {
@@ -430,6 +475,7 @@ export function collectPayload() {
     }
     var payload = {};
     payload.mqttServer = 'tcp://' + mqttHost + ':' + mqttPort;
+    payload.runtimeLogLevel = document.getElementById('runtimeLogLevel').value;
     sections.forEach(function (s) {
         s.fields.forEach(function (f) {
             collectField(f, payload);

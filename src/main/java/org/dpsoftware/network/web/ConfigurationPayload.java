@@ -56,6 +56,7 @@ final class ConfigurationPayload {
             WebFieldNames.GAP_TYPE_SIDE, 40);
     private static final Pattern PERCENT = Pattern.compile("^(0|[1-9][0-9]?)%$");
     private static final Pattern MQTT_SERVER = Pattern.compile("^tcp://[^\\s:/]+:[0-9]{1,5}$");
+    private static final List<String> RUNTIME_LOG_LEVELS = List.of("ERROR", "WARN", "INFO", "DEBUG", "TRACE");
 
     /**
      * Prevents instantiation.
@@ -126,6 +127,11 @@ final class ConfigurationPayload {
             SatellitesOptions.apply(updatedConfig, satelliteRows(payload.get("satellites")),
                     GuiSingleton.getInstance().deviceTableData);
         }
+        if (payload.has(WebFieldNames.ENABLE_LDR) || payload.has(WebFieldNames.LDR_TURN_OFF)
+                || payload.has(WebFieldNames.LDR_INTERVAL) || payload.has(WebFieldNames.LDR_MIN)) {
+            EyeCareOptions.applyLdrControls(updatedConfig, updatedConfig.isEnableLDR(), updatedConfig.isLdrTurnOff(),
+                    updatedConfig.getLdrInterval(), updatedConfig.getLdrMin());
+        }
         if (payload.has(WebFieldNames.ENABLE_AUTOMATIC_GAMMA) || payload.has(WebFieldNames.GAMMA_LEVEL)) {
             GammaOptions.apply(updatedConfig, updatedConfig.isEnableAutomaticGamma(), updatedConfig.getGammaLevel());
         }
@@ -155,6 +161,31 @@ final class ConfigurationPayload {
      * @param payload the incoming web configuration values
      */
     private static void validateFields(JsonNode payload) {
+        JsonNode logLevel = payload.get(WebFieldNames.RUNTIME_LOG_LEVEL);
+        if (logLevel != null && (!logLevel.isTextual() || !RUNTIME_LOG_LEVELS.contains(logLevel.asText()))) {
+            throw new IllegalArgumentException("runtimeLogLevel must be ERROR, WARN, INFO, DEBUG or TRACE");
+        }
+        JsonNode threshold = payload.get(WebFieldNames.LUMINOSITY_THRESHOLD);
+        if (threshold != null && (!threshold.isIntegralNumber() || threshold.asInt() < 0 || threshold.asInt() > 50)) {
+            throw new IllegalArgumentException("luminosityThreshold must be between 0 and 50");
+        }
+        JsonNode limiter = payload.get(WebFieldNames.BRIGHTNESS_LIMITER);
+        if (limiter != null && (!limiter.isNumber() || EyeCareOptions.brightnessLimiters().stream()
+                .noneMatch(choice -> Math.abs(choice.getBrightnessLimitFloat() - limiter.floatValue()) < 0.0001f))) {
+            throw new IllegalArgumentException("Invalid brightness limiter");
+        }
+        for (String field : List.of(WebFieldNames.LDR_INTERVAL, WebFieldNames.LDR_MIN)) {
+            JsonNode value = payload.get(field);
+            if (value != null && !value.isIntegralNumber()) {
+                throw new IllegalArgumentException(field + " must be a whole number");
+            }
+        }
+        for (String field : List.of(WebFieldNames.ENABLE_LDR, WebFieldNames.LDR_TURN_OFF)) {
+            JsonNode value = payload.get(field);
+            if (value != null && !value.isBoolean()) {
+                throw new IllegalArgumentException(field + " must be boolean");
+            }
+        }
         JsonNode cubeLut = payload.get(WebFieldNames.CUBE_LUT);
         if (cubeLut != null && !cubeLut.isTextual()) {
             throw new IllegalArgumentException("cubeLut must be a LUT name");

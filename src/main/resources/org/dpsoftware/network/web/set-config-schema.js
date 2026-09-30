@@ -11,6 +11,7 @@ export const sections = [
             {id: 'bottomRowLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
             {id: 'ledStartOffset', type: 'number', numeric: true, min: 0},
             {id: 'orientation', type: 'select'},
+            {id: 'groupBy', type: 'select', numeric: true},
             {
                 id: 'grabberAreaTopBottom',
                 type: 'select',
@@ -35,7 +36,6 @@ export const sections = [
                 options: Array.from({length: 41}, (_, i) => i + '%'),
                 direction: 'horizontal'
             },
-            {id: 'groupBy', type: 'select', numeric: true},
             {id: 'splitBottomMargin', type: 'select', options: Array.from({length: 96}, (_, i) => i + '%')}
         ]
     },
@@ -115,6 +115,35 @@ export const sections = [
                     {id: 'smoothingCaptureFramerate', type: 'readonly'},
                     {id: 'frameInsertionTarget', type: 'select', numeric: true},
                     {id: 'smoothingTargetFramerate', type: 'select', numeric: true}
+                ]
+            },
+            {
+                id: 'advancedEyeCare', fields: [
+                    {id: 'luminosityThreshold', type: 'select', numeric: true},
+                    // Keep the dialog's numeric choices available if an older server omits field options.
+                    {
+                        id: 'brightnessLimiter', type: 'select', numeric: true,
+                        options: [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3].map(function (value) {
+                            return {value: String(value), label: Math.round(value * 100) + '%'};
+                        })
+                    },
+                    {id: 'enableLDR', type: 'checkbox', numeric: false},
+                    {id: 'ldrLabel', type: 'info'},
+                    {
+                        id: 'ldrInterval', type: 'select', numeric: true,
+                        options: [0, 10, 20, 30, 40, 50, 60, 120].map(function (value) {
+                            return {value: String(value), label: value === 0 ? '0' : value + ' min'};
+                        })
+                    },
+                    {id: 'ldrTurnOff', type: 'checkbox', numeric: false},
+                    {
+                        id: 'minimumBrightness', type: 'select', numeric: true,
+                        options: Array.from({length: 10}, function (_, index) {
+                            var value = (index + 1) * 10;
+                            return {value: String(value), label: value + '%'};
+                        })
+                    },
+                    {id: 'ldrCalibration', type: 'actions'}
                 ]
             },
             {

@@ -22,6 +22,7 @@
 package org.dpsoftware.network.web;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -220,9 +221,72 @@ public class ConfigServer {
             DevicesTabOptions.programLegacyBaudRate(updatedConfig,
                     Integer.parseInt(channels[0]), Integer.parseInt(channels[1]), Integer.parseInt(channels[2]));
         }
+        if (EyeCareOptions.ldrSettingsChanged(savedConfig, updatedConfig)) {
+            try {
+                var response = EyeCareOptions.programLdr(updatedConfig, 4);
+                if (updatedConfig.isFullFirmware()
+                        && (response == null || response.getErrorCode() != Constants.HTTP_SUCCESS)) {
+                    log.warn("Unable to program LDR settings on the connected device");
+                }
+            } catch (RuntimeException e) {
+                log.warn("Unable to program LDR settings: {}", e.getMessage());
+            }
+        }
         HttpResponses.sendOk(exchange);
         // Restart with the active profile and headless mode.
         NativeExecutor.restartNativeInstanceWithCurrentProfile();
+    }
+
+    /**
+     * Calibrates or resets the LDR with the current web controls, using the shared firmware command.
+     *
+     * @param exchange HTTP request and response
+     * @throws IOException if the request or response cannot be processed
+     */
+    private void handleLdrAction(HttpExchange exchange) throws IOException {
+        JsonNode payload;
+        try (InputStream body = exchange.getRequestBody()) {
+            payload = CommonUtility.JSON_MAPPER.readTree(body);
+        } catch (IOException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            return;
+        }
+        if (payload == null || !payload.isObject() || !payload.path("action").isIntegralNumber()
+                || !payload.path("enableLDR").isBoolean() || !payload.path("ldrTurnOff").isBoolean()
+                || !payload.path("ldrInterval").isIntegralNumber() || !payload.path("ldrMin").isIntegralNumber()) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid LDR request");
+            return;
+        }
+        int action = payload.path("action").asInt();
+        if (action != 2 && action != 3) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid LDR action");
+            return;
+        }
+        Configuration config = storageManager.readProfileInUseConfig();
+        if (config == null) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
+            return;
+        }
+        try {
+            EyeCareOptions.applyLdrControls(config, payload.path("enableLDR").asBoolean(),
+                    payload.path("ldrTurnOff").asBoolean(), payload.path("ldrInterval").asInt(),
+                    payload.path("ldrMin").asInt());
+            Configuration runtime = MainSingleton.getInstance().config;
+            var response = EyeCareOptions.programWithCalibrationLighting(config, action,
+                    () -> MiscTabOptions.applyWebChange(runtime, "toggleLed", BooleanNode.FALSE),
+                    () -> MiscTabOptions.applyWebChange(runtime, "toggleLed", BooleanNode.TRUE),
+                    () -> EyeCareOptions.programLdr(config, action));
+            if (config.isFullFirmware() && (response == null || response.getErrorCode() != Constants.HTTP_SUCCESS)) {
+                HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_GATEWAY, "LDR device did not respond");
+                return;
+            }
+            HttpResponses.sendOk(exchange);
+        } catch (IllegalArgumentException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
+        } catch (RuntimeException e) {
+            log.warn("LDR action failed: {}", e.getMessage());
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_GATEWAY, "LDR device did not respond");
+        }
     }
 
     /**
@@ -309,6 +373,7 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void handleGetConfig(HttpExchange exchange) throws IOException {
+        exchange.getResponseHeaders().set("Cache-Control", "no-store");
         // Expose the active or main configuration.
         Configuration config = storageManager.readProfileInUseConfig();
         if (config == null) {
@@ -327,6 +392,14 @@ public class ConfigServer {
      */
     private void sendConfiguration(HttpExchange exchange, Configuration config) throws IOException {
         ObjectNode configNode = ConfigurationPayload.toWebConfig(config);
+        if (config.isFullFirmware()) {
+            EyeCareOptions.firmwareLdrControls().ifPresent(controls -> {
+                configNode.put(WebFieldNames.ENABLE_LDR, controls.enabled());
+                configNode.put(WebFieldNames.LDR_TURN_OFF, controls.turnOff());
+                configNode.put(WebFieldNames.LDR_INTERVAL, controls.interval());
+                configNode.put(WebFieldNames.LDR_MIN, controls.minimum());
+            });
+        }
         // Include the active non-default profile.
         String profileArg = MainSingleton.getInstance().profileArg;
         if (profileArg != null && !profileArg.isEmpty()
@@ -379,6 +452,7 @@ public class ConfigServer {
                 server.createContext(Constants.WEBRTC_PREVIEW_JS_ENDPOINT, withGuard(webResourceServer::handleWebrtcPreviewJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
                 server.createContext("/mqttDiscovery", withGuard(this::handleMqttDiscovery, POST_METHOD));
+                server.createContext("/ldrAction", withGuard(this::handleLdrAction, POST_METHOD));
                 server.createContext("/provisioningOptions", withGuard(this::handleProvisioningOptions, GET_METHOD));
                 server.createContext("/provisionDevice", withGuard(this::handleProvisionDevice, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(deviceEndpointHandler::handleDevicePrefs, GET_METHOD));
@@ -421,10 +495,12 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void handleGetFieldOptions(HttpExchange exchange) throws IOException {
+        exchange.getResponseHeaders().set("Cache-Control", "no-store");
         try {
             ObjectNode response = CommonUtility.JSON_MAPPER.createObjectNode();
             response.set("options", CommonUtility.JSON_MAPPER.valueToTree(FieldOptions.getFieldOptions()));
             response.set("smoothingPresets", CommonUtility.JSON_MAPPER.valueToTree(SmoothingOptions.presets()));
+            response.set("bottomRowLayouts", CommonUtility.JSON_MAPPER.valueToTree(LedsConfigTabOptions.bottomRowLayouts()));
             Map<String, String> labels = FieldOptions.getFieldLabels();
             FieldOptions.applyToggleLedLabels(labels);
             response.set("labels", CommonUtility.JSON_MAPPER.valueToTree(labels));

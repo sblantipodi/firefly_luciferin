@@ -135,6 +135,16 @@
 </template>
 
 <template id="logTemplate">
+    <div class="mb-3">
+        <label class="form-label" for="runtimeLogLevel" id="runtimeLogLevelLabel">Log Level</label>
+        <select class="form-select w-100" id="runtimeLogLevel">
+            <option value="ERROR">ERROR</option>
+            <option value="WARN">WARN</option>
+            <option value="INFO">INFO</option>
+            <option value="DEBUG">DEBUG</option>
+            <option value="TRACE">TRACE</option>
+        </select>
+    </div>
     <pre aria-live="off" class="app-log" id="appLog" role="log">Open LOG to load the latest entries.</pre>
 </template>
 
