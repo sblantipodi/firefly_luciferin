@@ -22,14 +22,13 @@
 package org.dpsoftware.network.web;
 
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
-import org.dpsoftware.gui.controllers.options.GammaOptions;
-import org.dpsoftware.gui.controllers.options.ImprovOptions;
-import org.dpsoftware.gui.controllers.options.MiscTabOptions;
-import org.dpsoftware.gui.controllers.options.ModeTabOptions;
-import org.dpsoftware.lut.CubeLutToneMap;
+import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -61,6 +60,20 @@ public record FieldOptions(List<Option> options, String type) {
         options.put("captureMethodExternal", captureMethods(true));
         options.put(WebFieldNames.BAUD_RATE, new FieldOptions(Arrays.stream(Enums.BaudRate.values())
                 .map(b -> new FieldOptions.Option(b.getBaudRate(), b.getBaudRate())).toList(), "string"));
+        List<String> connectedNames = GuiSingleton.getInstance().deviceTableData == null ? List.of()
+                : GuiSingleton.getInstance().deviceTableData.stream().map(device -> device.getDeviceName())
+                .filter(Objects::nonNull).toList();
+        Configuration deviceConfig = MainSingleton.getInstance().config;
+        List<String> serialChoices = DevicesTabOptions.outputChoices(false, 1, List.of());
+        List<String> wirelessChoices = DevicesTabOptions.outputChoices(true, 1, connectedNames);
+        options.put("serialPortSerial", new FieldOptions(serialChoices.stream()
+                .map(choice -> new Option(choice, choice)).toList(), "string"));
+        options.put("serialPortWireless", new FieldOptions(wirelessChoices.stream()
+                .map(choice -> new Option(choice, choice)).toList(), "string"));
+        List<String> selectedChoices = deviceConfig.isWirelessStream() ? wirelessChoices : serialChoices;
+        options.put("serialPort", new FieldOptions(selectedChoices.stream()
+                .filter(choice -> deviceConfig.getMultiMonitor() == 1 || !Constants.SERIAL_PORT_AUTO.equals(choice))
+                .map(choice -> new Option(choice, choice)).toList(), "string"));
         options.put(WebFieldNames.DESIRED_FRAMERATE, new FieldOptions(MiscTabOptions.captureFramerates().stream()
                 .map(choice -> new Option(choice.label(), choice.label())).toList(), "string"));
         options.put(WebFieldNames.SIMD_AVX, new FieldOptions(Arrays.stream(Enums.SimdAvxOption.values())
@@ -112,12 +125,10 @@ public record FieldOptions(List<Option> options, String type) {
         options.put(WebFieldNames.BRIGHTNESS_LIMITER, new FieldOptions(Arrays.stream(Enums.BrightnessLimiter.values())
                 .map(b -> new FieldOptions.Option(String.valueOf(b.getBrightnessLimitFloat()), b.getBaseI18n())).toList(), "number"));
         options.put(WebFieldNames.POWER_SAVING, localized(Enums.PowerSaving.class));
-        options.put(WebFieldNames.MULTI_MONITOR, new FieldOptions(List.of(
-                new FieldOptions.Option("1", CommonUtility.getWord("multimonitor.disabled")),
-                new FieldOptions.Option("2", CommonUtility.getWord("multimonitor.dual")),
-                new FieldOptions.Option("3", CommonUtility.getWord("multimonitor.triple"))), "number"));
+        options.put(WebFieldNames.MULTI_MONITOR, new FieldOptions(DevicesTabOptions.availableMonitorChoices().stream()
+                .map(choice -> new Option(String.valueOf(choice.count()), choice.label())).toList(), "number"));
         // 3D LUT (color tone map) options, the available .cube LUTs (classpath + config dir) with "Disabled" pinned at the top
-        options.put(WebFieldNames.CUBE_LUT, new FieldOptions(CubeLutToneMap.listAvailableLuts().stream()
+        options.put(WebFieldNames.CUBE_LUT, new FieldOptions(DisplayDialogOptions.availableLuts().stream()
                 .map(name -> new FieldOptions.Option(name, name)).toList(), "string"));
         return options;
     }
@@ -230,6 +241,10 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.GAP_TYPE_TOP_BOTTOM, CommonUtility.getWord("fxml.ledsconfigtab.gapType"));
         labels.put(WebFieldNames.GAP_TYPE_SIDE, CommonUtility.getWord("fxml.ledsconfigtab.gapType"));
         labels.put(WebFieldNames.OUTPUT_DEVICE, CommonUtility.getWord("fxml.modetab.outputdevice"));
+        labels.put("serialPort", CommonUtility.getWord("fxml.modetab.serialport"));
+        labels.put("serialPortWirelessLabel", CommonUtility.getWord("fxml.modetab.outputdevice"));
+        labels.put("softwareVersion", CommonUtility.getWord("fxml.devicestab.software.version"));
+        labels.put("softwareVersionValue", Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
         labels.put(WebFieldNames.BAUD_RATE, CommonUtility.getWord("fxml.modetab.baudrate"));
         labels.put(WebFieldNames.STATIC_GLOW_WORM_IP, CommonUtility.getWord("fxml.modetab.serialport"));
         labels.put(WebFieldNames.DESIRED_FRAMERATE, CommonUtility.getWord("fxml.misctab.captureframerate"));
@@ -293,7 +308,7 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.TOGGLE_LED, CommonUtility.getWord("fxml.misctab.ledcontrol"));
         labels.put(WebFieldNames.START_WITH_SYSTEM, CommonUtility.getWord("fxml.misctab.runlogin"));
         labels.put(WebFieldNames.RUNTIME_LOG_LEVEL, CommonUtility.getWord("fxml.misctab.runtimelog"));
-        labels.put(WebFieldNames.CUBE_LUT, CommonUtility.getWord("fxml.misctab.cubeLut"));
+        labels.put(WebFieldNames.CUBE_LUT, CommonUtility.getWord("fxml.display.tonemapping"));
         labels.put(WebFieldNames.NIGHT_LIGHT, CommonUtility.getWord("fxml.eyecare.night.light"));
         labels.put(WebFieldNames.NIGHT_LIGHT_LVL, CommonUtility.getWord("fxml.eyecare.nightlight.level"));
         labels.put(WebFieldNames.LUMINOSITY_THRESHOLD, CommonUtility.getWord("fxml.eyecare.luminosity.threshold"));
@@ -342,7 +357,6 @@ public record FieldOptions(List<Option> options, String type) {
         titles.put(WebFieldNames.SECTION_MISC, CommonUtility.getWord("fxml.setting.misc"));
         titles.put("profiles", CommonUtility.getWord("fxml.misctab.profiles"));
         titles.put(WebFieldNames.SECTION_DEVICES, CommonUtility.getWord("fxml.setting.devices"));
-        titles.put(WebFieldNames.SECTION_LDR, CommonUtility.getWord("fxml.setting.ldr"));
         titles.put(WebFieldNames.SECTION_DISPLAY, CommonUtility.getWord("fxml.ledsconfigtab.display"));
         titles.put(WebFieldNames.SECTION_COLOR_CORR, CommonUtility.getWord("fxml.misctab.colorcorrection"));
         titles.put(WebFieldNames.SECTION_EYE_CARE, CommonUtility.getWord("fxml.misctab.eyecare"));

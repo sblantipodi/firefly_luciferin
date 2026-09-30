@@ -39,8 +39,8 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.DevicesTabOptions;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
@@ -420,8 +420,7 @@ public class DevicesTabController {
         baudRate.setDisable(true);
         serialPort.setValue(Constants.SERIAL_PORT_AUTO);
         multiScreenSingleDevice.setSelected(false);
-        DisplayManager displayManager = new DisplayManager();
-        multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
+        multiScreenSingleDevice.setDisable(!DevicesTabOptions.multipleDisplaysAvailable());
         deviceTable.setPlaceholder(new Label(CommonUtility.getWord(LabelKey.NO_DEVICE_FOUND)));
     }
 
@@ -437,15 +436,9 @@ public class DevicesTabController {
         }
         if (currentConfig.isWirelessStream() && Constants.SERIAL_PORT_AUTO.equals(currentConfig.getOutputDevice())
                 && ((currentConfig.getMultiMonitor() == 1) || currentConfig.isMultiScreenSingleDevice())) {
-            if (NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
-                serialPort.setValue(MainSingleton.getInstance().config.getStaticGlowWormIp());
-            } else {
-                serialPort.setValue(MainSingleton.getInstance().config.getOutputDevice());
-            }
-        } else if (NetworkManager.isValidIp(currentConfig.getStaticGlowWormIp())) {
-            serialPort.setValue(currentConfig.getStaticGlowWormIp());
+            serialPort.setValue(DevicesTabOptions.selectedOutput(MainSingleton.getInstance().config));
         } else {
-            serialPort.setValue(currentConfig.getOutputDevice());
+            serialPort.setValue(DevicesTabOptions.selectedOutput(currentConfig));
         }
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
@@ -462,8 +455,7 @@ public class DevicesTabController {
             case 3 -> multiMonitor.setValue(CommonUtility.getWord(LabelKey.MULTIMONITOR_3));
             default -> multiMonitor.setValue(CommonUtility.getWord(LabelKey.MULTIMONITOR_1));
         }
-        DisplayManager displayManager = new DisplayManager();
-        multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
+        multiScreenSingleDevice.setDisable(!DevicesTabOptions.multipleDisplaysAvailable());
         multiScreenSingleDevice.setSelected(CommonUtility.isSingleDeviceMultiScreen());
     }
 
@@ -647,13 +639,7 @@ public class DevicesTabController {
     @FXML
     public void save(Configuration config) {
         serialPort.commitValue();
-        if (NetworkManager.isValidIp(serialPort.getValue())) {
-            config.setOutputDevice(Constants.DASH);
-            config.setStaticGlowWormIp(serialPort.getValue());
-        } else {
-            config.setOutputDevice(serialPort.getValue());
-            config.setStaticGlowWormIp(Constants.DASH);
-        }
+        DevicesTabOptions.applyOutput(config, serialPort.getValue());
         config.setBaudRate(baudRate.getValue());
         config.setPowerSaving(LocalizedEnum.fromStr(Enums.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
         config.setMultiMonitor(multiMonitor.getSelectionModel().getSelectedIndex() + 1);

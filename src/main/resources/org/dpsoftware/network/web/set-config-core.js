@@ -46,6 +46,10 @@ function buildFieldHtml(f) {
     if (f.type === 'note') {
         return '<div class="form-text">' + escapeHtml(f.noteKey ? fieldLabel(f) : f.note) + '</div>';
     }
+    if (f.id === 'softwareVersion') {
+        return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><a href="https://github.com/sblantipodi/firefly_luciferin/releases" target="_blank" rel="noopener">'
+            + escapeHtml(state.fieldLabels.softwareVersionValue || '') + '</a></div>';
+    }
     if (f.type === 'readonly') {
         return '<div class="form-group"><label for="' + f.id + '">' + escapeHtml(lbl) + '</label><input class="form-control" id="' + f.id + '" readonly></div>';
     }
@@ -220,7 +224,7 @@ function updateGroupByOptions() {
 
 // Sets a single form control from the configuration value (handles checkboxes, selects with missing options, list fields and the staticGlowWormIp 'Auto' alias).
 function fillField(f, cfg) {
-    if (f.type === 'note' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
+    if (f.type === 'note' || f.type === 'info' || f.type === 'action' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
         return;
     }
     if (f.list) {
@@ -230,6 +234,10 @@ function fillField(f, cfg) {
         return;
     }
     var value = cfg[f.id];
+    if (f.id === 'serialPort') {
+        value = cfg.staticGlowWormIp && cfg.staticGlowWormIp !== '-'
+            ? cfg.staticGlowWormIp : cfg.outputDevice;
+    }
     if (f.id === 'brightness') {
         value = Math.round(Number(cfg.brightness || 0) / 255 * 100);
     } else if (f.id === 'whiteTemperature') {
@@ -315,7 +323,7 @@ export function fillForm(cfg) {
 
 // Reads a single form control back into the payload object, casting to the field type and applying field-specific conversions (e.g. 'Auto' to '-').
 function collectField(f, payload) {
-    if (f.type === 'note' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
+    if (f.type === 'note' || f.type === 'info' || f.type === 'action' || f.type === 'readonly' || f.type === 'actions' || f.type === 'profiles' || f.provisioning) {
         return;
     }
     var el = document.getElementById(f.id);
@@ -323,6 +331,10 @@ function collectField(f, payload) {
         return;
     }
     if (f.id === 'mqttHost' || f.id === 'mqttPort') {
+        return;
+    }
+    if (f.id === 'serialPort') {
+        payload.serialPort = el.value.trim();
         return;
     }
     if (f.list) {

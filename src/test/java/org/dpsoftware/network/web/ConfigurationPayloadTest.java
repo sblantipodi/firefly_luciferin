@@ -185,6 +185,55 @@ class ConfigurationPayloadTest {
     }
 
     /**
+     * Checks that the editable device field stores a selected name or a fixed IP like JavaFX.
+     */
+    @Test
+    void savesEditableOutputDevice() throws IOException {
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("serialPort", "Glow Worm");
+        Configuration named = ConfigurationPayload.apply(payload, savedConfig());
+        assertEquals("Glow Worm", named.getOutputDevice());
+        assertEquals("-", named.getStaticGlowWormIp());
+
+        payload.put("serialPort", "192.168.1.10");
+        Configuration fixedIp = ConfigurationPayload.apply(payload, savedConfig());
+        assertEquals("-", fixedIp.getOutputDevice());
+        assertEquals("192.168.1.10", fixedIp.getStaticGlowWormIp());
+    }
+
+    /**
+     * Checks device field validation and preservation of hidden LDR values.
+     */
+    @Test
+    void validatesDeviceFieldsAndPreservesLdr() throws IOException {
+        Configuration saved = savedConfig();
+        saved.setLdrInterval(42);
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("multiMonitor", 4);
+        assertThrows(IllegalArgumentException.class, () -> ConfigurationPayload.apply(payload, saved));
+        payload.remove("multiMonitor");
+        payload.put("baudRate", "invalid");
+        assertThrows(IllegalArgumentException.class, () -> ConfigurationPayload.apply(payload, saved));
+        payload.remove("baudRate");
+        payload.put("powerSaving", Enums.PowerSaving.DISABLED.getBaseI18n());
+        assertEquals(42, ConfigurationPayload.apply(payload, saved).getLdrInterval());
+    }
+
+    /**
+     * Checks that tone mapping accepts an editable LUT name and disables an empty selection.
+     */
+    @Test
+    void savesToneMappingSelection() throws IOException {
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("cubeLut", " custom.cube ");
+        assertEquals("custom.cube", ConfigurationPayload.apply(payload, savedConfig()).getCubeLut());
+
+        payload.put("cubeLut", " ");
+        assertEquals(org.dpsoftware.config.Constants.DISABLED,
+                ConfigurationPayload.apply(payload, savedConfig()).getCubeLut());
+    }
+
+    /**
      * Checks that web adaptive gamma changes use the dialog's stored level format.
      */
     @Test

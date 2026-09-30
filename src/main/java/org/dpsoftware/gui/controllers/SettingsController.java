@@ -43,6 +43,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.DevicesTabOptions;
 import org.dpsoftware.gui.controllers.options.ModeTabOptions;
 import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
 import org.dpsoftware.gui.elements.DisplayInfo;
@@ -154,17 +155,9 @@ public class SettingsController {
         displayManager = new DisplayManager();
         displayManager.logDisplayInfo();
         var displayNames = ModeTabOptions.displayNames(displayManager);
-        for (int i = 0; i < displayNames.size(); i++) {
-            modeTabController.monitorNumber.getItems().add(displayNames.get(i));
-            switch (i) {
-                case 0 ->
-                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(LabelKey.MULTIMONITOR_1));
-                case 1 ->
-                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(LabelKey.MULTIMONITOR_2));
-                case 2 ->
-                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(LabelKey.MULTIMONITOR_3));
-            }
-        }
+        modeTabController.monitorNumber.getItems().addAll(displayNames);
+        devicesTabController.multiMonitor.getItems().addAll(DevicesTabOptions.monitorChoices(displayNames.size()).stream()
+                .map(DevicesTabOptions.MonitorChoice::label).toList());
         ModeTabOptions.loadExternalCaptureDeviceNames(devices ->
                 modeTabController.monitorNumber.getItems().addAll(devices)
         );
@@ -487,9 +480,8 @@ public class SettingsController {
                 if (currentConfig.isFullFirmware()) {
                     setFirmwareConfig(macToProgram.get(), true);
                 } else {
-                    MainSingleton.getInstance().baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + devicesTabController.baudRate.getValue()).getBaudRateValue();
-                    SerialManager serialManager = new SerialManager();
-                    serialManager.sendSerialParams((int) (miscTabController.colorPicker.getValue().getRed() * 255),
+                    DevicesTabOptions.programLegacyBaudRate(config,
+                            (int) (miscTabController.colorPicker.getValue().getRed() * 255),
                             (int) (miscTabController.colorPicker.getValue().getGreen() * 255),
                             (int) (miscTabController.colorPicker.getValue().getBlue() * 255));
                 }

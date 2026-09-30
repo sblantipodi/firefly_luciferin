@@ -45,6 +45,7 @@ export const sections = [
             {id: 'screenResY', type: 'number', numeric: true, digitsOnly: true, min: 0},
             {id: 'monitorNumber', type: 'select'},
             {id: 'osScaling', type: 'select', numeric: true},
+            {id: 'cubeLut', type: 'select'},
             {id: 'resamplingFactor', type: 'select', numeric: true},
             {id: 'defaultLedMatrix', type: 'select'},
             {id: 'language', type: 'select'},
@@ -123,9 +124,12 @@ export const sections = [
     },
     {
         id: 'devices', fields: [
+            {id: 'softwareVersion', type: 'info'},
             {id: 'powerSaving', type: 'select'},
             {id: 'multiMonitor', type: 'select'},
-            {id: 'multiScreenSingleDevice', type: 'checkbox', numeric: false}
+            {id: 'multiScreenSingleDevice', type: 'checkbox', numeric: false},
+            {id: 'serialPort', type: 'combo'},
+            {id: 'baudRate', type: 'select'}
         ],
         subAccordions: [
             {
@@ -142,14 +146,6 @@ export const sections = [
                     }
                 ]
             }
-        ]
-    },
-    {
-        id: 'ldr', fields: [
-            {id: 'enableLDR', type: 'checkbox', numeric: false},
-            {id: 'ldrInterval', type: 'number', numeric: true, min: 0},
-            {id: 'ldrMin', type: 'number', numeric: true, min: 0},
-            {id: 'ldrTurnOff', type: 'checkbox', numeric: false}
         ]
     }
 ];

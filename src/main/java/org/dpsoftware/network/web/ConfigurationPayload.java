@@ -25,9 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.gui.controllers.options.GammaOptions;
-import org.dpsoftware.gui.controllers.options.MiscTabOptions;
-import org.dpsoftware.gui.controllers.options.SmoothingOptions;
+import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -43,7 +41,7 @@ import java.util.regex.Pattern;
  */
 final class ConfigurationPayload {
 
-    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix", "colorChooserHex");
+    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix", "colorChooserHex", "serialPort");
     private static final List<String> LED_FIELDS = List.of(WebFieldNames.TOP_LED, WebFieldNames.LEFT_LED,
             WebFieldNames.RIGHT_LED, WebFieldNames.BOTTOM_LEFT_LED, WebFieldNames.BOTTOM_RIGHT_LED,
             WebFieldNames.BOTTOM_ROW_LED);
@@ -114,6 +112,12 @@ final class ConfigurationPayload {
             configTree.put(WebFieldNames.DEFAULT_LED_MATRIX, Enums.AspectRatio.FULLSCREEN.getBaseI18n());
         }
         Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
+        if (payload.has("serialPort")) {
+            DevicesTabOptions.applyOutput(updatedConfig, payload.path("serialPort").asText());
+        }
+        if (payload.has(WebFieldNames.CUBE_LUT)) {
+            updatedConfig.setCubeLut(DisplayDialogOptions.selectedLut(payload.path(WebFieldNames.CUBE_LUT).asText()));
+        }
         if (payload.has(WebFieldNames.ENABLE_AUTOMATIC_GAMMA) || payload.has(WebFieldNames.GAMMA_LEVEL)) {
             GammaOptions.apply(updatedConfig, updatedConfig.isEnableAutomaticGamma(), updatedConfig.getGammaLevel());
         }
@@ -143,6 +147,24 @@ final class ConfigurationPayload {
      * @param payload the incoming web configuration values
      */
     private static void validateFields(JsonNode payload) {
+        JsonNode cubeLut = payload.get(WebFieldNames.CUBE_LUT);
+        if (cubeLut != null && !cubeLut.isTextual()) {
+            throw new IllegalArgumentException("cubeLut must be a LUT name");
+        }
+        JsonNode output = payload.get("serialPort");
+        if (output != null && (!output.isTextual() || output.asText().isBlank())) {
+            throw new IllegalArgumentException("serialPort must be a device name, serial port, AUTO, or IP");
+        }
+        JsonNode baudRate = payload.get(WebFieldNames.BAUD_RATE);
+        if (baudRate != null && (!baudRate.isTextual() || java.util.Arrays.stream(Enums.BaudRate.values())
+                .noneMatch(baud -> baud.getBaudRate().equals(baudRate.asText())))) {
+            throw new IllegalArgumentException("Invalid baud rate");
+        }
+        JsonNode multiMonitor = payload.get(WebFieldNames.MULTI_MONITOR);
+        if (multiMonitor != null && (!multiMonitor.isIntegralNumber()
+                || multiMonitor.asInt() < 1 || multiMonitor.asInt() > 3)) {
+            throw new IllegalArgumentException("multiMonitor must be between 1 and 3");
+        }
         JsonNode brightness = payload.get(WebFieldNames.BRIGHTNESS);
         if (brightness != null && (!brightness.isNumber() || brightness.asDouble() < 0 || brightness.asDouble() > 100)) {
             throw new IllegalArgumentException("brightness must be between 0 and 100%");
