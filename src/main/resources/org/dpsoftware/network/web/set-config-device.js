@@ -5,6 +5,7 @@ import {escapeHtml, showToast} from './set-config-ui.js';
 
 var colorPicker;
 var deviceIp = null;
+var checkedDeviceIp = null;
 var deviceState = {on: true, whitetemp: 65};
 export var lastColor = {r: 255, g: 38, b: 0};
 var pollTimer = null;
@@ -68,6 +69,34 @@ function resolveDeviceIp() {
     return null;
 }
 
+// Shows whether the selected IP answered devicePrefs and makes the dot link to that IP.
+function updateDeviceReachability(ip, reachable) {
+    var indicator = document.getElementById('deviceReachability');
+    if (!indicator) {
+        return;
+    }
+    var validIp = typeof ip === 'string' && /^(\d{1,3}\.){3}\d{1,3}$/.test(ip)
+        && ip.split('.').every(function (part) {
+            return Number(part) <= 255;
+        });
+    var address = validIp ? ip : null;
+    var status = reachable ? (state.fieldLabels['web.device.reachable'] || 'Device reachable')
+        : (state.fieldLabels['web.device.unreachable'] || 'Device unreachable');
+    var description = address ? status + ': ' + address : status;
+    indicator.classList.toggle('is-reachable', !!address && reachable);
+    indicator.setAttribute('aria-label', description);
+    indicator.title = description;
+    if (address) {
+        indicator.href = 'http://' + address + '/';
+        indicator.removeAttribute('aria-disabled');
+        indicator.removeAttribute('tabindex');
+    } else {
+        indicator.removeAttribute('href');
+        indicator.setAttribute('aria-disabled', 'true');
+        indicator.tabIndex = -1;
+    }
+}
+
 // Populates the effect dropdown from the server-provided options and renders the initial LED toggle button state.
 export function fillPickerControls() {
     var effectOpts = (state.fieldOptions && state.fieldOptions.effect) ? state.fieldOptions.effect.options : [];
@@ -107,18 +136,29 @@ function applyPrefs(prefs) {
 // Fetches the device preferences for the resolved IP and syncs the UI, (re)scheduling the periodic poll afterwards.
 export function syncDeviceFromPrefs() {
     var ip = resolveDeviceIp();
+    if (ip !== checkedDeviceIp) {
+        checkedDeviceIp = ip;
+        updateDeviceReachability(ip, false);
+    }
     if (!ip) {
+        updateDeviceReachability(null, false);
         console.log('syncDeviceFromPrefs: no IP resolved, scheduling poll');
         schedulePoll();
         return;
     }
     console.log('syncDeviceFromPrefs: fetching devicePrefs for IP', ip);
-    fetchJson('devicePrefs?ip=' + encodeURIComponent(ip)).then(function (prefs) {
-        if (!(prefs && prefs.error)) {
+    fetchJson('devicePrefs?ip=' + encodeURIComponent(ip), {cache: 'no-store'}).then(function (prefs) {
+        if (checkedDeviceIp === ip) {
+            updateDeviceReachability(ip, !!prefs && !prefs.error);
+        }
+        if (checkedDeviceIp === ip && !(prefs && prefs.error)) {
             applyPrefs(prefs);
         }
         schedulePoll();
     }).catch(function () {
+        if (checkedDeviceIp === ip) {
+            updateDeviceReachability(ip, false);
+        }
         schedulePoll();
     });
 }

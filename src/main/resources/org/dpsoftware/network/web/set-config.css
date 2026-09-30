@@ -165,7 +165,19 @@ body {
     }
 }
 
-/* The theme switch sits just below the sticky header without using header space. */
+/* The device indicator remains at the viewport edge while the settings page scrolls. */
+.viewport-controls {
+    position: fixed;
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    width: 2.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1035;
+}
+
 .firefly-update-notice,
 .glow-worm-update-available-notice {
     padding: 0.55rem 1rem;
@@ -216,6 +228,31 @@ body {
 #themeToggle:focus-visible {
     outline: 2px solid #343a40;
     outline-offset: 2px;
+}
+
+/* The device dot is half the theme button's diameter; its link opens the selected IP. */
+#deviceReachability {
+    display: block;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 1px solid #6c757d;
+    border-radius: 50%;
+    background: #adb5bd;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+}
+
+#deviceReachability.is-reachable {
+    border-color: #146c43;
+    background: #198754;
+}
+
+#deviceReachability[href] {
+    cursor: pointer;
+}
+
+#deviceReachability:focus-visible {
+    outline: 2px solid #343a40;
+    outline-offset: 3px;
 }
 
 /* Layout helper: the Bootstrap .col has no margin, the form wrapper expects one. */
