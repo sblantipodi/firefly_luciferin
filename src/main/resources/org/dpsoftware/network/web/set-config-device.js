@@ -437,7 +437,7 @@ export function buildSatellitesHtml() {
         + '<div class="col-12 col-md-6"><label for="satelliteOrientation">' + escapeHtml(labels.satelliteOrientation) + '</label><select class="form-select" id="satelliteOrientation">' + options('satelliteOrientation') + '</select></div>'
         + '<div class="col-12 col-md-6"><label for="satelliteLedNum">' + escapeHtml(labels.satelliteLedNum) + '</label><input class="form-control" id="satelliteLedNum" type="text" inputmode="numeric" pattern="[0-9]+" value="1"></div>'
         + '<div class="col-12 col-md-6"><label for="satelliteAlgo">' + escapeHtml(labels.satelliteAlgo) + '</label><select class="form-select" id="satelliteAlgo">' + options('satelliteAlgo') + '</select></div>'
-        + '<div class="col-12 col-md-6"><label class="d-block" for="satelliteAdd">' + escapeHtml(labels.satelliteAdd) + '</label><button type="button" class="btn btn-success" id="satelliteAdd" title="' + escapeHtml(labels.satelliteAddTooltip) + '" aria-label="' + escapeHtml(labels.satelliteAdd) + '">➕</button></div>'
+        + '<div class="col-12 col-md-6"><label class="d-block" for="satelliteAdd">' + escapeHtml(labels.satelliteAdd) + '</label><button type="button" class="btn btn-success symbol-button" id="satelliteAdd" title="' + escapeHtml(labels.satelliteAddTooltip) + '" aria-label="' + escapeHtml(labels.satelliteAdd) + '">&#x2795;&#xFE0E;</button></div>'
         + '</div></div>';
 }
 
