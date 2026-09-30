@@ -102,6 +102,12 @@ export const sections = [
         ],
         subAccordions: [
             {
+                id: 'gamma', fields: [
+                    {id: 'enableAutomaticGamma', type: 'checkbox', numeric: false},
+                    {id: 'gammaLevel', type: 'select'}
+                ]
+            },
+            {
                 id: 'smoothing', fields: [
                     {id: 'smoothingType', type: 'select'},
                     {id: 'emaAlpha', type: 'select', numeric: true},

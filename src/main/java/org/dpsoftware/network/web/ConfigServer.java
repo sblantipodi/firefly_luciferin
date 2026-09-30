@@ -35,10 +35,7 @@ import org.dpsoftware.grabber.WebRtcStreamer;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
-import org.dpsoftware.gui.controllers.options.ImprovOptions;
-import org.dpsoftware.gui.controllers.options.MiscTabOptions;
-import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
-import org.dpsoftware.gui.controllers.options.SmoothingOptions;
+import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
@@ -472,6 +469,18 @@ public class ConfigServer {
      * @param value     the newly selected value, as a JSON node (string or boolean)
      */
     private void applyComboChange(String comboName, JsonNode value) {
+        if (WebFieldNames.ENABLE_AUTOMATIC_GAMMA.equals(comboName)
+                || WebFieldNames.GAMMA_LEVEL.equals(comboName)) {
+            if (value == null || value.isNull()) throw new IllegalArgumentException("Missing adaptive gamma value");
+            Configuration config = MainSingleton.getInstance().config;
+            if (WebFieldNames.ENABLE_AUTOMATIC_GAMMA.equals(comboName)) {
+                if (!value.isBoolean()) throw new IllegalArgumentException("Adaptive gamma must be boolean");
+                GammaOptions.apply(config, value.asBoolean(), config.getGammaLevel());
+            } else {
+                GammaOptions.apply(config, config.isEnableAutomaticGamma(), value.asText());
+            }
+            return;
+        }
         if (Set.of(WebFieldNames.EMA_ALPHA, WebFieldNames.FRAME_INSERTION_TARGET,
                 WebFieldNames.SMOOTHING_TARGET_FRAMERATE).contains(comboName)) {
             if (value == null || value.isNull()) throw new IllegalArgumentException("Missing smoothing value");

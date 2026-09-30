@@ -184,6 +184,21 @@ class ConfigurationPayloadTest {
         assertEquals("40%", updated.getNightModeBrightness());
     }
 
+    /**
+     * Checks that web adaptive gamma changes use the dialog's stored level format.
+     */
+    @Test
+    void savesAdaptiveGammaSettings() throws IOException {
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        payload.put("enableAutomaticGamma", false);
+        payload.put("gammaLevel", Enums.GammaLevel.MEDIUM.getI18n());
+
+        Configuration updated = ConfigurationPayload.apply(payload, savedConfig());
+
+        assertFalse(updated.isEnableAutomaticGamma());
+        assertEquals(Enums.GammaLevel.MEDIUM.getBaseI18n(), updated.getGammaLevel());
+    }
+
     @Test
     void rejectsNonnumericScreenDimensions() {
         ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
