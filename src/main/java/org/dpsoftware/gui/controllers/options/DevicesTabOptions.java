@@ -130,7 +130,7 @@ public final class DevicesTabOptions {
      * @return one to three localized monitor choices
      */
     public static List<MonitorChoice> monitorChoices(int displayCount) {
-        return IntStream.rangeClosed(1, Math.min(3, Math.max(1, displayCount)))
+        return IntStream.rangeClosed(1, Math.clamp(displayCount, 1, 3))
                 .mapToObj(count -> new MonitorChoice(count, switch (count) {
                     case 2 -> CommonUtility.getWord(LabelKey.MULTIMONITOR_2);
                     case 3 -> CommonUtility.getWord(LabelKey.MULTIMONITOR_3);
