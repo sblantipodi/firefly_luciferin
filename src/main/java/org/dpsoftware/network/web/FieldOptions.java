@@ -130,6 +130,15 @@ public record FieldOptions(List<Option> options, String type) {
         // 3D LUT (color tone map) options, the available .cube LUTs (classpath + config dir) with "Disabled" pinned at the top
         options.put(WebFieldNames.CUBE_LUT, new FieldOptions(DisplayDialogOptions.availableLuts().stream()
                 .map(name -> new FieldOptions.Option(name, name)).toList(), "string"));
+        options.put("satelliteDeviceIp", new FieldOptions(SatellitesOptions.availableDevices(deviceConfig,
+                        GuiSingleton.getInstance().deviceTableData).stream()
+                .map(choice -> new Option(choice.value(), choice.label())).toList(), "string"));
+        options.put("satelliteZone", new FieldOptions(SatellitesOptions.zones(deviceConfig).stream()
+                .map(choice -> new Option(choice.value(), choice.label())).toList(), "string"));
+        options.put("satelliteOrientation", new FieldOptions(SatellitesOptions.directions().stream()
+                .map(choice -> new Option(choice.value(), choice.label())).toList(), "string"));
+        options.put("satelliteAlgo", new FieldOptions(SatellitesOptions.algorithms().stream()
+                .map(choice -> new Option(choice.value(), choice.label())).toList(), "string"));
         return options;
     }
 
@@ -324,6 +333,20 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.POWER_SAVING, CommonUtility.getWord("fxml.devicestab.power.saving"));
         labels.put(WebFieldNames.MULTI_MONITOR, CommonUtility.getWord("fxml.devicestab.multi.monitor"));
         labels.put(WebFieldNames.MULTI_SCREEN_SINGLE_DEVICE, CommonUtility.getWord("fxml.devicestab.single.device"));
+        labels.put("satelliteDefaultZone", Enums.PossibleZones.TOP.getBaseI18n());
+        labels.put("satelliteDeviceIp", CommonUtility.getWord("fxml.satellite.manager.sat.ip"));
+        labels.put("satelliteZone", CommonUtility.getWord("fxml.satellite.manager.zone"));
+        labels.put("satelliteOrientation", CommonUtility.getWord("fxml.satellite.orientation"));
+        labels.put("satelliteLedNum", CommonUtility.getWord("fxml.satellite.lednum"));
+        labels.put("satelliteAlgo", CommonUtility.getWord("fxml.satellite.manager.algo"));
+        labels.put("satelliteTableIp", CommonUtility.getWord("fxml.satellite.deviceip"));
+        labels.put("satelliteTableZone", CommonUtility.getWord("fxml.satellite.zone"));
+        labels.put("satelliteTableOrientation", CommonUtility.getWord("fxml.satellite.orientation"));
+        labels.put("satelliteTableAlgo", CommonUtility.getWord("fxml.satellite.algo"));
+        labels.put("satelliteAdd", CommonUtility.getWord("web.satellite.add"));
+        labels.put("satelliteAddTooltip", CommonUtility.getWord("tooltip.sat.manager.add"));
+        labels.put("satelliteRemove", CommonUtility.getWord("tooltip.sat.btn"));
+        labels.put("satelliteIpError", CommonUtility.getWord("satellite.ip.error.content"));
         labels.put(WebFieldNames.CHECK_FOR_UPDATES, CommonUtility.getWord("fxml.devicestab.check.updates"));
         labels.put(WebFieldNames.SYNC_CHECK, CommonUtility.getWord("fxml.devicestab.sync.check"));
         labels.put(WebFieldNames.ENABLE_LDR, CommonUtility.getWord("fxml.eyecare.enableldr"));
@@ -364,7 +387,7 @@ public record FieldOptions(List<Option> options, String type) {
         titles.put(WebFieldNames.SECTION_PROFILE, CommonUtility.getWord("fxml.misctab.profiles"));
         titles.put(WebFieldNames.SECTION_SMOOTHING, CommonUtility.getWord("fxml.dialog.smoothing.title"));
         titles.put(WebFieldNames.SECTION_CONNECTED_DEVICES, CommonUtility.getWord("fxml.devicestab.connected.devices"));
-        titles.put(WebFieldNames.SECTION_SATELLITES, CommonUtility.getWord("fxml.devicestab.satellites"));
+        titles.put(WebFieldNames.SECTION_SATELLITES, CommonUtility.getWord("fxml.satellite.manage.sat"));
         return titles;
     }
 

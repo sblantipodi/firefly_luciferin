@@ -138,13 +138,7 @@ export const sections = [
                 ]
             },
             {
-                id: 'satellites', fields: [
-                    {
-                        id: 'satInfo',
-                        type: 'note',
-                        note: 'Managed via the satellites map, currently not available from the web API (excluded by the server). Manage it from the JavaFX interface.'
-                    }
-                ]
+                id: 'satellites', fields: [{id: 'satelliteManager', type: 'satelliteManager'}]
             }
         ]
     }

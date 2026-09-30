@@ -400,3 +400,12 @@ body.server-down > :not(#offlineOverlay) {
     line-height: 1;
     opacity: 0.8;
 }
+
+.orange-link, .orange-link:hover {
+    color: orange;
+    font-weight: bold;
+}
+
+.orange-link:hover {
+    color: darkorange;
+}
