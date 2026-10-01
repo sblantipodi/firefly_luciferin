@@ -115,7 +115,7 @@ public record FieldOptions(List<Option> options, String type) {
         options.put(WebFieldNames.GAMMA, new FieldOptions(MiscTabOptions.gammaValues().stream()
                 .map(value -> new Option(value, value)).toList(), "number"));
         options.put("audioChannels", localized(Enums.AudioChannels.class));
-        options.put("audioDevice", new FieldOptions(MiscTabOptions.audioDeviceNames().stream()
+        options.put("audioDevice", new FieldOptions(MiscTabOptions.webAudioDeviceNames().stream()
                 .map(name -> {
                     Enums.Audio known = LocalizedEnum.fromStr(Enums.Audio.class, name);
                     return new Option(known == null ? name : known.getBaseI18n(), name);

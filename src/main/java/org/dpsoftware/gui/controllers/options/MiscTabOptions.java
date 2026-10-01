@@ -39,11 +39,16 @@ import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Values and conversions shared by the JavaFX Misc tab and web settings page.
  */
 public final class MiscTabOptions {
+
+    private static final AtomicBoolean WEB_AUDIO_DISCOVERY_STARTED = new AtomicBoolean();
+    private static volatile boolean webAudioDiscoveryComplete;
+    private static volatile List<String> webAudioDevices = List.of();
 
     /**
      * Prevents instantiation.
@@ -98,6 +103,41 @@ public final class MiscTabOptions {
             // Native audio discovery can be unavailable during headless startup.
         }
         return new ArrayList<>(names);
+    }
+
+    /**
+     * Returns audio choices without running native discovery on the HTTP thread.
+     * The first request starts discovery in the background if no devices are cached.
+     */
+    public static List<String> webAudioDeviceNames() {
+        if (!WEB_AUDIO_DISCOVERY_STARTED.get() && !AudioSingleton.getInstance().audioDevices.isEmpty()) {
+            return audioDeviceNames();
+        }
+        if (WEB_AUDIO_DISCOVERY_STARTED.compareAndSet(false, true)) {
+            Thread.ofPlatform().daemon().name("firefly-web-audio-discovery").start(() -> {
+                try {
+                    webAudioDevices = new AudioLoopbackSoftware().getLoopbackDevices().values().stream()
+                            .map(AudioDevice::getDeviceName)
+                            .filter(name -> name.contains(Constants.LOOPBACK) || name.contains(Constants.SHARED))
+                            .toList();
+                } catch (RuntimeException | LinkageError ignored) {
+                    // Native audio discovery can be unavailable during headless startup.
+                } finally {
+                    webAudioDiscoveryComplete = true;
+                }
+            });
+        }
+        Set<String> names = new LinkedHashSet<>();
+        if (NativeExecutor.isWindows()) {
+            names.add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
+        }
+        names.add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
+        names.addAll(webAudioDevices);
+        return new ArrayList<>(names);
+    }
+
+    public static boolean webAudioDiscoveryPending() {
+        return WEB_AUDIO_DISCOVERY_STARTED.get() && !webAudioDiscoveryComplete;
     }
 
     /**

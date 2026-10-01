@@ -471,7 +471,42 @@ function showChristmasSnow() {
     }
 }
 
+// Refresh just the audio selector when native discovery finishes, preserving the user's selection.
+function refreshAudioDevicesWhenReady(attempt) {
+    if (attempt >= 30) {
+        return;
+    }
+    setTimeout(function () {
+        fetchJson('getFieldOptions', {cache: 'no-store'}).then(function (data) {
+            if (data.audioDevicesPending) {
+                refreshAudioDevicesWhenReady(attempt + 1);
+                return;
+            }
+            var field = data.options && data.options.audioDevice;
+            var select = document.getElementById('audioDevice');
+            if (!field || !select) {
+                return;
+            }
+            state.fieldOptions.audioDevice = field;
+            var selected = select.value;
+            select.replaceChildren();
+            field.options.forEach(function (entry) {
+                select.add(new Option(entry.label, entry.value));
+            });
+            if (selected && !Array.prototype.some.call(select.options, function (option) {
+                return option.value === selected;
+            })) {
+                select.add(new Option(selected, selected));
+            }
+            select.value = selected;
+        }).catch(function () {
+            refreshAudioDevicesWhenReady(attempt + 1);
+        });
+    }, 1000);
+}
+
 $(function () {
+    var audioDevicesPending = false;
     showChristmasSnow();
     fetchJson('sectionTitles').then(function (titles) {
         state.sectionTitles = titles || {};
@@ -480,6 +515,7 @@ $(function () {
         return fetchJson('getFieldOptions', {cache: 'no-store'});
     }).then(function (data) {
         state.fieldOptions = (data && data.options) || {};
+        audioDevicesPending = !!(data && data.audioDevicesPending);
         state.smoothingPresets = (data && data.smoothingPresets) || {};
         state.bottomRowLayouts = (data && data.bottomRowLayouts) || {};
         state.fieldLabels = (data && data.labels) || {};
@@ -519,6 +555,9 @@ $(function () {
     }).then(function (cfg) {
         state.lastConfig = cfg || {};
         fillForm(cfg);
+        if (audioDevicesPending) {
+            refreshAudioDevicesWhenReady(0);
+        }
         syncLdrControls();
         refreshLdrLabel();
         initializeSatellites(cfg);

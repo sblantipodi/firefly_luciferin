@@ -11,8 +11,8 @@
             minWidth="-Infinity" prefHeight="500.0" prefWidth="440.0"
             stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal"
             fx:controller="org.dpsoftware.gui.controllers.SettingsController">
-    <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="480.0" prefWidth="420.0">
-        <VBox prefHeight="480.0" prefWidth="420.0">
+    <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="460.0" prefWidth="420.0">
+        <VBox prefHeight="460.0" prefWidth="420.0">
             <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="420.0">
                 <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="320.0">
                     <ImageView fitHeight="17.0" fitWidth="17.0" nodeOrientation="RIGHT_TO_LEFT" pickOnBounds="true"

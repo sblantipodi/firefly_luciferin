@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="455.0" prefWidth="420.0"
@@ -51,8 +51,11 @@
             <CheckBox fx:id="syncCheck" mnemonicParsing="false" text="%fxml.devicestab.sync.check" wrapText="true"
                       GridPane.fillHeight="false" GridPane.valignment="CENTER"/>
             <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" text="%fxml.devicestab.check.updates"
-                      wrapText="true" GridPane.columnIndex="1" GridPane.fillHeight="false"
-                      GridPane.valignment="CENTER"/>
+                      wrapText="true" GridPane.columnIndex="1" GridPane.fillHeight="false" GridPane.valignment="CENTER">
+                <padding>
+                    <Insets left="6.0"/>
+                </padding>
+            </CheckBox>
         </GridPane>
         <Label text="%fxml.devicestab.system" wrapText="true" GridPane.rowIndex="9"/>
         <GridPane GridPane.columnIndex="1" GridPane.rowIndex="9" GridPane.valignment="CENTER">
@@ -64,10 +67,13 @@
                 <RowConstraints vgrow="ALWAYS"/>
             </rowConstraints>
             <CheckBox fx:id="startWithSystem" mnemonicParsing="false" text="%fxml.misctab.runlogin" wrapText="true"
-                      GridPane.fillHeight="false" GridPane.valignment="CENTER"/>
+                      GridPane.columnIndex="1" GridPane.fillHeight="false" GridPane.valignment="CENTER">
+                <padding>
+                    <Insets left="6.0"/>
+                </padding>
+            </CheckBox>
             <CheckBox fx:id="webMcpServerEnabled" mnemonicParsing="false" onAction="#saveButtonHover"
-                      text="Web / MCP server" wrapText="true" GridPane.columnIndex="1" GridPane.fillHeight="false"
-                      GridPane.valignment="CENTER"/>
+                      text="Web / MCP server" wrapText="true" GridPane.fillHeight="false" GridPane.valignment="CENTER"/>
         </GridPane>
         <Label text="%fxml.modetab.binddisplay" wrapText="true" GridPane.rowIndex="2" />
         <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1"
