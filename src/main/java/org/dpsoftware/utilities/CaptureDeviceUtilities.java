@@ -168,7 +168,7 @@ public class CaptureDeviceUtilities {
     }
 
     /**
-     * Lists capture devices via the GStreamer DeviceMonitor, skipping libcamera ACPI duplicates on Linux.
+     * Lists capture devices via the GStreamer DeviceMonitor using only sources supported by our pipeline.
      */
     private static List<CaptureDevice> discoverViaDeviceMonitor() {
         List<CaptureDevice> list = new ArrayList<>();
@@ -192,7 +192,52 @@ public class CaptureDeviceUtilities {
                 }
                 monitor.stop();
             }
-            return list;
+            return usableDevices(list, NativeExecutor.isLinux());
+        }
+    }
+
+    /**
+     * Filters sources to supported formats and, on Linux, V4L2 paths. Providers exposing the
+     * same V4L2 node are collapsed without merging separate nodes with identical display names.
+     */
+    public static List<CaptureDevice> usableDevices(List<CaptureDevice> devices, boolean linux) {
+        List<CaptureDevice> usable = new ArrayList<>();
+        Set<String> paths = new HashSet<>();
+        for (CaptureDevice device : devices) {
+            if (linux && (device.getDevPath() == null || !device.getDevPath().matches("/dev/video\\d+"))) {
+                continue;
+            }
+            List<PixelFormat> formats = new ArrayList<>();
+            for (PixelFormat format : device.getFormats()) {
+                if (!isSupportedFormat(format.getName())) continue;
+                PixelFormat supported = new PixelFormat(format.getName());
+                for (Resolution resolution : format.getResolutions()) {
+                    if (resolution.getWidth() <= 0 || resolution.getHeight() <= 0
+                            || (Enums.VideoDeviceFormat.MJPG.name().equals(format.getName()) && resolution.getMaxFps() <= 0))
+                        continue;
+                    Resolution copy = new Resolution(resolution.getWidth(), resolution.getHeight());
+                    copy.setFps(new ArrayList<>(resolution.getFps()));
+                    supported.getResolutions().add(copy);
+                }
+                if (!supported.getResolutions().isEmpty()) formats.add(supported);
+            }
+            if (formats.isEmpty() || (linux && !paths.add(device.getDevPath()))) {
+                continue;
+            }
+            CaptureDevice filtered = new CaptureDevice(device.getDevPath(), device.getFriendlyName(), device.getDeviceId());
+            filtered.setFormats(new ArrayList<>(formats));
+            usable.add(filtered);
+        }
+        return usable;
+    }
+
+    private static boolean isSupportedFormat(String name) {
+        if (name == null) return false;
+        try {
+            // The pipeline decodes JPEG and accepts raw video; it does not decode H264.
+            return Enums.VideoDeviceFormat.valueOf(name) != Enums.VideoDeviceFormat.H264;
+        } catch (IllegalArgumentException ignored) {
+            return false;
         }
     }
 

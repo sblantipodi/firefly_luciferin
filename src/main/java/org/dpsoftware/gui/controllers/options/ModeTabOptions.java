@@ -77,7 +77,8 @@ public final class ModeTabOptions {
     public static List<String> externalCaptureDeviceNames() {
         List<CaptureDeviceUtilities.CaptureDevice> devices = new ArrayList<>(ManagerSingleton.getInstance().getCaptureDevices());
         devices.addAll(CaptureDeviceUtilities.discover());
-        return devices.stream().map(CaptureDeviceUtilities.CaptureDevice::getFriendlyName)
+        return CaptureDeviceUtilities.usableDevices(devices, NativeExecutor.isLinux()).stream()
+                .map(CaptureDeviceUtilities.CaptureDevice::getFriendlyName)
                 .filter(name -> name != null && !name.isBlank()).distinct().toList();
     }
 

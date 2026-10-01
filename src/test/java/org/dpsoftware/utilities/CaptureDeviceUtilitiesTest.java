@@ -38,6 +38,47 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CaptureDeviceUtilitiesTest {
 
+    private static CaptureDeviceUtilities.CaptureDevice source(String path, String name, String format, int fps) {
+        var device = new CaptureDeviceUtilities.CaptureDevice(path, name, 0);
+        var pixelFormat = new CaptureDeviceUtilities.PixelFormat(format);
+        var resolution = new CaptureDeviceUtilities.Resolution(1920, 1080);
+        if (fps > 0) resolution.getFps().add(fps);
+        pixelFormat.getResolutions().add(resolution);
+        device.getFormats().add(pixelFormat);
+        return device;
+    }
+
+    @Test
+    void usableDevices_linuxKeepsOnlyDistinctV4l2Nodes() {
+        var devices = CaptureDeviceUtilities.usableDevices(List.of(
+                source(null, "/base/axi/usb-2b89:5854", "MJPG", 0),
+                source("/dev/video0", "UGREEN (V4L2)", "MJPG", 60),
+                source("/dev/video0", "UGREEN duplicate", "YUY2", 30),
+                source("/dev/video2", "UGREEN (V4L2)", "YUY2", 30),
+                source("77", "PipeWire-only", "YUY2", 30)), true);
+        assertEquals(List.of("/dev/video0", "/dev/video2"),
+                devices.stream().map(CaptureDeviceUtilities.CaptureDevice::getDevPath).toList());
+    }
+
+    @Test
+    void usableDevices_rejectsUnsupportedFormatsAndJpegWithoutFramerate() {
+        assertTrue(CaptureDeviceUtilities.usableDevices(List.of(
+                source("/dev/video0", "H264-only", "H264", 30),
+                source("/dev/video2", "DMA-only", "DMA_DRM", 30),
+                source("/dev/video4", "JPEG without FPS", "MJPG", 0)), true).isEmpty());
+        var mixed = source("/dev/video0", "Mixed", "DMA_DRM", 30);
+        mixed.getFormats().addAll(source("/dev/video0", "Mixed", "YUY2", 0).getFormats());
+        assertEquals(List.of("YUY2"), CaptureDeviceUtilities.usableDevices(List.of(mixed), true)
+                .getFirst().getFormats().stream().map(CaptureDeviceUtilities.PixelFormat::getName).toList());
+    }
+
+    @Test
+    void usableDevices_doesNotRequireV4l2PathsOnOtherPlatforms() {
+        assertEquals(2, CaptureDeviceUtilities.usableDevices(List.of(
+                source(null, "Camera A", "MJPG", 30),
+                source(null, "Camera B", "YUY2", 30)), false).size());
+    }
+
     // --- Resolution ---
 
     @Test

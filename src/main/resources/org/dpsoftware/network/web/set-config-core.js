@@ -326,6 +326,11 @@ function fillField(f, cfg) {
                 var opt = document.createElement('option');
                 opt.value = val;
                 opt.textContent = val;
+                if (f.id === 'monitorNumber' && val.startsWith('device:')) {
+                    // Preserve the saved selection without offering an undiscovered source as usable.
+                    opt.textContent = val.substring('device:'.length);
+                    opt.disabled = true;
+                }
                 el.appendChild(opt);
             }
             el.value = present || !['splitBottomMargin', 'grabberAreaTopBottom', 'grabberSide', 'gapTypeTopBottom', 'gapTypeSide'].includes(f.id) ? val : '0%';
