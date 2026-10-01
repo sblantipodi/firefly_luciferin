@@ -37,12 +37,7 @@ import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
-import org.freedesktop.gstreamer.Bin;
-import org.freedesktop.gstreamer.Bus;
-import org.freedesktop.gstreamer.StateChangeReturn;
-import org.freedesktop.gstreamer.Gst;
-import org.freedesktop.gstreamer.Pipeline;
-import org.freedesktop.gstreamer.Version;
+import org.freedesktop.gstreamer.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -151,7 +146,8 @@ public class GrabberManager {
     }
 
     /**
-     * Cancel our capture task and close only the Linux executor owned by this manager.
+     * Cancel the capture task, close the Linux executor owned by this manager,
+     * and stop the current grabber's interpolation worker.
      */
     public void shutdownCaptureScheduler() {
         if (captureTask != null) {
@@ -161,6 +157,16 @@ public class GrabberManager {
         if (linuxCaptureExecutor != null) {
             linuxCaptureExecutor.shutdownNow();
             linuxCaptureExecutor = null;
+        }
+        stopFrameGeneration();
+    }
+
+    /**
+     * Stop frame generation on the current video grabber, if one exists.
+     */
+    public void stopFrameGeneration() {
+        if (vc != null) {
+            vc.stopFrameGeneration();
         }
     }
 
@@ -397,6 +403,7 @@ public class GrabberManager {
             bin = null;
         }
         if (vc != null) {
+            vc.stopFrameGeneration();
             vc.videosink.dispose();
             vc.getElement().dispose();
             vc = null;
@@ -502,6 +509,7 @@ public class GrabberManager {
      */
     private void disposePipeline() {
         if (GrabberSingleton.getInstance().pipe != null && !GrabberSingleton.getInstance().pipe.isPlaying() && !ManagerSingleton.getInstance().pipelineStarting) {
+            stopFrameGeneration();
             log.info("Dispose pipeline: releasing bin and pipeline (this clears lastRgbBuffer)");
             Gst.invokeLater(bin::dispose);
             Gst.invokeLater(vc.videosink::dispose);

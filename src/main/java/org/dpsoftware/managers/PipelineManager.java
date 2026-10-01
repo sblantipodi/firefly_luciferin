@@ -678,6 +678,9 @@ public class PipelineManager {
                 && Configuration.CaptureMethod.valueOf(MainSingleton.getInstance().config.getCaptureMethod()).isGStreamer()) {
             GrabberSingleton.getInstance().pipe.stop();
         }
+        if (GuiSingleton.getInstance().getGrabberManager() != null) {
+            GuiSingleton.getInstance().getGrabberManager().stopFrameGeneration();
+        }
         MainSingleton.getInstance().FPS_PRODUCER_COUNTER = 0;
         MainSingleton.getInstance().FPS_CONSUMER_COUNTER = 0;
         MainSingleton.getInstance().FPS_CONSUMER = 0;

@@ -89,7 +89,13 @@ public class GStreamerGrabber {
         MainSingleton main = MainSingleton.getInstance();
         this.videosink = appsink;
         ledMatrix = main.getConfig().getLedMatrixInUse(main.getConfig().getDefaultLedMatrix());
-        frameGenerator = new FrameGenerator(ledMatrix.size());
+        frameGenerator = new FrameGenerator(ledMatrix.size(), leds -> {
+            if (canOutputCapturedColors()
+                    && !main.getConfig().getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n())
+                    && main.getConfig().getFrameInsertionTarget() > 0) {
+                PipelineManager.offerToTheQueue(leds);
+            }
+        });
         videosink.set(Constants.EMIT_SIGNALS, true);
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
@@ -196,6 +202,25 @@ public class GStreamerGrabber {
             targetFramerate = String.valueOf(target);
         }
         return Integer.parseInt(targetFramerate);
+    }
+
+    /**
+     * Check whether captured colors may be sent given shutdown and audio effect state.
+     *
+     * @return true when capture output is allowed, including music brightness mode
+     */
+    private static boolean canOutputCapturedColors() {
+        MainSingleton main = MainSingleton.getInstance();
+        return !main.exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
+                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, main.getConfig().getEffect())));
+    }
+
+    /**
+     * Stop the interpolation worker and discard pending colors before switching
+     * output mode or releasing the capture pipeline.
+     */
+    public void stopFrameGeneration() {
+        frameGenerator.stop();
     }
 
     /**
@@ -590,15 +615,17 @@ public class GStreamerGrabber {
                 ColorFloat[] leds = processBufferUsingCpu(width, height, rgbBuffer);
                 ImageProcessor.averageOnAllLeds(leds);
                 // Put the image in the queue or send it via socket to the main instance server
-                if (!main.exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
-                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, main.getConfig().getEffect())))) {
+                if (canOutputCapturedColors()) {
                     if (!main.getConfig().getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && main.getConfig().getFrameInsertionTarget() > 0) {
                         frameGenerator.frameGeneration(leds);
                     } else {
+                        frameGenerator.stop();
                         PipelineManager.offerToTheQueue(leds);
                     }
                     // Increase the FPS counter
                     main.FPS_PRODUCER_COUNTER++;
+                } else {
+                    frameGenerator.stop();
                 }
             } finally {
                 bufferLock.unlock();
