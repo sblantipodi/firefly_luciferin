@@ -14,7 +14,7 @@ import {
     wireSatellites
 } from './set-config-device.js';
 import {addProfile, renderProfiles} from './set-config-profiles.js';
-import {wireLivePreviewButton} from './set-config-preview.js';
+import {wireLivePreviewButton, withLivePreviewRestart} from './set-config-preview.js';
 import {pollServerStatus} from './set-config-status.js';
 import {showToast} from './set-config-ui.js';
 
@@ -338,9 +338,17 @@ function wireSelectChangeListeners() {
         el.addEventListener('change', function () {
             if (!el.id.startsWith('improv') && !['luminosityThreshold', 'brightnessLimiter',
                 'ldrInterval', 'minimumBrightness'].includes(el.id)) {
-                sendLiveChange(el.id, el.value).then(function () {
+                var value = el.value;
+                var change = function () {
+                    return sendLiveChange(el.id, value);
+                };
+                var request = el.id === 'resamplingFactor' ? withLivePreviewRestart(change) : change();
+                request.then(function () {
                     if (el.id === 'effect') setMiscLedButton(true);
-                }).catch(function () {
+                }).catch(function (error) {
+                    if (el.id === 'resamplingFactor') {
+                        showToast('Unable to update live preview: ' + error.message, 'bg-danger text-white');
+                    }
                 });
             }
         });

@@ -204,10 +204,15 @@
             reconnectTimer = null;
         }
         if (socket) {
+            // A deliberate stop must not schedule a reconnect after the next start.
+            socket.onclose = null;
+            socket.onmessage = null;
+            socket.onopen = null;
             socket.close();
             socket = null;
         }
         if (peer) {
+            peer.onconnectionstatechange = null;
             peer.close();
             peer = null;
         }
@@ -216,7 +221,7 @@
             videoEl.classList.remove('show');
             videoEl.srcObject = null;
         }
-        fetch('screenshot/enable?disable=true', {method: 'POST'}).catch(function () {
+        return fetch('screenshot/enable?disable=true', {method: 'POST'}).catch(function () {
         });
     }
 
