@@ -1,6 +1,6 @@
 // Device controls of the settings page: color picker, output device/serial selection, LED toggle, live device table and per-device status polling.
 import {state} from './set-config-state.js';
-import {fetchJson} from './set-config-api.js';
+import {fetchJson, postResponse} from './set-config-api.js';
 import {escapeHtml, showToast} from './set-config-ui.js';
 
 var colorPicker;
@@ -194,16 +194,16 @@ function setToggleUi(on) {
     }
 }
 
-// Sends a payload (state/color/whitetemp) directly to the Glow Worm device over its HTTP API (no-cors fetch, so the response is not readable).
+// Sends through Firefly so its runtime color stays in sync and MQTT avoids the firmware's HTTP effect notification.
 function sendToDevice(payload, successMsg) {
     var ip = resolveDeviceIp();
     if (!ip) {
         showToast('No connected device matches the output device', 'bg-warning text-dark');
         return;
     }
-    var url = 'http://' + ip + '/lights/glowwormluciferin/set?payload=' + encodeURIComponent(JSON.stringify(payload));
-    fetch(url, {mode: 'no-cors'}).then(function () {
+    return postResponse('deviceState?ip=' + encodeURIComponent(ip), JSON.stringify(payload)).then(function () {
         showToast(successMsg || ('Sent to ' + ip), 'bg-success text-white');
+        syncDeviceFromPrefs();
     }).catch(function (err) {
         showToast('Unable to reach device ' + ip + ': ' + err.message, 'bg-danger text-white');
     });
@@ -239,7 +239,6 @@ export function initColorPicker() {
         lastColor = color.rgb;
         colorPendingUntil = Date.now() + 7000;
         sendToDevice(buildPayload(), 'Color sent to device');
-        syncDeviceFromPrefs();
     });
     var toggle = document.getElementById('toggleLED');
     if (toggle) {
@@ -247,7 +246,6 @@ export function initColorPicker() {
             deviceState.on = !deviceState.on;
             setToggleUi(deviceState.on);
             sendToDevice(buildPayload(), 'State sent to device');
-            syncDeviceFromPrefs();
         };
     }
     var outputDeviceEl = document.getElementById('outputDevice');

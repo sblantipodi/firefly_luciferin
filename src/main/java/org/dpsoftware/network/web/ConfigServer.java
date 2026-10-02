@@ -456,6 +456,7 @@ public class ConfigServer {
                 server.createContext("/provisioningOptions", withGuard(this::handleProvisioningOptions, GET_METHOD));
                 server.createContext("/provisionDevice", withGuard(this::handleProvisionDevice, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(deviceEndpointHandler::handleDevicePrefs, GET_METHOD));
+                server.createContext("/deviceState", withGuard(deviceEndpointHandler::handleDeviceState, POST_METHOD));
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
                 server.createContext(Constants.LOG_ENDPOINT, withGuard(this::handleGetLog, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENDPOINT, withGuard(livePreviewWebHandler::handleGetScreenshot, GET_METHOD));

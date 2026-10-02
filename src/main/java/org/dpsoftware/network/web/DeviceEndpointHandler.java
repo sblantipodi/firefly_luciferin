@@ -25,11 +25,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.controllers.options.MiscTabOptions;
+import org.dpsoftware.managers.ManagerSingleton;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.DeviceDto;
+import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
@@ -46,6 +52,109 @@ import java.util.List;
  */
 @Slf4j
 public class DeviceEndpointHandler {
+
+    /**
+     * Validates the LED state, RGB channels and white temperature of a picker command.
+     *
+     * @param payload the command containing only state, color and whitetemp
+     * @throws IllegalArgumentException when a required field is missing, invalid or unexpected
+     */
+    static void validateDeviceState(JsonNode payload) {
+        if (payload == null || !payload.isObject()
+                || !payload.path(Constants.STATE).isTextual()
+                || !(Constants.ON.equals(payload.path(Constants.STATE).asText())
+                || Constants.OFF.equals(payload.path(Constants.STATE).asText()))
+                || !payload.path(Constants.COLOR).isObject()
+                || !inRange(payload.path(Constants.WHITE_TEMP), 20, 110)) {
+            throw new IllegalArgumentException("Invalid device state");
+        }
+        for (String channel : List.of("r", "g", "b")) {
+            if (!inRange(payload.path(Constants.COLOR).path(channel), 0, 255)) {
+                throw new IllegalArgumentException("Invalid color channel");
+            }
+        }
+        if (payload.size() != 3 || payload.path(Constants.COLOR).size() != 3) {
+            throw new IllegalArgumentException("Unexpected device state fields");
+        }
+    }
+
+    /**
+     * Checks whether a JSON value is an integer within the inclusive bounds.
+     *
+     * @param value the JSON value to check
+     * @param min   the minimum allowed value
+     * @param max   the maximum allowed value
+     * @return true when the value fits in an int and lies within the bounds
+     */
+    private static boolean inRange(JsonNode value, int min, int max) {
+        return value.isIntegralNumber() && value.canConvertToInt() && value.asInt() >= min && value.asInt() <= max;
+    }
+
+    /**
+     * Updates the runtime picker state while preserving the stored color opacity.
+     *
+     * @param config  the runtime configuration to update
+     * @param payload the picker command already checked by {@link #validateDeviceState(JsonNode)}
+     */
+    static void applyDeviceState(Configuration config, JsonNode payload) {
+        String[] previousColor = config.getColorChooser().split(",");
+        JsonNode color = payload.path(Constants.COLOR);
+        config.setColorChooser(MiscTabOptions.colorChooser(color.path("r").asInt(), color.path("g").asInt(),
+                color.path("b").asInt(), previousColor.length > 3 ? Integer.parseInt(previousColor[3]) : 255));
+        config.setToggleLed(Constants.ON.equals(payload.path(Constants.STATE).asText()));
+        config.setWhiteTemperature(payload.path(Constants.WHITE_TEMP).asInt());
+    }
+
+    /**
+     * Applies picker commands to the runtime configuration before sending them to the output device.
+     * MQTT's set topic processes color updates without the HTTP endpoint's effectToFf feedback.
+     *
+     * @param exchange the HTTP exchange containing the picker command and response
+     * @throws IOException when the request or response cannot be processed
+     */
+    public void handleDeviceState(HttpExchange exchange) throws IOException {
+        String ip = queryIpParam(exchange);
+        var device = CommonUtility.getDeviceToUse();
+        if (ip == null || !NetworkManager.isValidIp(ip) || device == null || !ip.equals(device.getDeviceIP())) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid output device");
+            return;
+        }
+        JsonNode payload;
+        try (var body = exchange.getRequestBody()) {
+            payload = CommonUtility.JSON_MAPPER.readTree(body);
+        } catch (IOException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid JSON payload");
+            return;
+        }
+        Configuration config = MainSingleton.getInstance().config;
+        try {
+            validateDeviceState(payload);
+        } catch (IllegalArgumentException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
+            return;
+        }
+        if (config.isMqttEnable() && (ManagerSingleton.getInstance().client == null
+                || !ManagerSingleton.getInstance().client.isConnected())) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_UNAVAILABLE, "MQTT is disconnected");
+            return;
+        }
+        applyDeviceState(config, payload);
+        ObjectNode command = payload.deepCopy();
+        command.put(Constants.MAC, device.getMac());
+        if (config.isMqttEnable()) {
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT),
+                    CommonUtility.toJsonString(command));
+        } else {
+            // setLeds() also reads effect on HTTP requests; supply it to preserve the current effect.
+            command.put(Constants.EFFECT, config.getEffect());
+            var response = TcpClient.httpGet(CommonUtility.toJsonString(command), Constants.TOPIC_DEFAULT_MQTT, ip);
+            if (response == null || response.getErrorCode() != Constants.HTTP_SUCCESS) {
+                HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_GATEWAY, "Device did not respond");
+                return;
+            }
+        }
+        HttpResponses.sendOk(exchange);
+    }
 
     /**
      * Read the ip query parameter from the request, or null when absent.
