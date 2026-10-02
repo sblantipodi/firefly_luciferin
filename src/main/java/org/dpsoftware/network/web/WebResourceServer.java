@@ -23,6 +23,7 @@ package org.dpsoftware.network.web;
 
 import com.sun.net.httpserver.HttpExchange;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.trayicon.TrayIconState;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -129,6 +130,8 @@ public class WebResourceServer {
         String path = exchange.getRequestURI().getPath();
         if (path == null || path.equals("/") || path.isEmpty()) {
             handleSetConfigPage(exchange);
+        } else if (path.equals("/luciferin-logo.png")) {
+            handleTrayIconImage(exchange);
         } else if (path.endsWith(".js")) {
             handleSetConfigPageJs(exchange);
         } else if (path.endsWith(".css")) {
@@ -155,6 +158,21 @@ public class WebResourceServer {
         byte[] responseBytes = content.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Cache-Control", "no-store");
         HttpResponses.sendBytes(exchange, HttpURLConnection.HTTP_OK, mimeType, responseBytes);
+    }
+
+    /**
+     * Serves the same PNG selected for the tray; image bytes must not be decoded as text.
+     */
+    private void handleTrayIconImage(HttpExchange exchange) throws IOException {
+        String resource = TrayIconState.currentImage();
+        try (InputStream stream = getClass().getResourceAsStream(resource)) {
+            if (stream == null) {
+                HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Resource not found: " + resource);
+                return;
+            }
+            exchange.getResponseHeaders().set("Cache-Control", "no-store");
+            HttpResponses.sendBytes(exchange, HttpURLConnection.HTTP_OK, "image/png", stream.readAllBytes());
+        }
     }
 
     /**

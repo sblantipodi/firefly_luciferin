@@ -28,7 +28,6 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.EnvConstants;
-import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.bindings.appindicator.GCallback;
@@ -238,8 +237,8 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
+        String logoPath = TrayIconState.update(playerStatus);
         if (NativeExecutor.isSystemTraySupported()) {
-            String logoPath = GuiManager.computeImageToUse(playerStatus);
             if (NativeExecutor.isFlatpak()) {
                 try {
                     var absolutePath = logoPath.split("/");

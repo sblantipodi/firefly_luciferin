@@ -37,6 +37,7 @@ import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
 import org.dpsoftware.gui.controllers.options.*;
+import org.dpsoftware.gui.trayicon.TrayIconState;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
@@ -129,7 +130,8 @@ public class ConfigServer {
                 MainSingleton.getInstance().FPS_GW_CONSUMER,
                 GuiSingleton.getInstance().isUpgrade(),
                 GuiSingleton.getInstance().isGlowWormUpdateAvailable(),
-                GuiSingleton.getInstance().isGlowWormUpdateInProgress()));
+                GuiSingleton.getInstance().isGlowWormUpdateInProgress(),
+                TrayIconState.currentImage()));
     }
 
     static String tailLog(Path logFile) throws IOException {
@@ -666,8 +668,9 @@ public class ConfigServer {
      * @param fireflyUpdateAvailable whether a newer Firefly release has been found
      * @param glowWormUpdateAvailable whether a connected Glow Worm device needs a firmware update
      * @param glowWormUpdateInProgress whether connected Glow Worm devices are being updated
+     * @param trayIconImage current tray image resource, used to refresh the web logo on changes
      */
     public record FpsDto(float producing, float consuming, boolean fireflyUpdateAvailable,
-                         boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress) {
+                         boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, String trayIconImage) {
     }
 }

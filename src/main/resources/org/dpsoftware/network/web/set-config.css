@@ -267,6 +267,22 @@ body {
     margin: 2rem 1rem;
 }
 
+#settingsForm {
+    position: relative;
+}
+
+/* Use the existing gap above the accordions without adding to the page height. */
+.settings-logo {
+    position: absolute;
+    bottom: calc(100% + 15px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
 body.server-down {
     pointer-events: none;
 }

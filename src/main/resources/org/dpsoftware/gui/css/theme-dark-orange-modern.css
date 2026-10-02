@@ -81,6 +81,14 @@
     -fx-text-fill: #fff0e4;
 }
 
+.tab-pane > .tab-header-area > .headers-region > .tab .settings-tab-icon {
+    -fx-background-color: #c9c8c6;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .settings-tab-icon {
+    -fx-background-color: #fff0e4;
+}
+
 .tab-pane > .tab-content-area {
     -fx-background-color: #292d33;
 }

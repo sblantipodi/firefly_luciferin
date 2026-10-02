@@ -24,6 +24,11 @@ export function pollServerStatus(force) {
         if (serverPollController !== controller) {
             return;
         }
+        var logo = document.getElementById('settingsLogo');
+        if (logo && fps.trayIconImage && logo.dataset.trayIconImage !== fps.trayIconImage) {
+            logo.dataset.trayIconImage = fps.trayIconImage;
+            logo.src = 'luciferin-logo.png?icon=' + encodeURIComponent(fps.trayIconImage);
+        }
         var el = document.getElementById('fpsCounter');
         if (el) {
             el.textContent = 'Firefly ' + Number(fps.producing).toFixed(0) + ' FPS / GlowWorm ' + Number(fps.consuming).toFixed(0) + ' FPS';
