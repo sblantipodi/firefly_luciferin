@@ -44,9 +44,7 @@
         if (peer) {
             return peer;
         }
-        peer = new RTCPeerConnection({
-            iceServers: [{urls: 'stun:stun.l.google.com:19302'}]
-        });
+        peer = new RTCPeerConnection();
         peer.onicecandidate = function (event) {
             if (event.candidate && socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({

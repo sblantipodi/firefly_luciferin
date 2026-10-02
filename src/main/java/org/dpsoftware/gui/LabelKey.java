@@ -153,6 +153,7 @@ public final class LabelKey {
     public static final String TOOLTIP_SETTINGS = "tooltip.colorcorrection.settings";
     public static final String TOOLTIP_CD_INFO = "tooltip.colorcorrection.info";
     public static final String TOOLTIP_OVERLAY = "tooltip.colorcorrection.overlay";
+    public static final String TOOLTIP_LIVE_CAPTURE = "tooltip.colorcorrection.live.capture";
     public static final String TOOLTIP_GAMMA = "tooltip.gamma";
     public static final String TOOLTIP_GAMMA_ENABLE_AUTO = "tooltip.gamma.enable.auto";
     public static final String TOOLTIP_GAMMA_LEVEL = "tooltip.gamma.level";

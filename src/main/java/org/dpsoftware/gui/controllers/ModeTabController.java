@@ -554,6 +554,7 @@ public class ModeTabController {
         } else {
             GuiManager.createTooltip(LabelKey.TOOLTIP_SAVESETTINGSBUTTON, 200, saveSettingsButton);
         }
+        GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, displayDialogBtn);
     }
 
     /**

@@ -993,6 +993,7 @@ public class MiscTabController {
         GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_APPLY, applyProfileButton);
         GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, smoothingBtn);
         GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, eyeCareBtn);
+        GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, enableAutomaticGamma);
     }
 
     /**

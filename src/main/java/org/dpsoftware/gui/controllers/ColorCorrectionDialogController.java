@@ -984,6 +984,7 @@ public class ColorCorrectionDialogController {
         GuiManager.createTooltip(LabelKey.TOOLTIP_SETTINGS, settingsBtn);
         GuiManager.createTooltip(LabelKey.TOOLTIP_CD_INFO, tooltipBtn);
         GuiManager.createTooltip(LabelKey.TOOLTIP_OVERLAY, overlayBtn);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LIVE_CAPTURE, liveCaptureBtn);
     }
 
     /**
