@@ -9,6 +9,11 @@
     -fx-background-color: transparent;
 }
 
+.menuButton {
+    -fx-min-width: 31;
+    -fx-pref-width: 31;
+}
+
 .bold {
     -fx-font-weight: bold;
 }

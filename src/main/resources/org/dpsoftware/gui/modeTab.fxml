@@ -83,8 +83,8 @@
                     <Insets right="8.0"/>
                 </HBox.margin>
             </ComboBox>
-            <Button fx:id="displayDialogBtn" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#openDisplayDialog"
-                    prefWidth="30.0" text="☰">
+            <Button fx:id="displayDialogBtn" mnemonicParsing="false" onMouseClicked="#openDisplayDialog"
+                    styleClass="menuButton" text="☰">
             </Button>
         </HBox>
         <Button fx:id="saveSettingsButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"

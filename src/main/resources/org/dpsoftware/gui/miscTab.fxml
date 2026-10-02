@@ -61,8 +61,8 @@
                     <Insets right="8.0" top="7.0"/>
                 </HBox.margin>
             </ComboBox>
-            <Button fx:id="enableAutomaticGamma" minWidth="30.0" mnemonicParsing="false"
-                    onMouseClicked="#openGammaDialog" prefWidth="30.0" text="☰">
+            <Button fx:id="enableAutomaticGamma" mnemonicParsing="false"
+                    onMouseClicked="#openGammaDialog" styleClass="menuButton" text="☰">
                 <HBox.margin>
                     <Insets top="7.0"/>
                 </HBox.margin>
@@ -103,8 +103,8 @@
                     <Insets right="15.0" top="7.0"/>
                 </HBox.margin>
             </Spinner>
-            <Button fx:id="eyeCareBtn" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#openEyeCareDialog"
-                    prefWidth="30.0" text="☰">
+            <Button fx:id="eyeCareBtn" mnemonicParsing="false" onMouseClicked="#openEyeCareDialog"
+                    styleClass="menuButton" text="☰">
                 <HBox.margin>
                     <Insets top="7.0"/>
                 </HBox.margin>
@@ -167,8 +167,8 @@
                     <Insets right="8.0"/>
                 </HBox.margin>
             </ComboBox>
-            <Button fx:id="smoothingBtn" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#openSmoothingDialog"
-                    prefWidth="30.0" text="☰"/>
+            <Button fx:id="smoothingBtn" mnemonicParsing="false" onMouseClicked="#openSmoothingDialog"
+                    styleClass="menuButton" text="☰"/>
         </HBox>
     </GridPane>
 
