@@ -20,6 +20,39 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+.device-status-footer {
+    margin: 0 0 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.device-status-footer .footer-status-item {
+    white-space: nowrap;
+}
+
+.device-status-footer [hidden] {
+    display: none;
+}
+
+.device-status-footer .footer-status-item:not([hidden]) ~ .footer-status-item:not([hidden])::before {
+    content: "/";
+    margin-inline-end: 0.35rem;
+}
+
+/* Wrapped rows on phones use spacing instead of a leading slash. */
+@media (max-width: 575.98px) {
+    .device-status-footer {
+        gap: 0.5rem 0.75rem;
+    }
+
+    .device-status-footer .footer-status-item::before {
+        display: none;
+    }
+}
+
 body {
     animation: page-fade-in 0.8s;
 }

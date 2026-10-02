@@ -13,6 +13,41 @@ var outputDeviceTouched = false;
 var colorInputActive = false;
 var colorPendingUntil = 0;
 var satelliteDraft = null;
+var browserLanguage = navigator.language || (navigator.languages && navigator.languages[0]) || '';
+var useFahrenheit = /^en-US(?:-|$)/i.test(browserLanguage);
+
+// Device measurements come from /prefs; missing or invalid values stay hidden.
+function updateDeviceFooter(prefs) {
+    prefs = prefs || {};
+
+    function metric(groupId, valueId, rawValue, format, positiveOnly) {
+        var group = document.getElementById(groupId);
+        var value = document.getElementById(valueId);
+        if (!group || !value) {
+            return;
+        }
+        var number = Number(rawValue);
+        var valid = rawValue != null && rawValue !== '' && Number.isFinite(number)
+            && (positiveOnly ? number > 0 : number >= 0);
+        group.hidden = !valid;
+        value.textContent = valid ? format(number) : '';
+    }
+
+    metric('footerWifiGroup', 'footerWifi', prefs.wifi, function (value) {
+        return Math.round(value) + '%';
+    });
+    var ethernet = document.getElementById('footerEthernetGroup');
+    if (ethernet) {
+        ethernet.hidden = !(Number(prefs.eth) > 0);
+    }
+    metric('footerLdrGroup', 'footerLdr', prefs.ldr, function (value) {
+        return Math.round(value) + '%';
+    });
+    metric('footerTempGroup', 'footerTemp', prefs.temp, function (value) {
+        var temperature = useFahrenheit ? value * 1.8 + 32 : value;
+        return Math.round(temperature) + (useFahrenheit ? '°F' : '°C');
+    }, true);
+}
 
 var DEVICE_COLUMNS = [
     {key: 'deviceName', label: 'Name'},
@@ -71,6 +106,9 @@ function resolveDeviceIp() {
 
 // Shows whether the selected IP answered devicePrefs and makes the dot link to that IP.
 function updateDeviceReachability(ip, reachable) {
+    if (!reachable) {
+        updateDeviceFooter(null);
+    }
     var indicator = document.getElementById('deviceReachability');
     if (!indicator) {
         return;
@@ -113,6 +151,7 @@ function applyPrefs(prefs) {
     if (!prefs) {
         return;
     }
+    updateDeviceFooter(prefs);
     setToggleUi(prefs.toggle === '1');
     if (prefs.whiteTemp != null && prefs.whiteTemp !== '') {
         deviceState.whitetemp = Number(prefs.whiteTemp);

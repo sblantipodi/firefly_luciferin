@@ -5,6 +5,39 @@ import {showToast} from './set-config-ui.js';
 var serverOnline = true;
 var serverPollController = null;
 
+// Separate capture and LED output counters so each has its own icon and visibility.
+function updateFooterFps(status) {
+    [
+        {group: 'footerFpsGroup', value: 'fpsCounter', key: 'producing'},
+        {group: 'footerGlowWormFpsGroup', value: 'glowWormFpsCounter', key: 'consuming'}
+    ].forEach(function (counter) {
+        var group = document.getElementById(counter.group);
+        var value = document.getElementById(counter.value);
+        if (!group || !value) {
+            return;
+        }
+        var raw = status && status[counter.key];
+        var fps = Number(raw);
+        var valid = raw != null && raw !== '' && Number.isFinite(fps) && fps >= 0;
+        group.hidden = !valid;
+        value.textContent = valid ? Math.round(fps).toFixed(1) + 'FPS' : '';
+    });
+}
+
+// Use the effective gamma and detected HDR state, matching the MQTT runtime values.
+function updateFooterGamma(status) {
+    var group = document.getElementById('footerGammaGroup');
+    var value = document.getElementById('footerGamma');
+    if (!group || !value) {
+        return;
+    }
+    var gamma = status ? Number(status.adaptiveGamma) : NaN;
+    var valid = !!status && status.adaptiveGamma != null && status.adaptiveGamma !== ''
+        && Number.isFinite(gamma) && gamma > 0;
+    group.hidden = !valid;
+    value.textContent = valid ? gamma.toFixed(3) + (status.hdrActive === true ? ' HDR' : '') : '';
+}
+
 // Polls the 'fps' endpoint to update the FPS counter and detect server offline/online transitions (with a 3s timeout to bound pending
 // requests); force=true aborts a previous in-flight poll (used on tab visibility change).
 export function pollServerStatus(force) {
@@ -24,15 +57,13 @@ export function pollServerStatus(force) {
         if (serverPollController !== controller) {
             return;
         }
+        updateFooterGamma(fps);
         var logo = document.getElementById('settingsLogo');
         if (logo && fps.trayIconImage && logo.dataset.trayIconImage !== fps.trayIconImage) {
             logo.dataset.trayIconImage = fps.trayIconImage;
             logo.src = 'luciferin-logo.png?icon=' + encodeURIComponent(fps.trayIconImage);
         }
-        var el = document.getElementById('fpsCounter');
-        if (el) {
-            el.textContent = 'Firefly ' + Number(fps.producing).toFixed(0) + ' FPS / GlowWorm ' + Number(fps.consuming).toFixed(0) + ' FPS';
-        }
+        updateFooterFps(fps);
         var updateNotice = document.getElementById('fireflyUpdateNotice');
         if (updateNotice) {
             updateNotice.hidden = !fps.fireflyUpdateAvailable;
@@ -55,10 +86,8 @@ export function pollServerStatus(force) {
         if (serverPollController !== controller) {
             return;
         }
-        var el = document.getElementById('fpsCounter');
-        if (el) {
-            el.textContent = '';
-        }
+        updateFooterFps(null);
+        updateFooterGamma(null);
         if (serverOnline) {
             serverOnline = false;
             document.body.classList.add('server-down');

@@ -120,7 +120,29 @@
             <div class="text-center py-2"><img id="screenshot" alt="Captured frame (TRACE)"></div>
             <div id="livePreviewFallbackNotice" class="live-preview-fallback-notice" role="status"><strong>Image preview mode.</strong> The GStreamer NICE plugin is not installed, so this preview uses images. Install <code>gstreamer1.0-plugins-bad gstreamer1.0-nice libnice10 libnice-dev</code> to enable the faster, lower-latency WebRTC preview.</div>
             <div class="mt-3"><button type="button" id="saveSettings" class="btn btn-orange w-100"> SAVE SETTINGS</button></div>
-            <div class="text-center text-muted py-3"><span id="fpsCounter"></span></div>
+            <footer aria-label="Live status" class="device-status-footer text-center text-muted py-3 small">
+                <span class="footer-status-item" hidden id="footerWifiGroup" title="Wi-Fi signal">
+                    <i aria-hidden="true" class="fa-solid fa-wifi"></i> <span id="footerWifi"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerEthernetGroup" title="Ethernet">
+                    <i aria-hidden="true" class="fa-solid fa-ethernet"></i>
+                </span>
+                <span class="footer-status-item" hidden id="footerFpsGroup" title="Firefly capture FPS">
+                    <i aria-hidden="true" class="fa-solid fa-desktop"></i> <span id="fpsCounter"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerGlowWormFpsGroup" title="Glow Worm LED output FPS">
+                    <i aria-hidden="true" class="fa-solid fa-lightbulb"></i> <span id="glowWormFpsCounter"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerLdrGroup" title="Ambient brightness">
+                    <i aria-hidden="true" class="fa-solid fa-sun"></i> <span id="footerLdr"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerTempGroup" title="Chip temperature">
+                    <i aria-hidden="true" class="fa-solid fa-temperature-half"></i> <span id="footerTemp"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerGammaGroup" title="Adaptive gamma">
+                    <i aria-hidden="true" class="fa-solid fa-circle-half-stroke"></i> <span id="footerGamma"></span>
+                </span>
+            </footer>
         </form>
     </div>
 </template>

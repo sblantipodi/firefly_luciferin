@@ -32,6 +32,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.grabber.WebRtcStreamer;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
@@ -124,6 +125,7 @@ public class ConfigServer {
      * @throws IOException when the response cannot be written
      */
     private void handleGetFps(HttpExchange exchange) throws IOException {
+        double adaptiveGamma = Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get());
         // The pipeline may detect incompatible firmware before the update scan runs.
         HttpResponses.sendJson(exchange, new FpsDto(
                 MainSingleton.getInstance().FPS_PRODUCER,
@@ -131,7 +133,9 @@ public class ConfigServer {
                 GuiSingleton.getInstance().isUpgrade(),
                 GuiSingleton.getInstance().isGlowWormUpdateAvailable(),
                 GuiSingleton.getInstance().isGlowWormUpdateInProgress(),
-                TrayIconState.currentImage()));
+                TrayIconState.currentImage(),
+                Double.isFinite(adaptiveGamma) ? adaptiveGamma : null,
+                MainSingleton.getInstance().isHdrActive()));
     }
 
     static String tailLog(Path logFile) throws IOException {
@@ -669,8 +673,11 @@ public class ConfigServer {
      * @param glowWormUpdateAvailable whether a connected Glow Worm device needs a firmware update
      * @param glowWormUpdateInProgress whether connected Glow Worm devices are being updated
      * @param trayIconImage current tray image resource, used to refresh the web logo on changes
+     * @param adaptiveGamma current effective gamma, also published via MQTT
+     * @param hdrActive whether HDR has been detected
      */
     public record FpsDto(float producing, float consuming, boolean fireflyUpdateAvailable,
-                         boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, String trayIconImage) {
+                         boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, String trayIconImage,
+                         Double adaptiveGamma, boolean hdrActive) {
     }
 }
