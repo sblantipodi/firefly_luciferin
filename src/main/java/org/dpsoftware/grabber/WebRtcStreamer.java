@@ -80,10 +80,10 @@ public class WebRtcStreamer {
      */
     private static final long FRAME_DURATION_NS = 1_000_000_000L / 30;
     /**
-     * Largest WebRTC preview frame. Smaller capture frames are kept at their native scaled size.
+     * WebRTC preview bounding box, independent of the capture resampling factor.
      */
-    private static final int MAX_PREVIEW_WIDTH = 1280;
-    private static final int MAX_PREVIEW_HEIGHT = 720;
+    private static final int MAX_PREVIEW_WIDTH = 960;
+    private static final int MAX_PREVIEW_HEIGHT = 540;
 
     /**
      * Start (or restart) the WebRTC pipeline for a new viewer.
@@ -224,101 +224,15 @@ public class WebRtcStreamer {
     }
 
     /**
-     * Push a captured frame into the appsrc. Called from the GStreamer grabber thread on every newSample.
-     * The buffer is the BGR raw frame in the scaled resolution.
-     *
-     * @param buffer the raw BGR frame buffer (already scaled by the capture pipeline)
-     * @param width  the frame width in pixels
-     * @param height the frame height in pixels
+     * Return an even-sized preview fitted to the maximum bounding box, including upscaling
+     * resampled capture frames. VP8's 4:2:0 input works most reliably with even dimensions.
      */
-    public void pushFrame(ByteBuffer buffer, int width, int height) {
-        if (!streaming.get() || buffer == null) {
-            return;
-        }
-        restartForCaptureSizeChange(width, height);
-        AppSrc sourceElement = appSrc;
-        if (sourceElement == null) {
-            return;
-        }
-        // On the first frame, set the input caps and cap the preview only when its actual scaled
-        // capture size exceeds 1280x720. This avoids both an expensive 4K VP8 encode and
-        // upscaling small LED-oriented capture frames.
-        if (pipelineStarted.compareAndSet(false, true)) {
-            int[] previewSize = previewSize(width, height);
-            captureWidth = width;
-            captureHeight = height;
-            sourceElement.set("caps", Caps.fromString(
-                    "video/x-raw,format=" + byteOrder + ",width=" + width + ",height=" + height + ",framerate=30/1"));
-            Element capsFilter = previewCapsFilter;
-            if (capsFilter == null) {
-                log.error("WebRTC preview caps filter is unavailable");
-                stop();
-                return;
-            }
-            capsFilter.set("caps", Caps.fromString(
-                    "video/x-raw,width=" + previewSize[0] + ",height=" + previewSize[1]
-                            + ",pixel-aspect-ratio=1/1"));
-            pipeline.play();
-            log.info("WebRTC pipeline started on first frame: {}x{} -> {}x{}", width, height, previewSize[0], previewSize[1]);
-        }
-        if (firstFrameLogged.compareAndSet(false, true)) {
-            log.info("WebRTC pushing first frame to appsrc: {}x{}, bytes={}", width, height, buffer.remaining());
-        }
-        ByteBuffer source = buffer.duplicate();
-        source.rewind();
-        // AppSrc raw video caps do not carry the row stride. Some hardware paths (notably cudaconvert) retain padding
-        // at the end of every row, so sending that mapped buffer as tightly packed video makes each following
-        // row start inside the padding. Compact the rows while copying into the new GstBuffer, as ImageProcessor does for screenshots.
-        int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, source.asIntBuffer());
-        int bytesPerPixel = Integer.BYTES;
-        int packedRowBytes = width * bytesPerPixel;
-        int sourceRowBytes = widthPlusStride * bytesPerPixel;
-        int packedFrameBytes = packedRowBytes * height;
-        boolean hasStride = widthPlusStride > width;
-        // The last row only needs its visible pixels: mapped capture buffers may omit its trailing padding.
-        // Check the end of the last row we copy, not stride * height.
-        long requiredSourceBytes = (long) (height - 1) * sourceRowBytes + packedRowBytes;
-        if (source.remaining() < packedFrameBytes || (hasStride && source.remaining() < requiredSourceBytes)) {
-            log.warn("Skipping WebRTC frame with invalid buffer size: {} bytes for {}x{} (stride {} pixels)",
-                    source.remaining(), width, height, widthPlusStride);
-            return;
-        }
-        if (hasStride && strideLogged.compareAndSet(false, true)) {
-            log.info("WebRTC compacting capture rows: {}x{}, stride {} pixels", width, height, widthPlusStride);
-        }
-        Buffer gstBuffer = new Buffer(packedFrameBytes);
-        ByteBuffer mappedBuffer = gstBuffer.map(true);
-        if (mappedBuffer == null) {
-            log.warn("Unable to map WebRTC frame buffer");
-            return;
-        }
-        try {
-            if (hasStride) {
-                for (int row = 0; row < height; row++) {
-                    int rowStart = row * sourceRowBytes;
-                    ByteBuffer sourceRow = source.duplicate();
-                    sourceRow.position(rowStart);
-                    sourceRow.limit(rowStart + packedRowBytes);
-                    mappedBuffer.put(sourceRow);
-                }
-            } else {
-                source.limit(packedFrameBytes);
-                mappedBuffer.put(source);
-            }
-            mappedBuffer.rewind();
-            applyLutToneMap(mappedBuffer, width, height, byteOrder);
-        } finally {
-            gstBuffer.unmap();
-        }
-
-        // do-timestamp=true makes appsrc automatically set the PTS from the system clock,
-        // so we no longer set it manually. This avoids the segment format mismatch assertion.
-        gstBuffer.setDuration(FRAME_DURATION_NS);
-
-        FlowReturn ret = sourceElement.pushBuffer(gstBuffer);
-        if (ret != FlowReturn.OK) {
-            log.debug("WebRTC appsrc push returned {}", ret);
-        }
+    static int[] previewSize(int width, int height) {
+        double scale = Math.min((double) MAX_PREVIEW_WIDTH / width,
+                (double) MAX_PREVIEW_HEIGHT / height);
+        int scaledWidth = evenFloor(width * scale);
+        int scaledHeight = evenFloor(height * scale);
+        return new int[]{scaledWidth, scaledHeight};
     }
 
     /**
@@ -448,15 +362,100 @@ public class WebRtcStreamer {
     }
 
     /**
-     * Return an even-sized preview that fits inside the maximum bounding box without enlarging
-     * the raw frame. VP8's 4:2:0 input works most reliably with even dimensions.
+     * Push a captured frame into the appsrc. Called from the GStreamer grabber thread on every newSample.
+     * The buffer is the BGR raw frame in the scaled resolution.
+     *
+     * @param buffer the raw BGR frame buffer (already scaled by the capture pipeline)
+     * @param width  the frame width in pixels
+     * @param height the frame height in pixels
      */
-    private static int[] previewSize(int width, int height) {
-        double scale = Math.min(1d, Math.min((double) MAX_PREVIEW_WIDTH / width,
-                (double) MAX_PREVIEW_HEIGHT / height));
-        int scaledWidth = evenFloor(width * scale);
-        int scaledHeight = evenFloor(height * scale);
-        return new int[]{scaledWidth, scaledHeight};
+    public void pushFrame(ByteBuffer buffer, int width, int height) {
+        if (!streaming.get() || buffer == null) {
+            return;
+        }
+        restartForCaptureSizeChange(width, height);
+        AppSrc sourceElement = appSrc;
+        if (sourceElement == null) {
+            return;
+        }
+        // On the first frame, set the input caps and fit the preview to 1280x720,
+        // preserving the captured aspect ratio even when LED capture is heavily resampled.
+        if (pipelineStarted.compareAndSet(false, true)) {
+            int[] previewSize = previewSize(width, height);
+            captureWidth = width;
+            captureHeight = height;
+            sourceElement.set("caps", Caps.fromString(
+                    "video/x-raw,format=" + byteOrder + ",width=" + width + ",height=" + height + ",framerate=30/1"));
+            Element capsFilter = previewCapsFilter;
+            if (capsFilter == null) {
+                log.error("WebRTC preview caps filter is unavailable");
+                stop();
+                return;
+            }
+            capsFilter.set("caps", Caps.fromString(
+                    "video/x-raw,width=" + previewSize[0] + ",height=" + previewSize[1]
+                            + ",pixel-aspect-ratio=1/1"));
+            pipeline.play();
+            log.info("WebRTC pipeline started on first frame: {}x{} -> {}x{}", width, height, previewSize[0], previewSize[1]);
+        }
+        if (firstFrameLogged.compareAndSet(false, true)) {
+            log.info("WebRTC pushing first frame to appsrc: {}x{}, bytes={}", width, height, buffer.remaining());
+        }
+        ByteBuffer source = buffer.duplicate();
+        source.rewind();
+        // AppSrc raw video caps do not carry the row stride. Some hardware paths (notably cudaconvert) retain padding
+        // at the end of every row, so sending that mapped buffer as tightly packed video makes each following
+        // row start inside the padding. Compact the rows while copying into the new GstBuffer, as ImageProcessor does for screenshots.
+        int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, source.asIntBuffer());
+        int bytesPerPixel = Integer.BYTES;
+        int packedRowBytes = width * bytesPerPixel;
+        int sourceRowBytes = widthPlusStride * bytesPerPixel;
+        int packedFrameBytes = packedRowBytes * height;
+        boolean hasStride = widthPlusStride > width;
+        // The last row only needs its visible pixels: mapped capture buffers may omit its trailing padding.
+        // Check the end of the last row we copy, not stride * height.
+        long requiredSourceBytes = (long) (height - 1) * sourceRowBytes + packedRowBytes;
+        if (source.remaining() < packedFrameBytes || (hasStride && source.remaining() < requiredSourceBytes)) {
+            log.warn("Skipping WebRTC frame with invalid buffer size: {} bytes for {}x{} (stride {} pixels)",
+                    source.remaining(), width, height, widthPlusStride);
+            return;
+        }
+        if (hasStride && strideLogged.compareAndSet(false, true)) {
+            log.info("WebRTC compacting capture rows: {}x{}, stride {} pixels", width, height, widthPlusStride);
+        }
+        Buffer gstBuffer = new Buffer(packedFrameBytes);
+        ByteBuffer mappedBuffer = gstBuffer.map(true);
+        if (mappedBuffer == null) {
+            log.warn("Unable to map WebRTC frame buffer");
+            return;
+        }
+        try {
+            if (hasStride) {
+                for (int row = 0; row < height; row++) {
+                    int rowStart = row * sourceRowBytes;
+                    ByteBuffer sourceRow = source.duplicate();
+                    sourceRow.position(rowStart);
+                    sourceRow.limit(rowStart + packedRowBytes);
+                    mappedBuffer.put(sourceRow);
+                }
+            } else {
+                source.limit(packedFrameBytes);
+                mappedBuffer.put(source);
+            }
+            mappedBuffer.rewind();
+            applyLutToneMap(mappedBuffer, width, height, byteOrder);
+        } finally {
+            gstBuffer.unmap();
+        }
+
+        // do-timestamp=true makes appsrc automatically set the PTS from the system clock,
+        // so we no longer set it manually. This avoids the segment format mismatch assertion.
+        gstBuffer.setDuration(FRAME_DURATION_NS);
+
+        FlowReturn ret = sourceElement.pushBuffer(gstBuffer);
+        if (ret != FlowReturn.OK) {
+            log.debug("WebRTC appsrc push returned {}", ret);
+        }
     }
 
     private static int evenFloor(double dimension) {
