@@ -126,7 +126,7 @@ function buildFieldsGrid(fields) {
 }
 
 // Clones the accordion template into a configured accordion item bound to the given id/parent; nested items use an h3 heading instead of h2.
-function buildAccordion(id, title, parentId, nested = false) {
+function buildAccordion(id, title, parentId, nested = false, icon = null) {
     var item = document.getElementById('accordionTemplate').content.firstElementChild.cloneNode(true);
     var heading = item.querySelector('.accordion-header');
     if (nested) {
@@ -139,6 +139,12 @@ function buildAccordion(id, title, parentId, nested = false) {
     button.setAttribute('data-bs-target', '#' + id);
     button.setAttribute('aria-controls', id);
     button.innerHTML = title;
+    if (icon) {
+        var titleIcon = document.createElement('i');
+        titleIcon.className = 'fa-solid ' + icon + ' accordion-title-icon';
+        titleIcon.setAttribute('aria-hidden', 'true');
+        button.prepend(titleIcon);
+    }
     var collapse = item.querySelector('.accordion-collapse');
     collapse.id = id;
     collapse.setAttribute('data-bs-parent', '#' + parentId);
@@ -163,7 +169,7 @@ export function buildForm() {
     var page = document.getElementById('settingsPageTemplate').content.cloneNode(true);
     var accordion = page.querySelector('#settingsAccordion');
     sections.forEach(function (section) {
-        var item = buildAccordion('section-' + section.id, sectionTitle(section.id), accordion.id);
+        var item = buildAccordion('section-' + section.id, sectionTitle(section.id), accordion.id, false, section.icon);
         var body = item.querySelector('.accordion-body');
         body.innerHTML = section.fields.length === 0
             ? '<span class="text-muted">Coming soon</span>'
@@ -174,7 +180,7 @@ export function buildForm() {
         accordion.appendChild(item);
     });
     page.querySelector('#miscProfilesHost').appendChild(document.getElementById('profilesTemplate').content.cloneNode(true));
-    var logs = buildAccordion('section-log', 'LOG', accordion.id);
+    var logs = buildAccordion('section-log', 'LOG', accordion.id, false, 'fa-file-lines');
     logs.querySelector('.accordion-body').appendChild(document.getElementById('logTemplate').content.cloneNode(true));
     accordion.appendChild(logs);
     document.getElementById('settingsContainer').replaceChildren(page);

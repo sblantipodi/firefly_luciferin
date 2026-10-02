@@ -32,6 +32,13 @@ body {
     animation: content-fade-in 0.8s both;
 }
 
+.accordion-title-icon {
+    flex-shrink: 0;
+    width: 1.25em;
+    margin-inline-end: 0.65em;
+    text-align: center;
+}
+
 @keyframes page-fade-in {
     from {
         opacity: 0;

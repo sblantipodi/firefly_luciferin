@@ -2,7 +2,7 @@
 // labels are merged at runtime from the server-provided config/field options.
 export const sections = [
     {
-        id: 'leds', fields: [
+        id: 'leds', icon: 'fa-lightbulb', fields: [
             {id: 'topLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
             {id: 'leftLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
             {id: 'rightLed', type: 'number', numeric: true, digitsOnly: true, min: 0},
@@ -40,7 +40,7 @@ export const sections = [
         ]
     },
     {
-        id: 'mode', fields: [
+        id: 'mode', icon: 'fa-desktop', fields: [
             {id: 'screenResX', type: 'number', numeric: true, digitsOnly: true, min: 0},
             {id: 'screenResY', type: 'number', numeric: true, digitsOnly: true, min: 0},
             {id: 'monitorNumber', type: 'select'},
@@ -59,7 +59,7 @@ export const sections = [
         ]
     },
     {
-        id: 'network', fields: [
+        id: 'network', icon: 'fa-network-wired', fields: [
             {id: 'wirelessStream', type: 'checkbox', numeric: false},
             {id: 'mqttEnable', type: 'checkbox', numeric: false},
             {id: 'mqttHost', type: 'text', numeric: false},
@@ -89,7 +89,7 @@ export const sections = [
         }]
     },
     {
-        id: 'misc', fields: [
+        id: 'misc', icon: 'fa-sliders', fields: [
             {id: 'toggleLed', type: 'toggleButton', numeric: false},
             {id: 'effect', type: 'select'},
             {id: 'audioDevice', type: 'select'},
@@ -152,7 +152,7 @@ export const sections = [
         ]
     },
     {
-        id: 'devices', fields: [
+        id: 'devices', icon: 'fa-microchip', fields: [
             {id: 'softwareVersion', type: 'info'},
             {id: 'powerSaving', type: 'select'},
             {id: 'multiMonitor', type: 'select'},
