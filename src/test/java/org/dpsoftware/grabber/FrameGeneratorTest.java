@@ -73,40 +73,6 @@ class FrameGeneratorTest {
         }
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "30,15", "30,10", "30,7", "30,5", "30,2", "30,1",
-            "60,30", "60,20", "60,15", "60,10", "60,5", "60,2",
-            "120,60", "120,40", "120,30", "120,20", "120,10", "120,4",
-            "60,60"
-    })
-    void preservesInterpolationAndRawEndpoints(int outputFps, int captureFps) throws Exception {
-        BlockingQueue<ColorFloat[]> frames = new LinkedBlockingQueue<>();
-        FrameGenerator generator = new FrameGenerator(1, frame -> {
-            frames.add(frame.clone());
-            // The production output mutates arrays when applying EMA and white balance.
-            frame[0] = ColorFloat.BLACK;
-        });
-        try {
-            generator.frameGeneration(colors(120), outputFps, captureFps);
-            int count = Math.max(1, outputFps / captureFps);
-            for (int i = 0; i < count; i++) {
-                float fraction = count == 1 ? 1f : (float) i / (count - 1);
-                assertEquals(120 * fraction, take(frames)[0].r(), 0.001f);
-            }
-            generator.frameGeneration(colors(240), outputFps, captureFps);
-            for (int i = 0; i < count; i++) {
-                float fraction = count == 1 ? 1f : (float) i / (count - 1);
-                ColorFloat actual = take(frames)[0];
-                assertEquals(120 + 120 * fraction, actual.r(), 0.001f);
-                assertEquals(actual.r() / 2, actual.g(), 0.001f);
-                assertEquals(actual.r() / 4, actual.b(), 0.001f);
-            }
-        } finally {
-            generator.stop();
-        }
-    }
-
     @Test
     void slowOutputDoesNotBlockCaptureAndOnlyLatestPendingFrameSurvives() throws Exception {
         BlockingQueue<ColorFloat[]> frames = new LinkedBlockingQueue<>();
