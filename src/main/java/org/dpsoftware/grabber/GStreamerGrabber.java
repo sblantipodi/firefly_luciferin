@@ -97,6 +97,9 @@ public class GStreamerGrabber {
             }
         });
         videosink.set(Constants.EMIT_SIGNALS, true);
+        // TODO verify regression
+        // Deliver USB frames immediately instead of waiting for their presentation time.
+        videosink.set("sync", false);
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
         String gstreamerPipeline;
