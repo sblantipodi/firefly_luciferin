@@ -147,22 +147,229 @@ public class LEDCoordinate {
     }
 
     /**
+     * Initialize the full, letterbox and pillarbox LED matrices from the given info.
+     *
+     * @param info LED matrix info
+     * @return map of aspect ratio to generated matrix
+     */
+    public static Map<Enums.AspectRatio, LinkedHashMap<Integer, LEDCoordinate>> initializeAllMatrices(LedMatrixInfo info) {
+        Map<Enums.AspectRatio, LinkedHashMap<Integer, LEDCoordinate>> result = new LinkedHashMap<>();
+        try {
+            LEDCoordinate instance = new LEDCoordinate();
+            result.put(Enums.AspectRatio.FULLSCREEN, instance.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, (LedMatrixInfo) info.clone()));
+            result.put(Enums.AspectRatio.LETTERBOX, instance.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, (LedMatrixInfo) info.clone()));
+            result.put(Enums.AspectRatio.PILLARBOX, instance.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, (LedMatrixInfo) info.clone()));
+        } catch (CloneNotSupportedException e) {
+            log.error("Unable to clone LED matrix info: {}", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * Init LEFT side LEDs
+     *
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
+     * @return next LED to process
+     */
+    @SuppressWarnings("SuspiciousNameCombination")
+    private int leftLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getLeftLed() > 0) {
+            int totalLeds = ledMatrixInfo.getLeftLedOriginal();
+            int numGroups = ledMatrixInfo.getLeftLed();
+            int baseSize = totalLeds / numGroups;
+            int remainder = totalLeds % numGroups;
+            var leftLedDistance = (ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getCornerGapTopBottom() * 2)) / numGroups;
+            int cornerGapTopBottomAccurate = (ledMatrixInfo.getScreenHeight() - (leftLedDistance * numGroups)) / 2;
+            int x, y, taleWidth, taleHeight;
+            for (int i = numGroups; i >= 1; i--) {
+                int groupSize = baseSize + (i <= remainder ? 1 : 0);
+                x = ledMatrixInfo.getPillarboxBorder();
+                y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (leftLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
+                taleWidth = ledMatrixInfo.getSideAreaWidth();
+                taleHeight = leftLedDistance;
+                for (int groupIndex = 0; groupIndex < groupSize; groupIndex++) {
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.LEFT.getBaseI18n()));
+                }
+            }
+        }
+        return ledNum;
+    }
+
+    /**
+     * Init BOTTOM LEFT LEDs
+     *
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
+     */
+    private void bottomLeft(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
+            if (ledMatrixInfo.getBottomLeftLed() > 0) {
+                int totalLeds = ledMatrixInfo.getBottomLeftLedOriginal();
+                int numGroups = ledMatrixInfo.getBottomLeftLed();
+                int baseSize = totalLeds / numGroups;
+                int remainder = totalLeds % numGroups;
+                var bottomLedLeftDistance = (((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin()) / 2) / numGroups;
+                int x, y, taleWidth, taleHeight;
+                for (int i = 1; i <= numGroups; i++) {
+                    int groupSize = baseSize + (i <= remainder ? 1 : 0);
+                    x = (((bottomLedLeftDistance * i) - bottomLedLeftDistance) + ledMatrixInfo.getCornerGapSide()) + ledMatrixInfo.getPillarboxBorder();
+                    y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
+                    taleWidth = bottomLedLeftDistance;
+                    taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
+                    for (int groupIndex = 0; groupIndex < groupSize; groupIndex++) {
+                        defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.BOTTOM_LEFT.getBaseI18n()));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Init TOP LEDs
+     *
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
+     * @return next LED to process
+     */
+    @SuppressWarnings("SuspiciousNameCombination")
+    private int topLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getTopLed() > 0) {
+            int totalLeds = ledMatrixInfo.getTopLedOriginal();
+            int numGroups = ledMatrixInfo.getTopLed();
+            int baseSize = totalLeds / numGroups;
+            int remainder = totalLeds % numGroups;
+            var topLedDistance = (ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) / numGroups;
+            int cornerGapSideAccurate = (ledMatrixInfo.getScreenWidth() - (topLedDistance * numGroups)) / 2;
+            int x, y, taleWidth, taleHeight;
+            for (int i = 1; i <= numGroups; i++) {
+                int groupSize = baseSize + (i <= remainder ? 1 : 0);
+                x = ((ledMatrixInfo.getScreenWidth() - (topLedDistance * i)) - cornerGapSideAccurate) + ledMatrixInfo.getPillarboxBorder();
+                y = ledMatrixInfo.getLetterboxBorder();
+                taleWidth = topLedDistance;
+                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
+                for (int groupIndex = 0; groupIndex < groupSize; groupIndex++) {
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.TOP.getBaseI18n()));
+                }
+            }
+        }
+        return ledNum;
+    }
+
+    /**
+     * Init RIGHT side LEDs
+     *
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
+     * @return next LED to process
+     */
+    @SuppressWarnings("SuspiciousNameCombination")
+    private int rightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getRightLed() > 0) {
+            int totalLeds = ledMatrixInfo.getRightLedOriginal();
+            int numGroups = ledMatrixInfo.getRightLed();
+            int baseSize = totalLeds / numGroups;
+            int remainder = totalLeds % numGroups;
+            var rightLedDistance = (ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getCornerGapTopBottom() * 2)) / numGroups;
+            int cornerGapTopBottomAccurate = (ledMatrixInfo.getScreenHeight() - (rightLedDistance * numGroups)) / 2;
+            int x, y, taleWidth, taleHeight;
+            for (int i = 1; i <= numGroups; i++) {
+                int groupSize = baseSize + (i <= remainder ? 1 : 0);
+                x = (ledMatrixInfo.getScreenWidth() - ledMatrixInfo.getSideAreaWidth()) + ledMatrixInfo.getPillarboxBorder();
+                y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (rightLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
+                taleWidth = ledMatrixInfo.getSideAreaWidth();
+                taleHeight = rightLedDistance;
+                for (int groupIndex = 0; groupIndex < groupSize; groupIndex++) {
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.RIGHT.getBaseI18n()));
+                }
+            }
+        }
+        return ledNum;
+    }
+
+    /**
+     * Init BOTTOM LEDs
+     *
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
+     * @return next LED to process
+     */
+    private int bottomLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getBottomRowLed() > 0) {
+            int totalLeds = ledMatrixInfo.getBottomRowLedOriginal();
+            int numGroups = ledMatrixInfo.getBottomRowLed();
+            int baseSize = totalLeds / numGroups;
+            int remainder = totalLeds % numGroups;
+            int cornerGapSideAccurate = (ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getBottomLedDistance() * numGroups)) / 2;
+            int x, y, taleWidth, taleHeight;
+            for (int i = 1; i <= numGroups; i++) {
+                int groupSize = baseSize + (i <= remainder ? 1 : 0);
+                x = (((ledMatrixInfo.getBottomLedDistance() * i) - ledMatrixInfo.getBottomLedDistance()) + cornerGapSideAccurate) + ledMatrixInfo.getPillarboxBorder();
+                y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
+                taleWidth = ledMatrixInfo.getBottomLedDistance();
+                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
+                for (int groupIndex = 0; groupIndex < groupSize; groupIndex++) {
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.BOTTOM.getBaseI18n()));
+                }
+            }
+        }
+        return ledNum;
+    }
+
+    /**
+     * Init BOTTOM RIGHT LEDs
+     *
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
+     * @return next LED to process
+     */
+    private int bottomRightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getBottomRightLed() > 0) {
+            int totalLeds = ledMatrixInfo.getBottomRightLedOriginal();
+            int numGroups = ledMatrixInfo.getBottomRightLed();
+            int baseSize = totalLeds / numGroups;
+            int remainder = totalLeds % numGroups;
+            int x, y, taleWidth, taleHeight;
+            for (int i = numGroups; i > 0; i--) {
+                int groupSize = baseSize + (i <= remainder ? 1 : 0);
+                x = ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getBottomLedDistance() * i) - ledMatrixInfo.getCornerGapSide() + ledMatrixInfo.getPillarboxBorder();
+                y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
+                taleWidth = ledMatrixInfo.getBottomLedDistance();
+                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
+                for (int groupIndex = 0; groupIndex < groupSize; groupIndex++) {
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.BOTTOM_RIGHT.getBaseI18n()));
+                }
+            }
+        }
+        return ledNum;
+    }
+
+    /**
+     * +
+     * Small record for satellites
+     *
+     * @param start zone where satellite starts
+     * @param end   zone where satellite ends
+     */
+    public record getStartEndLeds(int start, int end) {
+    }
+
+    /**
      * Init LED Matrixes
      *
-     * @param aspectRatio    aspect ratio in use
-     * @param ledMatrixInfo  infos used to create the LED matrix
-     * @param forceNewMatrix use a previously initialized matrix
+     * @param aspectRatio   aspect ratio in use
+     * @param ledMatrixInfo infos used to create the LED matrix
      * @return
      */
     @SuppressWarnings({"All"})
-    public LinkedHashMap<Integer, LEDCoordinate> initializeLedMatrix(Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo, boolean forceNewMatrix) {
+    public LinkedHashMap<Integer, LEDCoordinate> initializeLedMatrix(Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        if (MainSingleton.getInstance().config != null && !forceNewMatrix) {
-            if (MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n()) != null && !MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n()).isEmpty()) {
-                defaultLedMatrix = MainSingleton.getInstance().config.getLedMatrix().get(aspectRatio.getBaseI18n());
-                return defaultLedMatrix;
-            }
-        }
         // Store original values before grouping them
         ledMatrixInfo.setBottomRightLedOriginal(ledMatrixInfo.getBottomRightLed());
         ledMatrixInfo.setRightLedOriginal(ledMatrixInfo.getRightLed());
@@ -207,209 +414,6 @@ public class LEDCoordinate {
         ledNum = leftLed(defaultLedMatrix, ledMatrixInfo, ledNum);
         bottomLeft(defaultLedMatrix, ledMatrixInfo, ledNum);
         return defaultLedMatrix;
-    }
-
-    /**
-     * Init LEFT side LEDs
-     *
-     * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo    infos used to create the LED matrix
-     * @param ledNum           current LEDs
-     * @return next LED to process
-     */
-    @SuppressWarnings("SuspiciousNameCombination")
-    private int leftLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
-        if (ledMatrixInfo.getLeftLed() > 0) {
-            int ledInsertionNumber = 0;
-            int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            var leftLedDistance = (ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getCornerGapTopBottom() * 2)) / ledMatrixInfo.getLeftLed();
-            int cornerGapTopBottomAccurate = (ledMatrixInfo.getScreenHeight() - (leftLedDistance * ledMatrixInfo.getLeftLed())) / 2;
-            for (int i = ledMatrixInfo.getLeftLed(); i >= 1; i--) {
-                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    x = ledMatrixInfo.getPillarboxBorder();
-                    y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (leftLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
-                    taleWidth = ledMatrixInfo.getSideAreaWidth();
-                    taleHeight = leftLedDistance;
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.LEFT.getBaseI18n()));
-                    ledInsertionNumber++;
-                }
-            }
-            while (ledInsertionNumber < ledMatrixInfo.getLeftLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.PossibleZones.LEFT.getBaseI18n()));
-                ledInsertionNumber++;
-            }
-        }
-        return ledNum;
-    }
-
-    /**
-     * Init BOTTOM LEFT LEDs
-     *
-     * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo    infos used to create the LED matrix
-     * @param ledNum           current LEDs
-     */
-    private void bottomLeft(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
-        if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
-            if (ledMatrixInfo.getBottomLeftLed() > 0) {
-                int ledInsertionNumber = 0;
-                int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-                var bottomLedLeftDistance = (((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin()) / 2) / ledMatrixInfo.getBottomLeftLed();
-                for (int i = 1; i <= ledMatrixInfo.getBottomLeftLed(); i++) {
-                    x = (((bottomLedLeftDistance * i) - bottomLedLeftDistance) + ledMatrixInfo.getCornerGapSide()) + ledMatrixInfo.getPillarboxBorder();
-                    y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
-                    taleWidth = bottomLedLeftDistance;
-                    taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
-                    for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                        defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.BOTTOM_LEFT.getBaseI18n()));
-                        ledInsertionNumber++;
-                    }
-                }
-                while (ledInsertionNumber < ledMatrixInfo.getBottomLeftLedOriginal()) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.PossibleZones.BOTTOM_LEFT.getBaseI18n()));
-                    ledInsertionNumber++;
-                }
-            }
-
-
-        }
-    }
-
-    /**
-     * Init TOP LEDs
-     *
-     * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo    infos used to create the LED matrix
-     * @param ledNum           current LEDs
-     * @return next LED to process
-     */
-    @SuppressWarnings("SuspiciousNameCombination")
-    private int topLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
-        if (ledMatrixInfo.getTopLed() > 0) {
-            int ledInsertionNumber = 0;
-            int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            var topLedDistance = (ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) / ledMatrixInfo.getTopLed();
-            int cornerGapSideAccurate = (ledMatrixInfo.getScreenWidth() - (topLedDistance * ledMatrixInfo.getTopLed())) / 2;
-            for (int i = 1; i <= ledMatrixInfo.getTopLed(); i++) {
-                x = ((ledMatrixInfo.getScreenWidth() - (topLedDistance * i)) - cornerGapSideAccurate) + ledMatrixInfo.getPillarboxBorder();
-                y = ledMatrixInfo.getLetterboxBorder();
-                taleWidth = topLedDistance;
-                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
-                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.TOP.getBaseI18n()));
-                    ledInsertionNumber++;
-                }
-            }
-            while (ledInsertionNumber < ledMatrixInfo.getTopLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.PossibleZones.TOP.getBaseI18n()));
-                ledInsertionNumber++;
-            }
-        }
-        return ledNum;
-    }
-
-    /**
-     * Init RIGHT side LEDs
-     *
-     * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo    infos used to create the LED matrix
-     * @param ledNum           current LEDs
-     * @return next LED to process
-     */
-    @SuppressWarnings("SuspiciousNameCombination")
-    private int rightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
-        if (ledMatrixInfo.getRightLed() > 0) {
-            int ledInsertionNumber = 0;
-            int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            var rightLedDistance = (ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getCornerGapTopBottom() * 2)) / ledMatrixInfo.getRightLed();
-            int cornerGapTopBottomAccurate = (ledMatrixInfo.getScreenHeight() - (rightLedDistance * ledMatrixInfo.getRightLed())) / 2;
-            for (int i = 1; i <= ledMatrixInfo.getRightLed(); i++) {
-                x = (ledMatrixInfo.getScreenWidth() - ledMatrixInfo.getSideAreaWidth()) + ledMatrixInfo.getPillarboxBorder();
-                y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (rightLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
-                taleWidth = ledMatrixInfo.getSideAreaWidth();
-                taleHeight = rightLedDistance;
-                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.RIGHT.getBaseI18n()));
-                    ledInsertionNumber++;
-                }
-            }
-            while (ledInsertionNumber < ledMatrixInfo.getRightLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.PossibleZones.RIGHT.getBaseI18n()));
-                ledInsertionNumber++;
-            }
-        }
-        return ledNum;
-    }
-
-    /**
-     * Init BOTTOM LEDs
-     *
-     * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo    infos used to create the LED matrix
-     * @param ledNum           current LEDs
-     * @return next LED to process
-     */
-    private int bottomLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
-        if (ledMatrixInfo.getBottomRowLed() > 0) {
-            int ledInsertionNumber = 0;
-            int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            int cornerGapSideAccurate = (ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getBottomLedDistance() * ledMatrixInfo.getBottomRowLed())) / 2;
-            for (int i = 1; i <= ledMatrixInfo.getBottomRowLed(); i++) {
-                x = (((ledMatrixInfo.getBottomLedDistance() * i) - ledMatrixInfo.getBottomLedDistance()) + cornerGapSideAccurate) + ledMatrixInfo.getPillarboxBorder();
-                y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
-                taleWidth = ledMatrixInfo.getBottomLedDistance();
-                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
-                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.BOTTOM.getBaseI18n()));
-                    ledInsertionNumber++;
-                }
-            }
-            while (ledInsertionNumber < ledMatrixInfo.getBottomRowLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.PossibleZones.BOTTOM.getBaseI18n()));
-                ledInsertionNumber++;
-            }
-        }
-        return ledNum;
-    }
-
-    /**
-     * Init BOTTOM RIGHT LEDs
-     *
-     * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo    infos used to create the LED matrix
-     * @param ledNum           current LEDs
-     * @return next LED to process
-     */
-    private int bottomRightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
-        if (ledMatrixInfo.getBottomRightLed() > 0) {
-            int ledInsertionNumber = 0;
-            int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            for (int i = ledMatrixInfo.getBottomRightLed(); i > 0; i--) {
-                x = ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getBottomLedDistance() * i) - ledMatrixInfo.getCornerGapSide() + ledMatrixInfo.getPillarboxBorder();
-                y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
-                taleWidth = ledMatrixInfo.getBottomLedDistance();
-                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
-                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.PossibleZones.BOTTOM_RIGHT.getBaseI18n()));
-                    ledInsertionNumber++;
-                }
-            }
-            while (ledInsertionNumber < ledMatrixInfo.getBottomRightLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.PossibleZones.BOTTOM_RIGHT.getBaseI18n()));
-                ledInsertionNumber++;
-            }
-        }
-        return ledNum;
-    }
-
-    /**
-     * +
-     * Small record for satellites
-     *
-     * @param start zone where satellite starts
-     * @param end   zone where satellite ends
-     */
-    public record getStartEndLeds(int start, int end) {
     }
 
 }

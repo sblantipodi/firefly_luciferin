@@ -1,0 +1,191 @@
+<!-- LUCIFERIN web configuration page (served by ConfigServer) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LUCIFERIN Web Interface</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="https://sblantipodi.github.io/glow_worm_luciferin/static/logos/luciferin_logo.png" rel="icon"
+          type="image/png">
+    <script crossorigin="anonymous"
+            integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
+            src="https://sblantipodi.github.io/glow_worm_luciferin/third_party_scripts/jquery-3.6.0.slim.min.js"></script>
+    <link href="https://sblantipodi.github.io/glow_worm_luciferin/third_party_scripts/bootstrap.min.css"
+          rel="stylesheet">
+    <script src="https://sblantipodi.github.io/glow_worm_luciferin/third_party_scripts/bootstrap.bundle.min.js"></script>
+    <script src="https://sblantipodi.github.io/glow_worm_luciferin/third_party_scripts/iro5_2_2.js"></script>
+    <link href="https://sblantipodi.github.io/glow_worm_luciferin/fa6/css/all.css" rel="stylesheet">
+    <link href="https://sblantipodi.github.io/glow_worm_luciferin/webInterface_1.1.5.slim.min.css" rel="stylesheet">
+    <link href="set-config.css" rel="stylesheet">
+    <link href="set-config-dark.css" id="darkThemeStylesheet" media="not all" rel="stylesheet">
+    <script>
+        (function () {
+            var cookieName = 'luciferin_theme';
+            var darkStylesheet = document.getElementById('darkThemeStylesheet');
+            var systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+            var savedTheme = document.cookie.split(';').map(function (cookie) {
+                return cookie.trim();
+            }).find(function (cookie) {
+                return cookie.indexOf(cookieName + '=') === 0;
+            });
+            var preference = savedTheme ? savedTheme.substring(cookieName.length + 1) : null;
+            if (preference !== 'dark' && preference !== 'light') {
+                preference = null;
+            }
+
+            function applyTheme(theme) {
+                var dark = theme === 'dark';
+                darkStylesheet.media = dark ? 'all' : 'not all';
+                var button = document.getElementById('themeToggle');
+                if (button) {
+                    button.querySelector('i').className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                    button.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+                    button.setAttribute('title', dark ? 'Switch to light theme' : 'Switch to dark theme');
+                    button.setAttribute('aria-pressed', String(dark));
+                }
+            }
+
+            applyTheme(preference || (systemTheme.matches ? 'dark' : 'light'));
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var button = document.getElementById('themeToggle');
+                applyTheme(preference || (systemTheme.matches ? 'dark' : 'light'));
+                button.addEventListener('click', function () {
+                    preference = darkStylesheet.media === 'all' ? 'light' : 'dark';
+                    document.cookie = cookieName + '=' + preference + '; Path=/; Max-Age=31536000; SameSite=Lax';
+                    applyTheme(preference);
+                });
+            });
+
+            function followSystemTheme() {
+                if (!preference) {
+                    applyTheme(systemTheme.matches ? 'dark' : 'light');
+                }
+            }
+
+            if (systemTheme.addEventListener) {
+                systemTheme.addEventListener('change', followSystemTheme);
+            } else {
+                systemTheme.addListener(followSystemTheme);
+            }
+        })();
+    </script>
+</head>
+<body>
+<div class="header-shell sticky-top">
+    <div class="container-fluid p-2 bg-primary text-white text-center">
+        <h1>LUCIFERIN</h1>
+        <p id="subtitle">FIREFLY</p>
+    </div>
+    <button aria-label="Switch theme" id="themeToggle" title="Switch theme" type="button">
+        <i aria-hidden="true" class="fa-solid fa-moon"></i>
+    </button>
+    <div class="firefly-update-notice" hidden id="fireflyUpdateNotice" role="status">
+        A new Firefly Luciferin version is available. <a
+            href="https://github.com/sblantipodi/firefly_luciferin/releases/latest" rel="noopener noreferrer"
+            target="_blank">View the release</a>.
+    </div>
+    <div class="glow-worm-update-available-notice" hidden id="glowWormUpdateAvailableNotice" role="status">
+        A connected device requires an update.
+    </div>
+    <div class="glow-worm-update-notice" hidden id="glowWormUpdateNotice" role="status">
+        Updating connected Glow Worm devices…
+    </div>
+</div>
+<div class="viewport-controls">
+    <a aria-disabled="true" aria-label="Device unreachable" id="deviceReachability" rel="noopener noreferrer"
+       tabindex="-1" target="_blank"
+       title="Device unreachable"></a>
+</div>
+<div class="container" id="settingsContainer"></div>
+
+<template id="settingsPageTemplate">
+    <div class="row">
+        <div class="col margin-2">
+            <div class="row mb-3 align-items-start justify-content-center">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-4 text-center">
+                    <div id="picker"></div>
+                    <div class="form-group mt-2"><select id="effectSelect" class="form-select w-100"></select></div>
+                    <div class="form-group mt-2"><button id="toggleLED" type="button" class="btn w-100"></button></div>
+                    <div id="activeProfile" class="text-center text-muted small mt-1"></div>
+                </div>
+            </div>
+        </div>
+        <form id="settingsForm" novalidate>
+            <img alt="Luciferin" class="settings-logo" height="20" id="settingsLogo" src="luciferin-logo.png"
+                 width="20">
+            <div class="accordion" id="settingsAccordion"></div>
+            <div class="text-center py-2"><button type="button" id="showLivePreview" class="btn btn-sm">Show Live Preview</button></div>
+            <div class="text-center py-2"><video id="webrtcPreview" autoplay muted playsinline></video></div>
+            <div class="text-center py-2"><img id="screenshot" alt="Captured frame (TRACE)"></div>
+            <div id="livePreviewFallbackNotice" class="live-preview-fallback-notice" role="status"><strong>Image preview mode.</strong> The GStreamer NICE plugin is not installed, so this preview uses images. Install <code>gstreamer1.0-plugins-bad gstreamer1.0-nice libnice10 libnice-dev</code> to enable the faster, lower-latency WebRTC preview.</div>
+            <div class="mt-3"><button type="button" id="saveSettings" class="btn btn-orange w-100"> SAVE SETTINGS</button></div>
+            <footer aria-label="Live status" class="device-status-footer text-center text-muted py-3 small">
+                <span class="footer-status-item" hidden id="footerWifiGroup" title="Wi-Fi signal">
+                    <i aria-hidden="true" class="fa-solid fa-wifi"></i> <span id="footerWifi"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerEthernetGroup" title="Ethernet">
+                    <i aria-hidden="true" class="fa-solid fa-ethernet"></i>
+                </span>
+                <span class="footer-status-item" hidden id="footerFpsGroup" title="Firefly capture FPS">
+                    <i aria-hidden="true" class="fa-solid fa-desktop"></i> <span id="fpsCounter"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerGlowWormFpsGroup" title="Glow Worm LED output FPS">
+                    <i aria-hidden="true" class="fa-solid fa-lightbulb"></i> <span id="glowWormFpsCounter"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerLdrGroup" title="Ambient brightness">
+                    <i aria-hidden="true" class="fa-solid fa-sun"></i> <span id="footerLdr"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerTempGroup" title="Chip temperature">
+                    <i aria-hidden="true" class="fa-solid fa-temperature-half"></i> <span id="footerTemp"></span>
+                </span>
+                <span class="footer-status-item" hidden id="footerGammaGroup" title="Adaptive gamma">
+                    <i aria-hidden="true" class="fa-solid fa-circle-half-stroke"></i> <span id="footerGamma"></span>
+                </span>
+            </footer>
+        </form>
+    </div>
+</template>
+
+<template id="accordionTemplate">
+    <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" aria-expanded="false"></button></h2>
+        <div class="accordion-collapse collapse"><div class="accordion-body"></div></div>
+    </div>
+</template>
+
+<template id="profilesTemplate">
+    <div id="profilesList" class="list-group mb-2"></div>
+    <div class="input-group input-group-sm mb-2">
+        <input type="text" class="form-control" id="newProfileName" placeholder="New profile name">
+        <button type="button" id="addProfile" class="btn btn-orange btn-sm">Add</button>
+    </div>
+    <div class="form-text text-muted">Click a profile name to activate it. Firefly will restart with the selected profile. Add a new profile to copy the current configuration under a new name.</div>
+</template>
+
+<template id="logTemplate">
+    <div class="mb-3">
+        <label class="form-label" for="runtimeLogLevel" id="runtimeLogLevelLabel">Log Level</label>
+        <select class="form-select w-100" id="runtimeLogLevel">
+            <option value="ERROR">ERROR</option>
+            <option value="WARN">WARN</option>
+            <option value="INFO">INFO</option>
+            <option value="DEBUG">DEBUG</option>
+            <option value="TRACE">TRACE</option>
+        </select>
+    </div>
+    <pre aria-live="off" class="app-log" id="appLog" role="log">Open LOG to load the latest entries.</pre>
+</template>
+
+<template id="profileRowTemplate">
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+        <button type="button" class="list-group-item-action flex-grow-0 text-start" style="background:none;border:none;padding:0"></button>
+        <button type="button" class="btn btn-sm btn-outline-danger float-end" title="Remove profile">&times;</button>
+    </div>
+</template>
+
+<template id="activeProfileBadgeTemplate"><span class="badge bg-success">active</span></template>
+    <script src="webrtc-preview.js"></script>
+    <script type="module" src="set-config-app.js"></script>
+</body>
+</html>

@@ -25,7 +25,6 @@ import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinUser;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -33,10 +32,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Dialog;
 import javafx.scene.input.InputEvent;
-import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import javafx.scene.web.WebView;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
@@ -47,7 +43,8 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.bindings.notify.LibNotify;
+import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.grabber.SimdBenchmark;
 import org.dpsoftware.gui.controllers.*;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
 import org.dpsoftware.gui.trayicon.TrayIconAwt;
@@ -67,6 +64,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -78,8 +76,7 @@ public class GuiManager {
 
     public PipelineManager pipelineManager;
     public TrayIconManager trayIconManager;
-    // Label and framerate dialog
-    WebView wv;
+    private DialogManager dialogManager;
     public Stage stage;
     private Stage stageInfo;
     private Scene mainScene;
@@ -88,6 +85,7 @@ public class GuiManager {
     private double xOffsetInfo = 0;
     private double yOffset = 0;
     private double yOffsetInfo = 0;
+    private final AtomicBoolean upgradeCheckInProgress = new AtomicBoolean();
 
     /**
      * Constructor
@@ -110,7 +108,14 @@ public class GuiManager {
         }
         // TODO Set this property to prevent a JavaFX exception when instantiating a WebView.
         // System.setProperty("javafx.sg.warn", "true");
-        wv = new WebView();
+        dialogManager = new DialogManager(this);
+    }
+
+    private DialogManager dialogManager() {
+        if (dialogManager == null) {
+            dialogManager = new DialogManager(this);
+        }
+        return dialogManager;
     }
 
     /**
@@ -122,7 +127,11 @@ public class GuiManager {
      */
     public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(fxml + Constants.FXML), MainSingleton.getInstance().bundle);
-        return fxmlLoader.load();
+        Parent root = fxmlLoader.load();
+        if (fxmlLoader.getController() instanceof SettingsController controller) {
+            root.getProperties().put(SettingsController.class, controller);
+        }
+        return root;
     }
 
     /**
@@ -145,21 +154,21 @@ public class GuiManager {
             switch (MainSingleton.getInstance().whoAmI) {
                 case 1 -> {
                     if ((MainSingleton.getInstance().config.getMultiMonitor() != 1)) {
-                        title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
+                        title += " (" + CommonUtility.getWord(LabelKey.RIGHT_DISPLAY) + ")";
                     }
                 }
                 case 2 -> {
                     if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                        title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
+                        title += " (" + CommonUtility.getWord(LabelKey.LEFT_DISPLAY) + ")";
                     } else {
-                        title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
+                        title += " (" + CommonUtility.getWord(LabelKey.CENTER_DISPLAY) + ")";
                     }
                 }
-                case 3 -> title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
+                case 3 -> title += " (" + CommonUtility.getWord(LabelKey.LEFT_DISPLAY) + ")";
             }
         }
-        if (!CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)
-                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
+        if (!CommonUtility.getWord(LabelKey.DEFAULT).equals(MainSingleton.getInstance().profileArg)
+                && !LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
             title += " [" + MainSingleton.getInstance().profileArg + "]";
         }
         return title;
@@ -196,32 +205,17 @@ public class GuiManager {
      */
     private static void showFirmwareTypeDialog(boolean configPresent) {
         if (!configPresent) {
-            ButtonType fullBtn = new ButtonType(CommonUtility.getWord(Constants.FULL_FIRM));
-            ButtonType lightBtn = new ButtonType(CommonUtility.getWord(Constants.LIGHT_FIRM));
-            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.INITIAL_TITLE,
-                    Constants.INITIAL_HEADER, Constants.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
-            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.FULL_FIRM))) {
+            ButtonType fullBtn = new ButtonType(CommonUtility.getWord(LabelKey.FULL_FIRM));
+            ButtonType lightBtn = new ButtonType(CommonUtility.getWord(LabelKey.LIGHT_FIRM));
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(LabelKey.INITIAL_TITLE,
+                    LabelKey.INITIAL_HEADER, LabelKey.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
+            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(LabelKey.FULL_FIRM))) {
                 GuiSingleton.getInstance().setFirmTypeFull(true);
             }
-            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.LIGHT_FIRM))) {
+            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(LabelKey.LIGHT_FIRM))) {
                 GuiSingleton.getInstance().setFirmTypeFull(false);
             }
         }
-    }
-
-    /**
-     * Convert alert type
-     *
-     * @param notificationType error, info, warning
-     * @return converted alert type
-     */
-    private static Alert.AlertType convertAlertType(TrayIcon.MessageType notificationType) {
-        return switch (notificationType) {
-            case ERROR -> Alert.AlertType.ERROR;
-            case WARNING -> Alert.AlertType.WARNING;
-            case NONE -> Alert.AlertType.NONE;
-            default -> Alert.AlertType.INFORMATION;
-        };
     }
 
     /**
@@ -379,10 +373,7 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
-        Alert alert = createAlert(title, header, alertType);
-        alert.setContentText(content);
-        setAlertTheme(alert);
-        return alert.showAndWait();
+        return dialogManager().showAlert(title, header, content, alertType);
     }
 
     /**
@@ -395,28 +386,9 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
-        title = CommonUtility.getWord(title);
-        header = CommonUtility.getWord(header);
-        content = CommonUtility.getWord(content);
-        return showAlert(title, header, content, alertType);
+        return dialogManager().showLocalizedAlert(title, header, content, alertType);
     }
 
-    /**
-     * Show alert in a JavaFX dialog
-     *
-     * @param title     dialog title
-     * @param header    dialog header
-     * @param content   dialog msg
-     * @param alertType alert type
-     * @return an Object when we can listen for commands
-     */
-    public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType, ButtonType... buttons) {
-        Alert alert = createAlert(title, header, alertType);
-        alert.setContentText(content);
-        alert.getButtonTypes().setAll(buttons);
-        setAlertTheme(alert);
-        return alert.showAndWait();
-    }
 
     /**
      * Show notification. This uses the OS notification system via AWT tray icon on Windows,
@@ -428,15 +400,7 @@ public class GuiManager {
      * @param notificationType notification type
      */
     public void showNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
-        if (NativeExecutor.isWindows()) {
-            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(highlight, content, notificationType);
-        } else {
-            if (LibNotify.isSupported()) {
-                LibNotify.showLinuxNotification(highlight, content, notificationType);
-            } else {
-                showAlert(title, highlight, content, convertAlertType(notificationType));
-            }
-        }
+        dialogManager().showNotification(highlight, content, title, notificationType);
     }
 
     /**
@@ -448,26 +412,7 @@ public class GuiManager {
      * @param notificationType notification type
      */
     public void showLocalizedNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
-        if (NativeExecutor.isWindows()) {
-            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon
-                    .displayMessage(CommonUtility.getWord(highlight), CommonUtility.getWord(content), notificationType);
-        } else {
-            if (LibNotify.isSupported()) {
-                LibNotify.showLocalizedLinuxNotification(highlight, content, notificationType);
-            } else {
-                showLocalizedAlert(title, highlight, content, convertAlertType(notificationType));
-            }
-        }
-    }
-
-    /**
-     * Set alert theme
-     *
-     * @param alert in use
-     */
-    private void setAlertTheme(Alert alert) {
-        setStylesheet(alert.getDialogPane().getStylesheets(), null);
-        alert.getDialogPane().getStyleClass().add("dialog-pane");
+        dialogManager().showLocalizedNotification(highlight, content, title, notificationType);
     }
 
     /**
@@ -475,9 +420,8 @@ public class GuiManager {
      *
      * @param dialog in use
      */
-    void setDialogTheme(Dialog<String> dialog) {
-        setStylesheet(dialog.getDialogPane().getStylesheets(), null);
-        dialog.getDialogPane().getStyleClass().add("dialog-pane");
+    public void setDialogTheme(Dialog<String> dialog) {
+        dialogManager().setDialogTheme(dialog);
     }
 
     /**
@@ -513,57 +457,22 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
-        //wv.getEngine().load(Objects.requireNonNull(getClass().getResource("css/pro.html")).toExternalForm());
-        wv.getEngine().load(webUrl);
-        wv.getEngine().setUserStyleSheetLocation(Objects.requireNonNull(getClass().getResource(Constants.CSS_WEB_VIEW)).toExternalForm());
-        int windowWidth = 1200 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResX(),
-                MainSingleton.getInstance().config.getOsScaling()) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X;
-        int windowHeight = 600 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResY(),
-                MainSingleton.getInstance().config.getOsScaling()) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_Y;
-        wv.setPrefWidth(windowWidth);
-        wv.setPrefHeight(windowHeight);
-        Alert alert = createAlert(title, header, alertType);
-        alert.getDialogPane().setContent(wv);
-        alert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL, ButtonType.PREVIOUS, ButtonType.NEXT);
-        final Node btnPrev = alert.getDialogPane().lookupButton(ButtonType.PREVIOUS);
-        btnPrev.addEventFilter(ActionEvent.ACTION, event -> {
-            event.consume();
-            goBack();
-        });
-        final Node btnNext = alert.getDialogPane().lookupButton(ButtonType.NEXT);
-        btnNext.addEventFilter(ActionEvent.ACTION, event -> {
-            event.consume();
-            goNext();
-        });
-        setAlertTheme(alert);
-        return alert.showAndWait();
+        return dialogManager().showWebAlert(title, header, webUrl, alertType);
     }
 
-    /**
-     * Go back in web view history
-     */
-    public void goBack() {
-        Platform.runLater(() -> wv.getEngine().executeScript("history.back()"));
-    }
 
     /**
-     * Create a generic alert
-     *
-     * @param title     dialog title
-     * @param header    dialog header
-     * @param alertType alert type
-     * @return generic alert
+     * Refresh a preloaded settings window after automatic capture selection.
      */
-    private Alert createAlert(String title, String header, Alert.AlertType alertType) {
-        Platform.setImplicitExit(false);
-        Alert alert = new Alert(alertType);
-        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-        stage.setAlwaysOnTop(true);
-        setStageIcon(stage);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        return alert;
+    public void refreshAutomaticCaptureMethod() {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(this::refreshAutomaticCaptureMethod);
+            return;
+        }
+        if (mainScene != null && mainScene.getRoot().getProperties().get(SettingsController.class)
+                instanceof SettingsController controller) {
+            controller.refreshAutomaticCaptureMethod();
+        }
     }
 
     /**
@@ -572,7 +481,9 @@ public class GuiManager {
      * @param preloadFxml if true, it preload the fxml without showing it
      */
     public void showSettingsDialog(boolean preloadFxml) {
-        showStage(Constants.FXML_SETTINGS, preloadFxml, true);
+        if (!MainSingleton.getInstance().isHeadlessMode()) {
+            showStage(Constants.FXML_SETTINGS, preloadFxml, true);
+        }
     }
 
     /**
@@ -589,110 +500,9 @@ public class GuiManager {
      * @param event              input event
      */
     public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
-        Platform.runLater(() -> {
-            TestCanvas testCanvas = new TestCanvas();
-            testCanvas.buildAndShowTestImage(event);
-            Platform.runLater(() -> {
-                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_COLOR_CORRECTION_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
-                Parent root;
-                try {
-                    root = fxmlLoader.load();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                ColorCorrectionDialogController controller = fxmlLoader.getController();
-                controller.injectSettingsController(settingsController);
-                controller.injectTestCanvas(testCanvas);
-                controller.initValuesFromSettingsFile(MainSingleton.getInstance().config);
-                Stage stage = initStage(root);
-                stage.initStyle(StageStyle.TRANSPARENT);
-                stage.initModality(Modality.NONE);
-                stage.setAlwaysOnTop(true);
-                // Dialog drag support
-                final Delta dragDelta = new Delta();
-                root.setOnMousePressed(ev -> {
-                    dragDelta.x = stage.getX() - ev.getScreenX();
-                    dragDelta.y = stage.getY() - ev.getScreenY();
-                });
-                root.setOnMouseDragged(eve -> {
-                    stage.setX(eve.getScreenX() + dragDelta.x);
-                    stage.setY(eve.getScreenY() + dragDelta.y);
-                });
-                GuiSingleton.getInstance().colorDialog = stage;
-                stage.getProperties().put(Constants.FXML_COLOR_CORRECTION_DIALOG, controller);
-                GuiSingleton.getInstance().colorDialog.show();
-                Platform.runLater(() -> {
-                    new TestCanvas().setDialogMargin(stage);
-                    testCanvas.setDialogY((int) stage.getY());
-                    stage.setAlwaysOnTop(true);
-                });
-            });
-        });
+        dialogManager().showColorCorrectionDialog(settingsController, event);
     }
 
-    /**
-     * Go forward in web view history
-     */
-    public void goNext() {
-        Platform.runLater(() -> wv.getEngine().executeScript("history.forward()"));
-    }
-
-    /**
-     * Show a secondary stage dialog
-     *
-     * @param settingsController controller
-     * @param fxmlLoader         fxml loader
-     * @throws IOException error
-     */
-    private void showSecondaryStage(Class<?> classForCast, SettingsController settingsController, FXMLLoader fxmlLoader) throws IOException {
-        Parent root = fxmlLoader.load();
-        Object controller;
-        controller = fxmlLoader.getController();
-        if (classForCast == EyeCareDialogController.class) {
-            ((EyeCareDialogController) controller).injectSettingsController(settingsController);
-            if (MainSingleton.getInstance().config != null) {
-                ((EyeCareDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
-            } else {
-                ((EyeCareDialogController) controller).initDefaultValues();
-            }
-        }
-        if (classForCast == ImprovDialogController.class) {
-            ((ImprovDialogController) controller).injectSettingsController(settingsController);
-            if (MainSingleton.getInstance().config != null) {
-                ((ImprovDialogController) controller).initValuesFromSettingsFile();
-            } else {
-                ((ImprovDialogController) controller).initDefaultValues();
-            }
-        }
-        if (classForCast == ProfileDialogController.class) {
-            ((ProfileDialogController) controller).injectSettingsController(settingsController);
-            if (MainSingleton.getInstance().config != null) {
-                ((ProfileDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
-            } else {
-                ((ProfileDialogController) controller).initDefaultValues();
-            }
-        }
-        if (classForCast == SmoothingDialogController.class) {
-            ((SmoothingDialogController) controller).injectSettingsController(settingsController);
-            if (MainSingleton.getInstance().config != null) {
-                ((SmoothingDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
-            } else {
-                ((SmoothingDialogController) controller).initDefaultValues();
-            }
-        } else if (classForCast == SatellitesDialogController.class) {
-            ((SatellitesDialogController) controller).injectSettingsController(settingsController);
-            ((SatellitesDialogController) controller).setTooltips();
-        }
-        Stage stage = initStage(root);
-        stage.initStyle(StageStyle.TRANSPARENT);
-        stage.setAlwaysOnTop(true);
-        Platform.runLater(() -> {
-            Stage parentStage = getStage(Constants.FXML_SETTINGS);
-            stage.setX(parentStage.getX() + (parentStage.getWidth() / 2) - (stage.getWidth() / 2));
-            stage.setY(parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2));
-        });
-        stage.showAndWait();
-    }
 
     /**
      * Show satellites dialog
@@ -700,14 +510,7 @@ public class GuiManager {
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showSatellitesDialog(SettingsController settingsController) {
-        Platform.runLater(() -> {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SATELLITES_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
-                showSecondaryStage(SatellitesDialogController.class, settingsController, fxmlLoader);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
-        });
+        dialogManager().showSatellitesDialog(settingsController);
     }
 
     /**
@@ -716,14 +519,7 @@ public class GuiManager {
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showImprovDialog(SettingsController settingsController) {
-        Platform.runLater(() -> {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_IMPROV_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
-                showSecondaryStage(ImprovDialogController.class, settingsController, fxmlLoader);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
-        });
+        dialogManager().showImprovDialog(settingsController);
     }
 
     /**
@@ -732,14 +528,7 @@ public class GuiManager {
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showEyeCareDialog(SettingsController settingsController) {
-        Platform.runLater(() -> {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
-                showSecondaryStage(EyeCareDialogController.class, settingsController, fxmlLoader);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
-        });
+        dialogManager().showEyeCareDialog(settingsController);
     }
 
     /**
@@ -748,14 +537,7 @@ public class GuiManager {
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showProfileDialog(SettingsController settingsController) {
-        Platform.runLater(() -> {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_PROFILE_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
-                showSecondaryStage(ProfileDialogController.class, settingsController, fxmlLoader);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
-        });
+        dialogManager().showProfileDialog(settingsController);
     }
 
     /**
@@ -764,14 +546,25 @@ public class GuiManager {
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showSmoothingDialog(SettingsController settingsController) {
-        Platform.runLater(() -> {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SMOOTHING_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
-                showSecondaryStage(SmoothingDialogController.class, settingsController, fxmlLoader);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
-        });
+        dialogManager().showSmoothingDialog(settingsController);
+    }
+
+    /**
+     * Show gamma dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showGammaDialog(SettingsController settingsController) {
+        dialogManager().showGammaDialog(settingsController);
+    }
+
+    /**
+     * Show display dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showDisplayDialog(SettingsController settingsController) {
+        dialogManager().showDisplayDialog(settingsController);
     }
 
     /**
@@ -800,10 +593,7 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType, ButtonType... buttons) {
-        title = CommonUtility.getWord(title);
-        header = CommonUtility.getWord(header);
-        content = CommonUtility.getWord(content);
-        return showAlert(title, header, content, alertType, buttons);
+        return dialogManager().showLocalizedAlert(title, header, content, alertType, buttons);
     }
 
     /**
@@ -832,6 +622,9 @@ public class GuiManager {
             }
             getStage(stageName).resizableProperty().setValue(Boolean.FALSE);
             setScene(stageName, isMainStage, isClassicTheme);
+            if (isMainStage) {
+                refreshAutomaticCaptureMethod();
+            }
             String title = createWindowTitle();
             getStage(stageName).setTitle(title);
             setStageIcon(getStage(stageName));
@@ -943,8 +736,16 @@ public class GuiManager {
             getStage(stageName).close();
             getStage(stageName).setOpacity(1);
         } else {
-            if (configPresent) getStage(stageName).show();
-            else getStage(stageName).showAndWait();
+            if (configPresent) {
+                getStage(stageName).show();
+                if (NativeExecutor.isSystemTraySupported()
+                        && (stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_INFO))) {
+                    getStage(stageName).setIconified(false);
+                    getStage(stageName).toFront();
+                }
+            } else {
+                getStage(stageName).showAndWait();
+            }
         }
     }
 
@@ -967,29 +768,12 @@ public class GuiManager {
     }
 
     /**
-     * Initialize stage
-     *
-     * @param root parent root
-     * @return initialized stage
-     */
-    private Stage initStage(Parent root) {
-        Scene scene;
-        scene = new Scene(root);
-        setStylesheet(scene.getStylesheets(), scene);
-        scene.setFill(Color.TRANSPARENT);
-        Stage stage = new Stage();
-        stage.initStyle(StageStyle.UNDECORATED);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setScene(scene);
-        return stage;
-    }
-
-    /**
      * Stop capturing threads
      *
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
+        if (GrabberSingleton.getInstance() != null) GrabberSingleton.getInstance().resetFlowRamp();
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = getStateDto();
             if (NativeExecutor.isLinux()) {
@@ -1024,6 +808,7 @@ public class GuiManager {
      * Start capturing threads
      */
     public void startCapturingThreads() {
+        SimdBenchmark.resetSimdBenchmark();
         if (!MainSingleton.getInstance().communicationError) {
             if (!MainSingleton.getInstance().RUNNING) {
                 trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
@@ -1055,17 +840,36 @@ public class GuiManager {
     }
 
     /**
-     * Show settings dialog if using Linux and check for upgrade
+     * Show settings when needed and check for updates. In headless mode, only Glow Worm firmware is checked.
      *
      * @param showChangelog show changelog
      */
-    // TODO prevent to launch 2 checks at the same time
     public void showSettingsAndCheckForUpgrade(boolean showChangelog) {
-        if (!NativeExecutor.isSystemTraySupported()) {
-            showSettingsDialog(false);
+        boolean headless = MainSingleton.getInstance().isHeadlessMode();
+        if (!upgradeCheckInProgress.compareAndSet(false, true)) {
+            log.info("Update already in progress");
+            if (!headless) {
+                showLocalizedNotification(LabelKey.CHECK_UPDATE, LabelKey.UPDATE_ALREADY_IN_PROGRESS,
+                        Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            }
+            return;
         }
-        UpgradeManager upgradeManager = new UpgradeManager();
-        upgradeManager.checkForUpdates(showChangelog);
+        AtomicBoolean released = new AtomicBoolean();
+        Runnable releaseCheck = () -> {
+            if (released.compareAndSet(false, true)) {
+                upgradeCheckInProgress.set(false);
+            }
+        };
+        try {
+            if (!headless && !NativeExecutor.isSystemTraySupported()) {
+                showSettingsDialog(false);
+            }
+            UpgradeManager upgradeManager = new UpgradeManager();
+            upgradeManager.checkForUpdates(showChangelog && !headless, releaseCheck);
+        } catch (RuntimeException | Error e) {
+            releaseCheck.run();
+            throw e;
+        }
     }
 
     public Stage getStage(String stageName) {
@@ -1128,13 +932,6 @@ public class GuiManager {
         } else {
             this.yOffset = yOffset;
         }
-    }
-
-    /**
-     * Utility class
-     */
-    static class Delta {
-        double x, y;
     }
 
 }

@@ -42,8 +42,10 @@ public class MqttFramerateDto {
     private String colorMode;
     private String aspectRatio;
     private String gamma;
+    private String adaptiveGamma;
     private String smoothingLvl;
     private String frameGen;
     private String profile;
+    private String cubeLut;
 
 }

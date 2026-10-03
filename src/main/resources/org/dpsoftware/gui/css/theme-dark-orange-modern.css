@@ -1,0 +1,232 @@
+/* Firefly Luciferin — a quieter evolution of Dark orange.
+   Keep this theme separate so existing configurations retain their appearance. */
+
+.root {
+    -fx-accent: #ff913e;
+    -fx-focus-color: #ff913e;
+    -fx-faint-focus-color: rgba(255, 145, 62, 0.18);
+    -fx-base: #292d33;
+    -fx-background: #25282d;
+    -fx-control-inner-background: #30343a;
+    -fx-control-inner-background-alt: #292d33;
+    -fx-text-background-color: #f2f0ed;
+    -fx-text-fill: #f2f0ed;
+    -fx-selection-bar: #9c4d22;
+    -fx-selection-bar-non-focused: #664333;
+}
+
+.label, .check-box, .radio-button {
+    -fx-text-fill: #e4e2df;
+}
+
+.dialoglabel {
+    -fx-text-fill: #f0e9e3;
+}
+
+#rootPane {
+    -fx-background-color: #292d33;
+    -fx-background-radius: 10;
+    -fx-border-color: #3d4249;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+}
+
+.roundedBordersDialog {
+    -fx-background-color: #292d33;
+    -fx-border-color: #646a73 !important;
+    -fx-border-width: 2 !important;
+}
+
+.windowCloseBtn, .windowMinimizeBtn {
+    -fx-background-color: #292d33;
+    -fx-text-fill: #ece8e4;
+}
+
+.windowMinimizeBtn:hover {
+    -fx-background-color: #3d4249;
+}
+
+.tab-pane {
+    -fx-background-color: #292d33;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: #292d33;
+    -fx-border-color: #41454c;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #34383f;
+    -fx-border-color: #ff913e;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: #3a3e45;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: #c9c8c6;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: #fff0e4;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab .settings-tab-icon {
+    -fx-background-color: #c9c8c6;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .settings-tab-icon {
+    -fx-background-color: #fff0e4;
+}
+
+.tab-pane > .tab-content-area {
+    -fx-background-color: #292d33;
+}
+
+.button, .toggle-button, .combo-box-base, .choice-box, .text-input, .spinner {
+    -fx-background-color: #34383f;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-border-color: #4b5058;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-text-fill: #f2f0ed;
+}
+
+.button:hover, .toggle-button:hover, .combo-box-base:hover, .choice-box:hover {
+    -fx-background-color: #40454d;
+    -fx-border-color: #646a73;
+    -fx-text-fill: #ffffff;
+}
+
+.button:pressed, .toggle-button:selected {
+    -fx-background-color: #63412f;
+    -fx-border-color: #ff913e;
+}
+
+.button:default {
+    -fx-background-color: #d87030;
+    -fx-border-color: #ed8947;
+    -fx-text-fill: #17191c;
+    -fx-font-weight: bold;
+}
+
+.button:default:hover {
+    -fx-background-color: #f59a55;
+    -fx-text-fill: #17191c;
+}
+
+.redButton {
+    -fx-background-color: #b83f35;
+    -fx-border-color: #df6658;
+    -fx-text-fill: white;
+}
+
+.redButton:hover {
+    -fx-background-color: #d55346;
+}
+
+.combo-box-base:focused, .choice-box:focused, .text-input:focused, .spinner:focused {
+    -fx-border-color: #ff913e;
+    -fx-background-color: #393d44;
+}
+
+.text-input {
+    -fx-highlight-fill: #a95629;
+    -fx-highlight-text-fill: white;
+    -fx-prompt-text-fill: #aaa9a8;
+}
+
+.combo-box .list-cell, .choice-box .label, .spinner .text-field {
+    -fx-text-fill: #f2f0ed;
+}
+
+.combo-box .arrow-button, .choice-box .open-button,
+.spinner .increment-arrow-button, .spinner .decrement-arrow-button {
+    -fx-background-color: #3b3f46;
+    -fx-background-insets: 0;
+}
+
+.combo-box .arrow, .choice-box .arrow,
+.spinner .increment-arrow, .spinner .decrement-arrow {
+    -fx-background-color: #d8d5d1;
+}
+
+.context-menu, .combo-box-popup .list-view {
+    -fx-background-color: #30343a;
+    -fx-border-color: #50545c;
+    -fx-border-width: 1;
+}
+
+.menu-item:focused, .combo-box-popup .list-cell:hover {
+    -fx-background-color: #65412e;
+}
+
+.slider .track {
+    -fx-background-radius: 5;
+}
+
+.slider .thumb {
+    -fx-background-color: #ff913e;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+    -fx-border-color: #ffd0aa;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.slider .axis {
+    -fx-tick-label-fill: #bab8b5;
+}
+
+.separator *.line {
+    -fx-border-color: #454950;
+}
+
+.table-view, .list-view, .tree-view {
+    -fx-background-color: #30343a;
+    -fx-border-color: #4b5058;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: #393d44;
+    -fx-border-color: #4b5058;
+}
+
+.table-row-cell:even, .list-cell:even {
+    -fx-control-inner-background: #30343a;
+}
+
+.table-row-cell:odd, .list-cell:odd {
+    -fx-control-inner-background: #34383f;
+}
+
+.hyperlink, #hyper {
+    -fx-text-fill: #ffb477;
+}
+
+.hyperlink:hover {
+    -fx-text-fill: #ffd1aa;
+}
+
+.tray_menu_item_selectionbackground { color: #d87030; }
+.tray_menu_item_selectionforeground { color: #17191c; }
+.tray_menu_item_foreground { color: #f2f0ed; }
+.tray_menu_foreground { color: #f2f0ed; }
+.tray_menu_selectionbackground { color: #d87030; }
+.tray_menu_selectionforeground { color: #17191c; }
+.tray_menu_item_text { color: #ffb477; }
+.tray_menu_border { color: #50545c; }
+.tray_menu_item_border { color: #50545c; }
+.tray_background { color: #292d33; }
+.tray_separator { color: #4b5058; }

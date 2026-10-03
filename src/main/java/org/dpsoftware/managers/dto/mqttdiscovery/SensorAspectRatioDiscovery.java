@@ -45,7 +45,7 @@ public class SensorAspectRatioDiscovery extends DeviceDiscovery implements Disco
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Aspect Ratio Sensor");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio";
         this.forceUpdate = true;
         this.icon = "mdi:aspect-ratio";

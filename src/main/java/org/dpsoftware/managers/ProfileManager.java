@@ -33,6 +33,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.LabelKey;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -150,13 +151,13 @@ public class ProfileManager {
                     NativeExecutor.restartNativeInstance(profileNameToUse.get());
                 }
             }
-            if (profileNameToUse.get().isEmpty() && !MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
+            if (profileNameToUse.get().isEmpty() && !MainSingleton.getInstance().profileArg.equals(LabelKey.DEFAULT)) {
                 Configuration currentConfig = MainSingleton.getInstance().config;
                 if (!currentConfig.getProfileProcesses().isEmpty() || currentConfig.getGpuThreshold() != 0 || currentConfig.getCpuThreshold() != 0 || currentConfig.isCheckFullScreen()) {
                     log.debug("Profile switch triggered");
                     if (!MainSingleton.getInstance().getGuiManager().getStage(Constants.FXML_SETTINGS).isShowing()) {
                         log.debug("Switch to default profile.");
-                        NativeExecutor.restartNativeInstance();
+                        NativeExecutor.restartNativeInstance(LabelKey.DEFAULT);
                     }
                 }
             }

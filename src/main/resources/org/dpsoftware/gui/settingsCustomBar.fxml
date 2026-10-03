@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Font?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="shadowPane" maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity"
-            minWidth="-Infinity" prefHeight="480.0" prefWidth="440.0"
+            minWidth="-Infinity" prefHeight="500.0" prefWidth="440.0"
             stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal"
             fx:controller="org.dpsoftware.gui.controllers.SettingsController">
     <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="460.0" prefWidth="420.0">
@@ -46,24 +46,54 @@
                 </HBox>
             </HBox>
 
-            <TabPane fx:id="mainTabPane" prefHeight="435.0" prefWidth="420.0" tabClosingPolicy="UNAVAILABLE">
+            <TabPane fx:id="mainTabPane" prefHeight="455.0" prefWidth="420.0" tabClosingPolicy="UNAVAILABLE">
 
                 <Tab text="%fxml.setting.controls">
+                    <graphic>
+                        <StackPane styleClass="settings-tab-icon-slot">
+                            <Region styleClass="settings-tab-icon, settings-tab-icon-power-off"/>
+                        </StackPane>
+                    </graphic>
                     <fx:include fx:id="controlTab" source="controlTab.fxml"/>
                 </Tab>
                 <Tab text="%fxml.setting.ledsconfig">
+                    <graphic>
+                        <StackPane styleClass="settings-tab-icon-slot">
+                            <Region styleClass="settings-tab-icon, settings-tab-icon-lightbulb"/>
+                        </StackPane>
+                    </graphic>
                     <fx:include fx:id="ledsConfigTab" source="ledsConfigTab.fxml"/>
                 </Tab>
                 <Tab text="%fxml.setting.mode">
+                    <graphic>
+                        <StackPane styleClass="settings-tab-icon-slot">
+                            <Region styleClass="settings-tab-icon, settings-tab-icon-desktop"/>
+                        </StackPane>
+                    </graphic>
                     <fx:include fx:id="modeTab" source="modeTab.fxml"/>
                 </Tab>
                 <Tab text="%fxml.setting.wifimqtt">
+                    <graphic>
+                        <StackPane styleClass="settings-tab-icon-slot">
+                            <Region styleClass="settings-tab-icon, settings-tab-icon-network-wired"/>
+                        </StackPane>
+                    </graphic>
                     <fx:include fx:id="networkTab" source="networkTab.fxml"/>
                 </Tab>
                 <Tab text="%fxml.setting.misc">
+                    <graphic>
+                        <StackPane styleClass="settings-tab-icon-slot">
+                            <Region styleClass="settings-tab-icon, settings-tab-icon-sliders"/>
+                        </StackPane>
+                    </graphic>
                     <fx:include fx:id="miscTab" source="miscTab.fxml"/>
                 </Tab>
                 <Tab text="%fxml.setting.devices">
+                    <graphic>
+                        <StackPane styleClass="settings-tab-icon-slot">
+                            <Region styleClass="settings-tab-icon, settings-tab-icon-microchip"/>
+                        </StackPane>
+                    </graphic>
                     <fx:include fx:id="devicesTab" source="devicesTab.fxml"/>
                 </Tab>
 

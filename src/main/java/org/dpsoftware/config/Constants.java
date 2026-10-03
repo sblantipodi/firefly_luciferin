@@ -37,6 +37,7 @@ public class Constants {
     public static final String FIRMWARE_NAME = "Glow Worm Luciferin";
     public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
     public static final Color DEFAULT_COLOR = Color.rgb(255, 82, 0);
+    public static final String DEFAULT_CUBE_LUT = "HDR to SDR high precision.cube";
     public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
     public static final String DEFAULT_BAUD_RATE = Enums.BaudRate.BAUD_RATE_500000.getBaudRate();
     public static final String DEFAULT_FRAMERATE = "30";
@@ -45,39 +46,19 @@ public class Constants {
     public static final int DEFAULT_FRAMGEN = Enums.FrameGeneration.FI_2X.getFrameGenerationTarget();
     public static final float DEFAULT_EMA = Enums.Ema.SMOOTHING_EMA_4.getEmaAlpha();
     public static final String FRAMERATE_CAP = "540";
-    public static final String SPAWNING_ROBOTS = "log.spawning.robots";
-    public static final String SERIAL_PORT_IN_USE = "log.serial.port";
-    public static final String TURN_LED_ON = "controller.turn.led.on";
-    public static final String TURN_LED_OFF = "controller.turn.led.off";
     public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
     public static final String CLEAN_EXIT = "CLEAN EXIT";
-    public static final String FULL_FIRM = "full.firm";
-    public static final String LIGHT_FIRM = "light.firm";
-    // This value must meet the one in Firefly Luciferin
-    public static final int SERIAL_CHUNK_SIZE = 250;
     public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
     public static final String SETTING_LED_SERIAL = "Setting LEDs";
     public static final int NUMBER_OF_BENCHMARK_ITERATION = 15;
     public static final int BENCHMARK_ERROR_MARGIN = 4;
     public static final long TIME_TO_RESTART_CAPTURE = 1;
-    public static final String MULTIMONITOR_1 = "multimonitor.disabled";
-    public static final String MULTIMONITOR_2 = "multimonitor.dual";
-    public static final String MULTIMONITOR_3 = "multimonitor.triple";
-    public static final String LEFT_DISPLAY = "fxml.ledsconfigtab.leftdisplay";
-    public static final String CENTER_DISPLAY = "fxml.ledsconfigtab.centerdisplay";
-    public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
-    public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
-    public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
     public static final int NUMBER_OF_AREA_TO_CHECK = 50;
     public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 15;
-    public static final int MINIMUM_WHITE_PIXELS_PCT = 40;
+    public static final int BLACK_BAR_MINIMUM_PCT = 95;
     public static final int AR_LETTERBOX_GAP = 42;
     public static final int AR_PILLARBOX_GAP = 480;
     public static final int REQUIRED_CONFIRMATIONS = 4;
-    public static final String CONTEXT_MENU_COLOR = "context.menu.color";
-    public static final String CONTEXT_MENU_GAMMA = "context.menu.gamma";
-    public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";
-    public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
     public static final String NUMBER_FORMAT = "########.##";
     public static final String PERCENTAGE_OFF = "0%";
     public static final int DEFAULT_WHITE_TEMP = 65;
@@ -88,12 +69,13 @@ public class Constants {
     public static final String CHECK = "✔";
     public static final String DIALOG = "☰";
     public static final String SHARP = "#";
+    public static final int DEFAULT_RES_WIDTH = 1920;
+    public static final int DEFAULT_RES_HEIGHT = 1080;
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
     public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE = "4.0.3";
     public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE_ESP8266_1M = "5.12.10";
     public static final String FORCE_FIRMWARE_AUTO_UPGRADE = "4.0.4";
-    public static final String MIN_FIRMWARE_NOT_MATCH = "min.firmware.not.match";
     public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
     public static final String GITHUB_GLOW_WORM_URL_FULL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build/manifest_full.json";
     public static final String GITHUB_GLOW_WORM_URL_FULL_BETA = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build_beta/manifest_full.json";
@@ -101,13 +83,13 @@ public class Constants {
     public static final String GITHUB_GLOW_WORM_URL_LIGHT_BETA = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build_beta/manifest_light.json";
     public static final String POM_PRJ_VERSION = "<project.version>";
     public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
-    public static final String DOWNLOADING = "update.downloading";
     public static final String SETUP_FILENAME_WINDOWS = "FireflyLuciferinSetup.exe";
     public static final String SETUP_FILENAME_MAC = "FireflyLuciferinMac.dmg";
     public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
     public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
     public static final String FIRMWARE_FILENAME_PATTERN = "glob:*.{bin}";
     public static final String FIRMWARE_COMPRESSED_FILENAME_PATTERN = "glob:*.{gz}";
+    public static final String SCREENSHOT_IMAGE_FILENAME_PATTERN = "glob:*.{bmp,png}";
     public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
     public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build/";
     public static final String GITHUB_RELEASES_FIRMWARE_BETA = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build_beta";
@@ -115,16 +97,11 @@ public class Constants {
     public static final String LINUX_DESKTOP_FILE_LOCAL = "/.local/share/applications/fireflyluciferin-FireflyLuciferin.desktop";
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
     public static final String HOME_PATH = "user.home";
-    public static final String LUCIFERIN_LOG_LEVEL = "LUCIFERIN_LOG_LEVEL";
-    public static final String XDG_HOME = "XDG_CONFIG_HOME";
     public static final String DOCUMENTS_FOLDER = "Documents";
     public static final String OPENJFX_PATH = ".openjfx";
     public static final String LINUX_CONFIG_PATH = ".config";
     public static final String LUCIFERIN_PLACEHOLDER = "luciferin.folder";
     public static final String LUCIFERIN_FOLDER = "FireflyLuciferin";
-    public static final String EXPECTED_SIZE = "update.expected.size";
-    public static final String DOWNLOAD_PROGRESS_BAR = "download.progress.bar";
-    public static final String DOWNLOAD_COMPLETE = "download.complete";
     public static final String INSTALL_PASSIVE = "/passive";
     public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
     public static final String POST = "POST";
@@ -135,7 +112,6 @@ public class Constants {
     public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
     public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
     public static final String UPGRADE_URL = "http://{0}/update";
-    public static final String SHOW_MORE_SETTINGS = "show.more.settings";
     @SuppressWarnings("all")
     public static final String MULTIPART_1 = "--{0}\r\nContent-Disposition: form-data; name=\"update\"; filename=\"";
     public static final String MULTIPART_2 = "{0}\"\r\nContent-Type: application/octet-stream\r\n\r\n";
@@ -190,15 +166,15 @@ public class Constants {
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
     public static final String FXML_PROFILE_DIALOG = "profileDialog";
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
+    public static final String FXML_GAMMA_DIALOG = "gammaDialog";
+    public static final String FXML_DISPLAY_DIALOG = "displayDialog";
+    // File used to save the profile in use for systemctl when running headless
+    public static final String START_PROFILE_FILENAME = "StartProfile";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
     public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
-    public static final String CLEANING_OLD_CONFIG = "cleaning.old.config";
-    public static final String FAILED_TO_CLEAN_CONFIG = "failed.to.clean.old.config";
     public static final String OK = "OK";
     public static final String KO = "KO";
-    public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
-    public static final String ERROR_READING_CONFIG = "error.reading.config";
     public static final String YAML_EXTENSION = ".yaml";
     // MQTT (topic are used even when using WiFi only)
     public static final boolean JSON_STREAM = false;
@@ -217,6 +193,7 @@ public class Constants {
     public static final String TOPIC_FIREFLY_LUCIFERIN_EFFECT = "lights/glowwormluciferin/effectToFf";
     public static final String TOPIC_FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
     public static final String TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET = "lights/firelyluciferin/profile/set";
+    public static final String TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET = "lights/firelyluciferin/cubeLut/set";
     // No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
     public static final String TOPIC_GLOW_WORM_FIRM_CONFIG = "lights/glowwormluciferin/firmwareconfig";
     public static final String TOPIC_UNSUBSCRIBE_STREAM = "lights/glowwormluciferin/unsubscribe";
@@ -275,6 +252,7 @@ public class Constants {
     public static final String LED_NUM = "\"lednum\":";
     public static final String STREAM = "\"stream\":[";
     public static final String MQTT_GAMMA = "gamma";
+    public static final String MQTT_CUBE_LUT = "cubeLut";
     public static final String MQTT_FRAMERATE = "framerate";
     public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
     public static final String MQTT_DISCOVERY_TOPIC = "homeassistant";
@@ -291,9 +269,6 @@ public class Constants {
     public static final String HTTP_LDR_SBPIN = "sbPin";
     public static final String HTTP_LED_BUILTIN = "ledBuiltin";
     public static final String HTTP_LDR_LDRPIN = "ldrPin";
-    public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
-    public static final String MQTT_REMOVE_DEVICE = "fxml.mqtttab.mqttremovedevice";
-    public static final String MQTT_DISCOVERY = "fxml.mqtttab.mqttdiscovery";
     public static final int MQTT_DISCOVERY_CALL_DELAY = 100;
     public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
     public static final String MQTT_DISCOVERY_TOPIC_BASE_PATH = "luciferin";
@@ -309,85 +284,14 @@ public class Constants {
     public static final String FXML_TRANSPARENT = "-fx-background-color:transparent";
     public static final int TITLE_BAR_HEIGHT = 35;
     public static final int DBL_CLK_DELAY = 350;
-    public static final String SAVE = "fxml.save";
-    public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
-    public static final String FRAMERATE_TITLE = "framerate.title";
-    public static final String FRAMERATE_HEADER = "framerate.header";
-    public static final String FRAMERATE_CONTEXT = "framerate.context";
-    public static final String BAUDRATE_TITLE = "baudrate.title";
-    public static final String BAUDRATE_HEADER = "baudrate.header";
-    public static final String BAUDRATE_CONTEXT = "baudrate.context";
-    public static final String INITIAL_TITLE = "initial.title";
-    public static final String INITIAL_HEADER = "initial.header";
-    public static final String INITIAL_CONTEXT = "initial.context";
-    public static final String GPIO_OK_TITLE = "gpio.ok.title";
-    public static final String GPIO_OK_HEADER = "gpio.ok.header";
-    public static final String GPIO_OK_CONTEXT = "gpio.ok.context";
-    public static final String SERIAL_PORT = "serial.port";
-    public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
-    public static final String ASPECT_RATIO = "fxml.modetab.aspectratio";
-    public static final String PROFILES = "fxml.misctab.profiles";
-    public static final String DEFAULT = "tray.icon.default";
-    public static final String NO_SMOOTHING = "no.smoothing";
-    public static final String SERIAL_ERROR_TITLE = "serial.port.title";
-    public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
-    public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
-    public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
     public static final String ACTIVATE_EVENT = "activate";
-    public static final int SERIAL_PARAMS = 27;
-    public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
-    public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
-    public static final String CUDA_ERROR_TITLE = "cuda.error.title";
-    public static final String CUDA_ERROR_HEADER = "cuda.error.header";
-    public static final String CUDA_ERROR_CONTEXT = "cuda.error.context";
-    public static final String WAYLAND_SCREEN_REC_PERMISSION = "wayland.screen.rec.permission";
-    public static final String WAYLAND_SCREEN_REC_PERMISSION_CONTEXT = "wayland.screen.rec.permission.context";
-    public static final String START = "tray.icon.start";
-    public static final String STOP = "tray.icon.stop";
+    public static final int SERIAL_PARAMS = 26;
     public static final String STOP_STR = "STOP";
-    public static final String INFO = "tray.icon.info";
-    public static final String CHECK_UPDATE = "tray.icon.check.update";
-    public static final String INSTALL_UPDATE = "tray.icon.check.install";
-    public static final String SETTINGS = "tray.icon.settings";
     public static final String EXIT = "exit";
-    public static final String TRAY_EXIT = "tray.icon.exit";
-    public static final String CLICK_OK_DOWNLOAD = "click.ok.download";
-    public static final String CLICK_OK_DOWNLOAD_LINUX = "click.ok.download.linux";
-    public static final String ONCE_DOWNLOAD_FINISHED = "once.download.finished";
-    public static final String NEW_VERSION_AVAILABLE = "new.version.available";
-    public static final String LATEST_VERSION = "latest.version";
-    public static final String NO_UPDATES = "no.updates";
-    public static final String INSTALL_UPDATES = "new.version.install";
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
-    public static final String UPGRADE_AVAILABLE_SANDBOX = "new.version.available.sandbox";
-    public static final String UPGRADE_SUCCESS = "upgrade.success";
-    public static final String UPGRADE_ERROR = "upgrade.error";
-    public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
-    public static final String DEVICEUPGRADE_ERROR = "device.upgrade.error";
-    public static final String DEVICEUPGRADE_SUCCESS_CDC = "device.upgrade.success.cdc";
-    public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
-    public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
-    public static final String FIRMWARE_PROVISION_NOTIFY = "device.provision.error";
-    public static final String FIRMWARE_PROVISION_NOTIFY_HEADER = "device.provision.error.header";
-    public static final String FIRMWARE_IMPROV_ERROR_HEADER = "fxml.mqtttab.improv.wifi.error";
-    public static final String FIRMWARE_IMPROV_ERROR2_HEADER = "fxml.mqtttab.improv.eth.field.error";
-    public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
-    public static final String CANT_UPGRADE_TOO_OLD = "cant.upgrade.too.old";
-    public static final String MANUAL_UPGRADE = "manual.upgrade";
-    public static final String DEVICES_UPDATED = "devices.updated";
-    public static final String DEVICE_UPDATED = "device.updated";
-    public static final String DEVICE_UPDATED_LIGHT = "device.updated.light";
-    public static final String UPDATE_BACKGROUND = "update.background";
-    public static final String UPDATE_NEEDED = "update.needed";
-    public static final String UPDATE_NEEDED_LINUX = "update.needed.linux";
-    public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
     public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin/releases";
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
-    public static final String LINUX_WIKI_URL = "https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#nvidia-cuda";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
-    public static final String SAT_ZONE_ERROR_TITLE = "satellite.zone.error.title";
-    public static final String SAT_ZONE_ERROR = "satellite.zone.error";
-
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
     public static final String BC = "0.0.0.0";
@@ -423,149 +327,12 @@ public class Constants {
     public static final String SERIAL_IMPROV_ETH = "ETH Started";
     public static final byte[] IMPROV_HEADER = {'I', 'M', 'P', 'R', 'O', 'V'};
     public static final byte[] IMPROV_CUSTOM_HEADER = {'D', 'P', 'S', 'E', 'T', 'H'};
-    public static final String NO_DEVICE_FOUND = "no.device.found";
     public static final int FAKE_GUI_TRAY_ICON = -100;
     public static final int PRIMARY_DISPLAY_TOLERANCE = 100;
-    public static final String SCREEN_MAIN = "main.screen";
-    public static final String SCREEN_LEFT = "left.screen";
-    public static final String SCREEN_RIGHT = "right.screen";
-    public static final String SCREEN_CENTER = "center.screen";
     // Tooltips
     public static final int TOOLTIP_DELAY = 300;
     public static final int TOOLTIP_MAX_WIDTH = 300;
-    public static final String TOOLTIP_TOPLED = "tooltip.topled";
-    public static final String TOOLTIP_LEFTLED = "tooltip.leftled";
-    public static final String TOOLTIP_RIGHTLED = "tooltip.rightled";
-    public static final String TOOLTIP_BOTTOMLEFTLED = "tooltip.bottomleftled";
-    public static final String TOOLTIP_BOTTOMRIGHTLED = "tooltip.bottomrightled";
-    public static final String TOOLTIP_BOTTOMROWLED = "tooltip.bottomrowled";
-    public static final String TOOLTIP_ORIENTATION = "tooltip.orientation";
-    public static final String TOOLTIP_SCREENWIDTH = "tooltip.screenwidth";
-    public static final String TOOLTIP_RESET_WAYLAND = "tooltip.reset.wayland";
-    public static final String TOOLTIP_SCREENHEIGHT = "tooltip.screenheight";
-    public static final String TOOLTIP_LEDSTARTOFFSET = "tooltip.ledstartoffset";
-    public static final String TOOLTIP_SCALING = "tooltip.scaling";
-    public static final String TOOLTIP_WHITE_TEMP = "tooltip.white.temp";
-    public static final String TOOLTIP_LATENCY_TEST = "tooltip.colorcorrection.latency.test";
-    public static final String TOOLTIP_LATENCY_TEST_SPEED = "tooltip.colorcorrection.latency.test.speed";
-    public static final String TOOLTIP_SETTINGS = "tooltip.colorcorrection.settings";
-    public static final String TOOLTIP_GAMMA = "tooltip.gamma";
-    public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
-    public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
-    public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";
-    public static final String TOOLTIP_NUMBEROFTHREADS = "tooltip.numberofthreads";
-    public static final String TOOLTIP_SIMD = "tooltip.simd";
-    public static final String TOOLTIP_SERIALPORT = "tooltip.serialport";
-    public static final String TOOLTIP_ASPECTRATIO = "tooltip.aspectratio";
-    public static final String TOOLTIP_LANGUAGE = "tooltip.language";
-    public static final String TOOLTIP_RESAMPLING_FACTOR = "tooltip.resampling.factor";
-    public static final String TOOLTIP_FRAMERATE = "tooltip.framerate";
-    public static final String TOOLTIP_SMOOTHING = "tooltip.smoothing";
-    public static final String TOOLTIP_EMA = "tooltip.ema";
-    public static final String TOOLTIP_FG = "tooltip.fg";
-    public static final String TOOLTIP_MQTTHOST = "tooltip.mqtthost";
-    public static final String TOOLTIP_POWER_SAVING = "tooltip.power.saving";
-    public static final String TOOLTIP_SAT_BTN = "tooltip.sat.btn";
-    public static final String TOOLTIP_MULTIMONITOR = "tooltip.multimonitor";
-    public static final String TOOLTIP_MONITORNUMBER = "tooltip.monitornumber";
-    public static final String TOOLTIP_MQTTPORT = "tooltip.mqttport";
-    public static final String TOOLTIP_MQTTTOPIC = "tooltip.mqtttopic";
-    public static final String TOOLTIP_MQTTDISCOVERYTOPIC = "tooltip.mqttdiscoverytopic";
-    public static final String TOOLTIP_MQTTDISCOVERYTOPIC_ADD = "tooltip.mqttdiscoverytopic.add";
-    public static final String TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE = "tooltip.mqttdiscoverytopic.remove";
-    public static final String TOOLTIP_MQTTUSER = "tooltip.mqttuser";
-    public static final String TOOLTIP_MQTTPWD = "tooltip.mqttpwd";
-    public static final String TOOLTIP_MQTTENABLE = "tooltip.mqttenable";
-    public static final String TOOLTIP_WIFIENABLE = "tooltip.wifienable";
-    public static final String TOOLTIP_EYE_CARE = "tooltip.eye.care";
-    public static final String TOOLTIP_NIGHT_LIGHT = "tooltip.night.light";
-    public static final String TOOLTIP_MQTTSTREAM = "tooltip.mqttstream";
-    public static final String TOOLTIP_STREAMTYPE = "tooltip.streamtype";
-    public static final String TOOLTIP_START_WITH_SYSTEM = "tooltip.start.with.system";
-    public static final String TOOLTIP_CHECK_UPDATES = "tooltip.check.updates";
-    public static final String TOOLTIP_PLAYBUTTON_NULL = "tooltip.playbutton.null";
-    public static final String TOOLTIP_SYNC_CHECK = "tooltip.sync.check";
-    public static final String TOOLTIP_BRIGHTNESS = "tooltip.brightness";
-    public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "tooltip.split.bottom.row";
-    public static final String TOOLTIP_GRABBER_AREA_TOP_BOTTOM = "tooltip.grabber.area.top.bottom";
-    public static final String TOOLTIP_GRABBER_AREA_SIDE = "tooltip.grabber.area.side";
-    public static final String TOOLTIP_CORNER_GAP = "tooltip.corner.gap";
-    public static final String TOOLTIP_GROUP_BY = "tooltip.corner.group.by";
-    public static final String TOOLTIP_SAVELEDBUTTON_NULL = "tooltip.saveledbutton.null";
-    public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "tooltip.savemqttbutton.null";
-    public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "tooltip.savesettingsbutton.null";
-    public static final String TOOLTIP_SAVEDEVICEBUTTON_NULL = "tooltip.savedevicebutton.null";
-    public static final String TOOLTIP_PLAYBUTTON = "tooltip.playbutton";
-    public static final String TOOLTIP_SAVELEDBUTTON = "tooltip.saveledbutton";
-    public static final String TOOLTIP_SAVEMQTTBUTTON = "tooltip.savemqttbutton";
-    public static final String TOOLTIP_SAVESETTINGSBUTTON = "tooltip.savesettingsbutton";
-    public static final String TOOLTIP_SAVEDEVICEBUTTON = "tooltip.savedevicebutton";
-    public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "tooltip.showtestimagebutton";
-    public static final String TOOLTIP_BAUD_RATE = "tooltip.baud.rate";
-    public static final String TOOLTIP_THEME = "tooltip.theme";
-    public static final String TOOLTIP_AUDIO_CHANNELS = "tooltip.audio.channels";
-    public static final String TOOLTIP_AUDIO_GAIN = "tooltip.audio.gain";
-    public static final String TOOLTIP_AUDIO_DEVICE = "tooltip.audio.device";
-    public static final String TOOLTIP_EFFECT = "tooltip.effect";
-    public static final String TOOLTIP_COLORS = "tooltip.colors";
-    public static final String TOOLTIP_NIGHT_MODE_FROM = "tooltip.night.mode.from";
-    public static final String TOOLTIP_NIGHT_MODE_TO = "tooltip.night.mode.to";
-    public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "tooltip.night.mode.bright";
-    public static final String TOOLTIP_COLOR_MODE = "tooltip.color.mode";
-    public static final String TOOLTIP_PROFILES = "tooltip.profiles";
-    public static final String TOOLTIP_PROFILES_ADD = "tooltip.profiles.add";
-    public static final String TOOLTIP_PROFILES_REMOVE = "tooltip.profiles.remove";
-    public static final String TOOLTIP_PROFILES_APPLY = "tooltip.profiles.apply";
-    public static final String TOOLTIP_RED_SATURATION = "tooltip.color.correction.red";
-    public static final String TOOLTIP_YELLOW_SATURATION = "tooltip.color.correction.yellow";
-    public static final String TOOLTIP_GREEN_SATURATION = "tooltip.color.correction.green";
-    public static final String TOOLTIP_CYAN_SATURATION = "tooltip.color.correction.cyan";
-    public static final String TOOLTIP_BLUE_SATURATION = "tooltip.color.correction.blue";
-    public static final String TOOLTIP_MAGENTA_SATURATION = "tooltip.color.correction.magenta";
-    public static final String TOOLTIP_RED_HUE = "tooltip.color.correction.hue.red";
-    public static final String TOOLTIP_YELLOW_HUE = "tooltip.color.correction.hue.yellow";
-    public static final String TOOLTIP_GREEN_HUE = "tooltip.color.correction.hue.green";
-    public static final String TOOLTIP_CYAN_HUE = "tooltip.color.correction.hue.cyan";
-    public static final String TOOLTIP_BLUE_HUE = "tooltip.color.correction.hue.blue";
-    public static final String TOOLTIP_MAGENTA_HUE = "tooltip.color.correction.hue.magenta";
-    public static final String TOOLTIP_SATURATION = "tooltip.color.correction.saturation";
-    public static final String TOOLTIP_RED_LIGHTNESS = "tooltip.color.correction.lightness.red";
-    public static final String TOOLTIP_YELLOW_LIGHTNESS = "tooltip.color.correction.lightness.yellow";
-    public static final String TOOLTIP_GREEN_LIGHTNESS = "tooltip.color.correction.lightness.green";
-    public static final String TOOLTIP_CYAN_LIGHTNESS = "tooltip.color.correction.lightness.cyan";
-    public static final String TOOLTIP_BLUE_LIGHTNESS = "tooltip.color.correction.lightness.blue";
-    public static final String TOOLTIP_MAGENTA_LIGHTNESS = "tooltip.color.correction.lightness.magenta";
-    public static final String TOOLTIP_HUE_MONITOR_SLIDER = "tooltip.color.correction.hue.monitor.slider";
-    public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
-    public static final String TOOLTIP_GREY_LIGHTNESS = "tooltip.color.correction.grey.correction";
-    public static final String TOOLTIP_HALF_SATURATION = "tooltip.color.correction.half.saturation";
-    public static final String TOOLTIP_EYEC_ENABLE_LDR = "tooltip.ldr.enableldr";
-    public static final String TOOLTIP_EYEC_TURNOFF = "tooltip.ldr.turnoff";
-    public static final String TOOLTIP_EYEC_CONT_READING = "tooltip.ldr.interval";
-    public static final String TOOLTIP_EYEC_MIN_BRIGHT = "tooltip.ldr.minbright";
-    public static final String TOOLTIP_BRIGHTNESS_LIMITER = "tooltip.brightness.limiter";
-    public static final String TOOLTIP_EYEC_CAL = "tooltip.ldr.calibrateldr";
-    public static final String TOOLTIP_EYEC_RESET = "tooltip.ldr.resetldr";
-    public static final String TOOLTIP_VAL = "tooltip.ldr.ldrlabel";
-    public static final String TOOLTIP_SAT_IP = "tooltip.sat.manager.ip";
-    public static final String TOOLTIP_SAT_ZONE = "tooltip.sat.manager.zone";
-    public static final String TOOLTIP_SAT_ORIENT = "tooltip.sat.manager.orientation";
-    public static final String TOOLTIP_SAT_NUM = "tooltip.sat.manager.num.led";
-    public static final String TOOLTIP_SAT_ALGO = "tooltip.sat.manager.algo";
-    public static final String TOOLTIP_SAT_ADD = "tooltip.sat.manager.add";
-    public static final String TOOLTIP_GPU_THRESHOLD = "tooltip.profile.gpu.threshold";
-    public static final String TOOLTIP_CPU_THRESHOLD = "tooltip.profile.cpu.threshold";
-    public static final String TOOLTIP_PROCESS1 = "tooltip.profile.process1";
-    public static final String TOOLTIP_PROCESS2 = "tooltip.profile.process2";
-    public static final String TOOLTIP_PROCESS3 = "tooltip.profile.process3";
-    public static final String TOOLTIP_ENABLEFULLSCREENDETECTION = "tooltip.profile.enablefullscreen";
-    public static final String TOOLTIP_IMPROV_SSID = "fxml.mqtttab.improv.ssid";
-    public static final String TOOLTIP_IMPROV_PWD = "fxml.mqtttab.improv.pwd";
-    public static final String TOOLTIP_IMPROV_COM = "fxml.mqtttab.improv.comport";
-    public static final String TOOLTIP_IMPROV_BAUD = "fxml.mqtttab.improv.baudrate";
-    public static final String TOOLTIP_DEV_NAME = "fxml.mqtttab.improv.devicename";
-    public static final String TOOLTIP_ETHERNET = "fxml.mqtttab.improv.ethernet";
-    public static final String TOOLTIP_IMPROV_CONTEXT = "fxml.mqtttab.improv.context";
+    public static final String DISABLED = "Disabled";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
@@ -576,30 +343,56 @@ public class Constants {
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
     public static final String GSTREAMER_PATH = "/gstreamer/1.0/msvc_x86_64/bin";
-    public static final String PATH = "path";
     public static final String JNA_LIB_PATH = "jna.library.path";
     public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
     public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
     public static final String SCREEN_GRABBER = "FireflyLuciferin";
-    // ./gst-device-monitor-1.0.exe "Source/Monitor"
-    // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! "video/x-raw(memory:D3D11Memory),width=800,height=600,sync=false" ! autovideosink
-    // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
-    // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
-    // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
+    // GL env
+    public static final String X11 = "x11";
+    public static final String SURFACELESS = "surfaceless";
+    public static final String GLX = "glx";
+    public static final String EGL = "egl";
+    // GStreamer Pipelines
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11 = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! queue ! videoscale ! queue ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
-    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE min-buffers=2 ! videorate drop-only=true ! video/x-raw,framerate=FRAMERATE_PLACEHOLDER/1 ! videoscale ! videoconvert";
-    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE min-buffers=2 ! videorate drop-only=true ! video/x-raw,framerate=FRAMERATE_PLACEHOLDER/1 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_OPENGL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! glupload ! glcolorscale ! glcolorconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! cudaupload ! cudascale ! cudaconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_HIP = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! videorate drop-only=true ! hipupload ! hipscale ! hipconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_AMD_INTEL = "pipewiresrc fd={1} path={2} keepalive-time=PIPEWIRE_KEEPALIVE ! vapostproc ! videorate drop-only=true";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
+    // GStreamer Pipelines External Sources
+    public static final String GSTREAMER_PIPELINE_WINDOWS_EXT_SRC = "mfvideosrc device-name=\"{0}\" ! {1} ! videorate ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12upload ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC = "v4l2src device={0} ! {1} ! videorate ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1 ! videoscale ! videoconvert ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1";
+    public static final String GSTREAMER_PIPELINE_V4L2_OPENGL = "v4l2src device={0} ! {1} ! videorate ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1 ! glupload ! glcolorconvert ! glcolorscale ! video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,framerate=FRAMERATE_PLACEHOLDER/1 ! gldownload ! videoconvert ! capsfilter caps=video/x-raw,format=BGRx ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_CUDA = "v4l2src device={0} ! {1} ! videorate ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1 ! cudaupload ! cudascale ! cudaconvert ! cudadownload ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1";
+    public static final String GSTREAMER_PIPELINE_V4L2_ETX_SRC_AMD_HIP = "v4l2src device={0} ! {1} ! videorate ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1 ! hipupload ! hipscale ! hipconvert ! hipdownload ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1";
+    public static final String GSTREAMER_PIPELINE_V4L2_AMD_INTEL = "v4l2src device={0} ! {1} ! videorate ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1 ! vapostproc ! queue leaky=downstream max-size-time=0 max-size-bytes=0 max-size-buffers=1";
+    public static final String GSTREAMER_PIPELINE_WEBRTC = "appsrc name=webrtcsrc is-live=true do-timestamp=true format=TIME ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0 ! videoconvert ! videoscale add-borders=true ! capsfilter name=webrtcpreviewcaps ! vp8enc deadline=1 target-bitrate=4000000 ! rtpvp8pay ! queue leaky=downstream max-size-buffers=1 max-size-bytes=0 max-size-time=0 ! application/x-rtp,media=video,encoding-name=VP8,payload=97 ! webrtcbin name=webrtcbin";
     public static final String GSTREAMER_DDUPL = "DDUPL";
-    // public static final String GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
-    public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String VIDEO_MJPG = "image/jpeg,width={2},height={3},framerate={4}/1 ! jpegdec";
+    public static final String VIDEO_RAW = "video/x-raw,width={2},height={3}";
+    // GStreamer Caps
+    public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_DDUPL_DX12 = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
-    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_OPENGL = "video/x-raw(memory:GLMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_AMD_HIP = "video/x-raw(memory:HIPMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    // GStreamer Caps External Sources
+    public static final String GSTREAMER_PIPELINE_WINDOWS_ETX_SRC = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC_CUDA = "video/x-raw(memory:CUDAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC_AMD_HIP = "video/x-raw(memory:HIPMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_ETX_SRC_AMD_INTEL = "video/x-raw(memory:VAMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    // GStreamer Format Caps
     public static final String BYTE_ORDER_BGR = "format=BGRx";
     public static final String BYTE_ORDER_RGB = "format=xRGB";
+    public static final String BYTE_ORDER_BGRA = "format=BGRA";
+    public static final String BYTE_ORDER_ARGB = "format=ARGB";
     public static final String RGB = "RGB Matrix";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
     public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
@@ -614,6 +407,19 @@ public class Constants {
     public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
+    public static final long SIMD_BENCHMARK_DURATION_MS = 120_000;
+    public static final String HDR = "HDR";
+    public static final String SDR = "SDR";
+    public static final double ADAPTIVE_GAMMA_FLOOR_SDR = 0.8;                    // minimum gamma multiplier on dark scenes
+    public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_SDR = 0.05;    // below this brightness, full adaptive gamma
+    public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_SDR = 0.15;  // above this brightness, classic gamma correction
+    public static final double ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_SDR = 0.05;
+    public static final double ADAPTIVE_GAMMA_FLOOR_HDR = 0.6;
+    public static final double ADAPTIVE_GAMMA_DARK_SCENE_THRESHOLD_HDR = 0.05;
+    public static final double ADAPTIVE_GAMMA_BRIGHT_SCENE_THRESHOLD_HDR = 0.15;
+    public static final double ADAPTIVE_GAMMA_FLOOR_DIFFERENCE_HDR = 0.15;
+    public static final double ADAPTIVE_GAMMA_SMOOTHING_FACTOR = 0.8;         // convergence speed: 0=no update, 1=instant
+    public static final double ADAPTIVE_GAMMA_DEAD_ZONE = 0.02;               // minimum gamma delta to trigger an update
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
@@ -622,31 +428,10 @@ public class Constants {
     public static final int TRAY_MENU_FONT_SIZE = 10;
     public static final String TRAY_MENU_FONT_TYPE = "verdana";
     public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
-    public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
-    public static final String WHITE_LABEL_CORRECTION = "fxml.misctab.whitetemp";
-    public static final String TC_BEFORE_TEXT = "tc.before.text";
-    public static final String TC_AFTER_TEXT = "tc.after.text";
-    public static final String TC_AFTER_TEXT_RGBW = "tc.after.text.rgwb";
-    public static final String TC_FULL_SATURATION = "tc.full.saturation";
-    public static final String CANVAS_ZONE_TITLE = "canvas.dialog.zone.title";
-    public static final String CANVAS_ZONE_DESCRIPTION = "canvas.dialog.zone.description";
-    public static final String CANVAS_ZONE_TEXT = "canvas.dialog.zone.text.input";
-    public static final String CANVAS_HELPER = "canvas.helper";
-    public static final String CANVAS_ZONE_EMPTY = "canvas.zone.empty";
-    public static final String CANVAS_ZONE_EMPTY_TITLE = "canvas.zone.empty.title";
     // Message server
     public static final String MSG_SERVER_HOST = "127.0.0.1";
     public static final int MSG_SERVER_PORT = 5555;
     public static final String MSG_SERVER_STATUS = "MSG_SERVER_STATUS";
-    // Exceptions
-    public static final String WIN32_EXCEPTION = "exceptions.win32.exception";
-    public static final String SELECT_OBJ_EXCEPTION = "exceptions.select.obj";
-    public static final String DELETE_OBJ_EXCEPTION = "exceptions.delete.obj";
-    public static final String DELETE_DC_EXCEPTION = "exceptions.delete.dc";
-    public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "exceptions.device.context.release";
-    public static final String WINDOWS_EXCEPTION = "exceptions.windows";
-    public static final String CANT_FIND_GSTREAMER = "exceptions.cant.find.gsreamer";
-    public static final String SOMETHING_WENT_WRONG = "exceptions.something.went.wrong";
     // Network
     public static final String ACTION = "action";
     public static final String CLIENT_ACTION = "clientActionSetState";
@@ -660,9 +445,10 @@ public class Constants {
     public static final String UDP_DEVICE_NAME = "DN";
     public static final String UDP_DEVICE_NAME_STATIC = "DNStatic";
     public static final String UDP_PONG = "PONG";
-    public static final int DEFAULT_UDP_TRAFFIC_CLASS = 184;
-    public static final double UDP_CHUNK_SIZE = 140;
-    public static final int UDP_MAX_BUFFER_SIZE = 4096;
+    public static final int DEFAULT_UDP_TRAFFIC_CLASS = 160;
+    public static final int UDP_CHUNK_SIZE = 140; // this value must match with the one in Glow Worm Luciferin firmware
+    public static final int SAFE_PACKET_SIZE = UDP_CHUNK_SIZE * 10;
+    public static final int UDP_MAX_BUFFER_SIZE = SAFE_PACKET_SIZE + 50; // this value must match with the one in Glow Worm Luciferin firmware, less one
     public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
     // Audio
     public static final String WASAPI = "WASAPI";
@@ -683,30 +469,13 @@ public class Constants {
     public static final float HSL_TOLERANCE = 20.0F;
     public static final float GREY_TOLERANCE = 0.05F;
     public static final float DEGREE_360 = 360.0F;
+    public static final boolean USE_LOSSLESS_COMPRESSION = true;
     // Info
-    public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
-    public static final String INFO_WIFI_STRENGTH = "fxml.info.signal.strenght";
     public static final String INFO_VERSION = "© Davide Perini (v.VERSION)";
-    public static final String INFO_PRODUCING = "fxml.info.producing";
-    public static final String INFO_CONSUMING = "fxml.info.consuming";
     public static final String INFO_WIFI = "WiFi: ";
     public static final String INFO_LDR = " / LDR: ";
     public static final String INFO_CPU_LAT = "CPU latency: ";
     public static final String FPS_VAL = " FPS";
-    // LDR
-    public static final String LDR_ALERT_ENABLED = "ldr.alert.enabled";
-    public static final String LDR_ALERT_TITLE = "ldr.alert.title";
-    public static final String LDR_ALERT_CAL_HEADER = "ldr.alert.cal.header";
-    public static final String LDR_ALERT_CAL_CONTENT = "ldr.alert.cal.content";
-    public static final String LDR_ALERT_RESET_HEADER = "ldr.alert.reset.header";
-    public static final String LDR_ALERT_RESET_CONTENT = "ldr.alert.reset.content";
-    public static final String LDR_ALERT_HEADER_ERROR = "ldr.alert.header.error";
-    public static final String LDR_ALERT_HEADER_CONTENT = "ldr.alert.content.error";
-    public static final String LDR_ALERT_CONTINUE = "ldr.alert.continue";
-    // SATELLITES
-    public static final String SAT_ALERT_IP_TITLE = "satellite.ip.error.title";
-    public static final String SAT_ALERT_IP_HEADER = "satellite.ip.error.header";
-    public static final String SAT_ALERT_IP_CONTENT = "satellite.ip.error.content";
     //Style sheets
     public static final String CSS_LINUX = "css/linux.css";
     public static final String CSS_WEB_VIEW = "css/webview.css";
@@ -738,8 +507,6 @@ public class Constants {
     public static final String TC_NO_BOLD_TEXT = "-fx-font-weight: normal;";
     public static final String CSS_UNDERLINE = "-fx-underline: true;";
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
-    public static final String CSS_TRAY_MENU_BORDER = "tray_menu_border";
-    public static final String CSS_TRAY_ITEM_BORDER = "tray_menu_item_border";
     public static final String CSS_TRAY_ITEM_TEXT = "tray_menu_item_text";
     public static final String CSS_TRAY_ITEM_SELECTIONBACKGROUND = "tray_menu_item_selectionbackground";
     public static final String CSS_TRAY_ITEM_SELECTIONBACKGROUND_KEY = "MenuItem.selectionBackground";
@@ -753,14 +520,14 @@ public class Constants {
     public static final String CSS_TRAY_SELECTIONBACKGROUND_KEY = "Menu.selectionBackground";
     public static final String CSS_TRAY_SELECTIONFOREGROUND = "tray_menu_selectionforeground";
     public static final String CSS_TRAY_SELECTIONFOREGROUND_KEY = "Menu.selectionForeground";
-
-
     public static final String CSS_COLOR_REGEX = "\\.([a-zA-Z0-9_-]+)\\s*\\{[^#]*#?([0-9a-fA-F]{6,8})[^}]*}";
     // Windows Registry and native commands
     public static final String NIGHT_LIGHT_KEY_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
     public static final String NIGHT_LIGHT_VALUE_NAME = "Data";
     public static final String CMD_POWERSHELL = "powershell.exe";
     public static final String CMD_SET_PRIORITY = "Get-WmiObject Win32_process -filter 'name = \\\"Firefly Luciferin.exe\\\"' | foreach-object { $_.SetPriority({0}) }";
+    public static final String REGISTRY_HDR_KEY_PATH = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\MonitorDataStore";
+    public static final String REGISTRY_HDR_VAL = "HDREnabled";
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
     public static final String REGISTRY_KEY_PATH_SCREEN_SAVER = "Control Panel\\Desktop";
     public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
@@ -784,33 +551,54 @@ public class Constants {
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
     public static String REGEXP_URL = "https?://(\\d{1,3}(?:\\.\\d{1,3}){3})";
     public static String REGEXP_IP = "\\b((25[0-5]|2[0-4]\\d|1?\\d?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1?\\d?\\d)\\b";
-    public static String USB_NOT_AVAILABLE_TITLE = "usb.not.available.title";
-    public static String USB_NOT_AVAILABLE_HEADER = "usb.not.available.header";
-    public static String USB_NOT_AVAILABLE_CONTENT = "usb.not.available.content";
-    public static String USB_NOT_AVAILABLE_CONTENT_SNAP = "usb.not.available.content.snap";
+    // MCP
+    public static final String MCP_ENDPOINT = "/mcp";
+    public static final String MCP_JSONRPC_KEY = "jsonrpc";
+    public static final String MCP_JSONRPC_VERSION = "2.0";
+    public static final String MCP_PROTOCOL_VERSION = "2025-11-25";
+    public static final int MCP_DEFAULT_PORT = 33555;
+    // Config HTTP endpoint
+    public static final String CONFIG_ENDPOINT = "/getConfig";
+    public static final String GET_DEVICES_ENDPOINT = "/getDevices";
+    public static final String FIELD_OPTIONS_ENDPOINT = "/getFieldOptions";
+    public static final String DEVICE_PREFS_ENDPOINT = "/devicePrefs";
+    public static final String FPS_ENDPOINT = "/fps";
+    public static final String LOG_ENDPOINT = "/log";
+    public static final String SET_CONFIG_ENDPOINT = "/setConfig";
+    public static final String SET_CONFIG_PAGE_ENDPOINT = "/setConfigPage";
+    public static final String SET_CONFIG_PAGE_JS_ENDPOINT = "/setConfig.js";
+    public static final String SET_CONFIG_CORE_JS_ENDPOINT = "/setConfig-core.js";
+    public static final String SET_CONFIG_DEVICE_JS_ENDPOINT = "/setConfig-device.js";
+    public static final String SET_CONFIG_UI_JS_ENDPOINT = "/setConfig-ui.js";
+    public static final String SET_CONFIG_CSS_ENDPOINT = "/setConfig.css";
+    public static final String SET_CONFIG_DARK_CSS_ENDPOINT = "/set-config-dark.css";
+    public static final String SCREENSHOT_ENDPOINT = "/screenshot";
+    public static final String SCREENSHOT_ENABLE_ENDPOINT = "/screenshot/enable";
+    public static final String LIST_PROFILES_ENDPOINT = "/listProfiles";
+    public static final String ACTIVATE_PROFILE_ENDPOINT = "/activateProfile";
+    public static final String ADD_PROFILE_ENDPOINT = "/addProfile";
+    public static final String REMOVE_PROFILE_ENDPOINT = "/removeProfile";
+    public static final String COMBO_CHANGE_ENDPOINT = "/comboChange";
+    public static final String SECTION_TITLES_ENDPOINT = "/sectionTitles";
+    public static final int CONFIG_SERVER_DEFAULT_PORT = 8091;
+    public static final String WEBRTC_SIGNALING_ENDPOINT = "/webrtc";
+    public static final String WEBRTC_PREVIEW_JS_ENDPOINT = "/webrtc-preview.js";
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
-    public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};
     public static final String[] CURL_HEAD_LINUX = {"curl", "-I", "--max-time", "4"};
-    public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     public static final String OBJPATH_KDE_NIGHTLIGHT = "/org/kde/KWin/NightLight";
     public static final String PROP_KDE_NIGHTLIGHT = "enabled";
     public static final String BUSNAME_GNOME_NIGHTLIGHT = "org.gnome.SettingsDaemon.Color";
     public static final String OBJPATH_GNOME_NIGHTLIGHT = "/org/gnome/SettingsDaemon/Color";
     public static final String PROP_GNOME_NIGHTLIGHT = "NightLightActive";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
-    public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
-    public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
-    public static final String RESTART_DELAY = "RESTART_DELAY";
-    public static final int RESTART_DELAY_SECONDS = 3;
+    public static final String HEADLESS_ARG = "-h";
     public static final int RESTART_TIMEOUT = -180;
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
     public static final String[] SNAP_RUN = {"FireflyLuciferin"};
-    public static final String FLATPAK_ID = "FLATPAK_ID";
-    public static final String SNAP_NAME = "SNAP_NAME";
     public static final String CMD_GPU_USAGE = "powershell.exe -Command \""
             + "$gpu = Get-Counter '\\GPU Engine(*)\\Utilization Percentage'; "
             + "$gpu.CounterSamples | Where-Object { $_.CookedValue -gt 0 } | "

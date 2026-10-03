@@ -1,0 +1,445 @@
+/*
+  setConfig.css
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/* A softer dark palette for the web configuration page. */
+:root {
+    color-scheme: dark;
+    --page-bg: #252b32;
+    --surface: #303840;
+    --surface-raised: #39434c;
+    --surface-hover: #424e58;
+    --border: #53606a;
+    --text: #edf0f2;
+    --muted: #b8c2ca;
+    --accent: #eda45d;
+    --warm: #f59a20;
+    --bs-body-bg: var(--page-bg);
+    --bs-body-color: var(--text);
+    --bs-border-color: var(--border);
+}
+
+.snowflake--far {
+    color: #a5becc;
+}
+
+.snowflake--middle {
+    color: #d3e4ee;
+}
+
+.snowflake--near {
+    color: #f5fbff;
+}
+
+.snowflake--near .snowflake-shape {
+    filter: drop-shadow(0 0 5px rgba(225, 244, 255, 0.65));
+}
+
+body {
+    background: var(--page-bg);
+    color: var(--text);
+}
+
+.header-shell > .container-fluid.bg-primary {
+    background: var(--warm) !important;
+    border-bottom: 1px solid var(--border);
+}
+
+.firefly-update-notice,
+.glow-worm-update-available-notice {
+    background: #5a411d;
+    color: #ffe1a8;
+    border-color: #966c31;
+}
+
+.glow-worm-update-notice {
+    background: #244665;
+    color: #d7ecff;
+    border-color: #467ba8;
+}
+
+#themeToggle {
+    background: var(--surface-raised);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+#themeToggle:hover,
+#themeToggle:focus-visible {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+}
+
+#themeToggle:focus-visible {
+    outline-color: var(--accent);
+}
+
+.text-muted,
+.form-text {
+    color: var(--muted) !important;
+}
+
+.accordion-item,
+.accordion-button,
+.accordion-body,
+.list-group-item {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.accordion-button:not(.collapsed),
+.accordion-button:hover {
+    background: var(--surface-raised);
+    color: var(--text);
+}
+
+.accordion-button:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.2rem rgba(237, 164, 93, 0.25);
+}
+
+.accordion-button::after {
+    filter: grayscale(1) brightness(2);
+}
+
+.form-control,
+.form-select {
+    background-color: var(--surface-raised);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.form-control[readonly],
+.form-control[readonly]:focus {
+    background-color: var(--surface-raised);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.form-select {
+    accent-color: var(--warm);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23f59a20' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+.form-select option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+.form-select option:checked,
+.form-select option:hover {
+    background: var(--warm);
+    box-shadow: 0 0 0 100px var(--warm) inset;
+    color: #252b32;
+}
+
+/* Opt into the browser's styleable select picker where supported. Native option
+   hover colors cannot be changed reliably with option:hover alone. */
+@supports (appearance: base-select) {
+    .form-select,
+    .form-select::picker(select) {
+        appearance: base-select;
+    }
+
+    .form-select::picker-icon {
+        display: none;
+    }
+
+    .form-select::picker(select) {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+        max-height: min(20rem, 60vh);
+        overflow-y: auto;
+    }
+
+    .form-select option {
+        padding: 0.4rem 0.75rem;
+        cursor: pointer;
+    }
+
+    .form-select option:checked {
+        background: #9b551e;
+        color: #fff;
+        box-shadow: none;
+    }
+
+    .form-select option:hover,
+    .form-select option:focus {
+        background: var(--warm);
+        color: #252b32;
+        box-shadow: none;
+    }
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--surface-hover);
+    color: var(--text);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.2rem rgba(237, 164, 93, 0.2);
+}
+
+.form-control::placeholder {
+    color: var(--muted);
+    opacity: 1;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+    background-color: var(--surface);
+    color: var(--muted);
+}
+
+.form-check-input {
+    background-color: var(--surface-raised);
+    border-color: var(--border);
+}
+
+.form-check-input:checked {
+    background-color: #d77820;
+    border-color: #d77820;
+}
+
+.form-check-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.2rem rgba(237, 164, 93, 0.2);
+}
+
+.list-group-item-action {
+    color: var(--text);
+}
+
+.list-group-item-action:hover,
+.list-group-item-action:focus {
+    color: #fff;
+    background-color: var(--surface-hover);
+}
+
+.table {
+    --bs-table-bg: var(--surface);
+    --bs-table-color: var(--text);
+    --bs-table-border-color: var(--border);
+    --bs-table-striped-bg: var(--surface-raised);
+    --bs-table-striped-color: var(--text);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.btn-primary,
+.btn-outline-primary:hover {
+    background-color: #d77820;
+    border-color: #d77820;
+    color: var(--text);
+}
+
+.btn-outline-primary {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #ec892c;
+    border-color: #ec892c;
+}
+
+.btn-primary:focus,
+.btn-outline-primary:focus,
+.btn-orange:focus {
+    box-shadow: 0 0 0 0.2rem rgba(237, 164, 93, 0.3);
+}
+
+/* Layout helper: the Bootstrap .col has no margin, the form wrapper expects one. */
+.margin-2 {
+    margin: 2rem 1rem;
+}
+
+body.server-down {
+    pointer-events: none;
+}
+
+/* Do not filter <body>: CSS filters create a containing block for fixed descendants.
+ * On mobile Chrome that makes #offlineOverlay fixed to the scrollable body rather than
+ * the visual viewport. The overlay is appended directly to body, so exclude it. */
+body.server-down > :not(#offlineOverlay) {
+    filter: grayscale(1);
+}
+
+.offline-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.offline-overlay.show {
+    display: flex;
+}
+
+.offline-overlay-content {
+    background: var(--surface-raised);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 1.5rem 2.5rem;
+    border-radius: 0.5rem;
+    font-size: 1.25rem;
+}
+
+/* Save button color, not provided by Bootstrap. */
+.btn-orange {
+    background-color: var(--warm);
+    border-color: var(--warm);
+    color: var(--text);
+}
+
+.btn-orange:hover,
+.btn-orange:focus {
+    background-color: #ffae42;
+    border-color: #ffae42;
+    color: var(--text);
+}
+
+/* Color picker, fixed width to match the iro picker size. */
+#picker {
+    max-width: 288px;
+    margin: 0 auto;
+}
+
+#toggleLED {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--text);
+    background: var(--surface-hover);
+    border-color: var(--border);
+}
+
+#toggleLED.active {
+    color: var(--text);
+    background: var(--warm);
+    border-color: var(--warm);
+}
+
+#toggleLED:hover {
+    background-color: #53616b !important;
+    border-color: #53616b !important;
+}
+
+#toggleLED.active:hover {
+    background-color: #ffae42 !important;
+    border-color: #ffae42 !important;
+}
+
+/* The .active class is added by JS while the live preview is running. */
+#showLivePreview {
+    background-color: var(--surface-hover);
+    border: 0;
+    color: var(--text);
+    font-weight: bold;
+}
+
+#showLivePreview:hover {
+    background-color: #53616b;
+}
+
+#showLivePreview.active {
+    background-color: var(--warm);
+    color: var(--text);
+}
+
+#showLivePreview.active:hover {
+    background-color: #ffae42;
+}
+
+/* WebRTC live preview video, hidden until the .show class is toggled by JS. */
+/* Captured frame, hidden until the live preview is enabled (the .show class is toggled by JS). */
+#webrtcPreview,
+#screenshot {
+    max-width: 100%;
+    border: 1px solid var(--border);
+    display: none;
+}
+
+#webrtcPreview {
+    background: #000;
+}
+
+#webrtcPreview.show,
+#screenshot.show {
+    display: inline-block;
+}
+
+.live-preview-fallback-notice {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #8b7554;
+    border-radius: 0.25rem;
+    background: #493e30;
+    color: #f1d5a9;
+    text-align: center;
+}
+
+.live-preview-fallback-notice.show {
+    display: block;
+}
+
+/* Toasts, positioned so they do not cover the form. */
+#toastContainer {
+    position: relative;
+}
+
+#toastContainer .toast {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1051;
+}
+
+#toastContainer .toast.bg-info {
+    background-color: #a85218 !important;
+}
+
+/* Profile delete button, small red cross to the right of each removable profile. */
+#profilesList .btn-outline-danger {
+    margin-left: auto;
+    flex-shrink: 0;
+    max-width: 32px;
+    background-color: #a5555e;
+    border-color: #a5555e;
+    color: #fff;
+}
+
+#profilesList .btn-outline-danger:hover {
+    background-color: #b86670;
+    border-color: #b86670;
+    color: #fff;
+}

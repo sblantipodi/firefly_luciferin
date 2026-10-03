@@ -29,6 +29,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.bindings.CommonBinding;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
@@ -62,8 +63,8 @@ public abstract class TrayIconBase extends CommonBinding {
         } else {
             tooltipStr = Constants.FIREFLY_LUCIFERIN;
         }
-        if (!CommonUtility.getWord(Constants.DEFAULT).equals(MainSingleton.getInstance().profileArg)
-                && !Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
+        if (!CommonUtility.getWord(LabelKey.DEFAULT).equals(MainSingleton.getInstance().profileArg)
+                && !LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg)) {
             tooltipStr += " [" + MainSingleton.getInstance().profileArg + "]";
         }
         return tooltipStr;
@@ -99,8 +100,8 @@ public abstract class TrayIconBase extends CommonBinding {
         StorageManager sm = new StorageManager();
         MainSingleton.getInstance().config = sm.readProfileAndCheckDifference(menuItemText, sm);
         if (MainSingleton.getInstance().isRestartNeeded()) {
-            if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                NativeExecutor.restartNativeInstance(null);
+            if (menuItemText.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+                NativeExecutor.restartNativeInstance(LabelKey.DEFAULT);
             } else {
                 NativeExecutor.restartNativeInstance(menuItemText);
             }
@@ -132,7 +133,7 @@ public abstract class TrayIconBase extends CommonBinding {
      */
     public void setAspectRatio(String selectedAspectRatio, boolean sendSetCmd) {
         MainSingleton.getInstance().config.setDefaultLedMatrix(selectedAspectRatio);
-        log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), selectedAspectRatio);
+        log.info("{}{}", CommonUtility.getWord(LabelKey.CAPTURE_MODE_CHANGED), selectedAspectRatio);
         GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(selectedAspectRatio);
         MainSingleton.getInstance().config.setAutoDetectBlackBars(false);
         if (MainSingleton.getInstance().config.isMqttEnable()) {
@@ -151,19 +152,19 @@ public abstract class TrayIconBase extends CommonBinding {
      */
     public void manageAspectRatioListener(String menuItemText, boolean sendSetCmd) {
         if (MainSingleton.getInstance().config != null && (!menuItemText.equals(MainSingleton.getInstance().config.getDefaultLedMatrix())
-                || (MainSingleton.getInstance().config.isAutoDetectBlackBars() && !CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)))) {
+                || (MainSingleton.getInstance().config.isAutoDetectBlackBars() && !CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS).equals(menuItemText)))) {
             if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
                     || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
                     || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
                 setAspectRatio(menuItemText, sendSetCmd);
-            } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
-                    CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
-                log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+            } else if (CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
+                    CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
+                log.info("{}{}", CommonUtility.getWord(LabelKey.CAPTURE_MODE_CHANGED), CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS));
                 MainSingleton.getInstance().config.setAutoDetectBlackBars(true);
                 if (MainSingleton.getInstance().config.isMqttEnable()) {
-                    CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
+                    CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
                     if (sendSetCmd) {
-                        CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
+                        CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
                     }
                 }
             }
@@ -178,14 +179,14 @@ public abstract class TrayIconBase extends CommonBinding {
     public void profileAction(String selectedProfile) {
         StorageManager sm = new StorageManager();
         if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(selectedProfile))
-                || selectedProfile.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            if (selectedProfile.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                NativeExecutor.restartNativeInstance(null);
+                || selectedProfile.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+            if (selectedProfile.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+                NativeExecutor.restartNativeInstance(LabelKey.DEFAULT);
             } else {
                 NativeExecutor.restartNativeInstance(selectedProfile);
             }
         }
-        if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(selectedProfile)) {
+        if (CommonUtility.getWord(LabelKey.TRAY_EXIT).equals(selectedProfile)) {
             NativeExecutor.exit();
         }
     }
@@ -223,6 +224,14 @@ public abstract class TrayIconBase extends CommonBinding {
      */
     public void settingsAction() {
         MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+    }
+
+    /**
+     * Open the local Firefly web interface in the default browser.
+     */
+    public void webInterfaceAction() {
+        Platform.runLater(() -> MainSingleton.getInstance().guiManager.surfToURL(
+                Constants.HTTP + "localhost:" + Constants.CONFIG_SERVER_DEFAULT_PORT + "/"));
     }
 
     /**

@@ -55,7 +55,7 @@ public class SelectGammaDiscovery extends DeviceDiscovery implements DiscoveryOb
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Gamma");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.commandTemplate = "{\"gamma\":\"{{value}}\" }";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/gamma";
