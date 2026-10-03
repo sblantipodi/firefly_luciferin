@@ -101,13 +101,6 @@ final class ConfigurationPayload {
         if (payload.has(WebFieldNames.MONITOR_NUMBER)) {
             String deviceName = payload.path("captureDeviceName").asText("");
             if (!deviceName.isBlank()) {
-                if (!savedConfig.hasCaptureDevice() || !deviceName.equals(savedConfig.getCaptureDeviceFriendlyName())) {
-                    CaptureDeviceUtilities.BestCaptureFormat device = CaptureDeviceUtilities.findPixelFormat(deviceName);
-                    if (device == null) {
-                        throw new IllegalArgumentException("Capture device not found: " + deviceName);
-                    }
-                    configTree.set("captureDevice", CommonUtility.JSON_MAPPER.valueToTree(device));
-                }
                 configTree.put(WebFieldNames.MONITOR_NUMBER, 0);
             } else {
                 configTree.putNull("captureDevice");
@@ -117,6 +110,17 @@ final class ConfigurationPayload {
             configTree.put(WebFieldNames.DEFAULT_LED_MATRIX, Enums.AspectRatio.FULLSCREEN.getBaseI18n());
         }
         Configuration updatedConfig = CommonUtility.JSON_MAPPER.treeToValue(configTree, Configuration.class);
+        String deviceName = payload.path("captureDeviceName").asText(updatedConfig.getCaptureDeviceFriendlyName());
+        if (deviceName != null && !deviceName.isBlank()
+                && (payload.has("captureDeviceName") || payload.has(WebFieldNames.SCREEN_RES_X)
+                || payload.has(WebFieldNames.SCREEN_RES_Y) || payload.has(WebFieldNames.OS_SCALING)
+                || payload.has(WebFieldNames.RESAMPLING_FACTOR))) {
+            CaptureDeviceUtilities.BestCaptureFormat device = CaptureDeviceUtilities.findPixelFormat(deviceName, updatedConfig);
+            if (device == null) {
+                throw new IllegalArgumentException("Capture device not found: " + deviceName);
+            }
+            updatedConfig.setCaptureDevice(device);
+        }
         if (payload.has("serialPort")) {
             DevicesTabOptions.applyOutput(updatedConfig, payload.path("serialPort").asText());
         }

@@ -389,12 +389,19 @@ public class CaptureDeviceUtilities {
      * supported format has resolutions.
      */
     public static BestCaptureFormat findPixelFormat(String friendlyName) {
+        return findPixelFormat(friendlyName, MainSingleton.getInstance().config);
+    }
+
+    /**
+     * Selects a supported capture resolution using the supplied configuration, including
+     * settings being saved that have not yet replaced the running configuration.
+     */
+    public static BestCaptureFormat findPixelFormat(String friendlyName, Configuration config) {
         int width = Constants.DEFAULT_RES_WIDTH / Constants.RESAMPLING_FACTOR;
         int height = Constants.DEFAULT_RES_HEIGHT / Constants.RESAMPLING_FACTOR;
-        if (MainSingleton.getInstance().config != null) {
-            Configuration main = MainSingleton.getInstance().config;
-            width = ((main.getScreenResX() * 100) / main.getOsScaling()) / main.getResamplingFactor();
-            height = ((main.getScreenResY() * 100) / main.getOsScaling()) / main.getResamplingFactor();
+        if (config != null) {
+            width = ((config.getScreenResX() * 100) / config.getOsScaling()) / config.getResamplingFactor();
+            height = ((config.getScreenResY() * 100) / config.getOsScaling()) / config.getResamplingFactor();
         }
         CaptureDevice dev = (friendlyName == null || friendlyName.isBlank()) ? firstDevice() : findDeviceByName(friendlyName);
         if (dev == null) {

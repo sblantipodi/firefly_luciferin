@@ -24,6 +24,7 @@ package org.dpsoftware.network.web;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +32,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mockStatic;
 
 class ConfigurationPayloadTest {
 
@@ -43,6 +46,55 @@ class ConfigurationPayloadTest {
         config.setBottomRightLed(6);
         config.setGroupBy(2);
         return config;
+    }
+
+    @Test
+    void recalculatesUsbResolutionFromUpdatedSettingsForSameDevice() throws IOException {
+        var device = new CaptureDeviceUtilities.CaptureDevice("/dev/video0", "USB capture", 0);
+        var format = new CaptureDeviceUtilities.PixelFormat("MJPG");
+        var small = new CaptureDeviceUtilities.Resolution(640, 360);
+        var large = new CaptureDeviceUtilities.Resolution(1280, 720);
+        small.getFps().add(60);
+        large.getFps().add(30);
+        format.getResolutions().addAll(List.of(small, large));
+        device.getFormats().add(format);
+        Configuration saved = savedConfig();
+        saved.setScreenResX(3840);
+        saved.setScreenResY(2160);
+        saved.setOsScaling(100);
+        saved.setResamplingFactor(3);
+        saved.setCaptureDevice(new CaptureDeviceUtilities.BestCaptureFormat(device, format, large));
+
+        try (var capture = mockStatic(CaptureDeviceUtilities.class, CALLS_REAL_METHODS)) {
+            capture.when(CaptureDeviceUtilities::discover).thenReturn(List.of(device));
+            for (String field : List.of("resamplingFactor", "screenResX", "screenResY", "osScaling")) {
+                ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+                payload.put("monitorNumber", 0);
+                payload.put("captureDeviceName", device.getFriendlyName());
+                switch (field) {
+                    case "resamplingFactor" -> payload.put(field, 6);
+                    case "osScaling" -> payload.put(field, 200);
+                    default -> {
+                        payload.put("screenResX", 1920);
+                        payload.put("screenResY", 1080);
+                    }
+                }
+                Configuration updated = ConfigurationPayload.apply(payload, saved);
+                assertEquals(640, updated.getCaptureDevice().getSuggestedWidth(), field);
+                assertEquals(360, updated.getCaptureDevice().getSuggestedHeight(), field);
+                assertEquals(60, updated.getCaptureDevice().getMaxFps());
+                assertEquals(1280, saved.getCaptureDevice().getSuggestedWidth());
+            }
+
+            ObjectNode partial = CommonUtility.JSON_MAPPER.createObjectNode().put("resamplingFactor", 6);
+            assertEquals(640, ConfigurationPayload.apply(partial, saved).getCaptureDevice().getSuggestedWidth());
+
+            ObjectNode monitor = CommonUtility.JSON_MAPPER.createObjectNode().put("monitorNumber", 1);
+            assertFalse(ConfigurationPayload.apply(monitor, saved).hasCaptureDevice());
+            ObjectNode missing = CommonUtility.JSON_MAPPER.createObjectNode()
+                    .put("monitorNumber", 0).put("captureDeviceName", "Missing device");
+            assertThrows(IllegalArgumentException.class, () -> ConfigurationPayload.apply(missing, saved));
+        }
     }
 
     @Test
