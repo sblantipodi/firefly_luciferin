@@ -128,7 +128,12 @@
                     <i aria-hidden="true" class="fa-solid fa-ethernet"></i>
                 </span>
                 <span class="footer-status-item" hidden id="footerFpsGroup" title="Firefly capture FPS">
-                    <i aria-hidden="true" class="fa-solid fa-desktop"></i> <span id="fpsCounter"></span>
+                    <svg aria-hidden="true" class="footer-aspect-ratio-icon" focusable="false" viewBox="0 0 24 24">
+                        <rect fill="none" height="16" rx="1" stroke="currentColor" stroke-width="2" width="22" x="1"
+                              y="2"></rect>
+                        <path fill="currentColor" id="footerAspectRatioBars"></path>
+                        <path d="M10 18h4v3h4v2H6v-2h4z" fill="currentColor"></path>
+                    </svg> <span id="fpsCounter"></span>
                 </span>
                 <span class="footer-status-item" hidden id="footerGlowWormFpsGroup" title="Glow Worm LED output FPS">
                     <i aria-hidden="true" class="fa-solid fa-lightbulb"></i> <span id="glowWormFpsCounter"></span>

@@ -135,7 +135,8 @@ public class ConfigServer {
                 GuiSingleton.getInstance().isGlowWormUpdateInProgress(),
                 TrayIconState.currentImage(),
                 Double.isFinite(adaptiveGamma) ? adaptiveGamma : null,
-                MainSingleton.getInstance().isHdrActive()));
+                MainSingleton.getInstance().isHdrActive(),
+                MainSingleton.getInstance().config.getDefaultLedMatrix()));
     }
 
     static String tailLog(Path logFile) throws IOException {
@@ -675,9 +676,10 @@ public class ConfigServer {
      * @param trayIconImage current tray image resource, used to refresh the web logo on changes
      * @param adaptiveGamma current effective gamma, also published via MQTT
      * @param hdrActive whether HDR has been detected
+     * @param aspectRatio current capture aspect ratio, including automatic black bar detection
      */
     public record FpsDto(float producing, float consuming, boolean fireflyUpdateAvailable,
                          boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, String trayIconImage,
-                         Double adaptiveGamma, boolean hdrActive) {
+                         Double adaptiveGamma, boolean hdrActive, String aspectRatio) {
     }
 }

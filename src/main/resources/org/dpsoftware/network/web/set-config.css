@@ -33,6 +33,12 @@
     white-space: nowrap;
 }
 
+.footer-aspect-ratio-icon {
+    width: 1.25em;
+    height: 1em;
+    vertical-align: -0.125em;
+}
+
 .device-status-footer [hidden] {
     display: none;
 }

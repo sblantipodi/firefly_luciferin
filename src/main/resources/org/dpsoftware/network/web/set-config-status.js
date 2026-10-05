@@ -5,6 +5,24 @@ import {showToast} from './set-config-ui.js';
 var serverOnline = true;
 var serverPollController = null;
 
+// Read the runtime aspect ratio so automatic black bar detection is reflected in the monitor icon.
+function updateFooterAspectRatio(status) {
+    var group = document.getElementById('footerFpsGroup');
+    var bars = document.getElementById('footerAspectRatioBars');
+    if (!group || !bars) {
+        return;
+    }
+    var aspectRatio = status && status.aspectRatio;
+    var modes = {
+        Fullscreen: '',
+        Letterbox: 'M2 3h20v4H2z M2 13h20v4H2z',
+        Pillarbox: 'M2 3h5v14H2z M17 3h5v14h-5z'
+    };
+    var valid = Object.prototype.hasOwnProperty.call(modes, aspectRatio);
+    bars.setAttribute('d', valid ? modes[aspectRatio] : '');
+    group.title = 'Firefly capture FPS' + (valid ? ' - ' + aspectRatio : '');
+}
+
 // Separate capture and LED output counters so each has its own icon and visibility.
 function updateFooterFps(status) {
     [
@@ -64,6 +82,7 @@ export function pollServerStatus(force) {
             logo.src = 'luciferin-logo.png?icon=' + encodeURIComponent(fps.trayIconImage);
         }
         updateFooterFps(fps);
+        updateFooterAspectRatio(fps);
         var updateNotice = document.getElementById('fireflyUpdateNotice');
         if (updateNotice) {
             updateNotice.hidden = !fps.fireflyUpdateAvailable;
@@ -87,6 +106,7 @@ export function pollServerStatus(force) {
             return;
         }
         updateFooterFps(null);
+        updateFooterAspectRatio(null);
         updateFooterGamma(null);
         if (serverOnline) {
             serverOnline = false;
