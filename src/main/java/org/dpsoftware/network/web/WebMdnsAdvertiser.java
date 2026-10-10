@@ -22,6 +22,7 @@
 package org.dpsoftware.network.web;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 
 import javax.jmdns.JmDNS;
@@ -224,8 +225,10 @@ final class WebMdnsAdvertiser {
                 return;
             }
         }
+        String urlHost = host.endsWith(".") ? host.substring(0, host.length() - 1) : host;
+        MainSingleton.getInstance().webInterfaceUrl = Constants.HTTP + urlHost + ":"
+                + Constants.CONFIG_SERVER_DEFAULT_PORT + "/";
         if (!host.equals(previous.hostName())) {
-            String urlHost = host.endsWith(".") ? host.substring(0, host.length() - 1) : host;
             log.info("Web interface available via mDNS at http://{}:{} (interface {})",
                     urlHost, Constants.CONFIG_SERVER_DEFAULT_PORT, previous.address().getHostAddress());
         }
@@ -244,6 +247,8 @@ final class WebMdnsAdvertiser {
         responders.keySet().forEach(WebMdnsAdvertiser::close);
         responders.clear();
         hostName = null;
+        MainSingleton.getInstance().webInterfaceUrl = Constants.HTTP + "localhost:"
+                + Constants.CONFIG_SERVER_DEFAULT_PORT + "/";
     }
 
     /**

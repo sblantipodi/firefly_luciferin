@@ -21,6 +21,7 @@
  */
 package org.dpsoftware.network.web;
 
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 import org.junit.jupiter.api.Test;
 
@@ -50,7 +51,11 @@ class WebMdnsAdvertiserTest {
         try {
             advertiser.start(List.of(InetAddress.getByName("192.168.1.10")));
             verify(dns, timeout(3000)).registerService(any());
+            synchronized (advertiser) {
+                assertEquals("http://fireflyluciferin.local:8091/", MainSingleton.getInstance().webInterfaceUrl);
+            }
             advertiser.stop();
+            assertEquals("http://localhost:8091/", MainSingleton.getInstance().webInterfaceUrl);
             verifyNoInteractions(computer);
         } finally {
             advertiser.stop();
@@ -71,6 +76,9 @@ class WebMdnsAdvertiserTest {
         try {
             advertiser.start(List.of(lan));
             verify(fallback, timeout(3000)).registerService(any());
+            synchronized (advertiser) {
+                assertEquals("http://fireflyluciferin-test-pc-1.local:8091/", MainSingleton.getInstance().webInterfaceUrl);
+            }
             advertiser.stop();
             verify(base).close();
             verify(fallback).close();
@@ -95,8 +103,14 @@ class WebMdnsAdvertiserTest {
         try {
             advertiser.start(List.of(lan));
             verify(base, timeout(3000)).registerService(any());
+            synchronized (advertiser) {
+                assertEquals("http://fireflyluciferin.local:8091/", MainSingleton.getInstance().webInterfaceUrl);
+            }
             negotiatedName.set("fireflyluciferin-1.local.");
             verify(fallback, timeout(7000)).registerService(any());
+            synchronized (advertiser) {
+                assertEquals("http://fireflyluciferin-test-pc.local:8091/", MainSingleton.getInstance().webInterfaceUrl);
+            }
             advertiser.stop();
             verify(base).close();
             verify(fallback).close();
