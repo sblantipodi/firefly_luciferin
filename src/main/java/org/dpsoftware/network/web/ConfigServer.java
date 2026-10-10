@@ -70,6 +70,7 @@ public class ConfigServer {
 
     private final StorageManager storageManager = new StorageManager();
     private final List<HttpServer> httpServers = new ArrayList<>();
+    private final WebMdnsAdvertiser mdnsAdvertiser = new WebMdnsAdvertiser();
     private final WebRtcStreamer webRtcStreamer = new WebRtcStreamer();
     private final WebRtcSignalingServer webRtcSignalingServer = new WebRtcSignalingServer(webRtcStreamer);
     private final WebResourceServer webResourceServer = new WebResourceServer();
@@ -421,6 +422,7 @@ public class ConfigServer {
      * Stop the config endpoint on every bound interface.
      */
     public void stop() {
+        mdnsAdvertiser.stop();
         httpServers.forEach(server -> {
             try {
                 server.stop(0);
@@ -487,6 +489,7 @@ public class ConfigServer {
             if (httpServers.isEmpty()) {
                 log.warn("No local interface found, config server not started");
             }
+            mdnsAdvertiser.start(httpServers.stream().map(server -> server.getAddress().getAddress()).toList());
             GStreamerGrabber.webRtcStreamer = webRtcStreamer;
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-config-shutdown"));
         } catch (IOException e) {
