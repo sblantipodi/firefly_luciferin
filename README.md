@@ -32,7 +32,7 @@ If you like **Luciferin**, give it a star, or fork it and contribute!
 [![CI Build](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/build.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions)
 [![CodeQL Analysis](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml)
 
-[![Watch Luciferin ambient lighting in action](https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/luciferin_logo.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
+[![Watch Luciferin ambient lighting in action](https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/luciferin_monitor.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
 Click the image to watch Luciferin in action.
 
 ## Two capture modes, one lighting system
@@ -46,7 +46,7 @@ Firefly automatically detects whether a desktop is available. The **web interfac
 **dedicated desktop interface** is available when a desktop environment is present. On a Raspberry Pi with limited RAM,
 an installation without a desktop leaves more memory available for capture and processing.
 
-![Luciferin connection overview: direct PC screen capture, HDMI capture through a splitter and USB card, and optional satellite lighting](https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/luciferin_schema.png)
+[![Luciferin connection overview: direct PC screen capture, HDMI capture through a splitter and USB card, and optional satellite lighting](https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/luciferin_schema.jpg)](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)
 
 ## Key features
 
