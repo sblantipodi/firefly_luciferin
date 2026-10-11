@@ -227,11 +227,11 @@ public abstract class TrayIconBase extends CommonBinding {
     }
 
     /**
-     * Opens the web interface using its current mDNS URL, or localhost before registration.
+     * Opens the local Firefly web interface in the default browser.
      */
     public void webInterfaceAction() {
         Platform.runLater(() -> MainSingleton.getInstance().guiManager.surfToURL(
-                MainSingleton.getInstance().webInterfaceUrl));
+                Constants.HTTP + "localhost:" + Constants.CONFIG_SERVER_DEFAULT_PORT + "/"));
     }
 
     /**
