@@ -399,7 +399,13 @@ public class ModeTabController {
     public void initListeners() {
         resamplingFactor.valueProperty().addListener((_, _, newValue) -> {
             if (MainSingleton.getInstance().getConfig() != null) {
-                PipelineManager.restartCapture(CommonUtility::run, () -> MainSingleton.getInstance().getConfig().setResamplingFactor(LocalizedEnum.fromStr(Enums.ResamplingFactor.class, newValue).getResamplingFactorValue()));
+                PipelineManager.restartCapture(CommonUtility::run, () -> {
+                    Configuration config = MainSingleton.getInstance().getConfig();
+                    config.setResamplingFactor(LocalizedEnum.fromStr(Enums.ResamplingFactor.class, newValue).getResamplingFactorValue());
+                    if (config.hasCaptureDevice()) {
+                        config.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(config.getCaptureDeviceFriendlyName(), config));
+                    }
+                });
             }
         });
         firmTypeFull.setOnAction(_ -> firmTypeEvaluation());
@@ -469,6 +475,7 @@ public class ModeTabController {
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT, "")));
+        config.setResamplingFactor(LocalizedEnum.fromStr(Enums.ResamplingFactor.class, resamplingFactor.getValue()).getResamplingFactorValue());
         config.setDefaultLedMatrix(aspectRatio.getValue().equals(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS)) ?
                 Enums.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Enums.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS)));
@@ -478,7 +485,7 @@ public class ModeTabController {
             config.setCaptureDevice(null);
         } else {
             config.setMonitorNumber(0);
-            config.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(monitorNumber.getValue()));
+            config.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(monitorNumber.getValue(), config));
         }
         config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setSyncCheck(syncCheck.isSelected());
@@ -491,7 +498,6 @@ public class ModeTabController {
         }
         config.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, algo.getValue()).getBaseI18n());
         config.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, simdOption.getValue()).getSimdOptionNumeric());
-        config.setResamplingFactor(LocalizedEnum.fromStr(Enums.ResamplingFactor.class, resamplingFactor.getValue()).getResamplingFactorValue());
     }
 
     /**

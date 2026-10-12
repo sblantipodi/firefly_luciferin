@@ -42,6 +42,7 @@ import org.dpsoftware.gui.trayicon.TrayIconState;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
@@ -602,8 +603,13 @@ public class ConfigServer {
             case WebFieldNames.RESAMPLING_FACTOR -> CommonUtility.delayMilliseconds(() -> {
                 Enums.ResamplingFactor rf = Enums.ResamplingFactor.findByValue(Integer.parseInt(valueText));
                 if (rf != null) {
-                    PipelineManager.restartCapture(CommonUtility::run, () ->
-                            MainSingleton.getInstance().config.setResamplingFactor(rf.getResamplingFactorValue()));
+                    PipelineManager.restartCapture(CommonUtility::run, () -> {
+                        Configuration config = MainSingleton.getInstance().config;
+                        config.setResamplingFactor(rf.getResamplingFactorValue());
+                        if (config.hasCaptureDevice()) {
+                            config.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(config.getCaptureDeviceFriendlyName(), config));
+                        }
+                    });
                 }
             }, 200);
             case WebFieldNames.EFFECT_SELECT -> {

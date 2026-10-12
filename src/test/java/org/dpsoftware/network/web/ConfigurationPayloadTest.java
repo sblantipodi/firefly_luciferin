@@ -74,10 +74,8 @@ class ConfigurationPayloadTest {
                 switch (field) {
                     case "resamplingFactor" -> payload.put(field, 6);
                     case "osScaling" -> payload.put(field, 200);
-                    default -> {
-                        payload.put("screenResX", 1920);
-                        payload.put("screenResY", 1080);
-                    }
+                    case "screenResX" -> payload.put(field, 1920);
+                    case "screenResY" -> payload.put(field, 1080);
                 }
                 Configuration updated = ConfigurationPayload.apply(payload, saved);
                 assertEquals(640, updated.getCaptureDevice().getSuggestedWidth(), field);
@@ -86,8 +84,19 @@ class ConfigurationPayloadTest {
                 assertEquals(1280, saved.getCaptureDevice().getSuggestedWidth());
             }
 
-            ObjectNode partial = CommonUtility.JSON_MAPPER.createObjectNode().put("resamplingFactor", 6);
-            assertEquals(640, ConfigurationPayload.apply(partial, saved).getCaptureDevice().getSuggestedWidth());
+            for (String field : List.of("resamplingFactor", "screenResX", "screenResY", "osScaling")) {
+                ObjectNode partial = CommonUtility.JSON_MAPPER.createObjectNode();
+                partial.put(field, switch (field) {
+                    case "resamplingFactor" -> 6;
+                    case "osScaling" -> 200;
+                    case "screenResX" -> 1920;
+                    default -> 1080;
+                });
+                Configuration updated = ConfigurationPayload.apply(partial, saved);
+                assertEquals(640, updated.getCaptureDevice().getSuggestedWidth(), field);
+                assertEquals(360, updated.getCaptureDevice().getSuggestedHeight(), field);
+                assertEquals(60, updated.getCaptureDevice().getMaxFps(), field);
+            }
 
             ObjectNode monitor = CommonUtility.JSON_MAPPER.createObjectNode().put("monitorNumber", 1);
             assertFalse(ConfigurationPayload.apply(monitor, saved).hasCaptureDevice());
