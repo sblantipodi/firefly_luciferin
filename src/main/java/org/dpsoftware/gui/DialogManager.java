@@ -25,7 +25,6 @@ import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -451,12 +450,8 @@ public class DialogManager {
             Stage parentStage = guiManager.getStage(Constants.FXML_SETTINGS);
             stage.setX(parentStage.getX() + (parentStage.getWidth() / 2) - (stage.getWidth() / 2));
             double dialogY = parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2);
-            Node tabHeader = settingsController.mainTabPane.lookup(".tab-header-area");
-            if (tabHeader != null) {
-                Bounds headerBounds = tabHeader.localToScreen(tabHeader.getBoundsInLocal());
-                if (headerBounds != null) {
-                    dialogY = Math.max(dialogY, headerBounds.getMaxY() + 20);
-                }
+            if (classForCast == EyeCareDialogController.class) {
+                dialogY -= 10;
             }
             stage.setY(dialogY);
         });
