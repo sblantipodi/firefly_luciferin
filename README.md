@@ -102,18 +102,18 @@ guide**](https://github.com/sblantipodi/toremove/wiki/Quick-start), or dive into
 Effortless setup with minimal configuration required, yet highly customizable to meet specific needs.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_1.png">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/settings_1.png">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_2.png">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/settings_2.png">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_3.png">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/settings_3.png">
 </p>
 
-[<img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/test_image_anim_color.gif?raw=true">](https://youtu.be/j7IV9rQr7J8)
+[<img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/test_image_anim_color.gif?raw=true">](https://youtu.be/j7IV9rQr7J8)
 
 #### (click the image above to watch it on YouTube)
 
@@ -160,7 +160,9 @@ your phone.
 - **Firefly Luciferin**: besides the desktop app, it now offers its own web interface for full control from your phone
   or any browser.
 
-<img align="center" width="750" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/img/web_interface.jpg?raw=true">
+<img align="center" width="750" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface.jpg?raw=true">  
+<p></p>
+<img align="center" width="750" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface_ff.jpg?raw=true">
 
 ## Home Assistant integration
 
