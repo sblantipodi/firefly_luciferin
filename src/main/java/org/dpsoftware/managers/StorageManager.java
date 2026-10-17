@@ -30,8 +30,12 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -39,8 +43,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +61,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class StorageManager {
 
+    private static final Duration STALE_RESTART_LOCK_AGE = Duration.ofMinutes(5);
     private final ObjectMapper mapper;
     private final String path;
 
@@ -111,8 +121,6 @@ public class StorageManager {
         }
     }
 
-
-
     /**
      * Copy file (FileInputStream) to GZIPOutputStream
      *
@@ -134,29 +142,59 @@ public class StorageManager {
     }
 
     /**
-     * Write params inside the configuration file
+     * Save a safe startup method before attempting any automatic native capture probe.
      *
-     * @param config        file
+     * @param config file
+     */
+    public void resolveAutomaticCapture(Configuration config) throws IOException {
+        if (config.getCaptureMethod() == null || config.getCaptureMethod().isBlank()
+                || Configuration.CaptureMethod.AUTO.name().equals(config.getCaptureMethod())) {
+            config.setAutomaticCapturePending(true);
+            config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.hasCaptureDevice()).name());
+            writeConfig(config, null);
+            log.info("Automatic capture: saved startup default {}", config.getCaptureMethod());
+        }
+    }
+
+    /**
+     * Write params inside the configuration file
+     * @param config file
      * @param forceFilename where to write the config
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
-        String filename = switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> Constants.CONFIG_FILENAME;
-            case 2 -> Constants.CONFIG_FILENAME_2;
-            case 3 -> Constants.CONFIG_FILENAME_3;
-            default -> "";
-        };
+        if (config.isAutomaticCapturePending()) {
+            try {
+                config = (Configuration) config.clone();
+                // Other settings can be saved during a probe; never persist its unverified candidate.
+                config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.hasCaptureDevice()).name());
+            } catch (CloneNotSupportedException e) {
+                throw new IOException("Cannot preserve safe capture default", e);
+            }
+        }
+        String filename;
         if (forceFilename != null) {
             filename = forceFilename;
+        } else if (MainSingleton.getInstance().profileArg != null
+                && !MainSingleton.getInstance().profileArg.isEmpty()
+                && !LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg)
+                && !CommonUtility.getWord(LabelKey.DEFAULT).equals(MainSingleton.getInstance().profileArg)) {
+            filename = getProfileFileName(MainSingleton.getInstance().profileArg);
+        } else {
+            filename = switch (MainSingleton.getInstance().whoAmI) {
+                case 1 -> Constants.CONFIG_FILENAME;
+                case 2 -> Constants.CONFIG_FILENAME_2;
+                case 3 -> Constants.CONFIG_FILENAME_3;
+                default -> "";
+            };
         }
         Configuration currentConfig = readConfigFile(filename);
         if (currentConfig != null) {
             File file = new File(path + File.separator + filename);
             if (file.delete()) {
-                log.info(CommonUtility.getWord(Constants.CLEANING_OLD_CONFIG));
+                log.info(CommonUtility.getWord(LabelKey.CLEANING_OLD_CONFIG));
             } else {
-                log.info(CommonUtility.getWord(Constants.FAILED_TO_CLEAN_CONFIG));
+                log.info(CommonUtility.getWord(LabelKey.FAILED_TO_CLEAN_CONFIG));
             }
         }
         mapper.writeValue(new File(path + File.separator + filename), config);
@@ -173,7 +211,7 @@ public class StorageManager {
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
         } catch (IOException e) {
-            log.error(CommonUtility.getWord(Constants.ERROR_READING_CONFIG));
+            log.error(CommonUtility.getWord(LabelKey.ERROR_READING_CONFIG));
         }
         return config;
     }
@@ -207,7 +245,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArg : Constants.DEFAULT);
+        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArg : LabelKey.DEFAULT);
     }
 
     /**
@@ -228,7 +266,7 @@ public class StorageManager {
     public Configuration readConfig(boolean readMainConfig, String profileName) {
         try {
             Configuration currentConfig;
-            if (!CommonUtility.getWord(Constants.DEFAULT).equals(profileName) && !Constants.DEFAULT.equals(profileName) && !readMainConfig) {
+            if (!CommonUtility.getWord(LabelKey.DEFAULT).equals(profileName) && !LabelKey.DEFAULT.equals(profileName) && !readMainConfig) {
                 currentConfig = readConfigFile(getProfileFileName(profileName));
             } else {
                 Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
@@ -261,39 +299,43 @@ public class StorageManager {
             MainSingleton.getInstance().setRestartNeeded(false);
             Set<String> restartReasons = new LinkedHashSet<>();
             if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage()))
-                restartReasons.add(Constants.TOOLTIP_LANGUAGE);
-            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
+                restartReasons.add(LabelKey.TOOLTIP_LANGUAGE);
+            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(LabelKey.TOOLTIP_THEME);
             if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
-                restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
+                restartReasons.add(LabelKey.TOOLTIP_BAUD_RATE);
+            if (!defaultConfig.getCaptureDeviceFriendlyName().equals(profileConfig.getCaptureDeviceFriendlyName()))
+                restartReasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
-                restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
+                restartReasons.add(LabelKey.TOOLTIP_CAPTUREMETHOD);
             if (profileConfig.getOutputDevice() != null && (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice())
                     || !defaultConfig.getStaticGlowWormIp().equals(profileConfig.getStaticGlowWormIp())))
-                restartReasons.add(Constants.TOOLTIP_SERIALPORT);
+                restartReasons.add(LabelKey.TOOLTIP_SERIALPORT);
             if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads())
-                restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
+                restartReasons.add(LabelKey.TOOLTIP_NUMBEROFTHREADS);
             if (defaultConfig.isFullFirmware() != profileConfig.isFullFirmware())
-                restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
+                restartReasons.add(LabelKey.TOOLTIP_WIFIENABLE);
             if (defaultConfig.isWirelessStream() != profileConfig.isWirelessStream())
-                restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTSTREAM);
             if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable())
-                restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTENABLE);
             if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType()))
-                restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
+                restartReasons.add(LabelKey.TOOLTIP_STREAMTYPE);
             if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer()))
-                restartReasons.add(Constants.TOOLTIP_MQTTHOST);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTHOST);
             if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic()))
-                restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTTOPIC);
             if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername()))
-                restartReasons.add(Constants.TOOLTIP_MQTTUSER);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTUSER);
             if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd()))
-                restartReasons.add(Constants.TOOLTIP_MQTTPWD);
+                restartReasons.add(LabelKey.TOOLTIP_MQTTPWD);
             if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice())
-                restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
+                restartReasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
+            if (defaultConfig.isWebMcpServerEnabled() != profileConfig.isWebMcpServerEnabled())
+                restartReasons.add(LabelKey.TOOLTIP_WEB_MCP_SERVER);
             if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
-                restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
+                restartReasons.add(LabelKey.TOOLTIP_MULTIMONITOR);
             if (defaultConfig.getSimdAvx() != profileConfig.getSimdAvx())
-                restartReasons.add(Constants.TOOLTIP_SIMD);
+                restartReasons.add(LabelKey.TOOLTIP_SIMD);
             if (!restartReasons.isEmpty()) {
                 MainSingleton.getInstance().setRestartNeeded(true);
                 log.info(String.join("\n", restartReasons));
@@ -326,13 +368,70 @@ public class StorageManager {
         if (config == null) {
             try {
                 MainSingleton.getInstance().guiManager = new GuiManager(false);
-                MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
-                config = readProfileInUseConfig();
-            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
-                     IllegalAccessException e) {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
+                    config = readProfileInUseConfig();
+                } else {
+                    config = setDefaultsForHeadlessMode();
+                }
+            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                log.error("Failed to create default configuration in headless mode", e);
                 throw new RuntimeException(e);
             }
         }
+        return config;
+    }
+
+    /**
+     * Set defaults for headless mode
+     */
+    private Configuration setDefaultsForHeadlessMode() throws IOException {
+        Configuration config;
+        log.info("No config file found in headless mode, creating default configuration");
+        Configuration defaultConfig = new Configuration();
+        defaultConfig.setLedMatrix(new LinkedHashMap<>());
+        defaultConfig.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+        defaultConfig.setTheme(Enums.Theme.CLASSIC.getBaseI18n());
+        defaultConfig.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
+        defaultConfig.setFullFirmware(true);
+        defaultConfig.setWirelessStream(true);
+        defaultConfig.setLanguage("English");
+        defaultConfig.setConfigVersion(MainSingleton.getInstance().version);
+        defaultConfig.setScreenResX(Constants.DEFAULT_RES_WIDTH);
+        defaultConfig.setScreenResY(Constants.DEFAULT_RES_HEIGHT);
+        defaultConfig.setOsScaling(100);
+        defaultConfig.setNumberOfCPUThreads(1);
+        defaultConfig.setTopLed(10);
+        defaultConfig.setLeftLed(10);
+        defaultConfig.setRightLed(10);
+        defaultConfig.setBottomLeftLed(10);
+        defaultConfig.setBottomRightLed(10);
+        defaultConfig.setBottomRowLed(20);
+        defaultConfig.setBrightness(255);
+        defaultConfig.setColorChooser("255,82,0,255");
+        defaultConfig.setOrientation(Enums.Orientation.CLOCKWISE.getBaseI18n());
+        defaultConfig.setOutputDevice(Constants.SERIAL_PORT_AUTO);
+        defaultConfig.setStaticGlowWormIp(Constants.DASH);
+        defaultConfig.setMonitorNumber(0);
+        defaultConfig.setPowerSaving("30 minutes");
+        defaultConfig.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + Constants.DEFAULT_MQTT_HOST + ":" + Constants.DEFAULT_MQTT_PORT);
+        defaultConfig.setMqttTopic(Constants.MQTT_BASE_TOPIC);
+        defaultConfig.setSmoothingType(Enums.Smoothing.DISABLED.getBaseI18n());
+        defaultConfig.setFrameInsertionTarget(0);
+        defaultConfig.setEmaAlpha(0.0F);
+        if (defaultConfig.isFullFirmware()) {
+            defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_115200.getBaudRate());
+        } else {
+            defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_500000.getBaudRate());
+        }
+        defaultConfig.setHueMap(ColorCorrectionDialogController.initHSLMap());
+        defaultConfig.regenerateLedMatrix();
+        defaultConfig.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(""));
+        defaultConfig.setCubeLut(Constants.DEFAULT_CUBE_LUT);
+        writeConfig(defaultConfig, null);
+        config = readProfileInUseConfig();
         return config;
     }
 
@@ -397,6 +496,7 @@ public class StorageManager {
         writeToStorage = configFileUpgrader.updatePrevious2237(config, writeToStorage); // Version <= 2.23.7
         writeToStorage = configFileUpgrader.updatePrevious2256(config, writeToStorage); // Version <= 2.25.6
         writeToStorage = configFileUpgrader.updatePrevious2284(config, writeToStorage); // Version <= 2.28.4
+        writeToStorage = configFileUpgrader.updatePrevious2295(config, writeToStorage); // Version <= 2.29.5
         return writeToStorage;
     }
 
@@ -433,6 +533,65 @@ public class StorageManager {
      */
     public String getProfileFileName(String profileName) {
         return MainSingleton.getInstance().whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+    }
+
+    /**
+     * Read the StartProfile file if it exists and return the profile name.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
+     *
+     * @return the profile name read from the file, or null if the file doesn't exist or is empty
+     */
+    public static String readStartProfileFile() {
+        try {
+            File profileInUseFile = new File(InstanceConfigurer.getConfigPath() + File.separator + MainSingleton.getInstance().whoAmI + "_" + Constants.START_PROFILE_FILENAME);
+            if (profileInUseFile.exists()) {
+                String profileName = java.nio.file.Files.readString(profileInUseFile.toPath()).trim();
+                if (!profileName.isEmpty()) {
+                    log.debug("Using profile from StartProfile file: {}", profileName);
+                    return profileName;
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Failed to read StartProfile file: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Write the profile name to a plain text file inside the configuration path.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
+     *
+     * @param profileName profile name to write
+     */
+    public void writeStartProfileFile(String profileName) {
+        if (profileName != null && !profileName.isEmpty()) profileName = profileName.replace("\"", "");
+        try {
+            Path file = Paths.get(path, MainSingleton.getInstance().whoAmI + "_" +Constants.START_PROFILE_FILENAME);
+            if (profileName != null && !profileName.isEmpty()) {
+                Files.writeString(file, profileName, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            }
+        } catch (IOException e) {
+            log.error("Failed to write StartProfile in use file: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Delete the StartProfile in use file.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
+     */
+    public void deleteStartProfileFile() {
+        try {
+            Path file = Paths.get(path, MainSingleton.getInstance().whoAmI + "_" + Constants.START_PROFILE_FILENAME);
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            log.error("Failed to delete StartProfile in use file: {}", e.getMessage());
+        }
     }
 
     /**
@@ -492,16 +651,56 @@ public class StorageManager {
                 }
             }
             Path rootDir = Paths.get(path);
-            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
-            if (!firmwareFiles.isEmpty()) {
-                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            if (MainSingleton.getInstance().whoAmI == 1) {
+                deleteStaleRestartLocks(rootDir);
             }
-            for (String firmwareFilename : firmwareFiles) {
-                File fileToDelete = new File(path + File.separator + firmwareFilename);
+            List<String> tempFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
+            tempFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            tempFiles.addAll(searchFilesWithWc(rootDir, Constants.SCREENSHOT_IMAGE_FILENAME_PATTERN));
+            for (String tempFilename : tempFiles) {
+                File fileToDelete = new File(path + File.separator + tempFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();
             }
+            deleteStartProfileFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Remove abandoned restart locks without touching an active restart.
+     *
+     * @param rootDir configuration directory containing the restart lock files
+     */
+    private void deleteStaleRestartLocks(Path rootDir) {
+        if (!Files.isDirectory(rootDir)) {
+            return;
+        }
+        Instant cutoff = Instant.now().minus(STALE_RESTART_LOCK_AGE);
+        try (DirectoryStream<Path> locks = Files.newDirectoryStream(rootDir, ".restart-*.lock")) {
+            for (Path lockPath : locks) {
+                String name = lockPath.getFileName().toString();
+                if (!name.matches("\\.restart-[0-9a-fA-F-]{36}\\.lock")) {
+                    continue;
+                }
+                try {
+                    if (Files.getLastModifiedTime(lockPath).toInstant().isAfter(cutoff)) {
+                        continue;
+                    }
+                    boolean unlocked;
+                    try (FileChannel channel = FileChannel.open(lockPath, StandardOpenOption.WRITE);
+                         FileLock lock = channel.tryLock()) {
+                        unlocked = lock != null;
+                    }
+                    if (unlocked) {
+                        Files.deleteIfExists(lockPath);
+                    }
+                } catch (IOException | OverlappingFileLockException e) {
+                    log.debug("Restart lock is still in use or cannot be removed: {}", lockPath, e);
+                }
+            }
+        } catch (IOException e) {
+            log.debug("Could not inspect restart locks", e);
         }
     }
 

@@ -25,8 +25,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.network.tcpUdp.UdpClient;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,6 +56,7 @@ public class ManagerSingleton {
     public boolean updateMqttDiscovery = false;
     public boolean serialVersionOk = false;
     public String deviceNameForSerialDevice = "";
+    public List<CaptureDeviceUtilities.CaptureDevice> captureDevices = new ArrayList<>();
 
 }
 

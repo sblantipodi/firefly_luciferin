@@ -27,7 +27,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
-import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
@@ -35,7 +34,8 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
-import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.LedsConfigTabOptions;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -43,7 +43,6 @@ import org.dpsoftware.utilities.CommonUtility;
 /**
  * LEDs Config Tab controller
  */
-@Slf4j
 public class LedsConfigTabController {
 
     // FXML binding
@@ -251,19 +250,19 @@ public class LedsConfigTabController {
         switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
                 if ((currentConfig.getMultiMonitor() == 1)) {
-                    displayLabel.setText(CommonUtility.getWord(Constants.MAIN_DISPLAY));
+                    displayLabel.setText(CommonUtility.getWord(LabelKey.MAIN_DISPLAY));
                 } else {
-                    displayLabel.setText(CommonUtility.getWord(Constants.RIGHT_DISPLAY));
+                    displayLabel.setText(CommonUtility.getWord(LabelKey.RIGHT_DISPLAY));
                 }
             }
             case 2 -> {
                 if ((currentConfig.getMultiMonitor() == 2)) {
-                    displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
+                    displayLabel.setText(CommonUtility.getWord(LabelKey.LEFT_DISPLAY));
                 } else {
-                    displayLabel.setText(CommonUtility.getWord(Constants.CENTER_DISPLAY));
+                    displayLabel.setText(CommonUtility.getWord(LabelKey.CENTER_DISPLAY));
                 }
             }
-            case 3 -> displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
+            case 3 -> displayLabel.setText(CommonUtility.getWord(LabelKey.LEFT_DISPLAY));
         }
     }
 
@@ -327,7 +326,7 @@ public class LedsConfigTabController {
      * Show hide bottom row options
      */
     public void splitBottomRow() {
-        if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue())) {
+        if (LedsConfigTabOptions.isBottomRowSplit(splitBottomMargin.getValue())) {
             bottomLeftLed.setVisible(true);
             bottomRightLed.setVisible(true);
             bottomRowLed.setVisible(false);
@@ -361,7 +360,6 @@ public class LedsConfigTabController {
      */
     @FXML
     public void save(Configuration config) {
-        checkIfCaptureRestartNeeded();
         config.setSplitBottomMargin(splitBottomMargin.getValue());
         config.setGrabberAreaTopBottom(grabberAreaTopBottom.getValue());
         config.setGrabberSide(grabberSide.getValue());
@@ -385,9 +383,9 @@ public class LedsConfigTabController {
     }
 
     /**
-     * Check if capture restart is needed
+     * Check if the LED settings differ from the active capture configuration.
      */
-    private void checkIfCaptureRestartNeeded() {
+    boolean isCaptureRestartNeeded() {
         if (MainSingleton.getInstance() != null && MainSingleton.getInstance().config != null) {
             boolean restartCapture = false;
             if (!MainSingleton.getInstance().config.getGrabberAreaTopBottom().equals(grabberAreaTopBottom.getValue())) {
@@ -419,10 +417,9 @@ public class LedsConfigTabController {
             } else if (MainSingleton.getInstance().config.getGroupBy() != groupBy.getValue()) {
                 restartCapture = true;
             }
-            if (restartCapture && MainSingleton.getInstance().RUNNING) {
-                PipelineManager.restartCapture(() -> log.info("Restarting capture due to a change in the LEDs configuration"));
-            }
+            return restartCapture;
         }
+        return false;
     }
 
     /**
@@ -441,24 +438,24 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        GuiManager.createTooltip(Constants.TOOLTIP_TOPLED, topLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_LEFTLED, leftLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_RIGHTLED, rightLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED, bottomLeftLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED, bottomRightLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMROWLED, bottomRowLed);
-        GuiManager.createTooltip(Constants.TOOLTIP_ORIENTATION, orientation);
-        GuiManager.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET, ledStartOffset);
-        GuiManager.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW, splitBottomMargin);
-        GuiManager.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM, grabberAreaTopBottom);
-        GuiManager.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE, grabberSide);
-        GuiManager.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
-        GuiManager.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeSide);
-        GuiManager.createTooltip(Constants.TOOLTIP_GROUP_BY, groupBy);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_TOPLED, topLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LEFTLED, leftLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_RIGHTLED, rightLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BOTTOMLEFTLED, bottomLeftLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BOTTOMRIGHTLED, bottomRightLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BOTTOMROWLED, bottomRowLed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ORIENTATION, orientation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LEDSTARTOFFSET, ledStartOffset);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SPLIT_BOTTOM_ROW, splitBottomMargin);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GRABBER_AREA_TOP_BOTTOM, grabberAreaTopBottom);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GRABBER_AREA_SIDE, grabberSide);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CORNER_GAP, gapTypeSide);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GROUP_BY, groupBy);
         if (currentConfig == null) {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
         } else {
-            GuiManager.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
         }
     }
 
@@ -467,21 +464,21 @@ public class LedsConfigTabController {
      */
     void addLedOffsetListener() {
         ledStartOffset.getEditor().textProperty().addListener((_, _, newValue) -> {
-            if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
+            if (!LedsConfigTabOptions.isBottomRowSplit(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, "0",
                         String.valueOf(Integer.parseInt(bottomRowLed.getText()) / 2), Integer.parseInt(bottomRowLed.getText()),
                         Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()));
-            } else if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.CLOCKWISE.getI18n())) {
+            } else if (!LedsConfigTabOptions.isBottomRowSplit(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.CLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, "0",
                         String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()) + (Integer.parseInt(bottomRowLed.getText()) / 2)),
                         Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()));
-            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
+            } else if (LedsConfigTabOptions.isBottomRowSplit(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())), "0",
                         Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()));
-            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.CLOCKWISE.getI18n())) {
+            } else if (LedsConfigTabOptions.isBottomRowSplit(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.CLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, String.valueOf(Integer.parseInt(bottomLeftLed.getText())), "0",
                         Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()),

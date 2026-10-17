@@ -27,13 +27,13 @@ import jdk.incubator.vector.IntVector;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.InstanceConfigurer;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
+import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
@@ -46,11 +46,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A utility class for running native commands and get the results
@@ -58,6 +65,15 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @NoArgsConstructor
 public final class NativeExecutor {
+
+    private static final String RESTART_LOCK_PREFIX = "RESTART_LOCK=";
+    private static final Duration RESTART_LOCK_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration RESTART_KILL_TIMEOUT = Duration.ofSeconds(5);
+    private static final int RESTART_EXIT_TIMEOUT_SECONDS = 5;
+    private enum ShutdownState { RUNNING, RESTARTING, EXITING }
+    private static final AtomicReference<ShutdownState> shutdownState = new AtomicReference<>(ShutdownState.RUNNING);
+    private static FileChannel restartLockChannel;
+    private static FileLock restartLock;
 
     /**
      * This is the real runner that executes command. Non blocking method.
@@ -132,6 +148,29 @@ public final class NativeExecutor {
     }
 
     /**
+     * Start a native command without waiting and report whether the process was launched.
+     * The other runNative overloads keep their existing output and error handling behavior.
+     *
+     * @param cmdToRunUsingArgs command to run and its arguments
+     * @param inheritIO whether the child process inherits this process's standard input, output, and error streams
+     * @return true if the process was started, false otherwise
+     */
+    static boolean runNative(String[] cmdToRunUsingArgs, boolean inheritIO) {
+        try {
+            log.trace("Executing cmd={}", Arrays.toString(cmdToRunUsingArgs));
+            ProcessBuilder processBuilder = new ProcessBuilder(cmdToRunUsingArgs);
+            if (inheritIO) {
+                processBuilder.inheritIO();
+            }
+            processBuilder.start();
+            return true;
+        } catch (IOException | RuntimeException e) {
+            log.error("Could not start command: {}", Arrays.toString(cmdToRunUsingArgs), e);
+            return false;
+        }
+    }
+
+    /**
      * Spawn new Luciferin Native instance
      *
      * @param whoAmISupposedToBe instance #
@@ -144,6 +183,10 @@ public final class NativeExecutor {
         }
         restartCmd(execCommand);
         execCommand.add(String.valueOf(whoAmISupposedToBe));
+        execCommand.add(MainSingleton.getInstance().profileArg);
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            execCommand.add(Constants.HEADLESS_ARG);
+        }
         log.info("Spawning new instance");
         runNative(execCommand.toArray(String[]::new), 0);
     }
@@ -181,20 +224,52 @@ public final class NativeExecutor {
      * @param profileToUse restart with active profile if any
      */
     public static void restartNativeInstance(String profileToUse) {
-        if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
+        MainSingleton main = MainSingleton.getInstance();
+        if ((NativeExecutor.isWindows() || NativeExecutor.isLinux())
+                && shutdownState.compareAndSet(ShutdownState.RUNNING, ShutdownState.RESTARTING)) {
             List<String> execCommand = new ArrayList<>();
             restartCmd(execCommand);
-            execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
-            if (profileToUse != null) {
-                execCommand.add(profileToUse);
+            int lockArgumentIndex = execCommand.size();
+            execCommand.add(null);
+            execCommand.add(String.valueOf(main.whoAmI));
+            String effectiveProfile = profileToUse != null ? profileToUse : main.profileArg;
+            execCommand.add(effectiveProfile);
+            if (main.isHeadlessMode()) {
+                writeProfileFile(effectiveProfile);
             }
-            log.info("Restarting instance");
-            log.debug("Restart command: {}", execCommand);
-            runNative(execCommand.toArray(String[]::new), 0);
-            if (CommonUtility.isSingleDeviceMultiScreen()) {
-                MainSingleton.getInstance().restartOnly = true;
+            if (main.isHeadlessMode()) {
+                execCommand.add(Constants.HEADLESS_ARG);
             }
-            NativeExecutor.exit();
+            Path lockPath = null;
+            boolean launched = false;
+            try {
+                lockPath = createRestartLock();
+                log.info("Restart lock created at {}", lockPath);
+                execCommand.set(lockArgumentIndex, restartLockArgument(lockPath, ProcessHandle.current()));
+                log.info("Restarting instance");
+                log.debug("Restart command: {}", execCommand);
+                launched = runNative(execCommand.toArray(String[]::new), true);
+            } catch (IOException | RuntimeException e) {
+                log.error("Could not prepare replacement instance", e);
+            }
+            if (!launched) {
+                releaseRestartLock();
+                if (lockPath != null) {
+                    try {
+                        Files.deleteIfExists(lockPath);
+                    } catch (IOException cleanupError) {
+                        log.warn("Could not remove restart lock {}", lockPath, cleanupError);
+                    }
+                }
+                shutdownState.compareAndSet(ShutdownState.RESTARTING, ShutdownState.RUNNING);
+                return;
+            }
+            // The replacement waits on our file lock, so exit without blocking on capture cleanup.
+            main.restartOnly = true;
+            main.exitTriggered = true;
+            startRestartExitWatchdog();
+            log.info("Replacement process launched; exiting previous instance");
+            System.exit(0);
         }
     }
 
@@ -202,10 +277,164 @@ public final class NativeExecutor {
      * Restart a native instance of Luciferin
      */
     public static void restartNativeInstanceWithCurrentProfile() {
-        if (MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
-            NativeExecutor.restartNativeInstance();
-        } else {
-            NativeExecutor.restartNativeInstance(MainSingleton.getInstance().profileArg);
+        NativeExecutor.restartNativeInstance(MainSingleton.getInstance().profileArg);
+    }
+
+    /**
+     * Keep an OS file lock until this process exits. This works across launcher and PID namespaces.
+     *
+     * @return path of the newly acquired restart lock
+     * @throws IOException if the lock file cannot be created or acquired
+     */
+    private static Path createRestartLock() throws IOException {
+        Path lockDirectory = Paths.get(InstanceConfigurer.getConfigPath());
+        Files.createDirectories(lockDirectory);
+        Path lockPath = lockDirectory.resolve(".restart-" + UUID.randomUUID() + ".lock");
+        try {
+            restartLockChannel = FileChannel.open(lockPath, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+            restartLock = restartLockChannel.lock();
+            return lockPath;
+        } catch (IOException | RuntimeException e) {
+            releaseRestartLock();
+            Files.deleteIfExists(lockPath);
+            throw e;
+        }
+    }
+
+    /**
+     * Release the restart lock after a failed attempt to launch the replacement process.
+     */
+    private static void releaseRestartLock() {
+        try {
+            if (restartLock != null) restartLock.close();
+        } catch (IOException e) {
+            log.warn("Could not release restart lock", e);
+        }
+        try {
+            if (restartLockChannel != null) restartLockChannel.close();
+        } catch (IOException e) {
+            log.warn("Could not close restart lock channel", e);
+        }
+        restartLock = null;
+        restartLockChannel = null;
+    }
+
+    /**
+     * Include the previous process identity so the replacement cannot kill a reused PID.
+     */
+    static String restartLockArgument(Path lockPath, ProcessHandle owner) {
+        Instant startedAt = owner.info().startInstant()
+                .orElseThrow(() -> new IllegalStateException("Cannot identify the restarting process"));
+        return RESTART_LOCK_PREFIX + lockPath.getFileName() + ":" + owner.pid() + ":" + startedAt.toEpochMilli();
+    }
+
+    /**
+     * Wait for the previous process to release its lock. After ten seconds, kill only
+     * the process that created this restart request, then acquire the lock before starting.
+     */
+    static void waitForRestartLock(String restartArgument) {
+        waitForRestartLock(restartArgument, Paths.get(InstanceConfigurer.getConfigPath()), RESTART_LOCK_TIMEOUT);
+    }
+
+    static void waitForRestartLock(String restartArgument, Path lockDirectory, Duration timeout) {
+        String[] parts = restartArgument.substring(RESTART_LOCK_PREFIX.length()).split(":", -1);
+        if (parts.length != 3 || !parts[0].matches("\\.restart-[0-9a-fA-F-]{36}\\.lock")) {
+            throw new IllegalArgumentException("Invalid restart lock argument");
+        }
+        long ownerPid;
+        long ownerStartedAt;
+        try {
+            ownerPid = Long.parseLong(parts[1]);
+            ownerStartedAt = Long.parseLong(parts[2]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid restart process identity", e);
+        }
+        if (ownerPid <= 0 || ownerStartedAt <= 0) {
+            throw new IllegalArgumentException("Invalid restart process identity");
+        }
+        Path lockPath = lockDirectory.resolve(parts[0]);
+        log.info("Waiting for previous instance to release restart lock {}", lockPath);
+        try (FileChannel channel = FileChannel.open(lockPath, StandardOpenOption.WRITE)) {
+            FileLock acquired = tryRestartLockUntil(channel, timeout);
+            if (acquired == null) {
+                log.warn("Restart lock still held after {} seconds; terminating previous instance PID {}",
+                        timeout.toSeconds(), ownerPid);
+                terminateRestartOwner(ownerPid, ownerStartedAt);
+                acquired = tryRestartLockUntil(channel, RESTART_KILL_TIMEOUT);
+            }
+            if (acquired == null) {
+                throw new IllegalStateException("Previous instance did not release restart lock " + lockPath);
+            }
+            try (FileLock ignored = acquired) {
+                log.info("Previous instance released restart lock {}", lockPath);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not wait for previous instance", e);
+        }
+        try {
+            Files.deleteIfExists(lockPath);
+        } catch (IOException e) {
+            log.warn("Could not remove restart lock {}", lockPath, e);
+        }
+    }
+
+    private static FileLock tryRestartLockUntil(FileChannel channel, Duration timeout) {
+        long deadline = System.nanoTime() + timeout.toNanos();
+        while (true) {
+            try {
+                FileLock acquired = channel.tryLock();
+                if (acquired != null) {
+                    return acquired;
+                }
+            } catch (OverlappingFileLockException e) {
+                // The previous instance may be another lock holder in this JVM during tests.
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not acquire restart lock", e);
+            }
+            if (System.nanoTime() >= deadline) {
+                return null;
+            }
+            try {
+                TimeUnit.MILLISECONDS.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Interrupted while waiting for restart lock", e);
+            }
+        }
+    }
+
+    private static void terminateRestartOwner(long pid, long startedAtMillis) {
+        ProcessHandle owner = ProcessHandle.of(pid)
+                .orElseThrow(() -> new IllegalStateException("Previous instance PID " + pid + " is not visible"));
+        long actualStartedAt = owner.info().startInstant()
+                .orElseThrow(() -> new IllegalStateException("Cannot verify previous instance PID " + pid))
+                .toEpochMilli();
+        if (pid == ProcessHandle.current().pid() || actualStartedAt != startedAtMillis) {
+            throw new IllegalStateException("Restart process identity changed; refusing to kill PID " + pid);
+        }
+        if (owner.isAlive() && !owner.destroyForcibly()) {
+            throw new IllegalStateException("Could not terminate previous instance PID " + pid);
+        }
+    }
+
+    /**
+     * Check whether a startup argument identifies a restart lock.
+     *
+     * @param argument startup argument to inspect
+     * @return true if the argument contains a restart lock file name
+     */
+    static boolean isRestartLockArgument(String argument) {
+        return argument.startsWith(RESTART_LOCK_PREFIX);
+    }
+
+    /**
+     * Writes the active profile name to a file if certain conditions are met.
+     *
+     * @param profileToUse write profilename to file, useful for systemctl restart
+     */
+    private static void writeProfileFile(String profileToUse) {
+        if (profileToUse != null && !profileToUse.isEmpty() && !LabelKey.DEFAULT.equals(profileToUse) && !CommonUtility.getWord(LabelKey.DEFAULT).equals(profileToUse)) {
+            new StorageManager().writeStartProfileFile(profileToUse);
         }
     }
 
@@ -226,9 +455,6 @@ public final class NativeExecutor {
             execCommand.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
             execCommand.add(Constants.JAR_PARAM);
             execCommand.add(System.getProperty(Constants.JAVA_COMMAND).split("\\s+")[0]);
-        }
-        if (NativeExecutor.isRunningOnSandbox()) {
-            execCommand.add(Constants.RESTART_DELAY);
         }
     }
 
@@ -272,7 +498,7 @@ public final class NativeExecutor {
      * @return if it's Wayland
      */
     public static boolean isWayland() {
-        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
+        return isLinux() && System.getenv(EnvConstants.DISPLAY_MANAGER_CHK) != null && System.getenv(EnvConstants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
     }
 
     /**
@@ -281,7 +507,7 @@ public final class NativeExecutor {
      * @return if it's Hyprland
      */
     public static boolean isHyprland() {
-        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_HYPRLAND_CHK) != null;
+        return isLinux() && System.getenv(EnvConstants.DISPLAY_MANAGER_HYPRLAND_CHK) != null;
     }
 
     /**
@@ -299,7 +525,7 @@ public final class NativeExecutor {
      * @return if it's Flatpak
      */
     public static boolean isFlatpak() {
-        return System.getenv(Constants.FLATPAK_ID) != null;
+        return System.getenv(EnvConstants.FLATPAK_ID) != null;
     }
 
     /**
@@ -308,7 +534,7 @@ public final class NativeExecutor {
      * @return if it's Snap
      */
     public static boolean isSnap() {
-        return System.getenv(Constants.SNAP_NAME) != null;
+        return System.getenv(EnvConstants.SNAP_NAME) != null && System.getenv(EnvConstants.SNAP_NAME).equals("fireflyluciferin");
     }
 
 
@@ -339,10 +565,13 @@ public final class NativeExecutor {
     public static boolean isSystemTraySupported() {
         boolean supported = false;
         Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
-        if (MainSingleton.getInstance() != null
-                && MainSingleton.getInstance().config != null
-                && MainSingleton.getInstance().config.getTrayPreference() != null) {
-            trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+        if (MainSingleton.getInstance() != null) {
+            if (MainSingleton.getInstance().isHeadlessMode()) {
+                return false;
+            }
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getTrayPreference() != null) {
+                trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+            }
         }
         switch (trayPreference) {
             case AUTO ->
@@ -388,22 +617,58 @@ public final class NativeExecutor {
      * Gracefully exit the app, this method is called manually.
      */
     public static void exit() {
-        if (MainSingleton.getInstance().RUNNING) {
-            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+        if (!shutdownState.compareAndSet(ShutdownState.RUNNING, ShutdownState.EXITING)
+                && !shutdownState.compareAndSet(ShutdownState.RESTARTING, ShutdownState.EXITING)) {
+            return;
         }
-        if (MainSingleton.getInstance().serial != null) {
-            SerialManager sm = new SerialManager();
-            sm.closeSerial();
+        try {
+            if (MainSingleton.getInstance().RUNNING) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+            }
+            if (MainSingleton.getInstance().serial != null) {
+                SerialManager sm = new SerialManager();
+                sm.closeSerial();
+            }
+            log.info(Constants.CLEAN_EXIT);
+            NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
+            exitOtherInstances();
+            AudioSingleton.getInstance().RUNNING_AUDIO = false;
+        } catch (RuntimeException e) {
+            log.error("Error during shutdown", e);
+        } finally {
+            if (GuiSingleton.getInstance().getGrabberManager() != null) {
+                GuiSingleton.getInstance().getGrabberManager().shutdownCaptureScheduler();
+            }
+            MainSingleton.getInstance().exitTriggered = true;
+            CommonUtility.delaySeconds(() -> {
+                try {
+                    if (!MainSingleton.getInstance().restartOnly) {
+                        lastWill();
+                    }
+                } catch (RuntimeException | Error e) {
+                    log.error("Error during shutdown cleanup", e);
+                }
+                System.exit(0);
+            }, 2);
         }
-        MainSingleton.getInstance().exitTriggered = true;
-        log.info(Constants.CLEAN_EXIT);
-        NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
-        exitOtherInstances();
-        AudioSingleton.getInstance().RUNNING_AUDIO = false;
-        CommonUtility.delaySeconds(() -> {
-            lastWill();
-            System.exit(0);
-        }, 2);
+    }
+
+    /**
+     * Native capture or network cleanup can block indefinitely. Only the restarting JVM is halted.
+     */
+    private static void startRestartExitWatchdog() {
+        Thread watchdog = new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(RESTART_EXIT_TIMEOUT_SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            log.error("Restart shutdown timed out; forcing this instance to exit");
+            Runtime.getRuntime().halt(0);
+        }, "luciferin-restart-exit-watchdog");
+        watchdog.setDaemon(true);
+        watchdog.start();
     }
 
     /**
@@ -478,6 +743,30 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if HDR is active
+     */
+    public static boolean isHdrActive() {
+        if (isWindows()) {
+            try {
+                String baseKey = Constants.REGISTRY_HDR_KEY_PATH;
+                String[] subKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, baseKey);
+                for (String monitorKey : subKeys) {
+                    String fullKey = baseKey + "\\" + monitorKey;
+                    if (Advapi32Util.registryValueExists(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL)) {
+                        int hdrEnabled = Advapi32Util.registryGetIntValue(WinReg.HKEY_LOCAL_MACHINE, fullKey, Constants.REGISTRY_HDR_VAL);
+                        if (hdrEnabled == 1) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("HDR registry check failed", e);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Single Instruction Multiple Data - Advanced Vector Extensions
      * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
      */
@@ -517,23 +806,27 @@ public final class NativeExecutor {
                 nightLightEnabled = true;
             }
         } else if (NativeExecutor.isLinux()) {
-            try {
-                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-                Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
-                if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
-                    nightLightEnabled = true;
+            try (DBusConnection connection = DBusConnectionBuilder.forSessionBus().build()) {
+                try {
+                    Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
+                    if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
+                        nightLightEnabled = true;
+                    }
+                } catch (Exception e) {
+                    log.debug("KDE nightlight DBus check failed", e);
                 }
-                connection.close();
-            } catch (Exception ignored) {
-            }
-            try {
-                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-                Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
-                if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
-                    nightLightEnabled = true;
+                if (!nightLightEnabled) {
+                    try {
+                        Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
+                        if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
+                            nightLightEnabled = true;
+                        }
+                    } catch (Exception e) {
+                        log.debug("GNOME nightlight DBus check failed", e);
+                    }
                 }
-                connection.close();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.debug("DBus session bus connection failed", e);
             }
         }
         return nightLightEnabled;

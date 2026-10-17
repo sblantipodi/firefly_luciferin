@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GuiManager;
 
 import java.awt.*;
@@ -93,6 +94,8 @@ public class MainSingleton {
     public ResourceBundle bundle;
     public String profileArg;
     public HostServices hostServices;
+    // Updated after mDNS registration and hostname conflict negotiation.
+    public volatile String webInterfaceUrl = Constants.HTTP + "localhost:" + Constants.CONFIG_SERVER_DEFAULT_PORT + "/";
     public boolean closeOtherInstaces = false;
     public int wifiStrength = 0;
     public int ldrStrength = 0;
@@ -106,6 +109,8 @@ public class MainSingleton {
     public int cpuLatencyBench = 0;
     public boolean restartNeeded = false;
     public String improvActive = "";
+    public boolean hdrActive;
+    public boolean headlessMode = false;
 
 }
 

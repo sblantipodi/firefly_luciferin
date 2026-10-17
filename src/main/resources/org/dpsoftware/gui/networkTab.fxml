@@ -3,30 +3,30 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="455.0" prefWidth="420.0"
             xmlns="http://javafx.com/javafx/17.0.12" fx:controller="org.dpsoftware.gui.controllers.NetworkTabController">
 
 
-    <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0"
-              prefWidth="420.0">
+    <GridPane prefHeight="425.0" prefWidth="420.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0"/>
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0"
                                prefWidth="202.66666666666669"/>
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="ALWAYS"/>
+            <RowConstraints minHeight="35.0" prefHeight="35.0" maxHeight="35.0" vgrow="NEVER"/>
         </rowConstraints>
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            <Insets bottom="16.0" left="20.0" right="20.0" top="20.0"/>
         </padding>
 
 
@@ -49,7 +49,8 @@
         <CheckBox fx:id="mqttStream" mnemonicParsing="false" onMouseClicked="#saveButtonHover" selected="true"
                   GridPane.columnIndex="1" GridPane.halignment="LEFT"/>
         <Button fx:id="saveMQTTButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save"
-                GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8"/>
+                GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8"
+                GridPane.valignment="BOTTOM"/>
         <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="200.0" GridPane.columnIndex="1"
                   GridPane.halignment="RIGHT"/>
         <Label text="%fxml.mqtttab.mqttdiscoverytopic" wrapText="true" GridPane.rowIndex="7"/>
@@ -65,7 +66,7 @@
                 GridPane.rowIndex="7"/>
         <TextField fx:id="mqttDiscoveryTopic" maxWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
         <Button fx:id="programDeviceButton" mnemonicParsing="false" onMouseClicked="#improvWiFiDialog"
-                text="%fxml.mqtttab.provision.device" GridPane.rowIndex="8"/>
+                text="%fxml.mqtttab.provision.device" GridPane.rowIndex="8" GridPane.valignment="BOTTOM"/>
 
     </GridPane>
 
