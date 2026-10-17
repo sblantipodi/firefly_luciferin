@@ -169,7 +169,7 @@ your phone.
 Luciferin can be easily integrated
 in [Home Assistant](https://github.com/sblantipodi/toremove/wiki/Home-Automation-configs).  
 <br>
-<img align="center" width="800" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/ha_luciferin.jpg?raw=true">
+<img align="center" width="800" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ha_luciferin.jpg?raw=true">
 
 ## Credits
 
