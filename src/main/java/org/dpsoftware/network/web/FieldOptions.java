@@ -231,13 +231,14 @@ public record FieldOptions(List<Option> options, String type) {
     }
 
     /**
-     * Build the map of localized labels for every configuration field, using the current application locale.
+     * Builds the labels for configuration fields and web interface controls in the current application locale.
+     * Includes the live preview and LED layout toggle labels used by the browser.
      *
-     * @return map of configuration field name to its localized label
+     * @return map of field names and web control keys to their localized labels
      */
     public static Map<String, String> getFieldLabels() {
         Map<String, String> labels = new LinkedHashMap<>();
-        for (String key : List.of("saveSettings", "showPreview", "hidePreview", "newProfileName",
+        for (String key : List.of("saveSettings", "showPreview", "hidePreview", "showLedLayout", "hideLedLayout", "newProfileName",
                 "addProfile", "profileHelp", "openLog", "logLevel", "restartConfirm", "settingsSaved",
                 "wholeNumber", "validGroup", "profilePrefix", "collectError",
                 "device.reachable", "device.unreachable")) {

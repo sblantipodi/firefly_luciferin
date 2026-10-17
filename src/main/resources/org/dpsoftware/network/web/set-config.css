@@ -454,22 +454,26 @@ body.server-down > :not(#offlineOverlay) {
 
 /* Live preview button, base (off) state: light grey. The .active class (added by
    JS while the preview is running) turns it green, the :hover states darken a bit. */
-#showLivePreview {
+#showLivePreview,
+#showLedLayout {
     background-color: lightgrey;
     border: 0;
     color: #fff;
     font-weight: bold;
 }
 
-#showLivePreview:hover {
+#showLivePreview:hover,
+#showLedLayout:hover {
     background-color: #b3b3b3;
 }
 
-#showLivePreview.active {
+#showLivePreview.active,
+#showLedLayout.active {
     background-color: #28a745;
 }
 
-#showLivePreview.active:hover {
+#showLivePreview.active:hover,
+#showLedLayout.active:hover {
     background-color: #1e7e34;
 }
 
@@ -488,7 +492,28 @@ body.server-down > :not(#offlineOverlay) {
 
 #webrtcPreview.show,
 #screenshot.show {
+    display: block;
+}
+
+#livePreviewFrame {
+    position: relative;
     display: inline-block;
+    max-width: 100%;
+    vertical-align: top;
+}
+
+#ledLayout {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#ledLayout[hidden],
+#showLedLayout[hidden] {
+    display: none;
 }
 
 .live-preview-fallback-notice {

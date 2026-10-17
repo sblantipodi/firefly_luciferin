@@ -26,8 +26,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -54,6 +56,24 @@ public class LEDCoordinate {
     private boolean active = true;
     private boolean groupedLed;
     private String zone;
+
+    /**
+     * Converts a LED matrix key to the physical strip number displayed by the desktop and web layouts.
+     * Applies the configured strip orientation and starting offset, wrapping the result into
+     * the range {@code 1..totalLeds}.
+     *
+     * @param config    configuration providing the strip orientation and starting offset
+     * @param key       one-based LED matrix key, including grouped LED entries
+     * @param totalLeds total number of LEDs in the numbering domain; must be positive
+     * @return one-based physical LED number after applying orientation and offset
+     * @throws ArithmeticException if {@code totalLeds} is zero
+     */
+    public static int displayNumber(Configuration config, int key, int totalLeds) {
+        int offset = config.getLedStartOffset();
+        boolean clockwise = Enums.Orientation.CLOCKWISE.equals(
+                LocalizedEnum.fromBaseStr(Enums.Orientation.class, config.getOrientation()));
+        return Math.floorMod(clockwise ? totalLeds - key - offset : key - offset - 1, totalLeds) + 1;
+    }
 
     public LEDCoordinate(int x, int y, int width, int height, boolean groupedLed, String zone) {
         this.x = x;

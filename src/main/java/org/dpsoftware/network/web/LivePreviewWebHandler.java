@@ -23,7 +23,9 @@ package org.dpsoftware.network.web;
 
 import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.config.InstanceConfigurer;
@@ -36,10 +38,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
+import java.util.List;
 
 /**
- * Handles the live preview endpoints: toggling capture and its WebRTC signaling server, with an
- * idle watchdog that automatically turns the preview off when the web client becomes inactive.
+ * Handles live preview capture, screenshots, and LED layout metadata for the web interface.
+ * Manages the WebRTC signaling server and an idle watchdog that turns the preview off
+ * when the web client becomes inactive.
  */
 @Slf4j
 public class LivePreviewWebHandler {
@@ -60,6 +64,66 @@ public class LivePreviewWebHandler {
      */
     public LivePreviewWebHandler(WebRtcSignalingServer webRtcSignalingServer) {
         this.webRtcSignalingServer = webRtcSignalingServer;
+    }
+
+    /**
+     * Builds the overlay metadata from the currently selected LED matrix.
+     * Omits grouped entries that duplicate another LED's capture area, but preserves inactive
+     * zones so the browser can distinguish enabled and disabled tiles. Coordinates and frame
+     * dimensions remain in source pixels, independently of preview quality and OS scaling.
+     *
+     * @param config runtime configuration containing the active matrix and strip numbering settings
+     * @return source frame dimensions and the visible tiles with their physical LED numbers
+     */
+    static LedLayout ledLayout(Configuration config) {
+        var matrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
+        var leds = matrix.entrySet().stream()
+                .filter(entry -> !entry.getValue().isGroupedLed())
+                .map(entry -> {
+                    var coordinate = entry.getValue();
+                    return new PreviewLed(LEDCoordinate.displayNumber(config, entry.getKey(), matrix.size()),
+                            coordinate.getX(), coordinate.getY(), coordinate.getWidth(), coordinate.getHeight(),
+                            coordinate.isActive(), coordinate.getZone());
+                }).toList();
+        return new LedLayout(config.getScreenResX(), config.getScreenResY(), leds);
+    }
+
+    /**
+     * Handles {@code GET /screenshot/leds}, returning the current LED layout as JSON.
+     * Reads the runtime configuration on every request so automatic aspect ratio changes
+     * are reflected in the overlay. Disables response caching without enabling capture
+     * or refreshing the live preview idle timer.
+     *
+     * @param exchange HTTP exchange receiving the layout response
+     * @throws IOException if the layout cannot be serialized or the response cannot be written
+     */
+    public void handleGetLedLayout(HttpExchange exchange) throws IOException {
+        exchange.getResponseHeaders().set("Cache-Control", "no-store");
+        HttpResponses.sendJson(exchange, ledLayout(MainSingleton.getInstance().config));
+    }
+
+    /**
+     * Describes a single capture area drawn over the live preview.
+     *
+     * @param number one-based physical LED number after applying orientation and starting offset
+     * @param x      horizontal position of the area's left edge in source pixels
+     * @param y      vertical position of the area's top edge in source pixels
+     * @param width  capture area width in source pixels
+     * @param height capture area height in source pixels
+     * @param active whether this capture area is enabled
+     * @param zone   configured zone name
+     */
+    record PreviewLed(int number, int x, int y, int width, int height, boolean active, String zone) {
+    }
+
+    /**
+     * Supplies the coordinate space and LED tiles used to scale the browser overlay.
+     *
+     * @param width  source frame width in pixels
+     * @param height source frame height in pixels
+     * @param leds   tiles in matrix order, excluding duplicate grouped entries
+     */
+    record LedLayout(int width, int height, List<PreviewLed> leds) {
     }
 
     /**

@@ -358,23 +358,27 @@ body.server-down > :not(#offlineOverlay) {
 }
 
 /* The .active class is added by JS while the live preview is running. */
-#showLivePreview {
+#showLivePreview,
+#showLedLayout {
     background-color: var(--surface-hover);
     border: 0;
     color: var(--text);
     font-weight: bold;
 }
 
-#showLivePreview:hover {
+#showLivePreview:hover,
+#showLedLayout:hover {
     background-color: #53616b;
 }
 
-#showLivePreview.active {
+#showLivePreview.active,
+#showLedLayout.active {
     background-color: var(--warm);
     color: var(--text);
 }
 
-#showLivePreview.active:hover {
+#showLivePreview.active:hover,
+#showLedLayout.active:hover {
     background-color: #ffae42;
 }
 
@@ -393,7 +397,7 @@ body.server-down > :not(#offlineOverlay) {
 
 #webrtcPreview.show,
 #screenshot.show {
-    display: inline-block;
+    display: block;
 }
 
 .live-preview-fallback-notice {

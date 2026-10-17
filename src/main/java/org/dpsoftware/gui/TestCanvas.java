@@ -52,7 +52,6 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
@@ -251,30 +250,21 @@ public class TestCanvas {
     }
 
     /**
-     * Draw LED label on the canvas
+     * Builds the numbered label displayed on a LED tile using
+     * {@link LEDCoordinate#displayNumber(Configuration, int, int)}.
+     * Uses the runtime LED count, or the current monitor's matrix size when multiple screens
+     * share a single device, so numbering stays within the appropriate strip segment.
      *
-     * @param conf in memory config
-     * @param key  led matrix key
+     * @param conf configuration providing the strip orientation and starting offset
+     * @param key  one-based LED matrix key
+     * @return physical LED number prefixed with {@code #}
      */
     public String drawNumLabel(Configuration conf, Integer key) {
-        int lenNumInt;
         int totalLedNumber = MainSingleton.getInstance().ledNumber;
         if (MainSingleton.getInstance().config != null && CommonUtility.isSingleDeviceMultiScreen()) {
             totalLedNumber = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix()).size();
         }
-        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
-            lenNumInt = (totalLedNumber - (key - 1) - MainSingleton.getInstance().config.getLedStartOffset());
-            if (lenNumInt <= 0) {
-                lenNumInt = (totalLedNumber + lenNumInt);
-            }
-        } else {
-            if (key <= MainSingleton.getInstance().config.getLedStartOffset()) {
-                lenNumInt = (totalLedNumber - (MainSingleton.getInstance().config.getLedStartOffset() - (key)));
-            } else {
-                lenNumInt = ((key) - MainSingleton.getInstance().config.getLedStartOffset());
-            }
-        }
-        return "#" + lenNumInt;
+        return "#" + LEDCoordinate.displayNumber(conf, key, totalLedNumber);
     }
 
     /**

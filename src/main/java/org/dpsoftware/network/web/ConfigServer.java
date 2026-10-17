@@ -470,6 +470,7 @@ public class ConfigServer {
                 server.createContext(Constants.FPS_ENDPOINT, withGuard(this::handleGetFps, GET_METHOD));
                 server.createContext(Constants.LOG_ENDPOINT, withGuard(this::handleGetLog, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENDPOINT, withGuard(livePreviewWebHandler::handleGetScreenshot, GET_METHOD));
+                server.createContext("/screenshot/leds", withGuard(livePreviewWebHandler::handleGetLedLayout, GET_METHOD));
                 server.createContext(Constants.SCREENSHOT_ENABLE_ENDPOINT, withGuard(livePreviewWebHandler::handleEnableScreenshot, POST_METHOD));
                 server.createContext(Constants.LIST_PROFILES_ENDPOINT, withGuard(profileHandler::handleListProfiles, GET_METHOD));
                 server.createContext(Constants.ACTIVATE_PROFILE_ENDPOINT, withGuard(profileHandler::handleActivateProfile, POST_METHOD));
