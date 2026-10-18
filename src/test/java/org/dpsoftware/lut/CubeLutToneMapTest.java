@@ -64,6 +64,125 @@ class CubeLutToneMapTest {
         }
     }
 
+    @Test
+    void interpolationMatchesReferenceForFractionalAndClampedInputs() throws Exception {
+        int size = 5;
+        float[] data = new float[size * size * size * 3];
+        java.util.Random random = new java.util.Random(17);
+        for (int i = 0; i < data.length; i++) {
+            data[i] = random.nextFloat() * 1.4f - 0.2f;
+        }
+        var constructor = CubeLutToneMap.ToneMapper.class.getDeclaredConstructor(float[].class, int.class);
+        constructor.setAccessible(true);
+        var mapper = constructor.newInstance(data, size);
+        float[] actual = new float[3];
+        for (int sample = 0; sample < 2000; sample++) {
+            float r = sample == 0 ? 0 : random.nextFloat() * 355 - 50;
+            float g = sample == 0 ? 255 : random.nextFloat() * 355 - 50;
+            float b = random.nextFloat() * 355 - 50;
+            mapper.lookup(r, g, b, actual);
+            float[] coordinates = {Math.clamp(r, 0, 255) / 255f * (size - 1),
+                    Math.clamp(g, 0, 255) / 255f * (size - 1),
+                    Math.clamp(b, 0, 255) / 255f * (size - 1)};
+            for (int ch = 0; ch < 3; ch++) {
+                float expected = 0;
+                for (int z = 0; z < 2; z++) {
+                    for (int y = 0; y < 2; y++) {
+                        for (int x = 0; x < 2; x++) {
+                            int ix = Math.min((int) coordinates[0] + x, size - 1);
+                            int iy = Math.min((int) coordinates[1] + y, size - 1);
+                            int iz = Math.min((int) coordinates[2] + z, size - 1);
+                            float tx = coordinates[0] - (int) coordinates[0];
+                            float ty = coordinates[1] - (int) coordinates[1];
+                            float tz = coordinates[2] - (int) coordinates[2];
+                            expected += data[(iz * size * size + iy * size + ix) * 3 + ch]
+                                    * (x == 0 ? 1 - tx : tx) * (y == 0 ? 1 - ty : ty)
+                                    * (z == 0 ? 1 - tz : tz);
+                        }
+                    }
+                }
+                org.junit.jupiter.api.Assertions.assertEquals(Math.clamp(expected, 0, 1) * 255,
+                        actual[ch], 0.0001f);
+            }
+        }
+    }
+
+    @Test
+    void cachedByteCoordinatesMatchOriginalFloatInterpolationExactly() throws Exception {
+        var constructor = CubeLutToneMap.ToneMapper.class.getDeclaredConstructor(float[].class, int.class);
+        constructor.setAccessible(true);
+        java.util.Random random = new java.util.Random(29);
+        float[] actual = new float[3];
+        float[] fractional = new float[3];
+        for (int size : new int[]{1, 2, 5, 17, 33, 65}) {
+            float[] data = new float[size * size * size * 3];
+            for (int i = 0; i < data.length; i++) {
+                data[i] = random.nextFloat() * 1.4f - 0.2f;
+            }
+            var mapper = constructor.newInstance(data, size);
+            for (int value = 0; value < 256; value++) {
+                // Cover every possible channel coordinate, including all combinations of endpoints.
+                for (int edge : new int[]{0, 255, value}) {
+                    assertOriginalLookup(mapper, data, size, value, edge, edge, actual, fractional);
+                    assertOriginalLookup(mapper, data, size, edge, value, edge, actual, fractional);
+                    assertOriginalLookup(mapper, data, size, edge, edge, value, actual, fractional);
+                }
+            }
+            for (int sample = 0; sample < 2000; sample++) {
+                int r = random.nextInt(355) - 50;
+                int g = random.nextInt(355) - 50;
+                int b = random.nextInt(355) - 50;
+                assertOriginalLookup(mapper, data, size, r, g, b, actual, fractional);
+                float rf = r + random.nextFloat();
+                float gf = g + random.nextFloat();
+                float bf = b + random.nextFloat();
+                mapper.lookup(rf, gf, bf, fractional);
+                assertArrayEquals(originalLookup(data, size, rf, gf, bf), fractional);
+            }
+        }
+        var disabled = constructor.newInstance(null, 0);
+        disabled.lookup(-25, 128, 300, actual);
+        assertArrayEquals(new float[]{-25, 128, 300}, actual);
+    }
+
+    private static void assertOriginalLookup(CubeLutToneMap.ToneMapper mapper, float[] data, int size,
+                                             int r, int g, int b, float[] actual, float[] fractional) {
+        mapper.lookup(r, g, b, actual);
+        mapper.lookup((float) r, (float) g, (float) b, fractional);
+        float[] expected = originalLookup(data, size, r, g, b);
+        assertArrayEquals(expected, actual);
+        assertArrayEquals(expected, fractional);
+    }
+
+    // Independent copy of the original interpolation and indexing, preserving its operation order.
+    private static float[] originalLookup(float[] data, int size, float r, float g, float b) {
+        float fx = Math.clamp(r, 0, 255) / 255f * (size - 1);
+        float fy = Math.clamp(g, 0, 255) / 255f * (size - 1);
+        float fz = Math.clamp(b, 0, 255) / 255f * (size - 1);
+        int x0 = Math.min((int) fx, size - 1), y0 = Math.min((int) fy, size - 1), z0 = Math.min((int) fz, size - 1);
+        int x1 = Math.min(x0 + 1, size - 1), y1 = Math.min(y0 + 1, size - 1), z1 = Math.min(z0 + 1, size - 1);
+        float tx = fx - x0, ty = fy - y0, tz = fz - z0;
+        float[] out = new float[3];
+        for (int ch = 0; ch < 3; ch++) {
+            float c000 = data[(z0 * size * size + y0 * size + x0) * 3 + ch];
+            float c100 = data[(z0 * size * size + y0 * size + x1) * 3 + ch];
+            float c010 = data[(z0 * size * size + y1 * size + x0) * 3 + ch];
+            float c110 = data[(z0 * size * size + y1 * size + x1) * 3 + ch];
+            float c001 = data[(z1 * size * size + y0 * size + x0) * 3 + ch];
+            float c101 = data[(z1 * size * size + y0 * size + x1) * 3 + ch];
+            float c011 = data[(z1 * size * size + y1 * size + x0) * 3 + ch];
+            float c111 = data[(z1 * size * size + y1 * size + x1) * 3 + ch];
+            float c00 = c000 * (1 - tx) + c100 * tx;
+            float c10 = c010 * (1 - tx) + c110 * tx;
+            float c01 = c001 * (1 - tx) + c101 * tx;
+            float c11 = c011 * (1 - tx) + c111 * tx;
+            float c0 = c00 * (1 - ty) + c10 * ty;
+            float c1 = c01 * (1 - ty) + c11 * ty;
+            out[ch] = Math.clamp(c0 * (1 - tz) + c1 * tz, 0, 1) * 255;
+        }
+        return out;
+    }
+
     // --- lookup ---
 
     @Test

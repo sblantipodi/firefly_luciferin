@@ -175,15 +175,28 @@ public class ImageProcessor {
      * @return corrected color in floating point, ready for further float based processing
      */
     public static ColorFloat correctColors(int r, int g, int b, int pickNumber, boolean active) {
-        // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
-        ColorFloat adjusted = new ColorFloat(
-                (float) r / pickNumber,
-                (float) g / pickNumber,
-                (float) b / pickNumber
-        );
-        // HDR to SDR tone mapping via 3D LUT
-        float[] sdr = CubeLutToneMap.lookup(adjusted.r(), adjusted.g(), adjusted.b());
-        adjusted = new ColorFloat(sdr[0], sdr[1], sdr[2]);
+        CubeLutToneMap.ToneMapper mapper = CubeLutToneMap.snapshot();
+        return correctColors(r, g, b, pickNumber, active, mapper, mapper.isAvailable() ? new float[3] : null);
+    }
+
+    /**
+     * Capture-loop variant that keeps one LUT snapshot per frame and reuses a caller-owned RGB buffer.
+     * The scratch array must have three elements when the LUT is enabled and must not be shared by
+     * concurrent callers. Returned colors do not retain the scratch array.
+     */
+    static ColorFloat correctColors(int r, int g, int b, int pickNumber, boolean active,
+                                    CubeLutToneMap.ToneMapper mapper, float[] lutOutput) {
+        // Preserve fractional LED averages; only preview pixels use the integer LUT path.
+        float red = (float) r / pickNumber;
+        float green = (float) g / pickNumber;
+        float blue = (float) b / pickNumber;
+        ColorFloat adjusted;
+        if (mapper.isAvailable()) {
+            mapper.lookup(red, green, blue, lutOutput);
+            adjusted = new ColorFloat(lutOutput[0], lutOutput[1], lutOutput[2]);
+        } else {
+            adjusted = new ColorFloat(red, green, blue);
+        }
         // Saturate colors and shift bits if needed, apply HSL correcction
         adjusted = manageColorsFloat(adjusted);
         // Apply gamma correction

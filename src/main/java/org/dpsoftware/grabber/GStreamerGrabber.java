@@ -65,6 +65,8 @@ public class GStreamerGrabber {
     // Optional WebRTC streamer that consumes the captured frame when a live preview session is active.
     public static volatile WebRtcStreamer webRtcStreamer;
     private final int[] reusableRgbTotals = new int[4];
+    // Used only while bufferLock is held, just like reusableRgbTotals.
+    private final float[] reusableLutOutput = new float[3];
     private final FrameGenerator frameGenerator;
     private long lastCaptureTime = 0;
     //Frozen snapshot of the last captured frame
@@ -270,6 +272,8 @@ public class GStreamerGrabber {
             rgbBuffer.order(java.nio.ByteOrder.nativeOrder());
             int bufferLimit = rgbBuffer.limit();
             int pixelIndex = 0;
+            CubeLutToneMap.ToneMapper mapper = CubeLutToneMap.snapshot();
+            float[] mappedColor = new float[3];
             for (int y = 0; y < height; y++) {
                 int rowStart = Math.min(y * bytesPerRow, bufferLimit - width * 4);
                 for (int x = 0; x < width; x++) {
@@ -278,8 +282,9 @@ public class GStreamerGrabber {
                     int g = rgbBuffer.get(offset + 1) & 0xFF;
                     int r = rgbBuffer.get(offset + 2) & 0xFF;
                     // HDR to SDR tone mapping via 3D LUT
-                    int[] tonedMappedColor = CubeLutToneMap.lookup(r, g, b);
-                    rgbArray[pixelIndex++] = (0xFF << 24) | (tonedMappedColor[0] << 16) | (tonedMappedColor[1] << 8) | tonedMappedColor[2];
+                    mapper.lookup(r, g, b, mappedColor);
+                    rgbArray[pixelIndex++] = (0xFF << 24) | (Math.round(mappedColor[0]) << 16)
+                            | (Math.round(mappedColor[1]) << 8) | Math.round(mappedColor[2]);
                 }
                 // skip padding bytes (stride)
                 rgbBuffer.position(Math.min(rowStart + width * 4 + stridePixels * 4, bufferLimit));
@@ -503,6 +508,8 @@ public class GStreamerGrabber {
         private ColorFloat[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
             ColorFloat[] leds = new ColorFloat[ledMatrix.size()];
             int[] rgbTotals = reusableRgbTotals;
+            CubeLutToneMap.ToneMapper mapper = CubeLutToneMap.snapshot();
+            float[] lutOutput = reusableLutOutput;
             MainSingleton main = MainSingleton.getInstance();
             if (log.isDebugEnabled() || main.isCpuLatencyBenchRunning()) {
                 SimdBenchmark.startSimdTime = System.nanoTime();
@@ -546,7 +553,7 @@ public class GStreamerGrabber {
                         g = rgbTotals[1];
                         b = rgbTotals[2];
                         pickNumber = rgbTotals[3];
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive());
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive(), mapper, lutOutput);
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
@@ -568,7 +575,7 @@ public class GStreamerGrabber {
                                 pickNumber++;
                             }
                         }
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive());
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive(), mapper, lutOutput);
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }

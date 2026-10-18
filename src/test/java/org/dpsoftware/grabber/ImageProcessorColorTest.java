@@ -24,6 +24,8 @@ package org.dpsoftware.grabber;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +64,71 @@ class ImageProcessorColorTest {
     @AfterEach
     void tearDown() {
         mockedMainSingleton.close();
+    }
+
+    @Test
+    void reusableLutBufferPreservesFractionalLedColorsAndPreviousResults() {
+        String previousLut = mockedInstance.config.getCubeLut();
+        boolean previousNightLight = GrabberSingleton.getInstance().isNightLightAuto();
+        mockedInstance.config.setHueMap(ColorCorrectionDialogController.initHSLMap());
+        GrabberSingleton.getInstance().setNightLightAuto(false);
+        try {
+            for (String lut : new String[]{Constants.DISABLED, "HDR to SDR standard.cube", "HDR to SDR high precision.cube"}) {
+                mockedInstance.config.setCubeLut(lut);
+                CubeLutToneMap.refresh();
+                var mapper = CubeLutToneMap.snapshot();
+                float[] scratch = new float[3];
+                java.util.Random random = new java.util.Random(73);
+                ColorFloat first = null;
+                ColorFloat expectedFirst = null;
+                for (int sample = 0; sample < 500; sample++) {
+                    int count = 1 + random.nextInt(500);
+                    int r = random.nextInt(255 * count + 1);
+                    int g = random.nextInt(255 * count + 1);
+                    int b = random.nextInt(255 * count + 1);
+                    // Original pipeline: floating-point averages, LUT, HSL, then gamma.
+                    float[] mapped = CubeLutToneMap.lookup((float) r / count, (float) g / count, (float) b / count);
+                    ColorFloat expected = ImageProcessor.gammaCorrection(ImageProcessor.manageColorsFloat(
+                            new ColorFloat(mapped[0], mapped[1], mapped[2])));
+                    ColorFloat actual = ImageProcessor.correctColors(r, g, b, count, true, mapper, scratch);
+                    assertEquals(expected, actual, lut);
+                    assertEquals(expected, ImageProcessor.correctColors(r, g, b, count, true), lut);
+                    assertEquals(ColorFloat.BLACK, ImageProcessor.correctColors(r, g, b, count, false, mapper, scratch));
+                    if (sample == 0) {
+                        first = actual;
+                        expectedFirst = expected;
+                    }
+                }
+                assertEquals(expectedFirst, first, "Reusing scratch must not mutate a previously returned color");
+                if (!mapper.isAvailable()) {
+                    assertEquals(ImageProcessor.correctColors(1, 2, 3, 7, true),
+                            ImageProcessor.correctColors(1, 2, 3, 7, true, mapper, null));
+                }
+            }
+        } finally {
+            mockedInstance.config.setCubeLut(previousLut);
+            CubeLutToneMap.refresh();
+            GrabberSingleton.getInstance().setNightLightAuto(previousNightLight);
+        }
+    }
+
+    @Test
+    void frameLutSnapshotSurvivesSettingsChange() {
+        String previousLut = mockedInstance.config.getCubeLut();
+        mockedInstance.config.setHueMap(ColorCorrectionDialogController.initHSLMap());
+        try {
+            mockedInstance.config.setCubeLut("HDR to SDR standard.cube");
+            CubeLutToneMap.refresh();
+            var frameMapper = CubeLutToneMap.snapshot();
+            float[] scratch = new float[3];
+            ColorFloat expected = ImageProcessor.correctColors(1001, 1502, 2003, 11, true, frameMapper, scratch);
+            mockedInstance.config.setCubeLut(Constants.DISABLED);
+            CubeLutToneMap.refresh();
+            assertEquals(expected, ImageProcessor.correctColors(1001, 1502, 2003, 11, true, frameMapper, scratch));
+        } finally {
+            mockedInstance.config.setCubeLut(previousLut);
+            CubeLutToneMap.refresh();
+        }
     }
 
     // --- removeBlueAndMakeItWarm ---
