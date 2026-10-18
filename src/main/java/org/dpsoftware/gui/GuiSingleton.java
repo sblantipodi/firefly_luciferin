@@ -68,10 +68,10 @@ public class GuiSingleton {
     public Stage colorDialog;
     // Last TestCanvas instance, reused across toggles to avoid repeatedly tearing down and re-creating JavaFX scenes
     // (orphaned NGCanvas in the render graph + Prism texture pool exhaustion).
-    public TestCanvas testCanvas;
+    public volatile TestCanvas testCanvas;
     // Grabber manager instance, used to read the latest captured RGB frame as a test canvas background
     public volatile org.dpsoftware.grabber.GrabberManager grabberManager;
-    public boolean showLiveCapture = false;
+    public volatile boolean showLiveCapture = false;
 
     /**
      * Identify a device consistently across discovery and update results.

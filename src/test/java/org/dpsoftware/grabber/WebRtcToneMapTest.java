@@ -49,6 +49,55 @@ class WebRtcToneMapTest {
     }
 
     @Test
+    void packsPaddedRowsWithoutChangingCaptureBuffer() {
+        ByteBuffer source = ByteBuffer.allocateDirect(3 * 12);
+        for (int i = 0; i < source.capacity(); i++) source.put(i, (byte) i);
+        source.position(5);
+        ByteBuffer target = ByteBuffer.allocate(28).position(4);
+        WebRtcStreamer.copyPackedPixels(source, target, 2, 3);
+        assertEquals(5, source.position());
+        assertEquals(36, source.limit());
+        assertEquals(28, target.position());
+        for (int row = 0; row < 3; row++) {
+            for (int byteInRow = 0; byteInRow < 8; byteInRow++) {
+                assertEquals((byte) (row * 12 + byteInRow), target.get(4 + row * 8 + byteInRow));
+            }
+        }
+        for (int i = 0; i < source.capacity(); i++) assertEquals((byte) i, source.get(i));
+    }
+
+    @Test
+    void packsUnpaddedRowsAndAcceptsMissingFinalPadding() {
+        byte[] pixels = new byte[24];
+        for (int i = 0; i < pixels.length; i++) pixels[i] = (byte) i;
+        ByteBuffer source = ByteBuffer.wrap(pixels).asReadOnlyBuffer().position(5);
+        ByteBuffer packed = ByteBuffer.allocate(24);
+        WebRtcStreamer.copyPackedPixels(source, packed, 2, 3);
+        assertArrayEquals(pixels, packed.array());
+        assertEquals(5, source.position());
+        // Three rows of two pixels with one padding pixel; last padding pixel is omitted.
+        ByteBuffer padded = ByteBuffer.allocate(32);
+        for (int i = 0; i < 32; i++) padded.put(i, (byte) i);
+        ByteBuffer output = ByteBuffer.allocate(24);
+        WebRtcStreamer.copyPackedPixels(padded, output, 2, 3);
+        for (int row = 0; row < 3; row++) {
+            for (int b = 0; b < 8; b++) assertEquals(padded.get(row * 12 + b), output.get(row * 8 + b));
+        }
+    }
+
+    @Test
+    void rejectsInvalidFrameBeforeWritingAndPreservesPreviewDimensions() {
+        ByteBuffer source = ByteBuffer.allocate(20), target = ByteBuffer.allocate(24);
+        assertThrows(IllegalArgumentException.class, () -> WebRtcStreamer.copyPackedPixels(source, target, 2, 3));
+        assertThrows(IllegalArgumentException.class, () -> WebRtcStreamer.copyPackedPixels(source, target, 0, 3));
+        assertThrows(IllegalArgumentException.class, () -> WebRtcStreamer.copyPackedPixels(source, target, Integer.MAX_VALUE, Integer.MAX_VALUE));
+        assertEquals(0, target.position());
+        assertArrayEquals(new int[]{960, 540}, WebRtcStreamer.previewSize(1920, 1080));
+        assertArrayEquals(new int[]{960, 540}, WebRtcStreamer.previewSize(480, 270));
+        assertArrayEquals(new int[]{720, 540}, WebRtcStreamer.previewSize(640, 480));
+    }
+
+    @Test
     void mapsAllPackedFormatsWithoutChangingAlphaPositionOrSource() {
         var config = MainSingleton.getInstance().config;
         String previous = config.getCubeLut();

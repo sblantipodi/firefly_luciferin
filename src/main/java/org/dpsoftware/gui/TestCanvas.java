@@ -89,6 +89,8 @@ public class TestCanvas {
     GraphicsContext gc;
     Canvas canvas;
     public Stage stage;
+    // Published from the FX thread so capture never needs to read JavaFX window properties.
+    private volatile boolean captureWindowVisible;
     double stageX;
     double stageY;
     int imageHeight, itemsPositionY;
@@ -169,6 +171,7 @@ public class TestCanvas {
         stageX = settingStage.getX();
         stageY = settingStage.getY();
         stage = new Stage();
+        stage.showingProperty().addListener((_, _, showing) -> captureWindowVisible = showing);
         stage.initOwner(settingStage);
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.NONE);
@@ -995,7 +998,7 @@ public class TestCanvas {
         if (!GuiSingleton.getInstance().isShowLiveCapture()) {
             return;
         }
-        if (stage == null || canvas == null) {
+        if (!captureWindowVisible || stage == null || canvas == null) {
             return;
         }
         drawLiveCapture();

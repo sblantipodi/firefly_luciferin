@@ -603,21 +603,23 @@ public class GStreamerGrabber {
             if (!bufferLock.tryLock()) {
                 return;
             }
-            if (GuiSingleton.getInstance().isShowLiveCapture()) {
-                copyRealtimeBufferForLivePreview(rawBuffer);
-            }
-            // Forward the raw frame to the WebRTC streamer only when a live preview session is active.
-            WebRtcStreamer streamer = webRtcStreamer;
-            if (streamer != null) {
-                streamer.pushFrame(rawBuffer, width, height);
-            }
-            if (main.getConfig().isAutoDetectBlackBars()) {
-                if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
-                    GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = false;
-                    ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
-                }
-            }
             try {
+                GuiSingleton gui = GuiSingleton.getInstance();
+                var previewCanvas = gui.testCanvas;
+                if (gui.isShowLiveCapture() && previewCanvas != null && previewCanvas.isCaptureWindowVisible()) {
+                    copyRealtimeBufferForLivePreview(rawBuffer);
+                }
+                // Forward the raw frame to the WebRTC streamer only when a live preview session is active.
+                WebRtcStreamer streamer = webRtcStreamer;
+                if (streamer != null) {
+                    streamer.pushFrame(rawBuffer, width, height);
+                }
+                if (main.getConfig().isAutoDetectBlackBars()) {
+                    if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
+                        GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = false;
+                        ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
+                    }
+                }
                 if (log.isTraceEnabled() || (GuiSingleton.getInstance().isShowLiveCapture() && imageLivePreviewFallback)) {
                     intBufferRgbToImage(width, height, rawBuffer);
                 }

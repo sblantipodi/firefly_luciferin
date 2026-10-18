@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * The pipeline is:
  * appsrc (BGR x-raw, scaled) - videoconvert - queue - vp8enc - rtpvp8pay queue
  * - application/x-rtp,media=video,encoding-name=VP8,payload=97 - webrtcbin
- * The appsrc is fed by pushFrame(ByteBuffer, int, int), called from GStreamerGrabber.handleNewSample.
+ * Capture frames are admitted by pushFrame and prepared on a bounded preview worker before feeding appsrc.
  * The webrtcbin handles the SDP offer (sent to the browser via the signaling server) and ICE.
  * One streamer serves one viewer at a time: calling startSession while a session is active tears down the previous pipeline first.
  */
@@ -58,6 +58,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class WebRtcStreamer {
 
     private volatile Pipeline pipeline;
+    private volatile PreviewFrameDispatcher<PreviewFrame> frameDispatcher;
     private volatile AppSrc appSrc;
     private volatile Element previewCapsFilter;
     private volatile WebRTCBin webRTCBin;
@@ -68,8 +69,6 @@ public class WebRtcStreamer {
     private volatile int captureWidth;
     private volatile int captureHeight;
     private final AtomicBoolean streaming = new AtomicBoolean(false);
-    private final AtomicBoolean firstFrameLogged = new AtomicBoolean(false);
-    private final AtomicBoolean strideLogged = new AtomicBoolean(false);
     private final AtomicBoolean unsupportedLogged = new AtomicBoolean(false);
     private volatile Boolean supported;
     private final AtomicLong sessionGeneration = new AtomicLong();
@@ -122,7 +121,7 @@ public class WebRtcStreamer {
         byteOrder = byteOrder.replace("format=", "");
         this.byteOrder = byteOrder;
         try {
-            pipeline = (Pipeline) Gst.parseLaunch(Constants.GSTREAMER_PIPELINE_WEBRTC);
+            pipeline = createPipeline();
         } catch (Exception e) {
             log.error("Failed to parse WebRTC pipeline: {}", e.getMessage());
             return;
@@ -142,7 +141,7 @@ public class WebRtcStreamer {
             return;
         }
 
-        // Configure the appsrc for push-mode, live, block format. The width/height are left
+        // Configure the appsrc for push-mode, live video. The width/height are left
         // unset on the caps so the negotiated caps follow the actual frames pushed; the byte
         // order format and the fixed 30/1 framerate are set explicitly.
         appSource.set("caps", Caps.fromString(
@@ -165,11 +164,20 @@ public class WebRtcStreamer {
         Bus bus = pipeline.getBus();
         bus.connect((Bus.ERROR) (_, code, message) -> log.error("WebRTC pipeline error: code={}, message={}", code, message));
 
-        streaming.set(true);
-        // The pipeline is NOT started here; it will be started on the first pushFrame,
-        // once the frame dimensions are known and the appsrc caps are set with width/height.
+        frameDispatcher = new PreviewFrameDispatcher<>(FRAME_DURATION_NS, frame -> processFrame(frame, generation));
+        // The worker starts the pipeline after receiving the first frame and setting its dimensions.
         pipelineStarted.set(false);
+        streaming.set(true);
         log.info("WebRTC pipeline ready for session {} (will start on first frame)", session.getId());
+    }
+
+    /**
+     * Creates the configured WebRTC pipeline without starting playback.
+     *
+     * @return the parsed preview pipeline
+     */
+    Pipeline createPipeline() {
+        return (Pipeline) Gst.parseLaunch(Constants.GSTREAMER_PIPELINE_WEBRTC);
     }
 
     /**
@@ -185,6 +193,11 @@ public class WebRtcStreamer {
     }
 
     private static final class WebRtcIceAgent extends GstObject {
+        /**
+         * Wraps the native ICE agent returned by the WebRTC bin.
+         *
+         * @param initializer the native object initialization data
+         */
         private WebRtcIceAgent(Initializer initializer) {
             super(initializer);
         }
@@ -199,7 +212,22 @@ public class WebRtcStreamer {
      * @param height the frame height in pixels
      */
     static void applyLutToneMap(ByteBuffer buffer, int width, int height, String format) {
-        CubeLutToneMap.ToneMapper mapper = CubeLutToneMap.snapshot();
+        applyLutToneMap(buffer, width, height, format, CubeLutToneMap.snapshot());
+    }
+
+    /**
+     * Tone maps a packed preview frame in place using the LUT snapshot associated with that frame.
+     * Preserves the alpha or padding byte and the buffer position; unavailable LUTs and unsupported
+     * pixel formats leave the frame unchanged.
+     *
+     * @param buffer the writable packed frame buffer
+     * @param width the frame width in pixels
+     * @param height the frame height in pixels
+     * @param format the GStreamer packed RGB pixel format
+     * @param mapper the LUT snapshot to apply consistently to all pixels
+     */
+    private static void applyLutToneMap(ByteBuffer buffer, int width, int height, String format,
+                                        CubeLutToneMap.ToneMapper mapper) {
         if (!mapper.isAvailable()) {
             return;
         }
@@ -352,7 +380,11 @@ public class WebRtcStreamer {
      * Stop the WebRTC pipeline and release the resources.
      */
     public synchronized void stop() {
+        streaming.set(false);
         sessionGeneration.incrementAndGet();
+        PreviewFrameDispatcher<PreviewFrame> dispatcher = frameDispatcher;
+        frameDispatcher = null;
+        if (dispatcher != null) dispatcher.close();
         if (pipeline != null) {
             pipeline.setState(State.NULL);
             pipeline = null;
@@ -360,10 +392,7 @@ public class WebRtcStreamer {
         appSrc = null;
         previewCapsFilter = null;
         webRTCBin = null;
-        streaming.set(false);
         pipelineStarted.set(false);
-        firstFrameLogged.set(false);
-        strideLogged.set(false);
         signalingServer = null;
         activeSession = null;
         activeSessionId = null;
@@ -390,29 +419,121 @@ public class WebRtcStreamer {
         startSession(server, session);
     }
 
+    /**
+     * Checks whether an asynchronous callback still belongs to the active preview session.
+     *
+     * @param generation the session generation captured when the callback was registered
+     * @param bin the WebRTC bin that produced the callback
+     * @param server the signaling server associated with the callback
+     * @return true when all three values match the current session
+     */
     private boolean isCurrentSession(long generation, WebRTCBin bin, WebRtcSignalingServer server) {
         return sessionGeneration.get() == generation && webRTCBin == bin && signalingServer == server;
     }
 
     /**
-     * Push a captured frame into the appsrc. Called from the GStreamer grabber thread on every newSample.
-     * The buffer is the BGR raw frame in the scaled resolution.
-     *
-     * @param buffer the raw BGR frame buffer (already scaled by the capture pipeline)
-     * @param width  the frame width in pixels
-     * @param height the frame height in pixels
+     * Offers a capture frame without waiting for LUT processing or the preview pipeline.
+     * The dispatcher checks rate and worker availability before making the one required copy:
+     * the capture buffer is unmapped as soon as the grabber callback returns.
      */
     public void pushFrame(ByteBuffer buffer, int width, int height) {
-        if (!streaming.get() || buffer == null) {
-            return;
+        PreviewFrameDispatcher<PreviewFrame> dispatcher = frameDispatcher;
+        if (!streaming.get() || dispatcher == null || buffer == null) return;
+        dispatcher.submit(() -> copyFrame(buffer, width, height));
+    }
+
+    private record PreviewFrame(Buffer buffer, int width, int height, CubeLutToneMap.ToneMapper mapper)
+            implements AutoCloseable {
+        /**
+         * Releases the owned native buffer, or its invalidated Java wrapper after transfer to appsrc.
+         */
+        @Override
+        public void close() {
+            // gst1-java invalidates the Java buffer on pushBuffer (ownership transfers to appsrc).
+            // dispose is also safe on that invalidated wrapper; unsubmitted buffers are freed here.
+            buffer.dispose();
         }
+    }
+
+    /**
+     * Copies visible capture pixels into an independently owned, tightly packed native buffer
+     * and associates the current LUT snapshot with the frame for asynchronous processing.
+     *
+     * @param buffer the capture buffer, whose frame starts at offset zero
+     * @param width the frame width in pixels
+     * @param height the frame height in pixels
+     * @return the owned preview frame, or null when dimensions are invalid or native mapping fails
+     * @throws IllegalArgumentException if the source row stride is invalid
+     */
+    private PreviewFrame copyFrame(ByteBuffer buffer, int width, int height) {
+        long pixels = (long) width * height;
+        long packedBytes = pixels * Integer.BYTES;
+        if (width <= 0 || height <= 0 || pixels > Integer.MAX_VALUE / Integer.BYTES || buffer.limit() < packedBytes) {
+            log.warn("Skipping WebRTC frame with invalid dimensions or buffer size: {}x{}, {} bytes", width, height, buffer.limit());
+            return null;
+        }
+        Buffer copy = new Buffer((int) packedBytes);
+        boolean copied = false;
+        try {
+            ByteBuffer target = copy.map(true);
+            if (target == null) return null;
+            try {
+                copyPackedPixels(buffer, target, width, height);
+            } finally {
+                copy.unmap();
+            }
+            PreviewFrame frame = new PreviewFrame(copy, width, height, CubeLutToneMap.snapshot());
+            copied = true;
+            return frame;
+        } finally {
+            if (!copied) copy.dispose();
+        }
+    }
+
+    /**
+     * Packs capture rows without changing the source position, limit or bytes. Captured frames start at zero.
+     */
+    static void copyPackedPixels(ByteBuffer buffer, ByteBuffer target, int width, int height) {
+        long pixels = (long) width * height;
+        long packedBytes = pixels * Integer.BYTES;
+        if (width <= 0 || height <= 0 || pixels > Integer.MAX_VALUE / Integer.BYTES
+                || buffer.limit() < packedBytes || target.remaining() < packedBytes) {
+            throw new IllegalArgumentException("Invalid WebRTC frame dimensions or buffer size");
+        }
+        ByteBuffer source = buffer.duplicate();
+        source.rewind();
+        int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, source.asIntBuffer());
+        int packedRowBytes = width * Integer.BYTES;
+        int sourceRowBytes = widthPlusStride * Integer.BYTES;
+        long requiredBytes = (long) (height - 1) * sourceRowBytes + packedRowBytes;
+        if (widthPlusStride < width || source.remaining() < requiredBytes) {
+            throw new IllegalArgumentException("Invalid WebRTC frame stride");
+        }
+        if (widthPlusStride == width) {
+            source.limit((int) packedBytes);
+            target.put(source);
+        } else {
+            for (int row = 0; row < height; row++) {
+                int start = row * sourceRowBytes;
+                source.limit(start + packedRowBytes).position(start);
+                target.put(source);
+            }
+        }
+    }
+
+    /**
+     * Only the preview worker enters here. Serialize native pipeline use with session stop/restart;
+     * capture admission and copying never acquire this monitor.
+     */
+    private synchronized void processFrame(PreviewFrame frame, long generation) {
+        if (!streaming.get() || sessionGeneration.get() != generation) return;
+        int width = frame.width();
+        int height = frame.height();
         restartForCaptureSizeChange(width, height);
+        // A size change starts a new session/worker. Its next frame initializes the new caps.
+        if (!streaming.get() || sessionGeneration.get() != generation) return;
         AppSrc sourceElement = appSrc;
-        if (sourceElement == null) {
-            return;
-        }
-        // On the first frame, set the input caps and fit the preview to 1280x720,
-        // preserving the captured aspect ratio even when LED capture is heavily resampled.
+        if (sourceElement == null) return;
         if (pipelineStarted.compareAndSet(false, true)) {
             int[] previewSize = previewSize(width, height);
             captureWidth = width;
@@ -426,75 +547,42 @@ public class WebRtcStreamer {
                 return;
             }
             capsFilter.set("caps", Caps.fromString(
-                    "video/x-raw,width=" + previewSize[0] + ",height=" + previewSize[1]
-                            + ",pixel-aspect-ratio=1/1"));
+                    "video/x-raw,width=" + previewSize[0] + ",height=" + previewSize[1] + ",pixel-aspect-ratio=1/1"));
             pipeline.play();
             log.info("WebRTC pipeline started on first frame: {}x{} -> {}x{}", width, height, previewSize[0], previewSize[1]);
         }
-        if (firstFrameLogged.compareAndSet(false, true)) {
-            log.info("WebRTC pushing first frame to appsrc: {}x{}, bytes={}", width, height, buffer.remaining());
-        }
-        ByteBuffer source = buffer.duplicate();
-        source.rewind();
-        // AppSrc raw video caps do not carry the row stride. Some hardware paths (notably cudaconvert) retain padding
-        // at the end of every row, so sending that mapped buffer as tightly packed video makes each following
-        // row start inside the padding. Compact the rows while copying into the new GstBuffer, as ImageProcessor does for screenshots.
-        int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, source.asIntBuffer());
-        int bytesPerPixel = Integer.BYTES;
-        int packedRowBytes = width * bytesPerPixel;
-        int sourceRowBytes = widthPlusStride * bytesPerPixel;
-        int packedFrameBytes = packedRowBytes * height;
-        boolean hasStride = widthPlusStride > width;
-        // The last row only needs its visible pixels: mapped capture buffers may omit its trailing padding.
-        // Check the end of the last row we copy, not stride * height.
-        long requiredSourceBytes = (long) (height - 1) * sourceRowBytes + packedRowBytes;
-        if (source.remaining() < packedFrameBytes || (hasStride && source.remaining() < requiredSourceBytes)) {
-            log.warn("Skipping WebRTC frame with invalid buffer size: {} bytes for {}x{} (stride {} pixels)",
-                    source.remaining(), width, height, widthPlusStride);
-            return;
-        }
-        if (hasStride && strideLogged.compareAndSet(false, true)) {
-            log.info("WebRTC compacting capture rows: {}x{}, stride {} pixels", width, height, widthPlusStride);
-        }
-        Buffer gstBuffer = new Buffer(packedFrameBytes);
-        ByteBuffer mappedBuffer = gstBuffer.map(true);
-        if (mappedBuffer == null) {
-            log.warn("Unable to map WebRTC frame buffer");
-            return;
-        }
+        Buffer gstBuffer = frame.buffer();
+        ByteBuffer mapped = gstBuffer.map(true);
+        if (mapped == null) return;
         try {
-            if (hasStride) {
-                for (int row = 0; row < height; row++) {
-                    int rowStart = row * sourceRowBytes;
-                    ByteBuffer sourceRow = source.duplicate();
-                    sourceRow.position(rowStart);
-                    sourceRow.limit(rowStart + packedRowBytes);
-                    mappedBuffer.put(sourceRow);
-                }
-            } else {
-                source.limit(packedFrameBytes);
-                mappedBuffer.put(source);
-            }
-            mappedBuffer.rewind();
-            applyLutToneMap(mappedBuffer, width, height, byteOrder);
+            applyLutToneMap(mapped, width, height, byteOrder, frame.mapper());
         } finally {
             gstBuffer.unmap();
         }
-
-        // do-timestamp=true makes appsrc automatically set the PTS from the system clock,
-        // so we no longer set it manually. This avoids the segment format mismatch assertion.
+        // appsrc timestamps the processed frame. Skipped frames do not build up a synthetic timeline.
         gstBuffer.setDuration(FRAME_DURATION_NS);
-
         FlowReturn ret = sourceElement.pushBuffer(gstBuffer);
-        if (ret != FlowReturn.OK) {
-            log.debug("WebRTC appsrc push returned {}", ret);
-        }
+        if (ret != FlowReturn.OK) log.debug("WebRTC appsrc push returned {}", ret);
     }
 
+    /**
+     * Rounds a dimension down to an even integer suitable for the preview encoder, with a minimum of two.
+     *
+     * @param dimension the scaled dimension in pixels
+     * @return the even pixel dimension
+     */
     private static int evenFloor(double dimension) {
         return Math.max(2, ((int) Math.floor(dimension)) & ~1);
     }
 
+    /**
+     * Sets the local SDP offer and sends it to the browser if its preview session is still active.
+     *
+     * @param generation the session generation that requested the offer
+     * @param bin the WebRTC bin that created the offer
+     * @param server the signaling server used to deliver the offer
+     * @param offer the generated local session description
+     */
     private void onOfferCreated(long generation, WebRTCBin bin, WebRtcSignalingServer server,
                                 WebRTCSessionDescription offer) {
         if (!isCurrentSession(generation, bin, server)) {
