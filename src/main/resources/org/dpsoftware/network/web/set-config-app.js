@@ -336,6 +336,9 @@ function setMiscLedButton(on) {
 function wireSelectChangeListeners() {
     document.querySelectorAll('select').forEach(function (el) {
         el.addEventListener('change', function () {
+            if (el.id === 'runtimeLogLevel' && el.value === 'TRACE') {
+                window.alert(state.fieldLabels['web.traceWarning'] || 'Most detailed diagnostics. Debug only, resource-intensive.');
+            }
             if (!el.id.startsWith('improv') && !['luminosityThreshold', 'brightnessLimiter',
                 'ldrInterval', 'minimumBrightness'].includes(el.id)) {
                 var value = el.value;

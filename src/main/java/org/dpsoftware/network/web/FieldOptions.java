@@ -239,7 +239,7 @@ public record FieldOptions(List<Option> options, String type) {
     public static Map<String, String> getFieldLabels() {
         Map<String, String> labels = new LinkedHashMap<>();
         for (String key : List.of("saveSettings", "showPreview", "hidePreview", "showLedLayout", "hideLedLayout", "newProfileName",
-                "addProfile", "profileHelp", "openLog", "logLevel", "restartConfirm", "settingsSaved",
+                "addProfile", "profileHelp", "openLog", "logLevel", "traceWarning", "restartConfirm", "settingsSaved",
                 "wholeNumber", "validGroup", "profilePrefix", "collectError",
                 "device.reachable", "device.unreachable")) {
             labels.put("web." + key, CommonUtility.getWord("web." + key));
