@@ -581,6 +581,9 @@ public class Constants {
     public static final String COMBO_CHANGE_ENDPOINT = "/comboChange";
     public static final String SECTION_TITLES_ENDPOINT = "/sectionTitles";
     public static final int CONFIG_SERVER_DEFAULT_PORT = 8091;
+    // Local WebRTC media/ICE ports, restricted so LAN firewalls can allow a fixed UDP range.
+    public static final int WEBRTC_MIN_RTP_PORT = 50000;
+    public static final int WEBRTC_MAX_RTP_PORT = 50010;
     public static final String WEBRTC_SIGNALING_ENDPOINT = "/webrtc";
     public static final String WEBRTC_PREVIEW_JS_ENDPOINT = "/webrtc-preview.js";
     // Native executor

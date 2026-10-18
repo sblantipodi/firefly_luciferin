@@ -30,6 +30,9 @@ import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.network.web.WebRtcSignalingServer;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSrc;
+import org.freedesktop.gstreamer.glib.GObject;
+import org.freedesktop.gstreamer.glib.Natives;
+import org.freedesktop.gstreamer.lowlevel.GstTypes;
 import org.freedesktop.gstreamer.webrtc.WebRTCBin;
 import org.freedesktop.gstreamer.webrtc.WebRTCBin.ON_ICE_CANDIDATE;
 import org.freedesktop.gstreamer.webrtc.WebRTCBin.ON_NEGOTIATION_NEEDED;
@@ -130,6 +133,14 @@ public class WebRtcStreamer {
         appSrc = appSource;
         previewCapsFilter = capsFilter;
         webRTCBin = bin;
+        try {
+            configureIcePortRange(bin);
+        } catch (RuntimeException e) {
+            log.error("Unable to restrict WebRTC local ports to UDP {}-{}", Constants.WEBRTC_MIN_RTP_PORT,
+                    Constants.WEBRTC_MAX_RTP_PORT, e);
+            stop();
+            return;
+        }
 
         // Configure the appsrc for push-mode, live, block format. The width/height are left
         // unset on the caps so the negotiated caps follow the actual frames pushed; the byte
@@ -159,6 +170,24 @@ public class WebRtcStreamer {
         // once the frame dimensions are known and the appsrc caps are set with width/height.
         pipelineStarted.set(false);
         log.info("WebRTC pipeline ready for session {} (will start on first frame)", session.getId());
+    }
+
+    /**
+     * Restricts local ICE sockets before any SDP negotiation or candidate gathering starts.
+     * Remote browser ports are negotiated independently and are not restricted by this range.
+     */
+    static void configureIcePortRange(WebRTCBin bin) {
+        // gst1-java 1.4 has no ICE wrapper and otherwise tries to instantiate abstract GObject.
+        GstTypes.register(Natives.registration(WebRtcIceAgent.class, "GstWebRTCICE", WebRtcIceAgent::new));
+        GObject iceAgent = (GObject) bin.get("ice-agent");
+        iceAgent.set("max-rtp-port", Constants.WEBRTC_MAX_RTP_PORT);
+        iceAgent.set("min-rtp-port", Constants.WEBRTC_MIN_RTP_PORT);
+    }
+
+    private static final class WebRtcIceAgent extends GstObject {
+        private WebRtcIceAgent(Initializer initializer) {
+            super(initializer);
+        }
     }
 
     /**
@@ -249,7 +278,11 @@ public class WebRtcStreamer {
             synchronized (this) {
                 available = supported;
                 if (available == null) {
-                    available = true;
+                    // Fixed local ICE port ranges require GStreamer 1.20 or newer.
+                    available = Gst.getVersion().checkSatisfies(Version.of(1, 20));
+                    if (!available) {
+                        log.info("WebRTC live preview requires GStreamer 1.20 or newer to restrict local ICE ports");
+                    }
                     for (String factoryName : new String[]{"webrtcbin", "nicesrc", "nicesink"}) {
                         try {
                             if (ElementFactory.find(factoryName) == null) {
@@ -268,7 +301,7 @@ public class WebRtcStreamer {
             }
         }
         if (!available && unsupportedLogged.compareAndSet(false, true)) {
-            log.info("WebRTC live preview is unavailable because required GStreamer factories are missing or could not be inspected; using the image live preview instead");
+            log.info("WebRTC live preview is unavailable because GStreamer is too old or required factories are unavailable; using the image live preview instead");
         }
         return available;
     }
