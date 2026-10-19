@@ -402,7 +402,7 @@ public class StorageManager {
         defaultConfig.setScreenResX(Constants.DEFAULT_RES_WIDTH);
         defaultConfig.setScreenResY(Constants.DEFAULT_RES_HEIGHT);
         defaultConfig.setOsScaling(100);
-        defaultConfig.setResamplingFactor(2);
+        defaultConfig.setResamplingFactor(Enums.ResamplingFactor.VERY_GOOD.getResamplingFactorValue());
         defaultConfig.setNumberOfCPUThreads(1);
         defaultConfig.setTopLed(10);
         defaultConfig.setLeftLed(10);
@@ -429,7 +429,7 @@ public class StorageManager {
         }
         defaultConfig.setHueMap(ColorCorrectionDialogController.initHSLMap());
         defaultConfig.regenerateLedMatrix();
-        defaultConfig.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat(""));
+        defaultConfig.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat("", defaultConfig));
         defaultConfig.setCubeLut(Constants.DEFAULT_CUBE_LUT);
         writeConfig(defaultConfig, null);
         config = readProfileInUseConfig();
