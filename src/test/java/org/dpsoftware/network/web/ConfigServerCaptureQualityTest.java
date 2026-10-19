@@ -23,7 +23,7 @@ class ConfigServerCaptureQualityTest {
         var device = new CaptureDeviceUtilities.CaptureDevice("/dev/video0", "USB capture", 0);
         var format = new CaptureDeviceUtilities.PixelFormat("MJPG");
         var small = new CaptureDeviceUtilities.Resolution(640, 480);
-        var balanced = new CaptureDeviceUtilities.Resolution(960, 540);
+        var balanced = new CaptureDeviceUtilities.Resolution(1920, 1080);
         var source = new CaptureDeviceUtilities.Resolution(3840, 2160);
         small.getFps().add(60);
         balanced.getFps().add(60);
@@ -61,8 +61,8 @@ class ConfigServerCaptureQualityTest {
 
             change.invoke(server, WebFieldNames.RESAMPLING_FACTOR, IntNode.valueOf(4));
             assertEquals(4, main.config.getResamplingFactor());
-            assertEquals(960, main.config.getCaptureDevice().getSuggestedWidth());
-            assertEquals(540, main.config.getCaptureDevice().getSuggestedHeight());
+            assertEquals(1920, main.config.getCaptureDevice().getSuggestedWidth());
+            assertEquals(1080, main.config.getCaptureDevice().getSuggestedHeight());
             assertEquals(60, main.config.getCaptureDevice().getMaxFps());
 
             change.invoke(server, WebFieldNames.RESAMPLING_FACTOR, IntNode.valueOf(1));

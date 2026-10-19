@@ -21,12 +21,20 @@
 */
 package org.dpsoftware.utilities;
 
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.grabber.GStreamerGrabber;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mockStatic;
 
 /**
  * Unit tests for {@link CaptureDeviceUtilities}.
@@ -37,6 +45,39 @@ import static org.junit.jupiter.api.Assertions.*;
  * GstValueList&lt;Fraction&gt; values.
  */
 class CaptureDeviceUtilitiesTest {
+
+    @ParameterizedTest
+    @CsvSource({
+            "12, 960, 540, 320, 180",
+            "8, 1920, 1080, 480, 270",
+            "4, 1920, 1080, 960, 540",
+            "2, 3840, 2160, 1920, 1080",
+            "1, 3840, 2160, 3840, 2160"
+    })
+    void usbCaptureQualityUsesSeparateDivisorsFromPipelineScaling(int quality, int captureWidth, int captureHeight,
+                                                                  int scaledWidth, int scaledHeight) {
+        var device = source("/dev/video0", "USB capture", "MJPG", 60);
+        var format = device.getFormats().getFirst();
+        format.getResolutions().add(new CaptureDeviceUtilities.Resolution(960, 540));
+        format.getResolutions().add(new CaptureDeviceUtilities.Resolution(3840, 2160));
+        MainSingleton main = new MainSingleton();
+        main.config = new Configuration();
+        main.config.setScreenResX(3840);
+        main.config.setScreenResY(2160);
+        main.config.setOsScaling(100);
+        main.config.setResamplingFactor(quality);
+
+        try (var capture = mockStatic(CaptureDeviceUtilities.class, CALLS_REAL_METHODS)) {
+            capture.when(CaptureDeviceUtilities::discover).thenReturn(List.of(device));
+            var selected = CaptureDeviceUtilities.findPixelFormat(device.getFriendlyName(), main.config);
+            assertNotNull(selected);
+            assertEquals(captureWidth, selected.getSuggestedWidth());
+            assertEquals(captureHeight, selected.getSuggestedHeight());
+            assertEquals(scaledWidth + "x" + scaledHeight,
+                    GStreamerGrabber.setScaling(Constants.INTERNAL_SCALING_X + "x" + Constants.INTERNAL_SCALING_Y, main));
+            assertEquals(quality, main.config.getResamplingFactor());
+        }
+    }
 
     private static CaptureDeviceUtilities.CaptureDevice source(String path, String name, String format, int fps) {
         var device = new CaptureDeviceUtilities.CaptureDevice(path, name, 0);

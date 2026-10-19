@@ -483,17 +483,23 @@ public class Enums {
     }
 
     public enum ResamplingFactor implements LocalizedEnum {
-        POOR("enum.resampling.factor.poor", 12),
-        FAIR("enum.resampling.factor.fair", 8),
-        BALANCED("enum.resampling.factor.balanced", 4),
-        VERY_GOOD("enum.resampling.factor.verygood", 2),
-        NATIVE("enum.resampling.factor.native", 1);
+        POOR("enum.resampling.factor.poor", 12, 4),
+        FAIR("enum.resampling.factor.fair", 8, 2),
+        BALANCED("enum.resampling.factor.balanced", 4, 2),
+        VERY_GOOD("enum.resampling.factor.verygood", 2, 1),
+        NATIVE("enum.resampling.factor.native", 1, 1);
         private final String quality;
         private final int resamplingFactor;
+        /**
+         * Divisor used only to select the USB device capture resolution, before pipeline scaling.
+         */
+        @Getter
+        private final int usbCaptureFactor;
 
-        ResamplingFactor(String quality, int resamplingFactor) {
+        ResamplingFactor(String quality, int resamplingFactor, int usbCaptureFactor) {
             this.quality = quality;
             this.resamplingFactor = resamplingFactor;
+            this.usbCaptureFactor = usbCaptureFactor;
         }
 
         public static ResamplingFactor findByValue(final int resamplingFactorValue) {

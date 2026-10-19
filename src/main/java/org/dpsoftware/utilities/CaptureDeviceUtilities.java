@@ -384,7 +384,8 @@ public class CaptureDeviceUtilities {
     /**
      * Returns a flattened selection containing the device identity, the first pixel format
      * (in VideoDeviceFormat order) that has resolutions, and the resolution closest to the
-     * configured screen resolution (screenResX/screenResY). If the friendly name is null or
+     * configured screen resolution divided by the USB capture factor for the selected quality.
+     * If the friendly name is null or
      * empty, the first discovered device is used. Returns null if no device is found or no
      * supported format has resolutions.
      */
@@ -397,11 +398,14 @@ public class CaptureDeviceUtilities {
      * settings being saved that have not yet replaced the running configuration.
      */
     public static BestCaptureFormat findPixelFormat(String friendlyName, Configuration config) {
-        int width = Constants.DEFAULT_RES_WIDTH / Constants.RESAMPLING_FACTOR;
-        int height = Constants.DEFAULT_RES_HEIGHT / Constants.RESAMPLING_FACTOR;
+        int resamplingFactor = config != null ? config.getResamplingFactor() : Constants.RESAMPLING_FACTOR;
+        Enums.ResamplingFactor quality = Enums.ResamplingFactor.findByValue(resamplingFactor);
+        int captureFactor = quality != null ? quality.getUsbCaptureFactor() : resamplingFactor;
+        int width = Constants.DEFAULT_RES_WIDTH / captureFactor;
+        int height = Constants.DEFAULT_RES_HEIGHT / captureFactor;
         if (config != null) {
-            width = ((config.getScreenResX() * 100) / config.getOsScaling()) / config.getResamplingFactor();
-            height = ((config.getScreenResY() * 100) / config.getOsScaling()) / config.getResamplingFactor();
+            width = ((config.getScreenResX() * 100) / config.getOsScaling()) / captureFactor;
+            height = ((config.getScreenResY() * 100) / config.getOsScaling()) / captureFactor;
         }
         CaptureDevice dev = (friendlyName == null || friendlyName.isBlank()) ? firstDevice() : findDeviceByName(friendlyName);
         if (dev == null) {
