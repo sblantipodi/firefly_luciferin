@@ -223,12 +223,13 @@ function updateBottomLedVisibility() {
     document.getElementById('field-bottomRowLed').hidden = split;
 }
 
-// Rebuilds capture method choices for the selected monitor or external device.
+// Rebuilds capture method choices; a source change also resets capture quality.
 function updateCaptureMethodOptions(resetSelection = false) {
     var monitor = document.getElementById('monitorNumber').value;
     var select = document.getElementById('captureMethod');
     var previous = select.value;
-    var key = monitor.startsWith('device:') ? 'captureMethodExternal' : 'captureMethod';
+    var externalSource = monitor.startsWith('device:');
+    var key = externalSource ? 'captureMethodExternal' : 'captureMethod';
     var available = (state.fieldOptions[key] || {}).options || [];
     select.replaceChildren();
     available.forEach(function (entry) {
@@ -237,6 +238,10 @@ function updateCaptureMethodOptions(resetSelection = false) {
     select.value = !resetSelection && available.some(function (entry) {
         return entry.value === previous;
     }) ? previous : 'AUTO';
+    if (resetSelection) {
+        // VERY_GOOD (Excellent) for USB sources, BALANCED for displays.
+        document.getElementById('resamplingFactor').value = externalSource ? '2' : '4';
+    }
 }
 
 // Keeps the LED grouping choices between 1 and the smallest configured row count.

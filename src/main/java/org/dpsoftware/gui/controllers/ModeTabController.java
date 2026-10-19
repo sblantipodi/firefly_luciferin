@@ -207,7 +207,7 @@ public class ModeTabController {
             DisplayInfo screenInfo = settingsController.displayManager.getFirstInstanceDisplay();
             setDispInfo(screenInfo);
             monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
-            applyCaptureMethod(Configuration.CaptureMethod.AUTO);
+            applyAutomaticCaptureMethod();
         }
         if (GuiSingleton.getInstance().isFirmTypeFull()) {
             firmTypeFull.setSelected(true);
@@ -327,7 +327,7 @@ public class ModeTabController {
     }
 
     /**
-     * Manage monitor selection change. The capture method is reset to the OS default
+     * Manage monitor selection change. The capture method and quality are reset to source defaults
      * only when the user actually picks a different monitor; a plain click that opens
      * the combo (or any call with no value change) must not overwrite the capture
      * method currently in use.
@@ -359,34 +359,36 @@ public class ModeTabController {
     }
 
     /**
-     * Set the default capture method for the current OS (display capture)
+     * Use automatic capture and balanced quality for display sources.
      */
     void setCaptureMethod() {
-        applyCaptureMethod(Configuration.CaptureMethod.AUTO);
+        applyAutomaticCaptureMethod();
+        resamplingFactor.setValue(Enums.ResamplingFactor.BALANCED.getI18n());
     }
 
     /**
-     * Set the default capture method for external USB video devices
+     * Use automatic capture and excellent quality for external USB video devices.
      */
     void setCaptureMethodUsbVideo() {
-        applyCaptureMethod(Configuration.CaptureMethod.AUTO);
+        applyAutomaticCaptureMethod();
+        resamplingFactor.setValue(Enums.ResamplingFactor.VERY_GOOD.getI18n());
     }
 
     /**
-     * Set capture method value, guarding against re-entrant calls and re-anchoring
+     * Select automatic capture, guarding against re-entrant calls and re-anchoring
      * the visual selection if it was lost after the items list was cleared and re-populated.
      */
-    private void applyCaptureMethod(Configuration.CaptureMethod newMethod) {
+    private void applyAutomaticCaptureMethod() {
         if (updatingCaptureMethod) {
             return;
         }
         updatingCaptureMethod = true;
         try {
-            captureMethod.setValue(newMethod);
+            captureMethod.setValue(Configuration.CaptureMethod.AUTO);
             if (captureMethod.getValue() != null
                     && captureMethod.getSelectionModel().getSelectedIndex() < 0
-                    && newMethod.equals(captureMethod.getValue())) {
-                captureMethod.getSelectionModel().select(captureMethod.getItems().indexOf(newMethod));
+                    && Configuration.CaptureMethod.AUTO.equals(captureMethod.getValue())) {
+                captureMethod.getSelectionModel().select(captureMethod.getItems().indexOf(Configuration.CaptureMethod.AUTO));
             }
         } finally {
             updatingCaptureMethod = false;

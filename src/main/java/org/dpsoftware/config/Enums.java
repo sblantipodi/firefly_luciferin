@@ -484,9 +484,9 @@ public class Enums {
 
     public enum ResamplingFactor implements LocalizedEnum {
         POOR("enum.resampling.factor.poor", 12, 4),
-        FAIR("enum.resampling.factor.fair", 8, 2),
+        FAIR("enum.resampling.factor.fair", 8, 4),
         BALANCED("enum.resampling.factor.balanced", 4, 2),
-        VERY_GOOD("enum.resampling.factor.verygood", 2, 1),
+        VERY_GOOD("enum.resampling.factor.verygood", 2, 2),
         NATIVE("enum.resampling.factor.native", 1, 1);
         private final String quality;
         private final int resamplingFactor;

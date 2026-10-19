@@ -402,6 +402,7 @@ public class StorageManager {
         defaultConfig.setScreenResX(Constants.DEFAULT_RES_WIDTH);
         defaultConfig.setScreenResY(Constants.DEFAULT_RES_HEIGHT);
         defaultConfig.setOsScaling(100);
+        defaultConfig.setResamplingFactor(2);
         defaultConfig.setNumberOfCPUThreads(1);
         defaultConfig.setTopLed(10);
         defaultConfig.setLeftLed(10);
