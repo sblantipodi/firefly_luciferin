@@ -142,7 +142,7 @@ public class StorageManager {
     }
 
     /**
-     * Save a safe startup method before attempting any automatic native capture probe.
+     * Prepare a runtime startup method while keeping automatic selection persisted until the probe completes.
      *
      * @param config file
      */
@@ -152,7 +152,7 @@ public class StorageManager {
             config.setAutomaticCapturePending(true);
             config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.hasCaptureDevice()).name());
             writeConfig(config, null);
-            log.info("Automatic capture: saved startup default {}", config.getCaptureMethod());
+            log.info("Automatic capture: using startup method {}, keeping AUTO saved until selection completes", config.getCaptureMethod());
         }
     }
 
@@ -166,10 +166,10 @@ public class StorageManager {
         if (config.isAutomaticCapturePending()) {
             try {
                 config = (Configuration) config.clone();
-                // Other settings can be saved during a probe; never persist its unverified candidate.
-                config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.hasCaptureDevice()).name());
+                // Keep AUTO across saves and restarts while waiting for a source or probing candidates.
+                config.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
             } catch (CloneNotSupportedException e) {
-                throw new IOException("Cannot preserve safe capture default", e);
+                throw new IOException("Cannot preserve automatic capture selection", e);
             }
         }
         String filename;

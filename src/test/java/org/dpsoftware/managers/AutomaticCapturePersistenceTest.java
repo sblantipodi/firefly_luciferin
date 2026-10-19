@@ -28,6 +28,8 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
 import java.nio.file.Path;
@@ -37,7 +39,7 @@ import static org.mockito.Mockito.mockStatic;
 
 class AutomaticCapturePersistenceTest {
     @Test
-    void savesDefaultBeforeProbeAndDoesNotPersistUnverifiedCandidates(@TempDir Path directory) throws Exception {
+    void preservesAutoUntilProbeCompletesAndDoesNotPersistUnverifiedCandidates(@TempDir Path directory) throws Exception {
         MainSingleton main = new MainSingleton();
         main.whoAmI = 1;
         Configuration config = new Configuration();
@@ -50,15 +52,16 @@ class AutomaticCapturePersistenceTest {
             StorageManager storage = new StorageManager();
             storage.resolveAutomaticCapture(config);
             assertTrue(config.isAutomaticCapturePending());
-            assertEquals("PIPEWIREXDG", storage.readConfigFile(Constants.CONFIG_FILENAME).getCaptureMethod());
+            assertEquals("PIPEWIREXDG", config.getCaptureMethod());
+            assertEquals("AUTO", storage.readConfigFile(Constants.CONFIG_FILENAME).getCaptureMethod());
 
             config.setCaptureMethod("PIPEWIREXDG_AMD_HIP");
             storage.writeConfig(config, null);
             Configuration nextStartup = storage.readConfigFile(Constants.CONFIG_FILENAME);
-            assertEquals("PIPEWIREXDG", nextStartup.getCaptureMethod());
+            assertEquals("AUTO", nextStartup.getCaptureMethod());
             assertEquals("PIPEWIREXDG_AMD_HIP", config.getCaptureMethod());
             storage.resolveAutomaticCapture(nextStartup);
-            assertFalse(nextStartup.isAutomaticCapturePending());
+            assertTrue(nextStartup.isAutomaticCapturePending());
 
             config.setAutomaticCapturePending(false);
             storage.writeConfig(config, null);
@@ -66,8 +69,9 @@ class AutomaticCapturePersistenceTest {
         }
     }
 
-    @Test
-    void headlessAutoPersistsUsbDefault(@TempDir Path directory) throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void headlessWithoutDevicePreservesAutoAcrossManualSaveAndRestart(boolean windows, @TempDir Path directory) throws Exception {
         MainSingleton main = new MainSingleton();
         main.whoAmI = 1;
         main.setHeadlessMode(true);
@@ -76,12 +80,32 @@ class AutomaticCapturePersistenceTest {
              MockedStatic<NativeExecutor> os = mockStatic(NativeExecutor.class)) {
             singleton.when(MainSingleton::getInstance).thenReturn(main);
             paths.when(InstanceConfigurer::getConfigPath).thenReturn(directory.toString());
-            os.when(NativeExecutor::isWindows).thenReturn(true);
+            os.when(NativeExecutor::isWindows).thenReturn(windows);
             StorageManager storage = new StorageManager();
             Configuration config = new Configuration();
             storage.resolveAutomaticCapture(config);
-            assertEquals("WIN_USB_VIDEO", storage.readConfigFile(Constants.CONFIG_FILENAME).getCaptureMethod());
+            assertEquals(windows ? "WIN_USB_VIDEO" : "USB_VIDEO", config.getCaptureMethod());
+            assertEquals("AUTO", storage.readConfigFile(Constants.CONFIG_FILENAME).getCaptureMethod());
             assertTrue(config.isAutomaticCapturePending());
+            assertNull(config.getCaptureDevice());
+
+            // Web and desktop manual saves read the persisted settings into a separate configuration.
+            Configuration edited = storage.readConfigFile(Constants.CONFIG_FILENAME);
+            edited.setBrightness(123);
+            storage.writeConfig(edited, null);
+            Configuration nextStartup = storage.readConfigFile(Constants.CONFIG_FILENAME);
+            assertEquals("AUTO", nextStartup.getCaptureMethod());
+            assertEquals(123, nextStartup.getBrightness());
+            storage.resolveAutomaticCapture(nextStartup);
+            assertTrue(nextStartup.isAutomaticCapturePending());
+
+            // An explicit manual method still overrides automatic selection.
+            edited.setCaptureMethod(windows ? "WIN_USB_VIDEO" : "USB_VIDEO");
+            storage.writeConfig(edited, null);
+            Configuration manualStartup = storage.readConfigFile(Constants.CONFIG_FILENAME);
+            storage.resolveAutomaticCapture(manualStartup);
+            assertFalse(manualStartup.isAutomaticCapturePending());
+            assertEquals(edited.getCaptureMethod(), manualStartup.getCaptureMethod());
         }
     }
 }
