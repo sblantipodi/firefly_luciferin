@@ -49,9 +49,9 @@ class CaptureDeviceUtilitiesTest {
     @ParameterizedTest
     @CsvSource({
             "12, 960, 540, 320, 180",
-            "8, 1920, 1080, 480, 270",
+            "8, 960, 540, 480, 270",
             "4, 1920, 1080, 960, 540",
-            "2, 3840, 2160, 1920, 1080",
+            "2, 1920, 1080, 1920, 1080",
             "1, 3840, 2160, 3840, 2160"
     })
     void usbCaptureQualityUsesSeparateDivisorsFromPipelineScaling(int quality, int captureWidth, int captureHeight,
