@@ -22,9 +22,11 @@
 package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.input.InputEvent;
+import javafx.stage.FileChooser;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -34,6 +36,10 @@ import org.dpsoftware.gui.controllers.options.DisplayDialogOptions;
 import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.List;
 
 /**
@@ -123,6 +129,30 @@ public class DisplayDialogController {
      */
     private void setTooltips() {
         GuiManager.createTooltip(LabelKey.TOOLTIP_CUBE_LUT, cubeLutCombo);
+    }
+
+    /**
+     * Import a user LUT with the same validation and storage used by the web uploader.
+     */
+    @FXML
+    public void uploadLut() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(CommonUtility.getWord(LabelKey.CUBE_LUT_UPLOAD));
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Cube LUT (*.cube)", "*.cube", "*.CUBE"));
+        File file = chooser.showOpenDialog(cubeLutCombo.getScene().getWindow());
+        if (file == null) {
+            return;
+        }
+        try (InputStream input = Files.newInputStream(file.toPath())) {
+            String uploaded = CubeLutToneMap.importLut(file.getName(), input);
+            previewEnabled = false;
+            cubeLutCombo.getItems().setAll(DisplayDialogOptions.availableLuts());
+            previewEnabled = true;
+            cubeLutCombo.setValue(uploaded);
+        } catch (IOException | IllegalArgumentException e) {
+            MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                    CommonUtility.getWord(LabelKey.CUBE_LUT_UPLOAD_ERROR), e.getMessage(), Alert.AlertType.ERROR);
+        }
     }
 
     /**

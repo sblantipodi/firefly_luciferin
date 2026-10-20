@@ -327,6 +327,8 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.START_WITH_SYSTEM, CommonUtility.getWord("fxml.misctab.runlogin"));
         labels.put(WebFieldNames.RUNTIME_LOG_LEVEL, CommonUtility.getWord("fxml.misctab.runtimelog"));
         labels.put(WebFieldNames.CUBE_LUT, CommonUtility.getWord("fxml.display.tonemapping"));
+        labels.put("uploadCubeLut", CommonUtility.getWord(LabelKey.CUBE_LUT_UPLOAD));
+        labels.put("uploadCubeLutButton", CommonUtility.getWord(LabelKey.CUBE_LUT_UPLOAD_BUTTON));
         labels.put(WebFieldNames.NIGHT_LIGHT, CommonUtility.getWord("fxml.eyecare.night.light"));
         labels.put(WebFieldNames.NIGHT_LIGHT_LVL, CommonUtility.getWord("fxml.eyecare.nightlight.level"));
         labels.put(WebFieldNames.LUMINOSITY_THRESHOLD, CommonUtility.getWord("fxml.eyecare.luminosity.threshold"));

@@ -29,6 +29,9 @@ import org.dpsoftware.config.InstanceConfigurer;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -49,14 +52,12 @@ import java.util.jar.JarFile;
 public final class CubeLutToneMap {
 
     private static final String CUBE_LUT_DIR = "cube_lut";
+    private static final long MAX_UPLOAD_BYTES = 64L * 1024 * 1024;
 
     /**
      * Atomically published LUT data and dimensions. Without LUT data, lookup returns the input unchanged.
      */
     private static volatile ToneMapper activeMapper = new ToneMapper(null, 0);
-
-    private static int parsedSize;
-    private static float[] parsedLut;
 
     /**
      * Name of the LUT currently loaded. Used to detect config changes and invalidate the cache on #refresh().
@@ -119,6 +120,59 @@ public final class CubeLutToneMap {
         Collections.sort(result);
         result.addFirst(Constants.DISABLED);
         return result;
+    }
+
+    /**
+     * Imports a desktop or web upload into the user LUT directory. Validation uses the playback
+     * parser without changing the active mapper. Existing and bundled LUTs keep their names and data.
+     * The caller owns the input stream; the returned filename can be selected for preview or saved.
+     *
+     * @param filename original filename, without a path
+     * @param input    uploaded Cube contents
+     * @return stored filename, with a numeric suffix when the original name is already in use
+     * @throws IOException              when the file cannot be stored
+     * @throws IllegalArgumentException when the filename, size or Cube contents are invalid
+     */
+    public static synchronized String importLut(String filename, InputStream input) throws IOException {
+        if (filename == null || filename.length() > 180 || filename.matches("(?s).*[\\\\/:*?\"<>|\\p{Cntrl}].*")
+                || !filename.toLowerCase(Locale.ROOT).endsWith(".cube")
+                || filename.substring(0, filename.length() - 5).isBlank()) {
+            throw new IllegalArgumentException("Choose a .cube LUT file with a valid filename");
+        }
+        String stem = filename.substring(0, filename.length() - 5);
+        Path directory = Path.of(InstanceConfigurer.getConfigPath(), CUBE_LUT_DIR);
+        Files.createDirectories(directory);
+        Path temporary = Files.createTempFile(directory, ".lut-upload-", ".tmp");
+        try {
+            try (OutputStream output = Files.newOutputStream(temporary)) {
+                byte[] buffer = new byte[8192];
+                long total = 0;
+                int read;
+                while ((read = input.read(buffer)) != -1) {
+                    total += read;
+                    if (total > MAX_UPLOAD_BYTES) {
+                        throw new IllegalArgumentException("LUT file exceeds the 64 MiB limit");
+                    }
+                    output.write(buffer, 0, read);
+                }
+            }
+            try (InputStream content = Files.newInputStream(temporary)) {
+                parseCube(content);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid 3D .cube LUT: " + e.getMessage(), e);
+            }
+            Set<String> existing = new HashSet<>();
+            listAvailableLuts().forEach(name -> existing.add(name.toLowerCase(Locale.ROOT)));
+            String stored = stem + ".cube";
+            for (int suffix = 1; existing.contains(stored.toLowerCase(Locale.ROOT))
+                    || Files.exists(directory.resolve(stored)); suffix++) {
+                stored = stem + " (" + suffix + ").cube";
+            }
+            Files.move(temporary, directory.resolve(stored));
+            return stored;
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
     }
 
     /**
@@ -244,11 +298,11 @@ public final class CubeLutToneMap {
                 return;
             }
             try (InputStream stream = in) {
-                parseCube(stream);
+                activeMapper = parseCube(stream);
             }
-            activeMapper = new ToneMapper(parsedLut, parsedSize);
             loadedLutName = lutName;
-            log.info("Loaded cube LUT '{}' ({}x{}x{})", lutName, parsedSize, parsedSize, parsedSize);
+            int size = activeMapper.lastGridPoint + 1;
+            log.info("Loaded cube LUT '{}' ({}x{}x{})", lutName, size, size, size);
         } catch (Exception e) {
             // LUT unavailable or unreadable; retain the previous LUT (identity if none).
             log.warn("Failed to load cube LUT '{}': {}", lutName, e.getMessage());
@@ -437,36 +491,50 @@ public final class CubeLutToneMap {
      * determine the grid dimensions, then reads the R G B float triples.
      *
      * @param in input stream containing the Cube LUT file content
-     * @throws Exception if the LUT data is incomplete or cannot be parsed
+     * @return parsed mapper, without changing the active LUT
+     * @throws IOException if the stream cannot be read
+     * @throws IllegalArgumentException if the LUT data is incomplete or cannot be parsed
      */
-    static void parseCube(InputStream in) throws Exception {
+    static ToneMapper parseCube(InputStream in) throws IOException {
         int s = 32;
         int count = s * s * s;
         float[] tmpLut = new float[count * 3];
         int idx = 0;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             String line;
             while ((line = br.readLine()) != null) {
+                if (line.startsWith("\uFEFF")) line = line.substring(1);
                 line = line.trim();
                 if (line.startsWith("#") || line.isEmpty()) continue;
                 if (line.startsWith("LUT_3D_SIZE")) {
-                    s = Integer.parseInt(line.split("\\s+")[1]);
+                    String[] directive = line.split("\\s+");
+                    if (directive.length != 2 || idx != 0) {
+                        throw new IllegalArgumentException("Invalid LUT_3D_SIZE directive");
+                    }
+                    s = Integer.parseInt(directive[1]);
+                    if (s < 1 || s > 256) {
+                        throw new IllegalArgumentException("LUT_3D_SIZE must be between 1 and 256");
+                    }
                     count = s * s * s;
                     tmpLut = new float[count * 3];
                     continue;
                 }
                 if (line.startsWith("DOMAIN_") || line.startsWith("TITLE")) continue;
                 String[] parts = line.split("\\s+");
-                if (parts.length >= 3) {
-                    tmpLut[idx++] = Float.parseFloat(parts[0]);
-                    tmpLut[idx++] = Float.parseFloat(parts[1]);
-                    tmpLut[idx++] = Float.parseFloat(parts[2]);
+                if (parts.length < 3 || idx + 3 > tmpLut.length) {
+                    throw new IllegalArgumentException("Invalid LUT RGB data");
+                }
+                for (int channel = 0; channel < 3; channel++) {
+                    float value = Float.parseFloat(parts[channel]);
+                    if (!Float.isFinite(value)) {
+                        throw new IllegalArgumentException("LUT RGB values must be finite");
+                    }
+                    tmpLut[idx++] = value;
                 }
             }
         }
-        if (idx != count * 3) throw new Exception("LUT data incomplete: " + idx + " vs " + (count * 3));
-        parsedSize = s;
-        parsedLut = tmpLut;
+        if (idx != count * 3) throw new IllegalArgumentException("LUT data incomplete: " + idx + " vs " + (count * 3));
+        return new ToneMapper(tmpLut, s);
     }
 
 }

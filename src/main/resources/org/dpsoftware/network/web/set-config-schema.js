@@ -46,6 +46,7 @@ export const sections = [
             {id: 'monitorNumber', type: 'select'},
             {id: 'osScaling', type: 'select', numeric: true},
             {id: 'cubeLut', type: 'select'},
+            {id: 'uploadCubeLut', type: 'action'},
             {id: 'resamplingFactor', type: 'select', numeric: true},
             {id: 'defaultLedMatrix', type: 'select'},
             {id: 'language', type: 'select'},

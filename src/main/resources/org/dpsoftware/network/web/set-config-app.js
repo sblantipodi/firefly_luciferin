@@ -1,7 +1,7 @@
 // Entry point of the LUCIFERIN web configuration page: wires together the form, device picker, profiles, live preview and status polling
 // modules, and handles loading/saving the configuration against the ConfigServer HTTP endpoints.
 import {state} from './set-config-state.js';
-import {fetchJson, notifyComboChange} from './set-config-api.js';
+import {fetchJson, notifyComboChange, uploadCubeLut} from './set-config-api.js';
 import {buildForm, collectPayload, fillForm} from './set-config-core.js';
 import {
     applyAutoOutputDevice,
@@ -16,7 +16,7 @@ import {
 import {addProfile, renderProfiles} from './set-config-profiles.js';
 import {wireLivePreviewButton, withLivePreviewRestart} from './set-config-preview.js';
 import {pollServerStatus} from './set-config-status.js';
-import {showToast} from './set-config-ui.js';
+import {escapeHtml, showToast} from './set-config-ui.js';
 
 // Collects and saves the form, returning whether the request succeeded before the server restarts.
 function saveForm() {
@@ -323,6 +323,39 @@ function sendLiveChange(name, value) {
     });
 }
 
+// Refresh only the LUT choices after import, preserving all other unsaved form values.
+function wireLutUpload() {
+    var button = document.getElementById('uploadCubeLut');
+    var input = document.getElementById('cubeLutFile');
+    button.addEventListener('click', function () {
+        input.click();
+    });
+    input.addEventListener('change', function () {
+        var file = input.files[0];
+        if (!file) return;
+        button.disabled = true;
+        uploadCubeLut(file).then(function (result) {
+            var select = document.getElementById('cubeLut');
+            state.fieldOptions.cubeLut = {
+                type: 'string', options: result.luts.map(function (name) {
+                    return {value: name, label: name};
+                })
+            };
+            select.replaceChildren();
+            result.luts.forEach(function (name) {
+                select.add(new Option(name, name));
+            });
+            select.value = result.filename;
+            select.dispatchEvent(new Event('change', {bubbles: true}));
+        }).catch(function (error) {
+            showToast(escapeHtml('Error: ' + error.message), 'bg-danger text-white');
+        }).finally(function () {
+            button.disabled = false;
+            input.value = '';
+        });
+    });
+}
+
 // Keeps the LED button text and pressed state aligned with the running state.
 function setMiscLedButton(on) {
     var button = document.getElementById('toggleLed');
@@ -561,6 +594,7 @@ $(function () {
         initColorPicker();
         wireLivePreviewButton();
         wireSelectChangeListeners();
+        wireLutUpload();
         revealSettingsPage();
         return fetchJson('getConfig', {cache: 'no-store'});
     }).then(function (cfg) {

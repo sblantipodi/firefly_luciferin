@@ -71,6 +71,12 @@ function buildFieldHtml(f) {
     if (f.type === 'action' && f.id === 'improvAction') {
         return '<button type="button" id="improvProvisionButton" class="btn btn-primary">' + escapeHtml(lbl) + '</button>';
     }
+    if (f.type === 'action' && f.id === 'uploadCubeLut') {
+        return '<div class="form-group"><label class="d-block" for="uploadCubeLut">' + escapeHtml(lbl)
+            + '</label><button type="button" id="uploadCubeLut" class="btn btn-outline-primary">'
+            + escapeHtml(state.fieldLabels.uploadCubeLutButton) + '</button>'
+            + '<input type="file" id="cubeLutFile" accept=".cube" hidden></div>';
+    }
     if (f.type === 'combo') {
         var choices = optionsFor(f).map(function (option) {
             return '<option value="' + escapeHtml(option.value) + '"></option>';

@@ -29,3 +29,10 @@ export function postResponse(url, body) {
 export function notifyComboChange(name, value) {
     return postResponse('comboChange', JSON.stringify({comboName: name, value: value}));
 }
+
+// Send the file unchanged so both clients use the server's Cube parser and storage rules.
+export function uploadCubeLut(file) {
+    return fetchJson('uploadCubeLut?filename=' + encodeURIComponent(file.name), {
+        method: 'POST', headers: {'Content-Type': 'application/octet-stream'}, body: file
+    });
+}

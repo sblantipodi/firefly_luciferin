@@ -39,6 +39,7 @@ import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
 import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.gui.trayicon.TrayIconState;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
@@ -461,6 +462,7 @@ public class ConfigServer {
                 server.createContext(Constants.SET_CONFIG_DARK_CSS_ENDPOINT, withGuard(webResourceServer::handleSetConfigDarkCss, GET_METHOD));
                 server.createContext(Constants.WEBRTC_PREVIEW_JS_ENDPOINT, withGuard(webResourceServer::handleWebrtcPreviewJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
+                server.createContext("/uploadCubeLut", withGuard(this::handleUploadCubeLut, POST_METHOD));
                 server.createContext("/mqttDiscovery", withGuard(this::handleMqttDiscovery, POST_METHOD));
                 server.createContext("/ldrAction", withGuard(this::handleLdrAction, POST_METHOD));
                 server.createContext("/provisioningOptions", withGuard(this::handleProvisioningOptions, GET_METHOD));
@@ -534,6 +536,27 @@ public class ConfigServer {
     private void handleGetSectionTitles(HttpExchange exchange) throws IOException {
         ObjectNode response = CommonUtility.JSON_MAPPER.valueToTree(FieldOptions.getSectionTitles());
         HttpResponses.sendJson(exchange, response);
+    }
+
+    /**
+     * Imports a raw Cube file; the query supplies its original filename, encoded as UTF-8.
+     * Uploading makes a LUT available without saving or changing the selected configuration.
+     */
+    private void handleUploadCubeLut(HttpExchange exchange) throws IOException {
+        try (InputStream input = exchange.getRequestBody()) {
+            String query = exchange.getRequestURI().getRawQuery();
+            String filename = null;
+            if (query != null && query.startsWith("filename=")) {
+                filename = URLDecoder.decode(query.substring("filename=".length()), StandardCharsets.UTF_8);
+            }
+            String stored = CubeLutToneMap.importLut(filename, input);
+            HttpResponses.sendJson(exchange, Map.of("filename", stored, "luts", DisplayDialogOptions.availableLuts()));
+        } catch (IllegalArgumentException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
+        } catch (IOException e) {
+            log.warn("Unable to import cube LUT: {}", e.getMessage());
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to store LUT file");
+        }
     }
 
     /**
