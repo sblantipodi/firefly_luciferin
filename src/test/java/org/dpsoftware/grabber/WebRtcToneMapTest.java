@@ -93,8 +93,8 @@ class WebRtcToneMapTest {
         assertThrows(IllegalArgumentException.class, () -> WebRtcStreamer.copyPackedPixels(source, target, Integer.MAX_VALUE, Integer.MAX_VALUE));
         assertEquals(0, target.position());
         assertArrayEquals(new int[]{960, 540}, WebRtcStreamer.previewSize(1920, 1080));
-        assertArrayEquals(new int[]{960, 540}, WebRtcStreamer.previewSize(480, 270));
-        assertArrayEquals(new int[]{720, 540}, WebRtcStreamer.previewSize(640, 480));
+        assertArrayEquals(new int[]{480, 270}, WebRtcStreamer.previewSize(480, 270));
+        assertArrayEquals(new int[]{640, 480}, WebRtcStreamer.previewSize(640, 480));
     }
 
     @Test

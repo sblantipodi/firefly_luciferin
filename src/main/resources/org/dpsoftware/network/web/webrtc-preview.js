@@ -28,6 +28,15 @@
     function ensureVideoElement() {
         if (!videoEl) {
             videoEl = document.getElementById('webrtcPreview');
+            if (videoEl) {
+                // Enlarge only for display, keeping the same 960x540 bounding box and aspect ratio.
+                // The resize event also covers resolution changes during renegotiation.
+                videoEl.addEventListener('resize', function () {
+                    if (videoEl.videoWidth > 0 && videoEl.videoHeight > 0) {
+                        videoEl.style.width = Math.min(960, 540 * videoEl.videoWidth / videoEl.videoHeight) + 'px';
+                    }
+                });
+            }
         }
         return videoEl;
     }

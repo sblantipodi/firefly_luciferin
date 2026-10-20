@@ -281,12 +281,13 @@ public class WebRtcStreamer {
     }
 
     /**
-     * Return an even-sized preview fitted to the maximum bounding box, including upscaling
-     * resampled capture frames. VP8's 4:2:0 input works most reliably with even dimensions.
+     * Return an even-sized preview capped at the maximum bounding box without upscaling
+     * resampled capture frames, except for the two-pixel minimum. The browser handles display
+     * enlargement. VP8's 4:2:0 input works most reliably with even dimensions.
      */
     static int[] previewSize(int width, int height) {
-        double scale = Math.min((double) MAX_PREVIEW_WIDTH / width,
-                (double) MAX_PREVIEW_HEIGHT / height);
+        double scale = Math.min(1.0, Math.min((double) MAX_PREVIEW_WIDTH / width,
+                (double) MAX_PREVIEW_HEIGHT / height));
         int scaledWidth = evenFloor(width * scale);
         int scaledHeight = evenFloor(height * scale);
         return new int[]{scaledWidth, scaledHeight};
