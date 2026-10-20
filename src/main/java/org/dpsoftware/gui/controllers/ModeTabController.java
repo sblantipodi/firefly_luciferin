@@ -367,11 +367,11 @@ public class ModeTabController {
     }
 
     /**
-     * Use automatic capture and excellent quality for external USB video devices.
+     * Use automatic capture and balanced quality for external USB video devices.
      */
     void setCaptureMethodUsbVideo() {
         applyAutomaticCaptureMethod();
-        resamplingFactor.setValue(Enums.ResamplingFactor.VERY_GOOD.getI18n());
+        resamplingFactor.setValue(Enums.ResamplingFactor.BALANCED.getI18n());
     }
 
     /**

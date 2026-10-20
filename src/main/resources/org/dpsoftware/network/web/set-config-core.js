@@ -245,8 +245,8 @@ function updateCaptureMethodOptions(resetSelection = false) {
         return entry.value === previous;
     }) ? previous : 'AUTO';
     if (resetSelection) {
-        // VERY_GOOD (Excellent) for USB sources, BALANCED for displays.
-        document.getElementById('resamplingFactor').value = externalSource ? '2' : '4';
+        // BALANCED for all capture sources.
+        document.getElementById('resamplingFactor').value = '4';
     }
 }
 
