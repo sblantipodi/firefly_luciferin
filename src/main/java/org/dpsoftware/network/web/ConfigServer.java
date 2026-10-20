@@ -53,7 +53,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -72,6 +74,8 @@ public class ConfigServer {
 
     private final StorageManager storageManager = new StorageManager();
     private final List<HttpServer> httpServers = new ArrayList<>();
+    private ScheduledExecutorService startRetryExecutor;
+    private boolean shutdownHookRegistered;
     private final WebMdnsAdvertiser mdnsAdvertiser = new WebMdnsAdvertiser();
     private final WebRtcStreamer webRtcStreamer = new WebRtcStreamer();
     private final WebRtcSignalingServer webRtcSignalingServer = new WebRtcSignalingServer(webRtcStreamer);
@@ -421,14 +425,28 @@ public class ConfigServer {
     }
 
     /**
-     * Stop the config endpoint on every bound interface.
+     * Cancel startup retries and stop the config endpoint on every bound interface.
      */
-    public void stop() {
+    public synchronized void stop() {
+        cancelStartRetry();
+        stopServers();
+    }
+
+    /**
+     * Release bound HTTP servers, request executors, mDNS advertising and preview resources.
+     * Preserve the retry task so a partially failed startup can be attempted again.
+     * Must be called while holding this server's monitor.
+     */
+    private void stopServers() {
         mdnsAdvertiser.stop();
         httpServers.forEach(server -> {
             try {
                 server.stop(0);
             } catch (Exception ignored) {
+            } finally {
+                if (server.getExecutor() instanceof ExecutorService executor) {
+                    executor.shutdown();
+                }
             }
         });
         httpServers.clear();
@@ -441,11 +459,16 @@ public class ConfigServer {
 
     /**
      * Starts one server per loopback or active non link local IPv4 address.
+     * Retries failed binds every ten seconds until startup succeeds or {@link #stop()} is called.
      */
     @SuppressWarnings("all")
-    public void start() {
+    public synchronized void start() {
         if (!httpServers.isEmpty()) {
             return;
+        }
+        if (!shutdownHookRegistered) {
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-config-shutdown"));
+            shutdownHookRegistered = true;
         }
         try {
             for (InetAddress address : localBindAddresses()) {
@@ -491,14 +514,52 @@ public class ConfigServer {
                 log.info("Config server listening on http://{}:{}", address.getHostAddress(), Constants.CONFIG_SERVER_DEFAULT_PORT);
             }
             if (httpServers.isEmpty()) {
-                log.warn("No local interface found, config server not started");
+                log.warn("No local interface found, config server not started. Retrying in 10 seconds");
+                scheduleStartRetry();
+                return;
             }
             mdnsAdvertiser.start(httpServers.stream().map(server -> server.getAddress().getAddress()).toList());
             GStreamerGrabber.webRtcStreamer = webRtcStreamer;
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-config-shutdown"));
+            cancelStartRetry();
         } catch (IOException e) {
-            stop();
-            log.warn("Unable to start config server: {}", e.getMessage());
+            stopServers();
+            log.warn("Unable to start config server: {}. Retrying in 10 seconds", e.getMessage());
+            scheduleStartRetry();
+        }
+    }
+
+    /**
+     * Schedule a single daemon task to retry startup every ten seconds.
+     * Ignore callbacks belonging to a cancelled retry executor.
+     * Must be called while holding this server's monitor.
+     */
+    private void scheduleStartRetry() {
+        if (startRetryExecutor != null) {
+            return;
+        }
+        startRetryExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "firefly-config-start-retry");
+            thread.setDaemon(true);
+            return thread;
+        });
+        ScheduledExecutorService owner = startRetryExecutor;
+        owner.scheduleWithFixedDelay(() -> {
+            synchronized (this) {
+                if (startRetryExecutor == owner) {
+                    start();
+                }
+            }
+        }, 10, 10, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Shut down the retry executor and invalidate any pending startup callbacks.
+     * Must be called while holding this server's monitor.
+     */
+    private void cancelStartRetry() {
+        if (startRetryExecutor != null) {
+            startRetryExecutor.shutdown();
+            startRetryExecutor = null;
         }
     }
 

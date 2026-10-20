@@ -42,7 +42,10 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,13 +63,20 @@ public class McpServer {
                     new SetProfileTool(CommonUtility.JSON_MAPPER))
             .collect(Collectors.toMap(McpTool::getName, Function.identity()));
     private HttpServer httpServer;
+    private ScheduledExecutorService startRetryExecutor;
+    private boolean shutdownHookRegistered;
 
     /**
      * Start the MCP HTTP endpoint on localhost.
+     * Retry failed binds every ten seconds until startup succeeds or {@link #stop()} is called.
      */
-    public void start() {
+    public synchronized void start() {
         if (httpServer != null) {
             return;
+        }
+        if (!shutdownHookRegistered) {
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-mcp-shutdown"));
+            shutdownHookRegistered = true;
         }
         try {
             httpServer = HttpServer.create(new InetSocketAddress(Constants.MSG_SERVER_HOST, Constants.MCP_DEFAULT_PORT), 0);
@@ -77,19 +87,59 @@ public class McpServer {
                 return thread;
             }));
             httpServer.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "firefly-mcp-shutdown"));
+            cancelStartRetry();
             log.info("MCP server listening on http://{}:{}{}", Constants.MSG_SERVER_HOST, Constants.MCP_DEFAULT_PORT, Constants.MCP_ENDPOINT);
         } catch (IOException e) {
-            log.warn("Unable to start MCP server: {}", e.getMessage());
+            log.warn("Unable to start MCP server: {}. Retrying in 10 seconds", e.getMessage());
+            scheduleStartRetry();
         }
     }
 
     /**
-     * Stop the MCP endpoint.
+     * Schedule a single daemon task to retry startup every ten seconds.
+     * Ignore callbacks belonging to a cancelled retry executor.
+     * Must be called while holding this server's monitor.
      */
-    public void stop() {
+    private void scheduleStartRetry() {
+        if (startRetryExecutor != null) {
+            return;
+        }
+        startRetryExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "firefly-mcp-start-retry");
+            thread.setDaemon(true);
+            return thread;
+        });
+        ScheduledExecutorService owner = startRetryExecutor;
+        owner.scheduleWithFixedDelay(() -> {
+            synchronized (this) {
+                if (startRetryExecutor == owner) {
+                    start();
+                }
+            }
+        }, 10, 10, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Shut down the retry executor and invalidate any pending startup callbacks.
+     * Must be called while holding this server's monitor.
+     */
+    private void cancelStartRetry() {
+        if (startRetryExecutor != null) {
+            startRetryExecutor.shutdown();
+            startRetryExecutor = null;
+        }
+    }
+
+    /**
+     * Cancel startup retries, stop the MCP endpoint and shut down its request executor.
+     */
+    public synchronized void stop() {
+        cancelStartRetry();
         if (httpServer != null) {
             httpServer.stop(0);
+            if (httpServer.getExecutor() instanceof ExecutorService executor) {
+                executor.shutdown();
+            }
             httpServer = null;
         }
     }
