@@ -437,6 +437,9 @@ public class DialogManager {
             ((SatellitesDialogController) controller).setTooltips();
         }
         Stage stage = initStage(root);
+        if (controller instanceof DisplayDialogController displayController) {
+            stage.setOnHidden(_ -> displayController.cancelPreview());
+        }
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setAlwaysOnTop(true);
         root.getProperties().put(FADE_DIALOG_ON_CLOSE, true);

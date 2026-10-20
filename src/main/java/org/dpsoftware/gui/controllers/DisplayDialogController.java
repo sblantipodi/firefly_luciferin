@@ -37,7 +37,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.util.List;
 
 /**
- * Gamma dialog controller
+ * Display dialog controller
  */
 public class DisplayDialogController {
 
@@ -51,6 +51,19 @@ public class DisplayDialogController {
     @FXML
     private SettingsController settingsController;
 
+    private String savedLut = Constants.DISABLED;
+    private boolean previewEnabled;
+
+    /**
+     * Handle cube LUT combo change, method used by the Web Server too
+     *
+     * @param value lut filename
+     */
+    public static void handleCubeLutCombo(String value) {
+        MainSingleton.getInstance().config.setCubeLut(value);
+        CubeLutToneMap.refresh();
+    }
+
     /**
      * Inject main controller containing the TabPane
      *
@@ -61,12 +74,27 @@ public class DisplayDialogController {
     }
 
     /**
+     * Apply committed combo box selections immediately, without writing the configuration file.
+     */
+    @FXML
+    protected void initialize() {
+        cubeLutCombo.valueProperty().addListener((_, _, value) -> {
+            if (previewEnabled && MainSingleton.getInstance().config != null) {
+                handleCubeLutCombo(DisplayDialogOptions.selectedLut(value));
+            }
+        });
+    }
+
+    /**
      * Init default values
      */
     public void initDefaultValues() {
+        previewEnabled = false;
+        savedLut = Constants.DISABLED;
         cubeLutCombo.getItems().setAll(DisplayDialogOptions.availableLuts());
         cubeLutCombo.setValue(Constants.DISABLED);
         setTooltips();
+        previewEnabled = true;
     }
 
     /**
@@ -75,6 +103,8 @@ public class DisplayDialogController {
      * @param currentConfig current configuration
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
+        previewEnabled = false;
+        savedLut = currentConfig.getCubeLut();
         List<String> luts = DisplayDialogOptions.availableLuts();
         cubeLutCombo.getItems().setAll(luts);
         String current = currentConfig.getCubeLut();
@@ -85,16 +115,7 @@ public class DisplayDialogController {
         }
         cubeLutCombo.setValue(DisplayDialogOptions.selectedLut(current));
         setTooltips();
-    }
-
-    /**
-     * Handle cube lut combo change, methos used by the Web Server too
-     *
-     * @param value lut filename
-     */
-    public static void handleCubeLutCombo(String value) {
-        MainSingleton.getInstance().config.setCubeLut(value);
-        CubeLutToneMap.refresh();
+        previewEnabled = true;
     }
 
     /**
@@ -111,7 +132,22 @@ public class DisplayDialogController {
      */
     @FXML
     public void close(InputEvent e) {
+        cancelPreview();
         CommonUtility.closeCurrentStage(e);
+    }
+
+    /**
+     * Restore the last confirmed LUT, including the form value used by subsequent settings saves.
+     */
+    public void cancelPreview() {
+        previewEnabled = false;
+        cubeLutCombo.setValue(DisplayDialogOptions.selectedLut(savedLut));
+        if (cubeLutCombo.isEditable()) {
+            cubeLutCombo.getEditor().setText(DisplayDialogOptions.selectedLut(savedLut));
+        }
+        if (MainSingleton.getInstance().config != null) {
+            handleCubeLutCombo(savedLut);
+        }
     }
 
     /**
@@ -135,6 +171,9 @@ public class DisplayDialogController {
         settingsController.injectDisplayController(this);
         settingsController.save(e);
         CubeLutToneMap.refresh();
+        if (MainSingleton.getInstance().config != null) {
+            savedLut = MainSingleton.getInstance().config.getCubeLut();
+        }
     }
 
     /**
