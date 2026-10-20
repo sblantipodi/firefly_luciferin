@@ -356,8 +356,7 @@ public class PipelineManager {
             }
             NetworkSingleton.getInstance().msgClient.sendMessage(sb.toString());
         } else {
-            //noinspection ResultOfMethodCallIgnored
-            MainSingleton.getInstance().sharedQueue.offer(leds);
+            MainSingleton.getInstance().offerLatestFrame(leds);
         }
     }
 

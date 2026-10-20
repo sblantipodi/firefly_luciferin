@@ -296,7 +296,7 @@ public class MessageServer {
                 return;
             }
         }
-        MainSingleton.getInstance().sharedQueue.offer(leds);
+        MainSingleton.getInstance().offerLatestFrame(leds);
     }
 
     /**

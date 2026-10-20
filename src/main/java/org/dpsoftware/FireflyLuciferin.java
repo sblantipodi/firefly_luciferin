@@ -431,7 +431,7 @@ public class FireflyLuciferin extends Application {
                 if (main.RUNNING && main.FPS_PRODUCER == 0
                         && main.lastLedColor != null && main.lastLedColor.length > 0) {
                     Collections.reverse(Arrays.asList(main.lastLedColor));
-                    main.sharedQueue.offer(main.lastLedColor);
+                    main.offerKeepaliveFrame(main.lastLedColor);
                 }
             };
             waylandScheduledExecutorService.scheduleAtFixedRate(waylandTask, 0, 200, TimeUnit.MILLISECONDS);

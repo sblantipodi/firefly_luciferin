@@ -24,6 +24,7 @@ package org.dpsoftware;
 import com.fazecast.jSerialComm.SerialPort;
 import javafx.application.HostServices;
 import jdk.incubator.vector.VectorSpecies;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -70,7 +71,9 @@ public class MainSingleton {
     public Configuration config;
     // Start and Stop threads
     public boolean RUNNING = false;
-    // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port.
+    @Getter(AccessLevel.NONE)
+    private final Object frameQueueLock = new Object();
+    // One pending frame; producers replace obsolete output via offerLatestFrame.
     public BlockingQueue<Color[]> sharedQueue;
     public Color[] lastLedColor;
     // Number of LEDs on the strip
@@ -111,6 +114,30 @@ public class MainSingleton {
     public String improvActive = "";
     public boolean hdrActive;
     public boolean headlessMode = false;
+
+    /**
+     * Publish fresh LED output without waiting for the device. Serialize producers
+     * so replacing a full queue cannot discard a newer producer's publication.
+     */
+    public void offerLatestFrame(Color[] colors) {
+        synchronized (frameQueueLock) {
+            BlockingQueue<Color[]> queue = sharedQueue;
+            while (!queue.offer(colors)) {
+                queue.poll();
+            }
+        }
+    }
+
+    /**
+     * A keepalive is a replay, not a fresh capture: never replace pending output.
+     *
+     * @return true if queued; false if pending output already fills the queue
+     */
+    public boolean offerKeepaliveFrame(Color[] colors) {
+        synchronized (frameQueueLock) {
+            return sharedQueue.offer(colors);
+        }
+    }
 
 }
 

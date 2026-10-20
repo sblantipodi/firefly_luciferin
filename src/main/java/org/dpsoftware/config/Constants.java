@@ -404,7 +404,6 @@ public class Constants {
     public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
     public static final String GAP_TYPE_DEFAULT_TOP_BOTTOM = "8%";
     public static final String GAP_TYPE_DEFAULT_SIDE = "0%";
-    public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
     public static final long SIMD_BENCHMARK_DURATION_MS = 120_000;

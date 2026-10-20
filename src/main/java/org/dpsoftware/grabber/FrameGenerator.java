@@ -23,7 +23,6 @@ package org.dpsoftware.grabber;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.config.Constants;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -31,12 +30,14 @@ import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
 /**
- * Generates interpolated frames between captured frames.
- * Inserted frames represent the linear interpolation from the two captured frames.
+ * Generates interpolated LED frames at a cadence independent of capture.
+ * Each new capture redirects a linear transition from the current generated color.
  * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
  * <p>
  * The GStreamer sink only publishes colors. A dedicated worker owns interpolation
  * and pacing; one replaceable pending frame prevents a backlog when output is slow.
+ * When capture pauses, output converges to the last known target, allowing downstream
+ * EMA to settle without requiring another capture.
  * <p>
  * The internal state is reallocated on the fly if the number of LED zones
  * changes at runtime (e.g. LED matrix or aspect ratio switch), so a
@@ -144,67 +145,73 @@ public class FrameGenerator {
     }
 
     /**
-     * Consume pending snapshots and interpolate colors on the dedicated worker.
-     * Pace output with monotonic deadlines and the original timing headroom,
-     * dropping overdue intermediate frames. Interruption terminates the worker.
+     * Render at the output rate even when capture is late or idle. Each tick can
+     * adopt the latest target without finishing an obsolete transition first.
+     * Missed output ticks are skipped, never replayed in a catch-up burst.
      */
     private void generateFrames() {
-        ColorFloat[] previous = new ColorFloat[initialLedCount];
-        Arrays.fill(previous, ColorFloat.BLACK);
+        ColorFloat[] current = new ColorFloat[initialLedCount];
+        Arrays.fill(current, ColorFloat.BLACK);
+        ColorFloat[] start = current;
+        ColorFloat[] target = null;
+        long period = 0;
+        long transitionStart = 0;
+        double transitionDuration = 1;
         long deadline = nanoTime.getAsLong();
         try {
             while (!stopRequested && !Thread.currentThread().isInterrupted()) {
+                long remaining;
+                while ((remaining = deadline - nanoTime.getAsLong()) > 0) {
+                    sleeper.sleep(remaining);
+                }
+                if (stopRequested || Thread.currentThread().isInterrupted()) return;
                 CapturedFrame captured;
                 synchronized (pendingLock) {
-                    while (pending == null) {
+                    while (target == null && pending == null) {
                         pendingLock.wait();
                     }
                     captured = pending;
                     pending = null;
                 }
-                ColorFloat[] leds = captured.leds();
-                if (previous.length != leds.length) {
-                    previous = new ColorFloat[leds.length];
-                    Arrays.fill(previous, ColorFloat.BLACK);
+                long now = nanoTime.getAsLong();
+                if (captured != null) {
+                    period = Math.max(1, TimeUnit.SECONDS.toNanos(1) / captured.outputFps());
+                    if (target == null) deadline = now;
+                    if (current.length != captured.leds().length) {
+                        current = new ColorFloat[captured.leds().length];
+                        Arrays.fill(current, ColorFloat.BLACK);
+                    }
+                    if (!Arrays.equals(target, captured.leds())) {
+                        start = current;
+                        target = captured.leds();
+                        transitionDuration = Math.max(period, 1_000_000_000.0 / captured.captureFps());
+                        // Advance one output interval immediately: 2x produces a genuine midpoint without adding a whole tick of latency.
+                        transitionStart = now - period;
+                    }
                 }
-                int frames = Math.max(1, captured.outputFps() / captured.captureFps());
-                // Preserve the original pacing headroom and millisecond truncation.
-                // Filling the entire capture interval delays the target color and
-                // lets scheduling overhead carry unfinished work into the next capture.
-                double frameDistanceMs = (double) (1000 / captured.captureFps()) / frames;
-                long period = TimeUnit.MILLISECONDS.toNanos((long) Math.max(1,
-                        frameDistanceMs - Constants.SMOOTHING_SLOW_FRAME_TOLERANCE));
-                deadline = Math.max(deadline, nanoTime.getAsLong());
-                for (int i = 0; i < frames; i++) {
-                    long remaining = deadline - nanoTime.getAsLong();
-                    if (remaining > 0) {
-                        sleeper.sleep(remaining);
+                float fraction = (float) Math.clamp((now - transitionStart) / transitionDuration, 0, 1);
+                if (fraction >= 1) {
+                    current = target;
+                } else {
+                    current = new ColorFloat[target.length];
+                    for (int j = 0; j < target.length; j++) {
+                        current[j] = new ColorFloat(
+                                start[j].r() + (target[j].r() - start[j].r()) * fraction,
+                                start[j].g() + (target[j].g() - start[j].g()) * fraction,
+                                start[j].b() + (target[j].b() - start[j].b()) * fraction);
                     }
-                    if (stopRequested || Thread.currentThread().isInterrupted()) {
-                        return;
-                    }
-                    // Drop overdue intermediate frames rather than emitting a catch-up burst.
-                    if (i < frames - 1 && nanoTime.getAsLong() - deadline >= period) {
-                        deadline += period;
-                        continue;
-                    }
-                    float fraction = frames == 1 ? 1f : (float) i / (frames - 1);
-                    ColorFloat[] interpolated = new ColorFloat[leds.length];
-                    for (int j = 0; j < leds.length; j++) {
-                        interpolated[j] = new ColorFloat(
-                                previous[j].r() + (leds[j].r() - previous[j].r()) * fraction,
-                                previous[j].g() + (leds[j].g() - previous[j].g()) * fraction,
-                                previous[j].b() + (leds[j].b() - previous[j].b()) * fraction);
-                    }
-                    try {
-                        // Output applies EMA/white balance in place; never pass the raw endpoints.
-                        output.accept(interpolated);
-                    } catch (RuntimeException e) {
-                        log.warn("Cannot output generated LED frame", e);
-                    }
-                    deadline = Math.max(deadline + period, nanoTime.getAsLong());
                 }
-                previous = leds;
+                try {
+                    // EMA white balance can replace array entries. Keep the unfiltered interpolation state private to this worker.
+                    output.accept(current.clone());
+                } catch (RuntimeException e) {
+                    log.warn("Cannot output generated LED frame", e);
+                }
+                deadline += period;
+                long afterOutput = nanoTime.getAsLong();
+                if (deadline <= afterOutput) {
+                    deadline += ((afterOutput - deadline) / period + 1) * period;
+                }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

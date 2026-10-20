@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class ImageProcessor {
 
-    private static float[][] previousColorFloat = null;
+    private static final ColorEma colorSmoothing = new ColorEma();
     //Get JNA User32 Instace
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
@@ -101,7 +101,7 @@ public class ImageProcessor {
      * Reset smoothing history when the LED matrix changes.
      */
     public static void resetPreviousColors() {
-        previousColorFloat = null;
+        colorSmoothing.reset();
     }
 
     /**
@@ -991,34 +991,16 @@ public class ImageProcessor {
      * - Keeps the colors steady while allowing smooth adaptation to screen changes.
      * A low β (e.g., 0.2) → Smoother but slower response (better for cinematic effects).
      * A high β (e.g., 0.5 - 0.7) → Faster adaptation (better for gaming or fast motion).
-     * By tuning β, you can adjust the balance between smoothness and responsiveness.
+     * The configured weight is applied unchanged on each update, so lower
+     * update rates intentionally produce longer transitions.
      *
      * @param leds leds array that will be sent to the strip
      */
     public static void exponentialMovingAverage(ColorFloat[] leds) {
-        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n())) {
-            float alpha = MainSingleton.getInstance().config.getEmaAlpha();
-            if (alpha <= 0f || alpha >= 1f) return;
-            int numLeds = leds.length;
-            if (previousColorFloat == null || previousColorFloat.length != numLeds) {
-                previousColorFloat = new float[numLeds][3];
-                for (int i = 0; i < numLeds; i++) {
-                    previousColorFloat[i][0] = leds[i].r();
-                    previousColorFloat[i][1] = leds[i].g();
-                    previousColorFloat[i][2] = leds[i].b();
-                }
-            }
-            for (int i = 0; i < numLeds; i++) {
-                previousColorFloat[i][0] = alpha * leds[i].r() + (1f - alpha) * previousColorFloat[i][0];
-                previousColorFloat[i][1] = alpha * leds[i].g() + (1f - alpha) * previousColorFloat[i][1];
-                previousColorFloat[i][2] = alpha * leds[i].b() + (1f - alpha) * previousColorFloat[i][2];
-                leds[i] = new ColorFloat(
-                        Math.clamp(previousColorFloat[i][0], 0f, 255f),
-                        Math.clamp(previousColorFloat[i][1], 0f, 255f),
-                        Math.clamp(previousColorFloat[i][2], 0f, 255f)
-                );
-            }
-        }
+        var config = MainSingleton.getInstance().config;
+        float alpha = config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n())
+                ? 0f : config.getEmaAlpha();
+        colorSmoothing.apply(leds, alpha);
     }
 
     /**
