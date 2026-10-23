@@ -181,6 +181,7 @@ public class FireflyLuciferin extends Application {
         NativeExecutor.createStartWMClass();
         StorageManager sm = new StorageManager();
         sm.deleteTempFiles();
+        sm.createSystemdService();
         launch(Objects.requireNonNull(args));
     }
 

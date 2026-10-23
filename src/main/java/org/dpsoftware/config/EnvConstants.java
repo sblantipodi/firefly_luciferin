@@ -44,7 +44,52 @@ public final class EnvConstants {
     public static final String CUSTOM_GSTREAMER_PIPELINE = System.getenv("CUSTOM_GSTREAMER_PIPELINE");
     public static final String CUSTOM_GSTREAMER_CAPS = System.getenv("CUSTOM_GSTREAMER_CAPS");
     public static final String CUSTOM_GSTREAMER_BO = System.getenv("CUSTOM_GSTREAMER_BO");
+    // User systemd services
+    public static final String LUCIFERIN_SERVICE_FILENAME = "luciferin.service";
+    public static final String LUCIFERIN_FLATPAK_SERVICE_FILENAME = "luciferin_flatpak.service";
+    public static final String LUCIFERIN_SNAP_SERVICE_FILENAME = "luciferin_snap.service";
+    public static final String LUCIFERIN_SERVICE = """
+            [Unit]
+            Description=Firefly Luciferin
+            After=pipewire.service
+            
+            [Service]
+            Type=simple
+            ExecStart=/opt/fireflyluciferin/bin/FireflyLuciferin
+            Restart=always
+            RestartSec=5
+            
+            [Install]
+            WantedBy=default.target
+            """;
+    public static final String LUCIFERIN_FLATPAK_SERVICE = """
+            [Unit]
+            Description=Firefly Luciferin Flatpak
+            After=pipewire.service
+            
+            [Service]
+            Type=simple
+            ExecStart=/usr/bin/flatpak run org.dpsoftware.FireflyLuciferin
+            ExecStop=/usr/bin/flatpak kill org.dpsoftware.FireflyLuciferin
+            Restart=always
+            RestartSec=5
+            
+            [Install]
+            WantedBy=default.target
+            """;
+    public static final String LUCIFERIN_SNAP_SERVICE = """
+            [Unit]
+            Description=Firefly Luciferin Snap
+            After=pipewire.service
 
-    private EnvConstants() {
-    }
+            [Service]
+            Type=simple
+            ExecStart=/usr/bin/snap run fireflyluciferin
+            Restart=always
+            RestartSec=5
+            
+            [Install]
+            WantedBy=default.target
+            """;
+
 }

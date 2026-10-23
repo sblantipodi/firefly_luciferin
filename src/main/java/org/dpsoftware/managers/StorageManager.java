@@ -28,10 +28,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.InstanceConfigurer;
+import org.dpsoftware.config.*;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
@@ -629,6 +626,34 @@ public class StorageManager {
         };
         Files.walkFileTree(rootDir, matcherVisitor);
         return matchesList;
+    }
+
+    /**
+     * Create the Linux user service if missing, without preventing startup on failure.
+     */
+    public void createSystemdService() {
+        if (!NativeExecutor.isLinux()) {
+            return;
+        }
+        try {
+            String serviceFilename = EnvConstants.LUCIFERIN_SERVICE_FILENAME;
+            String serviceContent = EnvConstants.LUCIFERIN_SERVICE;
+            if (NativeExecutor.isFlatpak()) {
+                serviceFilename = EnvConstants.LUCIFERIN_FLATPAK_SERVICE_FILENAME;
+                serviceContent = EnvConstants.LUCIFERIN_FLATPAK_SERVICE;
+            } else if (NativeExecutor.isSnap()) {
+                serviceFilename = EnvConstants.LUCIFERIN_SNAP_SERVICE_FILENAME;
+                serviceContent = EnvConstants.LUCIFERIN_SNAP_SERVICE;
+            }
+            Path serviceDirectory = Path.of(System.getProperty(Constants.HOME_PATH), ".config", "systemd", "user");
+            Path serviceFile = serviceDirectory.resolve(serviceFilename);
+            Files.createDirectories(serviceDirectory);
+            Files.writeString(serviceFile, serviceContent, StandardOpenOption.CREATE_NEW);
+        } catch (FileAlreadyExistsException e) {
+            // Preserve existing services, including those created by another instance.
+        } catch (IOException | SecurityException | InvalidPathException e) {
+            log.debug("Unable to create user systemd service: {}", e.getMessage());
+        }
     }
 
     /**
