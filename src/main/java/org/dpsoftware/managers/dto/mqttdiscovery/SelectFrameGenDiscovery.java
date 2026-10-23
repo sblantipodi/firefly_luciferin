@@ -55,7 +55,7 @@ public class SelectFrameGenDiscovery extends DeviceDiscovery implements Discover
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Frame Generation");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.frameGen | default('" + Enums.FrameGeneration.DISABLED.getBaseI18n() + "') }}";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framgen/set";

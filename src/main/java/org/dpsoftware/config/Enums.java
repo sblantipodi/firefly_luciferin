@@ -69,6 +69,21 @@ public class Enums {
         L
     }
 
+    public enum VideoDeviceFormat {
+        MJPG,
+        YUY2,
+        UYVY,
+        NV12,
+        NV21,
+        H264,
+        I420,
+        YV12,
+        RGB,
+        BGR,
+        GRAY8,
+        RAW
+    }
+
     public enum TRAY_PREFERENCE {
         AUTO,
         DISABLED,
@@ -468,17 +483,23 @@ public class Enums {
     }
 
     public enum ResamplingFactor implements LocalizedEnum {
-        POOR("enum.resampling.factor.poor", 12),
-        FAIR("enum.resampling.factor.fair", 8),
-        BALANCED("enum.resampling.factor.balanced", 4),
-        VERY_GOOD("enum.resampling.factor.verygood", 2),
-        NATIVE("enum.resampling.factor.native", 1);
+        POOR("enum.resampling.factor.poor", 12, 4),
+        FAIR("enum.resampling.factor.fair", 8, 4),
+        BALANCED("enum.resampling.factor.balanced", 4, 2),
+        VERY_GOOD("enum.resampling.factor.verygood", 2, 2),
+        NATIVE("enum.resampling.factor.native", 1, 1);
         private final String quality;
         private final int resamplingFactor;
+        /**
+         * Divisor used only to select the USB device capture resolution, before pipeline scaling.
+         */
+        @Getter
+        private final int usbCaptureFactor;
 
-        ResamplingFactor(String quality, int resamplingFactor) {
+        ResamplingFactor(String quality, int resamplingFactor, int usbCaptureFactor) {
             this.quality = quality;
             this.resamplingFactor = resamplingFactor;
+            this.usbCaptureFactor = usbCaptureFactor;
         }
 
         public static ResamplingFactor findByValue(final int resamplingFactorValue) {
@@ -552,6 +573,7 @@ public class Enums {
         LIGHT_THEME_SILVER("enum.theme.light.silver", "css/theme-light-silver.css"),
         LIGHT_THEME_CYAN("enum.theme.light.cyan", "css/theme-light-cyan.css"),
         DARK_THEME_ORANGE("enum.theme.dark.orange", "css/theme-dark-orange.css"),
+        DARK_THEME_ORANGE_MODERN("enum.theme.dark.orange.modern", "css/theme-dark-orange-modern.css"),
         DARK_THEME_CYAN("enum.theme.dark.cyan", "css/theme-dark-cyan.css"),
         DARK_BLUE_THEME("enum.theme.blue.dark", "css/theme-dark-blue.css"),
         DARK_THEME_ARTIC("enum.theme.dark.artic", "css/theme-dark-artic.css"),
@@ -610,6 +632,27 @@ public class Enums {
 
         public String getValue() {
             return nightLight;
+        }
+    }
+
+    public enum GammaLevel implements LocalizedEnum {
+        LOW("enum.gamma.level.low"),
+        MEDIUM("enum.gamma.level.medium"),
+        HIGH("enum.gamma.level.high");
+
+        private final String gammaLevel;
+
+        GammaLevel(String gammaLevel) {
+            this.gammaLevel = gammaLevel;
+        }
+
+        public static GammaLevel findByValue(final String valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getBaseI18n().equals(valToSearch)).findFirst().orElse(null);
+        }
+
+        @Override
+        public String getValue() {
+            return gammaLevel;
         }
     }
 

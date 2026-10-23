@@ -6,29 +6,29 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="455.0" prefWidth="420.0"
             xmlns="http://javafx.com/javafx/17.0.12" fx:controller="org.dpsoftware.gui.controllers.MiscTabController">
 
-    <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="430.0"
-              prefWidth="420.0">
+    <GridPane prefHeight="425.0" prefWidth="420.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="129.4"/>
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0"
                                prefWidth="250.20000000000002"/>
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="49.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="49.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="ALWAYS"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="ALWAYS"/>
+            <RowConstraints minHeight="35.0" prefHeight="35.0" maxHeight="35.0" vgrow="NEVER"/>
         </rowConstraints>
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            <Insets bottom="16.0" left="20.0" right="20.0" top="20.0"/>
         </padding>
 
         <Label text="%fxml.misctab.ledcontrol" wrapText="true"/>
@@ -55,7 +55,19 @@
             </GridPane.margin>
         </Slider>
         <Label fx:id="contextGammaGain" text="%fxml.misctab.gamma" wrapText="true" GridPane.rowIndex="2"/>
-        <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <HBox prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="220.0">
+                <HBox.margin>
+                    <Insets right="8.0" top="7.0"/>
+                </HBox.margin>
+            </ComboBox>
+            <Button fx:id="enableAutomaticGamma" mnemonicParsing="false"
+                    onMouseClicked="#openGammaDialog" styleClass="menuButton" text="☰">
+                <HBox.margin>
+                    <Insets top="7.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
         <Label onMouseClicked="#openCCDialog" styleClass="dialoglabel" text="%fxml.misctab.whitetemp" underline="true"
                wrapText="true" GridPane.rowIndex="3">
             <cursor>
@@ -91,15 +103,16 @@
                     <Insets right="15.0" top="7.0"/>
                 </HBox.margin>
             </Spinner>
-            <Button fx:id="eyeCareBtn" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#openEyeCareDialog"
-                    prefWidth="30.0" text="☰">
+            <Button fx:id="eyeCareBtn" mnemonicParsing="false" onMouseClicked="#openEyeCareDialog"
+                    styleClass="menuButton" text="☰">
                 <HBox.margin>
                     <Insets top="7.0"/>
                 </HBox.margin>
             </Button>
         </HBox>
         <Button fx:id="saveMiscButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save"
-                GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" GridPane.valignment="TOP"/>
+                GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8"
+                GridPane.valignment="BOTTOM"/>
         <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="120.0" GridPane.columnIndex="1"
                   GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
         <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0"
@@ -154,8 +167,8 @@
                     <Insets right="8.0"/>
                 </HBox.margin>
             </ComboBox>
-            <Button fx:id="smoothingBtn" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#openSmoothingDialog"
-                    prefWidth="30.0" text="☰"/>
+            <Button fx:id="smoothingBtn" mnemonicParsing="false" onMouseClicked="#openSmoothingDialog"
+                    styleClass="menuButton" text="☰"/>
         </HBox>
     </GridPane>
 

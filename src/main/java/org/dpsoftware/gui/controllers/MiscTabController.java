@@ -34,18 +34,16 @@ import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.audio.AudioLoopbackSoftware;
-import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.WidgetFactory;
+import org.dpsoftware.gui.controllers.options.MiscTabOptions;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
-import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.StateDto;
@@ -103,6 +101,8 @@ public class MiscTabController {
     @FXML
     public Button eyeCareBtn;
     @FXML
+    public Button enableAutomaticGamma;
+    @FXML
     public Button smoothingBtn;
     @FXML
     public ComboBox<String> profiles;
@@ -147,47 +147,16 @@ public class MiscTabController {
      * Init audio combo
      */
     private void initAudioCombo() {
-        if (MainSingleton.getInstance().config != null && AudioSingleton.getInstance().audioDevices.isEmpty()) {
-            AudioUtility audioLoopback = new AudioLoopbackSoftware();
-            for (AudioDevice device : audioLoopback.getLoopbackDevices().values()) {
-                addStaticDevices();
-                if (device.getDeviceName().contains(Constants.LOOPBACK) || device.getDeviceName().contains(Constants.SHARED)) {
-                    audioDevice.getItems().add(device.getDeviceName());
-                }
-            }
-        } else {
-            for (AudioDevice device : AudioSingleton.getInstance().audioDevices.values()) {
-                addStaticDevices();
-                if (!audioDevice.getItems().contains(device.getDeviceName())) {
-                    audioDevice.getItems().add(device.getDeviceName());
-                }
-            }
-        }
-    }
-
-    /**
-     * Add static devices
-     */
-    private void addStaticDevices() {
-        if (NativeExecutor.isWindows() && !audioDevice.getItems().contains(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n())) {
-            audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
-        }
-        if (!audioDevice.getItems().contains(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n())) {
-            audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
-        }
+        MiscTabOptions.audioDeviceNames().stream()
+                .filter(name -> !audioDevice.getItems().contains(name))
+                .forEach(audioDevice.getItems()::add);
     }
 
     /**
      * Manage framerate field
      */
     private void manageFramerate() {
-        for (Enums.Framerate fps : Enums.Framerate.values()) {
-            if (fps.getBaseI18n().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
-                framerate.getItems().add(fps.getI18n());
-            } else {
-                framerate.getItems().add(fps.getI18n() + Constants.FPS_VAL);
-            }
-        }
+        MiscTabOptions.captureFramerates().forEach(choice -> framerate.getItems().add(choice.label()));
         framerate.setEditable(true);
         framerate.setOnKeyPressed(event -> {
             if (MainSingleton.getInstance().config != null) {
@@ -239,20 +208,14 @@ public class MiscTabController {
      * @param config currecnt config file
      */
     private void setFramerateIntoConfig(Configuration config) {
-        if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-            config.setDesiredFramerate(framerate.getValue().replace(Constants.FPS_VAL, ""));
-        } else {
-            config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
-        }
+        config.setDesiredFramerate(MiscTabOptions.storedFramerate(framerate.getValue()));
     }
 
     /**
      * Init combo boxes
      */
     void initComboBox() {
-        for (Enums.Gamma gma : Enums.Gamma.values()) {
-            gamma.getItems().add(gma.getGamma());
-        }
+        gamma.getItems().addAll(MiscTabOptions.gammaValues());
         for (Enums.Effect ef : Enums.Effect.values()) {
             effect.getItems().add(ef.getI18n());
         }
@@ -275,7 +238,7 @@ public class MiscTabController {
         colorMode.setValue(Enums.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Enums.Effect.BIAS_LIGHT.getI18n());
         framerate.setValue(Enums.Framerate.FPS_30.getI18n() + Constants.FPS_VAL);
-        smoothing.setValue(CommonUtility.getWord(Constants.NO_SMOOTHING));
+        smoothing.setValue(CommonUtility.getWord(LabelKey.NO_SMOOTHING));
         toggleLed.setSelected(true);
         brightness.setValue(255);
         audioGain.setVisible(false);
@@ -296,7 +259,7 @@ public class MiscTabController {
         removeProfileButton.setDisable(true);
         applyProfileButton.setDisable(true);
         profiles.setDisable(true);
-        profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
+        profiles.setValue(CommonUtility.getWord(LabelKey.DEFAULT));
         colorPicker.setValue(Constants.DEFAULT_COLOR);
         smoothingBtn.setDisable(true);
     }
@@ -330,13 +293,7 @@ public class MiscTabController {
      */
     public void initValuesFromSettingsFile(Configuration currentConfig, boolean updateProfiles) {
         smoothingBtn.setDisable(false);
-        smoothing.setDisable((!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
-                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
-                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
-                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
-                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
-                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
-                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())));
+        smoothing.setDisable(!Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).isGStreamer());
         gamma.setValue(String.valueOf(MainSingleton.getInstance().config.getGamma()));
         colorMode.setValue(Enums.ColorMode.values()[MainSingleton.getInstance().config.getColorMode() - 1].getI18n());
         if (!MainSingleton.getInstance().config.getDesiredFramerate().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
@@ -367,9 +324,9 @@ public class MiscTabController {
             effect.setValue(Enums.Effect.SOLID.getI18n());
         }
         if (MainSingleton.getInstance().config.isToggleLed()) {
-            toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
+            toggleLed.setText(CommonUtility.getWord(LabelKey.TURN_LED_OFF));
         } else {
-            toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_ON));
+            toggleLed.setText(CommonUtility.getWord(LabelKey.TURN_LED_ON));
         }
         toggleLed.setSelected(MainSingleton.getInstance().config.isToggleLed());
         WidgetFactory widgetFactory = new WidgetFactory();
@@ -380,10 +337,10 @@ public class MiscTabController {
         if (updateProfiles) {
             StorageManager sm = new StorageManager();
             profiles.getItems().addAll(sm.listProfilesForThisInstance());
-            profiles.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
+            profiles.getItems().add(CommonUtility.getWord(LabelKey.DEFAULT));
         }
-        if (MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
-            profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
+        if (MainSingleton.getInstance().profileArg.equals(LabelKey.DEFAULT)) {
+            profiles.setValue(CommonUtility.getWord(LabelKey.DEFAULT));
         } else {
             profiles.setValue(MainSingleton.getInstance().profileArg);
         }
@@ -396,24 +353,22 @@ public class MiscTabController {
      * Setup the context menu based on the selected effect
      */
     public void setContextMenu() {
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-        if (Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
+        if (MiscTabOptions.isAudioEffect(MainSingleton.getInstance().config.getEffect())) {
             colorPicker.setVisible(false);
-            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_DEVICE));
+            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_AUDIO_DEVICE));
             gamma.setVisible(false);
-            contextGammaGain.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_GAIN));
+            enableAutomaticGamma.setVisible(false);
+            contextGammaGain.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_AUDIO_GAIN));
             audioGain.setVisible(true);
             audioDevice.setVisible(true);
             audioChannels.setVisible(true);
             colorMode.setVisible(false);
         } else {
             colorPicker.setVisible(true);
-            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_COLOR));
+            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_COLOR));
             gamma.setVisible(true);
-            contextGammaGain.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_GAMMA));
+            enableAutomaticGamma.setVisible(true);
+            contextGammaGain.setText(CommonUtility.getWord(LabelKey.CONTEXT_MENU_GAMMA));
             audioGain.setVisible(false);
             audioDevice.setVisible(false);
             audioChannels.setVisible(false);
@@ -483,7 +438,7 @@ public class MiscTabController {
             StorageManager sm = new StorageManager();
             removeProfileButton.setDisable(!sm.checkIfFileExist(sm.getProfileFileName(profileName)));
             applyProfileButton.setDisable(!sm.checkIfFileExist(sm.getProfileFileName(profileName)));
-            if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            if (profileName.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
                 addProfileButton.setDisable(false);
                 removeProfileButton.setDisable(true);
                 applyProfileButton.setDisable(false);
@@ -526,13 +481,13 @@ public class MiscTabController {
         // Toggle LED button listener
         toggleLed.setOnAction(_ -> {
             if ((toggleLed.isSelected())) {
-                toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
+                toggleLed.setText(CommonUtility.getWord(LabelKey.TURN_LED_OFF));
                 turnOnLEDs(currentConfig, true);
                 if (MainSingleton.getInstance().config != null) {
                     MainSingleton.getInstance().config.setToggleLed(true);
                 }
             } else {
-                toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_ON));
+                toggleLed.setText(CommonUtility.getWord(LabelKey.TURN_LED_ON));
                 CommonUtility.turnOffLEDs(currentConfig);
                 if (MainSingleton.getInstance().config != null) {
                     MainSingleton.getInstance().config.setToggleLed(false);
@@ -770,16 +725,18 @@ public class MiscTabController {
         if (MainSingleton.getInstance().config != null) {
             config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
             config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
+            config.setSmoothingTargetFramerate(MainSingleton.getInstance().config.getSmoothingTargetFramerate());
         } else {
             config.setFrameInsertionTarget(smooth.getFrameInsertionFramerate());
             config.setEmaAlpha(smooth.getEmaAlpha());
+            config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
         }
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
         config.setNightModeTo(nightModeTo.getValue().toString());
         config.setNightModeBrightness(nightModeBrightness.getValue());
-        config.setBrightness((int) (brightness.getValue() / 100 * 255));
-        config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
+        config.setBrightness(MiscTabOptions.storedBrightness(brightness.getValue()));
+        config.setWhiteTemperature(MiscTabOptions.storedWhiteTemperature(whiteTemp.getValue()));
         config.setAudioChannels(LocalizedEnum.fromStr(Enums.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
         var audioDeviceFromConfig = LocalizedEnum.fromStr(Enums.Audio.class, audioDevice.getValue());
@@ -791,8 +748,9 @@ public class MiscTabController {
         }
         config.setAudioDevice(audioDeviceToStore);
         config.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, effect.getValue()).getBaseI18n());
-        config.setColorChooser((int) (colorPicker.getValue().getRed() * 255) + "," + (int) (colorPicker.getValue().getGreen() * 255) + ","
-                + (int) (colorPicker.getValue().getBlue() * 255) + "," + (int) (colorPicker.getValue().getOpacity() * 255));
+        config.setColorChooser(MiscTabOptions.colorChooser((int) (colorPicker.getValue().getRed() * 255),
+                (int) (colorPicker.getValue().getGreen() * 255), (int) (colorPicker.getValue().getBlue() * 255),
+                (int) (colorPicker.getValue().getOpacity() * 255)));
     }
 
     /**
@@ -834,7 +792,7 @@ public class MiscTabController {
     @SuppressWarnings("unused")
     public void removeProfile(InputEvent e) {
         String profileName = profiles.getValue();
-        if (!profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+        if (!profileName.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
             profiles.getItems().remove(profileName);
             profiles.commitValue();
             StorageManager sm = new StorageManager();
@@ -874,7 +832,7 @@ public class MiscTabController {
      */
     private void setProfileButtonContext() {
         if (NativeExecutor.isWindows()) {
-            if (!MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(Constants.DEFAULT)) && MainSingleton.getInstance().profileArg.equals(profiles.getValue())) {
+            if (!MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(LabelKey.DEFAULT)) && MainSingleton.getInstance().profileArg.equals(profiles.getValue())) {
                 applyProfileButton.setText(Constants.DIALOG);
                 applyProfileButton.setOnMouseClicked(this::openProfileDialog);
             } else {
@@ -901,6 +859,16 @@ public class MiscTabController {
     public void openEyeCareDialog() {
         if (MainSingleton.getInstance().guiManager != null) {
             MainSingleton.getInstance().guiManager.showEyeCareDialog(settingsController);
+        }
+    }
+
+    /**
+     * Show gamma dialog
+     */
+    @FXML
+    public void openGammaDialog() {
+        if (MainSingleton.getInstance().guiManager != null) {
+            MainSingleton.getInstance().guiManager.showGammaDialog(settingsController);
         }
     }
 
@@ -933,7 +901,7 @@ public class MiscTabController {
         String profileName = getFormattedProfileName();
         if (!profileName.isEmpty()) {
             String fileToWrite = profileName;
-            if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            if (profileName.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
                 switch (MainSingleton.getInstance().whoAmI) {
                     case 1 -> fileToWrite = Constants.CONFIG_FILENAME;
                     case 2 -> fileToWrite = Constants.CONFIG_FILENAME_2;
@@ -959,10 +927,10 @@ public class MiscTabController {
     private String getFormattedProfileName() {
         String profile = profiles.getValue() != null ? profiles.getValue().toLowerCase() : "";
         profile = CommonUtility.capitalize(profile);
-        if (CommonUtility.getWord(Constants.STOP).equals(profile)
-                || CommonUtility.getWord(Constants.START).equals(profile)
-                || CommonUtility.getWord(Constants.SETTINGS).equals(profile)
-                || CommonUtility.getWord(Constants.INFO).equals(profile)) {
+        if (CommonUtility.getWord(LabelKey.STOP).equals(profile)
+                || CommonUtility.getWord(LabelKey.START).equals(profile)
+                || CommonUtility.getWord(LabelKey.SETTINGS).equals(profile)
+                || CommonUtility.getWord(LabelKey.INFO).equals(profile)) {
             return profile + " ";
         }
         return profile;
@@ -1002,29 +970,30 @@ public class MiscTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        GuiManager.createTooltip(Constants.TOOLTIP_GAMMA, gamma);
-        GuiManager.createTooltip(Constants.TOOLTIP_FRAMERATE, framerate);
-        GuiManager.createTooltip(Constants.TOOLTIP_SMOOTHING, smoothing);
-        GuiManager.createTooltip(Constants.TOOLTIP_BRIGHTNESS, brightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_DEVICE, audioDevice);
-        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_CHANNELS, audioChannels);
-        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_GAIN, audioGain);
-        GuiManager.createTooltip(Constants.TOOLTIP_EFFECT, effect);
-        GuiManager.createTooltip(Constants.TOOLTIP_COLORS, colorPicker);
-        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_FROM, nightModeFrom);
-        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_TO, nightModeTo);
-        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_BRIGHT, nightModeBrightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_WHITE_TEMP, whiteTemp);
-        GuiManager.createTooltip(Constants.TOOLTIP_COLOR_MODE, colorMode);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GAMMA, gamma);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_FRAMERATE, framerate);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SMOOTHING, smoothing);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BRIGHTNESS, brightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_AUDIO_DEVICE, audioDevice);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_AUDIO_CHANNELS, audioChannels);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_AUDIO_GAIN, audioGain);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_EFFECT, effect);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_COLORS, colorPicker);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_MODE_FROM, nightModeFrom);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_MODE_TO, nightModeTo);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_MODE_BRIGHT, nightModeBrightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_WHITE_TEMP, whiteTemp);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_COLOR_MODE, colorMode);
         if (currentConfig == null) {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMiscButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMiscButton);
         }
-        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES, profiles);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_REMOVE, removeProfileButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_ADD, addProfileButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_APPLY, applyProfileButton);
-        GuiManager.createTooltip(Constants.SHOW_MORE_SETTINGS, smoothingBtn);
-        GuiManager.createTooltip(Constants.SHOW_MORE_SETTINGS, eyeCareBtn);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES, profiles);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_REMOVE, removeProfileButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_ADD, addProfileButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_APPLY, applyProfileButton);
+        GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, smoothingBtn);
+        GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, eyeCareBtn);
+        GuiManager.createTooltip(LabelKey.SHOW_MORE_SETTINGS, enableAutomaticGamma);
     }
 
     /**
@@ -1057,20 +1026,7 @@ public class MiscTabController {
             if (smooth == null) {
                 smooth = LocalizedEnum.fromStr(Enums.Smoothing.class, newVal);
             }
-            MainSingleton.getInstance().config.setSmoothingType(smooth.getBaseI18n());
-            if (smooth == Enums.Smoothing.DISABLED) {
-                MainSingleton.getInstance().config.setFrameInsertionTarget(0);
-                MainSingleton.getInstance().config.setEmaAlpha(0F);
-                MainSingleton.getInstance().config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
-            } else if (smooth == Enums.Smoothing.CUSTOM) {
-                MainSingleton.getInstance().config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
-                MainSingleton.getInstance().config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
-                MainSingleton.getInstance().config.setSmoothingTargetFramerate(MainSingleton.getInstance().config.getSmoothingTargetFramerate());
-            } else {
-                MainSingleton.getInstance().config.setFrameInsertionTarget(smooth.getFrameInsertionFramerate());
-                MainSingleton.getInstance().config.setEmaAlpha(smooth.getEmaAlpha());
-                MainSingleton.getInstance().config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
-            }
+            MiscTabOptions.applySmoothing(MainSingleton.getInstance().config, newVal);
             setFramerateEditable(smooth);
             if (settingsController != null && settingsController.smoothingDialogController != null) {
                 settingsController.smoothingDialogController.initValuesFromSettingsFile(MainSingleton.getInstance().config);

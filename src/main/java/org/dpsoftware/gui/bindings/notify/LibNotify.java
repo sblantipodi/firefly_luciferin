@@ -87,9 +87,10 @@ public class LibNotify extends CommonBinding {
         allPath.add("/app/lib");
         // for Fedora-like distributions
         allPath.add("/usr/lib64");
-        // for org.freedesktop.sdk (flatpak run org.freedesktop.Sdk//24.08)
+        // for org.freedesktop.sdk (flatpak run org.freedesktop.Sdk//24.08-26.08)
         allPath.add("/lib");
         allPath.add("/lib/x86_64-linux-gnu");
+        allPath.add("/lib/aarch64-linux-gnu");
         for (String path : allPath) {
             try {
                 System.load(path + File.separator + NOTIFY_SO);

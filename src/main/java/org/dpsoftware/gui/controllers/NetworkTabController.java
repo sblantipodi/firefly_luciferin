@@ -32,9 +32,9 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.dto.mqttdiscovery.*;
-import org.dpsoftware.utilities.CommonUtility;
+import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
+import org.dpsoftware.managers.dto.mqttdiscovery.DiscoveryObject;
 
 import java.awt.*;
 
@@ -81,44 +81,17 @@ public class NetworkTabController {
      * @param createEntity if true create the MQTT entity, if false it destroys the entity
      */
     public static void publishDiscoveryTopics(boolean createEntity) {
-        publishDiscoveryTopic(new SensorLastUpdateFFDiscovery(), createEntity);
-        publishDiscoveryTopic(new LightDiscovery(), createEntity);
-        publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectEmaDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectFrameGenDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectProfileDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorConsumingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorProducingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorVersionDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLedsDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLastUpdateDiscovery(), createEntity);
-        publishDiscoveryTopic(new SwitchRebootDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectAspectRatioDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorAspectRatioDiscovery(), createEntity);
-        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
-            publishDiscoveryTopic(new SelectColorModeDiscovery(), createEntity);
-        }
-        publishDiscoveryTopic(new SelectEffectDiscovery(), createEntity);
-        publishDiscoveryTopic(new SwitchBiasLightDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorGpioDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorWiFiDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLdrDiscovery(), createEntity);
+        NetworkTabOptions.publishDiscoveryTopics(createEntity);
     }
 
     /**
-     * Publish to a discovery topic to create or destroy the MQTT entity
+     * Publish one MQTT discovery entity through the shared network options.
      *
      * @param discoveryObject MQTT entity object
-     * @param createEntity    if true create the MQTT entity, if false it destroys the entity
+     * @param createEntity whether to create the entity
      */
     public static void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
-        log.info("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
-        log.info("Message sent: {}", discoveryObject.getCreateEntityStr());
-        NetworkManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
-                discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true, 0);
-        CommonUtility.sleepMilliseconds(Constants.MQTT_DISCOVERY_CALL_DELAY);
+        NetworkTabOptions.publishDiscoveryTopic(discoveryObject, createEntity);
     }
 
     /**
@@ -165,8 +138,9 @@ public class NetworkTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        mqttHost.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf("/") + 1, currentConfig.getMqttServer().lastIndexOf(":")));
-        mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
+        NetworkTabOptions.MqttAddress address = NetworkTabOptions.splitServer(currentConfig.getMqttServer());
+        mqttHost.setText(address.host());
+        mqttPort.setText(address.port());
         mqttTopic.setText(Constants.TOPIC_DEFAULT_MQTT.equals(currentConfig.getMqttTopic()) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
         mqttDiscoveryTopic.setText(currentConfig.getMqttDiscoveryTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
@@ -270,7 +244,7 @@ public class NetworkTabController {
      */
     @FXML
     public void save(Configuration config) {
-        config.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + mqttHost.getText() + ":" + mqttPort.getText());
+        config.setMqttServer(NetworkTabOptions.server(mqttHost.getText(), mqttPort.getText()));
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttDiscoveryTopic(mqttDiscoveryTopic.getText());
         config.setMqttUsername(mqttUser.getText());
@@ -295,8 +269,8 @@ public class NetworkTabController {
     public void discoveryAdd() {
         log.info("Sending entities for MQTT auto discovery...");
         publishDiscoveryTopics(true);
-        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
-                Constants.MQTT_ADD_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+        MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.MQTT_DISCOVERY,
+                LabelKey.MQTT_ADD_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
     }
 
     /**
@@ -306,8 +280,8 @@ public class NetworkTabController {
     public void discoveryRemove() {
         log.info("Removing entities using MQTT auto discovery...");
         publishDiscoveryTopics(false);
-        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
-                Constants.MQTT_REMOVE_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+        MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.MQTT_DISCOVERY,
+                LabelKey.MQTT_REMOVE_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
     }
 
     /**
@@ -316,21 +290,21 @@ public class NetworkTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTHOST, mqttHost);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTPORT, mqttPort);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTTOPIC, mqttTopic);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC, mqttDiscoveryTopic);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_ADD, addButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE, removeButton);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTUSER, mqttUser);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTPWD, mqttPwd);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTENABLE, mqttEnable);
-        GuiManager.createTooltip(Constants.TOOLTIP_MQTTSTREAM, mqttStream);
-        GuiManager.createTooltip(Constants.TOOLTIP_IMPROV_CONTEXT, programDeviceButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTHOST, mqttHost);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTPORT, mqttPort);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTTOPIC, mqttTopic);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTDISCOVERYTOPIC, mqttDiscoveryTopic);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTDISCOVERYTOPIC_ADD, addButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE, removeButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTUSER, mqttUser);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTPWD, mqttPwd);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTENABLE, mqttEnable);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTSTREAM, mqttStream);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_IMPROV_CONTEXT, programDeviceButton);
         if (currentConfig == null) {
-            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMQTTButton);
+            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMQTTButton);
         }
-        GuiManager.createTooltip(Constants.TOOLTIP_STREAMTYPE, streamType);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_STREAMTYPE, streamType);
     }
 
     /**

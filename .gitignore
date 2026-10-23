@@ -11,3 +11,10 @@ FireflyLuciferin.iml
 /src/main/resources/org/dpsoftware/gui/.idea/.gitignore
 /src/main/resources/org/dpsoftware/gui/.idea/copilot.data.migration.agent.xml
 /src/main/resources/org/dpsoftware/gui/.idea/vcs.xml
+/.settings/org.eclipse.core.resources.prefs
+/.settings/org.eclipse.jdt.apt.core.prefs
+/.settings/org.eclipse.jdt.core.prefs
+/.settings/org.eclipse.m2e.core.prefs
+/.classpath
+/.factorypath
+/.project
