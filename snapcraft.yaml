@@ -22,6 +22,13 @@ platforms:
   arm64:
 
 
+plugs:
+  # Auto-connection requires Snap Store approval.
+  systemd-user:
+    interface: personal-files
+    write:
+      - $HOME/.config/systemd/user/luciferin_snap.service
+
 parts:
 
   alsa-pulseaudio:
@@ -126,6 +133,7 @@ apps:
       - desktop
       - network
       - home
+      - systemd-user
       - pulseaudio
       - alsa
       - audio-playback
