@@ -79,7 +79,7 @@ public class LibNotify extends CommonBinding {
         // Enrich with LD paths
         List<String> ldPaths = getLdConfigPaths();
         if (!ldPaths.isEmpty()) {
-            allPath.addAll(getLdConfigPaths());
+            allPath.addAll(ldPaths);
         }
         // for systems, that don't implement multiarch
         allPath.add("/usr/lib");
