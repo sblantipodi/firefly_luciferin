@@ -33,6 +33,7 @@ public final class EnvConstants {
     public static final String LUCIFERIN_LIVE_PREVIEW_IMAGE = "LUCIFERIN_LIVE_PREVIEW_IMAGE";
     public static final String XDG_HOME = "XDG_CONFIG_HOME";
     public static final String PATH = "path";
+    public static final String LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
     public static final String GST_GL_WINDOW = "GST_GL_WINDOW";
     public static final String GST_GL_PLATFORM = "GST_GL_PLATFORM";
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
