@@ -51,6 +51,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
@@ -489,7 +490,14 @@ public class NetworkManager implements MqttCallback {
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
         connOpts.setConnectionTimeout(Constants.MQTT_CONN_TIMEOUT);
+        connOpts.setKeepAliveInterval(Constants.MQTT_KEEP_ALIVE_SECONDS);
         connOpts.setMaxInflight(Constants.MAX_INFLIGHT);
+        // The broker resets FPS even if the OS terminates the JVM before its shutdown hook runs.
+        // Secondary instances sharing one device must not reset the main instance's sensors.
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            connOpts.setWill(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE),
+                    Constants.MQTT_FIREFLY_0_FPS.getBytes(StandardCharsets.UTF_8), 1, false);
+        }
         if (MainSingleton.getInstance().config.getMqttUsername() != null && !MainSingleton.getInstance().config.getMqttUsername().isEmpty()) {
             connOpts.setUserName(MainSingleton.getInstance().config.getMqttUsername());
         }

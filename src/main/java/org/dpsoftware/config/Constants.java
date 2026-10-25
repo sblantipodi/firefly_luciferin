@@ -181,6 +181,7 @@ public class Constants {
     public static final String STATE_ON_GLOWWORM = "GlowWorm";
     public static final String STATE_ON_GLOWWORMWIFI = "GlowWormWifi";
     public static final int MQTT_CONN_TIMEOUT = 2;
+    public static final int MQTT_KEEP_ALIVE_SECONDS = 10;
     public static final int MAX_INFLIGHT = 1000;
     public static final String DEFAULT_MQTT_HOST = "192.168.1.3";
     public static final String DEFAULT_MQTT_PROTOCOL = "tcp://";
