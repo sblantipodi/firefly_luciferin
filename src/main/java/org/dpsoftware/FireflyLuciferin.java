@@ -24,6 +24,7 @@ package org.dpsoftware;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -297,6 +298,8 @@ public class FireflyLuciferin extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         MainSingleton main = MainSingleton.getInstance();
+        // Tray operation must not depend on opening the settings window first.
+        Platform.setImplicitExit(false);
         // Gnome 3 doesn't like this
         if (!NativeExecutor.isLinux()) {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -356,7 +359,7 @@ public class FireflyLuciferin extends Application {
         }
         scheduleBackgroundTasks(stage);
         // Preload main dialog that requires 1.8s to laod the FXML (more or less on a 13900K CPU)
-        if (NativeExecutor.isSystemTraySupported()) {
+        if (NativeExecutor.isSystemTraySupported() && !main.isHeadlessMode()) {
             main.guiManager.showSettingsDialog(true);
         }
         NativeExecutor.setSimdAvxInstructions();
