@@ -321,7 +321,7 @@ public class Configuration implements Cloneable {
         }
 
         public boolean isGStreamer() {
-            return this != AUTO && this != CPU && this != WinAPI;
+            return this != CPU && this != WinAPI;
         }
 
         public static CaptureMethod defaultForSource(boolean usb) {
