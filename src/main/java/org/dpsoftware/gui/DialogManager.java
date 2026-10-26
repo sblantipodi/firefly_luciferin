@@ -66,7 +66,7 @@ public class DialogManager {
     private static final String FADE_DIALOG_CLOSING = "fadeDialogClosing";
 
     private final GuiManager guiManager;
-    private final WebView wv;
+    private WebView wv;
 
     /**
      * Create the dialog manager for the main GUI.
@@ -75,7 +75,6 @@ public class DialogManager {
      */
     DialogManager(GuiManager guiManager) {
         this.guiManager = guiManager;
-        this.wv = new WebView();
     }
 
     /**
@@ -215,7 +214,10 @@ public class DialogManager {
      * @return the selected button, or an empty value if the dialog is dismissed
      */
     public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
-        //wv.getEngine().load(Objects.requireNonNull(getClass().getResource("css/pro.html")).toExternalForm());
+        // Load the native WebKit engine only when a web dialog is actually requested.
+        if (wv == null) {
+            wv = new WebView();
+        }
         wv.getEngine().load(webUrl);
         wv.getEngine().setUserStyleSheetLocation(Objects.requireNonNull(getClass().getResource(Constants.CSS_WEB_VIEW)).toExternalForm());
         int windowWidth = 1200 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResX(),
