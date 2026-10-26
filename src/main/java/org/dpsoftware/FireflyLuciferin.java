@@ -301,7 +301,7 @@ public class FireflyLuciferin extends Application {
         // Tray operation must not depend on opening the settings window first.
         Platform.setImplicitExit(false);
         // Gnome 3 doesn't like this
-        if (!NativeExecutor.isLinux()) {
+        if (!main.isHeadlessMode() && !NativeExecutor.isLinux()) {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         scheduleCheckForNightMode();
@@ -429,7 +429,7 @@ public class FireflyLuciferin extends Application {
         MainSingleton main = MainSingleton.getInstance();
         // Wayland only, create a task that pings Glow Worm device every 2 seconds, this is needed because wayland stops sending
         // updates to the device when the image on the screen is still.
-        if (NativeExecutor.isWayland()) {
+        if (!main.isHeadlessMode() && NativeExecutor.isWayland()) {
             ScheduledExecutorService waylandScheduledExecutorService = Executors.newScheduledThreadPool(1);
             Runnable waylandTask = () -> {
                 if (main.RUNNING && main.FPS_PRODUCER == 0

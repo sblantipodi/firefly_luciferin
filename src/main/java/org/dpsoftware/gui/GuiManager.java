@@ -48,6 +48,7 @@ import org.dpsoftware.grabber.SimdBenchmark;
 import org.dpsoftware.gui.controllers.*;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
 import org.dpsoftware.gui.trayicon.TrayIconAwt;
+import org.dpsoftware.gui.trayicon.TrayIconHeadless;
 import org.dpsoftware.gui.trayicon.TrayIconManager;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
@@ -94,10 +95,16 @@ public class GuiManager {
      * @throws HeadlessException GUI exception
      */
     public GuiManager(boolean initTray) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        pipelineManager = new PipelineManager();
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            if (initTray) {
+                trayIconManager = new TrayIconHeadless();
+            }
+            return;
+        }
         this.stage = new Stage();
         this.stageInfo = new Stage();
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        pipelineManager = new PipelineManager();
         if (initTray) {
             // Windows uses AWT tray, Linux uses libappindicator3 and libayatana-appindicator3, see LibAppIndicator.java for more infos
             if (NativeExecutor.isWindows() || MainSingleton.getInstance().config.getTrayPreference().equals(Enums.TRAY_PREFERENCE.FORCE_AWT)) {
@@ -106,9 +113,6 @@ public class GuiManager {
                 trayIconManager = new TrayIconAppIndicator();
             }
         }
-        // TODO Set this property to prevent a JavaFX exception when instantiating a WebView.
-        // System.setProperty("javafx.sg.warn", "true");
-        dialogManager = new DialogManager(this);
     }
 
     private DialogManager dialogManager() {
@@ -373,6 +377,10 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            log.info("{}: {} - {}", title, header, content);
+            return Optional.empty();
+        }
         return dialogManager().showAlert(title, header, content, alertType);
     }
 
@@ -386,7 +394,7 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
-        return dialogManager().showLocalizedAlert(title, header, content, alertType);
+        return showAlert(CommonUtility.getWord(title), CommonUtility.getWord(header), CommonUtility.getWord(content), alertType);
     }
 
 
@@ -400,6 +408,10 @@ public class GuiManager {
      * @param notificationType notification type
      */
     public void showNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            log.info("{}: {}", highlight, content);
+            return;
+        }
         dialogManager().showNotification(highlight, content, title, notificationType);
     }
 
@@ -412,6 +424,10 @@ public class GuiManager {
      * @param notificationType notification type
      */
     public void showLocalizedNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            showNotification(CommonUtility.getWord(highlight), CommonUtility.getWord(content), title, notificationType);
+            return;
+        }
         dialogManager().showLocalizedNotification(highlight, content, title, notificationType);
     }
 
@@ -457,6 +473,9 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            return showAlert(title, header, webUrl, alertType);
+        }
         return dialogManager().showWebAlert(title, header, webUrl, alertType);
     }
 
@@ -575,6 +594,10 @@ public class GuiManager {
      * @param configPresent true if config file is present
      */
     public void showStage(String stageName, boolean preloadFxml, boolean configPresent) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            log.debug("Skipping window {} in headless mode", stageName);
+            return;
+        }
         if (configPresent) {
             Platform.runLater(() -> showAndMakeVisible(stageName, preloadFxml, true));
         } else {
@@ -593,6 +616,9 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType, ButtonType... buttons) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            return showLocalizedAlert(title, header, content, alertType);
+        }
         return dialogManager().showLocalizedAlert(title, header, content, alertType, buttons);
     }
 
