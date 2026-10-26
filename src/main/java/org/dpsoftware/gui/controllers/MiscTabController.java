@@ -238,7 +238,7 @@ public class MiscTabController {
         colorMode.setValue(Enums.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Enums.Effect.BIAS_LIGHT.getI18n());
         framerate.setValue(Enums.Framerate.FPS_30.getI18n() + Constants.FPS_VAL);
-        smoothing.setValue(CommonUtility.getWord(LabelKey.NO_SMOOTHING));
+        smoothing.setValue(LocalizedEnum.fromBaseStr(Enums.Smoothing.class, Constants.DEFAULT_SMOOTHING).getI18n());
         toggleLed.setSelected(true);
         brightness.setValue(255);
         audioGain.setVisible(false);

@@ -415,9 +415,6 @@ public class StorageManager {
         defaultConfig.setPowerSaving("30 minutes");
         defaultConfig.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + Constants.DEFAULT_MQTT_HOST + ":" + Constants.DEFAULT_MQTT_PORT);
         defaultConfig.setMqttTopic(Constants.MQTT_BASE_TOPIC);
-        defaultConfig.setSmoothingType(Enums.Smoothing.DISABLED.getBaseI18n());
-        defaultConfig.setFrameInsertionTarget(0);
-        defaultConfig.setEmaAlpha(0.0F);
         if (defaultConfig.isFullFirmware()) {
             defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_115200.getBaudRate());
         } else {

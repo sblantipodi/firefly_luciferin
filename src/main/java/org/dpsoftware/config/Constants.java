@@ -43,8 +43,8 @@ public class Constants {
     public static final String DEFAULT_FRAMERATE = "30";
     public static final String DEFAULT_SMOOTHING = Enums.Smoothing.SMOOTHING_LVL_3.getBaseI18n();
     public static final int DEFAULT_SMOOTHING_TARGET = Enums.SmoothingTarget.TARGET_60_FPS.getSmoothingTargetValue();
-    public static final int DEFAULT_FRAMGEN = Enums.FrameGeneration.FI_2X.getFrameGenerationTarget();
-    public static final float DEFAULT_EMA = Enums.Ema.SMOOTHING_EMA_4.getEmaAlpha();
+    public static final int DEFAULT_FRAMGEN = Enums.Smoothing.SMOOTHING_LVL_3.getFrameInsertionFramerate();
+    public static final float DEFAULT_EMA = Enums.Smoothing.SMOOTHING_LVL_3.getEmaAlpha();
     public static final String FRAMERATE_CAP = "540";
     public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
     public static final String CLEAN_EXIT = "CLEAN EXIT";
