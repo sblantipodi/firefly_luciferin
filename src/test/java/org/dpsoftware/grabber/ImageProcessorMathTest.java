@@ -22,6 +22,7 @@
 package org.dpsoftware.grabber;
 
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,26 @@ class ImageProcessorMathTest {
     }
 
     // --- hasBlackBars ---
+
+    @Test
+    void gstreamerCaptureDoesNotLoadWindowsGdiOrAllocateScreenshotBuffers() {
+        String previousCaptureMethod = mockedInstance.config.getCaptureMethod();
+        try (MockedStatic<NativeExecutor> nativeExecutor = Mockito.mockStatic(NativeExecutor.class)) {
+            nativeExecutor.when(NativeExecutor::isWindows).thenReturn(true);
+            for (Configuration.CaptureMethod method : new Configuration.CaptureMethod[]{
+                    Configuration.CaptureMethod.DDUPL_DX11,
+                    Configuration.CaptureMethod.DDUPL_DX12,
+                    Configuration.CaptureMethod.WIN_USB_VIDEO}) {
+                mockedInstance.config.setCaptureMethod(method.name());
+                ImageProcessor processor = new ImageProcessor(false);
+                assertNull(processor.user32);
+                assertNull(processor.hwnd);
+            }
+        } finally {
+            mockedInstance.config.setCaptureMethod(previousCaptureMethod);
+        }
+    }
+
     // blackBorderMinimum = (50 * 95) / 100 = 48 (top & bottom)
     // detection requires: top >= 48, bottom >= 48, and center < 50
 

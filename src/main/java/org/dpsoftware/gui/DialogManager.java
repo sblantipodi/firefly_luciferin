@@ -66,7 +66,7 @@ public class DialogManager {
     private static final String FADE_DIALOG_CLOSING = "fadeDialogClosing";
 
     private final GuiManager guiManager;
-    private final WebView wv;
+    private WebView wv;
 
     /**
      * Create the dialog manager for the main GUI.
@@ -75,7 +75,6 @@ public class DialogManager {
      */
     DialogManager(GuiManager guiManager) {
         this.guiManager = guiManager;
-        this.wv = new WebView();
     }
 
     /**
@@ -103,6 +102,10 @@ public class DialogManager {
      * @return the selected button, or an empty value if the dialog is dismissed
      */
     public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            log.info("{}: {} - {}", title, header, content);
+            return Optional.empty();
+        }
         Alert alert = createAlert(title, header, alertType);
         alert.setContentText(content);
         setAlertTheme(alert);
@@ -136,6 +139,10 @@ public class DialogManager {
      * @return the selected button, or an empty value if the dialog is dismissed
      */
     private Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType, ButtonType... buttons) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            log.info("{}: {} - {}", title, header, content);
+            return Optional.empty();
+        }
         Alert alert = createAlert(title, header, alertType);
         alert.setContentText(content);
         alert.getButtonTypes().setAll(buttons);
@@ -153,6 +160,10 @@ public class DialogManager {
      * @param notificationType notification type
      */
     public void showNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            log.info("{}: {}", highlight, content);
+            return;
+        }
         if (NativeExecutor.isWindows()) {
             ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(highlight, content, notificationType);
         } else {
@@ -173,6 +184,10 @@ public class DialogManager {
      * @param notificationType notification type
      */
     public void showLocalizedNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            showNotification(CommonUtility.getWord(highlight), CommonUtility.getWord(content), title, notificationType);
+            return;
+        }
         if (NativeExecutor.isWindows()) {
             ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon
                     .displayMessage(CommonUtility.getWord(highlight), CommonUtility.getWord(content), notificationType);
@@ -215,7 +230,14 @@ public class DialogManager {
      * @return the selected button, or an empty value if the dialog is dismissed
      */
     public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
-        //wv.getEngine().load(Objects.requireNonNull(getClass().getResource("css/pro.html")).toExternalForm());
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            log.info("{}: {} - {}", title, header, webUrl);
+            return Optional.empty();
+        }
+        // Load the native WebKit engine only when a web dialog is actually requested.
+        if (wv == null) {
+            wv = new WebView();
+        }
         wv.getEngine().load(webUrl);
         wv.getEngine().setUserStyleSheetLocation(Objects.requireNonNull(getClass().getResource(Constants.CSS_WEB_VIEW)).toExternalForm());
         int windowWidth = 1200 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResX(),

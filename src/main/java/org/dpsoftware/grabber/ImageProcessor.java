@@ -81,7 +81,9 @@ public class ImageProcessor {
      * Constructor
      */
     public ImageProcessor(boolean initLedMatrix) {
-        if (NativeExecutor.isWindows()) {
+        // Only the WinAPI capture method uses the full-resolution GDI screenshot buffers.
+        if (NativeExecutor.isWindows() && MainSingleton.getInstance().config != null
+                && Configuration.CaptureMethod.WinAPI.name().equals(MainSingleton.getInstance().config.getCaptureMethod())) {
             user32 = com.sun.jna.platform.win32.User32.INSTANCE;
             hwnd = user32.GetDesktopWindow();
             GrabberSingleton.getInstance().customGDI32Util = new CustomGDI32Util(hwnd);
