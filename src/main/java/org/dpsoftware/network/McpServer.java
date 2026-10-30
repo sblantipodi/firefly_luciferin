@@ -30,10 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.network.mcp.McpTool;
-import org.dpsoftware.network.mcp.tools.GetDeviceTool;
-import org.dpsoftware.network.mcp.tools.GetInfoTool;
-import org.dpsoftware.network.mcp.tools.SetEffectTool;
-import org.dpsoftware.network.mcp.tools.SetProfileTool;
+import org.dpsoftware.network.mcp.tools.*;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
@@ -59,8 +56,11 @@ public class McpServer {
     private final Map<String, McpTool> tools = Stream.<McpTool>of(
                     new GetDeviceTool(CommonUtility.JSON_MAPPER),
                     new GetInfoTool(CommonUtility.JSON_MAPPER),
+                    new SetAspectRatioTool(CommonUtility.JSON_MAPPER),
                     new SetEffectTool(CommonUtility.JSON_MAPPER),
-                    new SetProfileTool(CommonUtility.JSON_MAPPER))
+                    new SetGammaTool(CommonUtility.JSON_MAPPER),
+                    new SetProfileTool(CommonUtility.JSON_MAPPER),
+                    new SetSmoothingLevelTool(CommonUtility.JSON_MAPPER))
             .collect(Collectors.toMap(McpTool::getName, Function.identity()));
     private HttpServer httpServer;
     private ScheduledExecutorService startRetryExecutor;
