@@ -190,18 +190,6 @@
                 <Font name="System Bold Italic" size="12.0"/>
             </font>
         </Label>
-        <Button fx:id="saveLedButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save"
-                GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="5" GridPane.valignment="BOTTOM">
-            <GridPane.margin>
-                <Insets right="20.0"/>
-            </GridPane.margin>
-        </Button>
-        <Button fx:id="showTestImageButton" mnemonicParsing="false" onMouseClicked="#showTestImage"
-                text="%fxml.ledsconfigtab.testimage" GridPane.rowIndex="5" GridPane.valignment="BOTTOM">
-            <GridPane.margin>
-                <Insets left="20.0"/>
-            </GridPane.margin>
-        </Button>
         <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="4">
             <GridPane.margin>
                 <Insets left="5.0" right="5.0"/>
@@ -324,5 +312,13 @@
             <Insets bottom="16.0" top="5.0"/>
         </padding>
     </GridPane>
+    <HBox alignment="CENTER_LEFT" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"
+          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="16.0">
+        <Button fx:id="showTestImageButton" mnemonicParsing="false" onMouseClicked="#showTestImage"
+                text="%fxml.ledsconfigtab.testimage" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="saveLedButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
+                text="%fxml.save" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"/>
+    </HBox>
 
 </AnchorPane>

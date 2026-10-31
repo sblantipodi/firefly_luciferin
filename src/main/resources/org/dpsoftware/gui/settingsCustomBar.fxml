@@ -99,6 +99,10 @@
 
             </TabPane>
         </VBox>
+        <HBox alignment="CENTER" minHeight="26.0" prefHeight="26.0" maxHeight="26.0" pickOnBounds="false"
+              AnchorPane.leftAnchor="130.0" AnchorPane.rightAnchor="130.0" AnchorPane.bottomAnchor="16.0">
+            <Label fx:id="smoothingStatus" alignment="CENTER" visible="false" styleClass="smoothing-status"/>
+        </HBox>
     </AnchorPane>
 
 </AnchorPane>

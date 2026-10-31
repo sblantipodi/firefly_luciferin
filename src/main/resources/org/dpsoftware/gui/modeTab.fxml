@@ -87,15 +87,10 @@
                     styleClass="menuButton" text="☰">
             </Button>
         </HBox>
-        <Button fx:id="saveSettingsButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
-                text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="10"
-                GridPane.valignment="BOTTOM"/>
         <Label text="%fxml.modetab.theme.language" wrapText="true" GridPane.rowIndex="5" />
         <ComboBox fx:id="theme" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
         <ComboBox fx:id="language" onAction="#saveButtonHover" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
         <ComboBox fx:id="algo" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
-        <Button fx:id="resetButton" mnemonicParsing="false" onMouseClicked="#reset" text="%fxml.reset" visible="false"
-                GridPane.rowIndex="10" GridPane.valignment="BOTTOM"/>
         <RadioButton fx:id="firmTypeLight" maxWidth="115.0" mnemonicParsing="false" text="%light.firm.short" toggleGroup="$firmwareTypeGrp" wrapText="true" GridPane.columnIndex="1">
             <GridPane.margin>
                 <Insets left="127.0" />
@@ -111,5 +106,13 @@
       <ComboBox fx:id="resamplingFactor" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
 
     </GridPane>
+    <HBox alignment="CENTER_LEFT" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"
+          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="16.0">
+        <Button fx:id="resetButton" mnemonicParsing="false" onMouseClicked="#reset" text="%fxml.reset" visible="false"
+                minHeight="26.0" prefHeight="26.0" maxHeight="26.0"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="saveSettingsButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
+                text="%fxml.save" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"/>
+    </HBox>
 
 </AnchorPane>

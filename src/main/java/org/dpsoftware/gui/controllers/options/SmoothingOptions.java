@@ -21,6 +21,23 @@ public final class SmoothingOptions {
     }
 
     /**
+     * Returns the localized level for the live status indicator, or an empty string when disabled.
+     * Custom settings can disable both EMA and frame generation without matching the disabled preset.
+     *
+     * @param config current runtime settings, possibly absent during first setup
+     * @return enabled smoothing level, localized for the current UI
+     */
+    public static String statusLabel(Configuration config) {
+        if (config == null || config.getSmoothingType() == null
+                || Enums.Smoothing.DISABLED.getBaseI18n().equals(config.getSmoothingType())
+                || (config.getEmaAlpha() <= 0 && config.getFrameInsertionTarget() <= 0)) {
+            return "";
+        }
+        Enums.Smoothing level = LocalizedEnum.fromBaseStr(Enums.Smoothing.class, config.getSmoothingType());
+        return level == null ? Enums.Smoothing.CUSTOM.getI18n() : level.getI18n();
+    }
+
+    /**
      * Applies a named smoothing preset to its EMA and frame insertion settings.
      *
      * @param config configuration to update

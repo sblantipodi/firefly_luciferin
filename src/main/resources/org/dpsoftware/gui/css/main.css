@@ -18,6 +18,11 @@
     -fx-font-weight: bold;
 }
 
+.smoothing-status {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
 .underline {
     -fx-underline: true;
 }

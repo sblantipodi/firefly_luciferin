@@ -48,9 +48,6 @@
                   GridPane.rowIndex="1"/>
         <CheckBox fx:id="mqttStream" mnemonicParsing="false" onMouseClicked="#saveButtonHover" selected="true"
                   GridPane.columnIndex="1" GridPane.halignment="LEFT"/>
-        <Button fx:id="saveMQTTButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save"
-                GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8"
-                GridPane.valignment="BOTTOM"/>
         <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="200.0" GridPane.columnIndex="1"
                   GridPane.halignment="RIGHT"/>
         <Label text="%fxml.mqtttab.mqttdiscoverytopic" wrapText="true" GridPane.rowIndex="7"/>
@@ -65,9 +62,15 @@
                 onMouseClicked="#discoveryRemove" text="✖" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
                 GridPane.rowIndex="7"/>
         <TextField fx:id="mqttDiscoveryTopic" maxWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-        <Button fx:id="programDeviceButton" mnemonicParsing="false" onMouseClicked="#improvWiFiDialog"
-                text="%fxml.mqtttab.provision.device" GridPane.rowIndex="8" GridPane.valignment="BOTTOM"/>
 
     </GridPane>
+    <HBox alignment="CENTER_LEFT" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"
+          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="16.0">
+        <Button fx:id="programDeviceButton" mnemonicParsing="false" onMouseClicked="#improvWiFiDialog"
+                text="%fxml.mqtttab.provision.device" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="saveMQTTButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
+                text="%fxml.save" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"/>
+    </HBox>
 
 </AnchorPane>

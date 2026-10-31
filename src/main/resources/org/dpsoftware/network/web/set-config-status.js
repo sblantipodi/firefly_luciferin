@@ -56,6 +56,18 @@ function updateFooterGamma(status) {
     value.textContent = valid ? gamma.toFixed(3) + (status.hdrActive === true ? ' HDR' : '') : '';
 }
 
+// Show the applied runtime level, including changes made by JavaFX, MQTT, or MCP.
+function updateFooterSmoothing(status) {
+    var group = document.getElementById('footerSmoothingGroup');
+    var value = document.getElementById('footerSmoothing');
+    if (!group || !value) {
+        return;
+    }
+    var label = status && typeof status.smoothing === 'string' ? status.smoothing : '';
+    group.hidden = label.length === 0;
+    value.textContent = label;
+}
+
 // Polls the 'fps' endpoint to update the FPS counter and detect server offline/online transitions (with a 3s timeout to bound pending
 // requests); force=true aborts a previous in-flight poll (used on tab visibility change).
 export function pollServerStatus(force) {
@@ -76,6 +88,7 @@ export function pollServerStatus(force) {
             return;
         }
         updateFooterGamma(fps);
+        updateFooterSmoothing(fps);
         var logo = document.getElementById('settingsLogo');
         if (logo && fps.trayIconImage && logo.dataset.trayIconImage !== fps.trayIconImage) {
             logo.dataset.trayIconImage = fps.trayIconImage;
@@ -108,6 +121,7 @@ export function pollServerStatus(force) {
         updateFooterFps(null);
         updateFooterAspectRatio(null);
         updateFooterGamma(null);
+        updateFooterSmoothing(null);
         if (serverOnline) {
             serverOnline = false;
             document.body.classList.add('server-down');

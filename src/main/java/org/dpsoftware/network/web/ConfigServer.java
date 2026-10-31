@@ -143,7 +143,8 @@ public class ConfigServer {
                 TrayIconState.currentImage(),
                 Double.isFinite(adaptiveGamma) ? adaptiveGamma : null,
                 MainSingleton.getInstance().isHdrActive(),
-                MainSingleton.getInstance().config.getDefaultLedMatrix()));
+                MainSingleton.getInstance().config.getDefaultLedMatrix(),
+                SmoothingOptions.statusLabel(MainSingleton.getInstance().config)));
     }
 
     static String tailLog(Path logFile) throws IOException {
@@ -771,9 +772,10 @@ public class ConfigServer {
      * @param adaptiveGamma current effective gamma, also published via MQTT
      * @param hdrActive whether HDR has been detected
      * @param aspectRatio current capture aspect ratio, including automatic black bar detection
+     * @param smoothing localized smoothing level, empty when smoothing is disabled
      */
     public record FpsDto(float producing, float consuming, boolean fireflyUpdateAvailable,
                          boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, String trayIconImage,
-                         Double adaptiveGamma, boolean hdrActive, String aspectRatio) {
+                         Double adaptiveGamma, boolean hdrActive, String aspectRatio, String smoothing) {
     }
 }

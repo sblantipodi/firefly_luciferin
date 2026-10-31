@@ -46,6 +46,7 @@ import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.options.DevicesTabOptions;
 import org.dpsoftware.gui.controllers.options.ModeTabOptions;
 import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
+import org.dpsoftware.gui.controllers.options.SmoothingOptions;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
@@ -76,6 +77,8 @@ public class SettingsController {
     public TabPane mainTabPane;
     @FXML
     public AnchorPane ledsConfigTab;
+    @FXML
+    private Label smoothingStatus;
     @FXML
     public AnchorPane controlTab;
     @FXML
@@ -186,6 +189,8 @@ public class SettingsController {
         setNumericTextField();
         runLater();
         initListeners();
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SMOOTHING, smoothingStatus);
+        updateSmoothingStatus();
         controlTabController.startAnimationTimer();
         Label titleBarLabel = (Label) shadowPane.lookup(Constants.TITLE_BAR_SELECTOR);
         if (titleBarLabel != null) {
@@ -253,12 +258,22 @@ public class SettingsController {
      * Manage the device list tab update
      */
     public void manageDeviceList() {
+        updateSmoothingStatus();
         devicesTabController.manageDeviceList();
         if (!devicesTabController.cellEdit) {
             if (networkTabController.mqttStream.isSelected()) {
                 initOutputDeviceChooser(false);
             }
         }
+    }
+
+    /**
+     * Refreshes the shared status indicator from runtime settings, including remote changes.
+     */
+    private void updateSmoothingStatus() {
+        String label = SmoothingOptions.statusLabel(MainSingleton.getInstance().config);
+        smoothingStatus.setText(label);
+        smoothingStatus.setVisible(!label.isEmpty());
     }
 
     /**

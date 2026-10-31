@@ -110,9 +110,6 @@
                 </HBox.margin>
             </Button>
         </HBox>
-        <Button fx:id="saveMiscButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save"
-                GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8"
-                GridPane.valignment="BOTTOM"/>
         <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="120.0" GridPane.columnIndex="1"
                   GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
         <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0"
@@ -171,5 +168,10 @@
                     styleClass="menuButton" text="☰"/>
         </HBox>
     </GridPane>
+    <HBox alignment="CENTER_RIGHT" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"
+          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="16.0">
+        <Button fx:id="saveMiscButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
+                text="%fxml.save" minHeight="26.0" prefHeight="26.0" maxHeight="26.0"/>
+    </HBox>
 
 </AnchorPane>
