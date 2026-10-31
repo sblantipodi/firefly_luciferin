@@ -38,6 +38,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
+import org.dpsoftware.grabber.SimdBenchmark;
+import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.time.LocalDateTime;
@@ -92,8 +96,8 @@ public class InfoController {
     @FXML
     protected void initialize() {
         Platform.setImplicitExit(false);
-        lineChart.setTitle(CommonUtility.getWord(Constants.INFO_FRAMERATE));
-        lineChartWifi.setTitle(CommonUtility.getWord(Constants.INFO_WIFI_STRENGTH));
+        lineChart.setTitle(CommonUtility.getWord(LabelKey.INFO_FRAMERATE));
+        lineChartWifi.setTitle(CommonUtility.getWord(LabelKey.INFO_WIFI_STRENGTH));
 
         lineChart.getData().add(producingSeries);
         lineChart.getData().add(consumingSeries);
@@ -151,8 +155,8 @@ public class InfoController {
             if (wifiSeries.getData().size() > WINDOW_SIZE) {
                 wifiSeries.getData().removeFirst();
             }
-            setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL);
-            setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL);
+            setProducerValue(CommonUtility.getWord(LabelKey.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL);
+            setConsumerValue(CommonUtility.getWord(LabelKey.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL);
             String wifiLdr = Constants.INFO_WIFI + MainSingleton.getInstance().wifiStrength + Constants.PERCENT;
             if (MainSingleton.getInstance().config.isEnableLDR()) {
                 wifiLdr += Constants.INFO_LDR + MainSingleton.getInstance().ldrStrength + Constants.PERCENT;
@@ -218,6 +222,13 @@ public class InfoController {
     }
 
     public void setCpuLatencyValue(String cpuLatValue) {
+        String tooltipLat = "Using AVX (" + Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n() + ")";
+        if (SimdBenchmark.selectedSimdStrategy == SimdBenchmark.SimdProcessingStrategy.FULL_VECTOR) {
+            tooltipLat += " with Full Vectorization";
+        } else {
+            tooltipLat += " with Double Vectorization";
+        }
+        GuiManager.createTooltip(tooltipLat, cpuLatency);
         this.cpuLatencyValue.set(cpuLatValue);
     }
 

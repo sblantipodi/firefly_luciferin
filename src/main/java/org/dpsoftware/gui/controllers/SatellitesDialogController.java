@@ -31,7 +31,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -39,14 +38,14 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
-import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.options.SatellitesOptions;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
-import java.util.*;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Satellite manager dialog controller
@@ -171,13 +170,8 @@ public class SatellitesDialogController {
         algo.setValue(Enums.Algo.AVG_COLOR.getI18n());
         ledNum.setText("1");
         Platform.runLater(() -> {
-            for (GlowWormDevice gwd : GuiSingleton.getInstance().deviceTableData) {
-                if (!gwd.getDeviceIP().equals(MainSingleton.getInstance().config.getStaticGlowWormIp())
-                        && !gwd.getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice())
-                        && MainSingleton.getInstance().config.getSatellites().values().stream().noneMatch(s -> s.getDeviceIp().equals(gwd.getDeviceIP()))) {
-                    deviceIp.getItems().add(gwd.getDeviceName() + " (" + gwd.getDeviceIP() + ")");
-                }
-            }
+            SatellitesOptions.availableDevices(MainSingleton.getInstance().config, GuiSingleton.getInstance().deviceTableData)
+                    .forEach(choice -> deviceIp.getItems().add(choice.label()));
             initTable();
             deviceIp.requestFocus();
         });
@@ -230,36 +224,10 @@ public class SatellitesDialogController {
      * Init combos
      */
     private void initCombos() {
-        for (Enums.Direction or : Enums.Direction.values()) {
-            orientation.getItems().add(or.getI18n());
-        }
-        for (Enums.Algo al : Enums.Algo.values()) {
-            algo.getItems().add(al.getI18n());
-        }
-        for (Enums.PossibleZones zo : Enums.PossibleZones.values()) {
-            zone.getItems().add(zo.getI18n());
-        }
-        if (MainSingleton.getInstance().config != null) {
-            Configuration conf = MainSingleton.getInstance().config;
-            LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
-            for (Map.Entry<Integer, LEDCoordinate> coord : ledMatrix.entrySet()) {
-                zone.getItems().add(coord.getValue().getZone());
-            }
-            removeDuplicatesAndSort(zone);
-        }
-    }
-
-    /**
-     * Remove duplicates from the combo box and sort it alphabetically
-     *
-     * @param comboBox combo box
-     */
-    public void removeDuplicatesAndSort(ComboBox<String> comboBox) {
-        ObservableList<String> items = comboBox.getItems();
-        Set<String> uniqueItems = new HashSet<>(items);
-        List<String> sortedList = new ArrayList<>(uniqueItems);
-        Collections.sort(sortedList);
-        items.setAll(sortedList);
+        orientation.getItems().setAll(SatellitesOptions.directions().stream().map(SatellitesOptions.Choice::label).toList());
+        algo.getItems().setAll(SatellitesOptions.algorithms().stream().map(SatellitesOptions.Choice::label).toList());
+        zone.getItems().setAll(SatellitesOptions.zones(MainSingleton.getInstance().config).stream()
+                .map(SatellitesOptions.Choice::label).toList());
     }
 
     /**
@@ -275,12 +243,12 @@ public class SatellitesDialogController {
      * Set tooltips
      */
     public void setTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_IP, deviceIp);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ZONE, zone);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ORIENT, orientation);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_NUM, ledNum);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ALGO, algo);
-        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ADD, addButton);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_IP, deviceIp);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ZONE, zone);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ORIENT, orientation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_NUM, ledNum);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ALGO, algo);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ADD, addButton);
     }
 
     /**
@@ -304,27 +272,8 @@ public class SatellitesDialogController {
         if (changeInternally) {
             MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
             CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
-            config.getSatellites().clear();
-            for (Satellite sat : GuiSingleton.getInstance().satellitesTableData) {
-                Satellite updatedSat = new Satellite();
-                updatedSat.setLedNum(sat.getLedNum());
-                updatedSat.setDeviceIp(sat.getDeviceIp());
-                if (CommonUtility.isCommonZone(sat.getZone())) {
-                    updatedSat.setZone(LocalizedEnum.fromStr(Enums.PossibleZones.class, sat.getZone()).getBaseI18n());
-                } else {
-                    updatedSat.setZone(sat.getZone());
-                }
-                updatedSat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
-                updatedSat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
-                Random random = new Random();
-                String deviceName = GuiSingleton.getInstance().deviceTableData.stream()
-                        .filter(s -> s.getDeviceIP().equals(sat.getDeviceIp()))
-                        .findFirst()
-                        .map(GlowWormDevice::getDeviceName)
-                        .orElse("GW" + (random.nextInt(9000) + 1000));
-                updatedSat.setDeviceName(deviceName);
-                config.getSatellites().put(updatedSat.getDeviceIp(), updatedSat);
-            }
+            SatellitesOptions.apply(config, GuiSingleton.getInstance().satellitesTableData,
+                    GuiSingleton.getInstance().deviceTableData);
             MainSingleton.getInstance().config.getSatellites().clear();
             MainSingleton.getInstance().config.getSatellites().putAll(config.getSatellites());
         } else {
@@ -366,18 +315,17 @@ public class SatellitesDialogController {
      */
     @FXML
     public void addSatellite() {
-        if (Integer.parseInt(ledNum.getText()) <= 0) {
-            ledNum.setText("1");
-        }
+        ledNum.setText(SatellitesOptions.ledCount(ledNum.getText()));
         deviceIp.commitValue();
-        if (NetworkManager.isValidIp(deviceIp.getValue())) {
-            deviceIp.getItems().removeIf(s -> s.contains("(" + deviceIp.getValue() + ")"));
-            GuiSingleton.getInstance().satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(deviceIp.getValue()));
+        String selectedIp = SatellitesOptions.deviceIp(deviceIp.getValue());
+        if (NetworkManager.isValidIp(selectedIp)) {
+            deviceIp.getItems().removeIf(s -> s.contains("(" + selectedIp + ")"));
+            GuiSingleton.getInstance().satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(selectedIp));
             GuiSingleton.getInstance().satellitesTableData.add(new Satellite(zone.getValue(), orientation.getValue(),
-                    ledNum.getText(), deviceIp.getValue(), "", algo.getValue()));
+                    ledNum.getText(), selectedIp, "", algo.getValue()));
         } else {
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ALERT_IP_HEADER,
-                    Constants.SAT_ALERT_IP_CONTENT, Constants.SAT_ALERT_IP_TITLE, TrayIcon.MessageType.ERROR);
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.SAT_ALERT_IP_HEADER,
+                    LabelKey.SAT_ALERT_IP_CONTENT, LabelKey.SAT_ALERT_IP_TITLE, TrayIcon.MessageType.ERROR);
         }
     }
 

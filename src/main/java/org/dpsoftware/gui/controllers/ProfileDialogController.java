@@ -32,10 +32,10 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.ProfileManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -95,12 +95,12 @@ public class ProfileDialogController {
      * Set tooltips
      */
     private void setTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_GPU_THRESHOLD, gpuThreshold);
-        GuiManager.createTooltip(Constants.TOOLTIP_CPU_THRESHOLD, cpuThreshold);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROCESS1, process1);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROCESS2, process2);
-        GuiManager.createTooltip(Constants.TOOLTIP_PROCESS3, process3);
-        GuiManager.createTooltip(Constants.TOOLTIP_ENABLEFULLSCREENDETECTION, enableFullScreenDetection);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GPU_THRESHOLD, gpuThreshold);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CPU_THRESHOLD, cpuThreshold);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROCESS1, process1);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROCESS2, process2);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_PROCESS3, process3);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_ENABLEFULLSCREENDETECTION, enableFullScreenDetection);
     }
 
     /**
@@ -113,7 +113,7 @@ public class ProfileDialogController {
      * Init form values by reading existing config file
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        if (!MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
+        if (!MainSingleton.getInstance().profileArg.equals(LabelKey.DEFAULT)) {
             StorageManager sm = new StorageManager();
             currentConfig = sm.readProfileConfig(MainSingleton.getInstance().profileArg);
         }

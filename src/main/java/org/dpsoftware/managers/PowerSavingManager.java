@@ -28,6 +28,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
@@ -36,6 +37,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -84,7 +86,7 @@ public class PowerSavingManager {
         ));
         if (log.isTraceEnabled()) {
             log.trace("Taking screenshot");
-            ImageIO.write(GrabberSingleton.getInstance().screen, "png", new java.io.File("screenshot" + MainSingleton.getInstance().whoAmI + ".png"));
+            ImageIO.write(GrabberSingleton.getInstance().screen, "png", new java.io.File(InstanceConfigurer.getConfigPath() + File.separator + "screenshot" + MainSingleton.getInstance().whoAmI + ".png"));
         }
     }
 
@@ -92,7 +94,7 @@ public class PowerSavingManager {
      * Execute a task that checks if screensaver is enabled/running.
      */
     public void addPowerSavingTask() {
-        if (!CommonUtility.isSingleDeviceMultiScreen()) {
+        if (!MainSingleton.getInstance().isHeadlessMode() && !CommonUtility.isSingleDeviceMultiScreen()) {
             log.info("Adding hook for power saving.");
             PointerInfo a = MouseInfo.getPointerInfo();
             Point mouseCoordinate = a.getLocation();
@@ -173,7 +175,7 @@ public class PowerSavingManager {
             Color[] ledsScreenshotTmp = new Color[GrabberSingleton.getInstance().ledMatrix.size()];
             LinkedHashMap<Integer, LEDCoordinate> ledMatrixTmp = (LinkedHashMap<Integer, LEDCoordinate>) GrabberSingleton.getInstance().ledMatrix.clone();
             // We need an ordered collection so no parallelStream here
-            ledMatrixTmp.forEach((key, value) -> ledsScreenshotTmp[key - 1] = ImageProcessor.getAverageColor(value, osScaling, true));
+            ledMatrixTmp.forEach((key, value) -> ledsScreenshotTmp[key - 1] = ImageProcessor.getAverageColor(value, osScaling, true).toColor());
             checkForLedDuplication(ledsScreenshotTmp);
         } catch (AWTException | IOException e) {
             log.error(e.getMessage());

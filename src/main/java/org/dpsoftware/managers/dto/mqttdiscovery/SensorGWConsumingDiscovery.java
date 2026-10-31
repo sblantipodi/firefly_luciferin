@@ -49,7 +49,7 @@ public class SensorGWConsumingDiscovery extends DeviceDiscovery implements Disco
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("(Glow Worm Consuming)");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.valueTemplate = "{{ value_json.framerate }}";
         this.unitOfMeasurement = "FPS";
