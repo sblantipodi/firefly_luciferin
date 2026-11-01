@@ -4,6 +4,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -23,6 +24,7 @@ public final class SmoothingOptions {
     /**
      * Returns the localized level for the live status indicator, or an empty string when disabled.
      * Custom settings can disable both EMA and frame generation without matching the disabled preset.
+     * Optional status translations shorten the indicator without changing preset option labels.
      *
      * @param config current runtime settings, possibly absent during first setup
      * @return enabled smoothing level, localized for the current UI
@@ -34,7 +36,10 @@ public final class SmoothingOptions {
             return "";
         }
         Enums.Smoothing level = LocalizedEnum.fromBaseStr(Enums.Smoothing.class, config.getSmoothingType());
-        return level == null ? Enums.Smoothing.CUSTOM.getI18n() : level.getI18n();
+        if (level == null) level = Enums.Smoothing.CUSTOM;
+        String statusKey = level.getValue() + ".status";
+        String status = CommonUtility.getWord(statusKey);
+        return statusKey.equals(status) ? level.getI18n() : status;
     }
 
     /**
