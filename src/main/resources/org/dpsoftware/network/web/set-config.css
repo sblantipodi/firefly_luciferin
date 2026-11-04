@@ -403,6 +403,15 @@ body.server-down > :not(#offlineOverlay) {
 }
 
 /* Light theme accents use the Firefly orange rather than Bootstrap blue. */
+#satelliteTable a {
+    color: var(--warm, darkorange);
+}
+
+#satelliteTable a:hover,
+#satelliteTable a:focus {
+    color: var(--accent, #cc7000);
+}
+
 #toggleLed,
 #improvProvisionButton {
     background-color: orange;

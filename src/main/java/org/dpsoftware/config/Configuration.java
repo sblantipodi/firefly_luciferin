@@ -31,6 +31,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.controllers.options.SatellitesOptions;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
@@ -225,6 +226,7 @@ public class Configuration implements Cloneable {
         Map<Enums.AspectRatio, LinkedHashMap<Integer, LEDCoordinate>> matrices = LEDCoordinate.initializeAllMatrices(info);
         this.ledMatrix = new LinkedHashMap<>();
         matrices.forEach((ratio, matrix) -> this.ledMatrix.put(ratio.getBaseI18n(), matrix));
+        SatellitesOptions.updateSplitZones(this);
     }
 
     /**

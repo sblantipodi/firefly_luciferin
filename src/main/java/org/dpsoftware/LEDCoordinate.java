@@ -21,6 +21,7 @@
 */
 package org.dpsoftware;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,6 +56,7 @@ public class LEDCoordinate {
     private int height;
     private boolean active = true;
     private boolean groupedLed;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String zone;
 
     /**
@@ -119,7 +121,7 @@ public class LEDCoordinate {
             String finalCorrectedColor = correctedColor;
             List<Integer> filteredList;
             filteredList = ledMatrix.entrySet().stream()
-                    .filter(e -> e.getValue().getZone().equals(finalCorrectedColor))
+                    .filter(e -> finalCorrectedColor.equals(e.getValue().getZone()))
                     .map(Map.Entry::getKey)
                     .toList();
             start = filteredList

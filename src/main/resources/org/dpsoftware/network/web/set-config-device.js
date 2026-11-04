@@ -470,7 +470,7 @@ export function buildSatellitesHtml() {
     return '<div class="form-group"><div id="satelliteTable" class="table-responsive mb-3"></div>'
         + '<div class="row g-3">'
         + '<div class="col-12 col-md-6"><label for="satelliteDeviceIp">' + escapeHtml(labels.satelliteDeviceIp) + '</label><input class="form-control" id="satelliteDeviceIp" list="satelliteDeviceIpList"><datalist id="satelliteDeviceIpList">' + options('satelliteDeviceIp') + '</datalist></div>'
-        + '<div class="col-12 col-md-6"><label for="satelliteZone">' + escapeHtml(labels.satelliteZone) + '</label><select class="form-select" id="satelliteZone">' + options('satelliteZone') + '</select></div>'
+        + '<div class="col-12 col-md-6"><label for="satelliteZone">' + escapeHtml(labels.satelliteZone) + '</label><select class="form-select" id="satelliteZone" title="' + escapeHtml(labels.satelliteZoneTooltip) + '">' + options('satelliteZone') + '</select></div>'
         + '<div class="col-12 col-md-6"><label for="satelliteOrientation">' + escapeHtml(labels.satelliteOrientation) + '</label><select class="form-select" id="satelliteOrientation">' + options('satelliteOrientation') + '</select></div>'
         + '<div class="col-12 col-md-6"><label for="satelliteLedNum">' + escapeHtml(labels.satelliteLedNum) + '</label><input class="form-control" id="satelliteLedNum" type="text" inputmode="numeric" pattern="[0-9]+" value="1"></div>'
         + '<div class="col-12 col-md-6"><label for="satelliteAlgo">' + escapeHtml(labels.satelliteAlgo) + '</label><select class="form-select" id="satelliteAlgo">' + options('satelliteAlgo') + '</select></div>'

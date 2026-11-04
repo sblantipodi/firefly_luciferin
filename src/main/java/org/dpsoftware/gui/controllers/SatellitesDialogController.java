@@ -165,6 +165,7 @@ public class SatellitesDialogController {
             }
         }));
         initCombos();
+        zone.valueProperty().addListener((_, _, _) -> updateZoneTooltip());
         zone.setValue(Enums.PossibleZones.TOP.getI18n());
         orientation.setValue(Enums.Direction.NORMAL.getI18n());
         algo.setValue(Enums.Algo.AVG_COLOR.getI18n());
@@ -244,11 +245,16 @@ public class SatellitesDialogController {
      */
     public void setTooltips() {
         GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_IP, deviceIp);
-        GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ZONE, zone);
+        updateZoneTooltip();
         GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ORIENT, orientation);
         GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_NUM, ledNum);
         GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ALGO, algo);
         GuiManager.createTooltip(LabelKey.TOOLTIP_SAT_ADD, addButton);
+    }
+
+    private void updateZoneTooltip() {
+        boolean split = Enums.PossibleZones.SPLIT_MAIN_STRIP.getI18n().equals(zone.getValue());
+        GuiManager.createTooltip(split ? LabelKey.TOOLTIP_SAT_SPLIT : LabelKey.TOOLTIP_SAT_ZONE, zone);
     }
 
     /**
@@ -319,6 +325,22 @@ public class SatellitesDialogController {
         deviceIp.commitValue();
         String selectedIp = SatellitesOptions.deviceIp(deviceIp.getValue());
         if (NetworkManager.isValidIp(selectedIp)) {
+            if (Enums.PossibleZones.SPLIT_MAIN_STRIP.getI18n().equals(zone.getValue())) {
+                String error = null;
+                if (GuiSingleton.getInstance().satellitesTableData.stream().anyMatch(satellite ->
+                        !satellite.getDeviceIp().equals(selectedIp)
+                                && Enums.PossibleZones.SPLIT_MAIN_STRIP.getI18n().equals(satellite.getZone()))) {
+                    error = "satellite.split.multiple";
+                } else if (MainSingleton.getInstance().config.getLedMatrix().values().stream()
+                        .anyMatch(matrix -> Integer.parseInt(ledNum.getText()) > matrix.size())) {
+                    error = "satellite.split.invalid.count";
+                }
+                if (error != null) {
+                    MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(LabelKey.SAT_ALERT_IP_TITLE),
+                            CommonUtility.getWord(LabelKey.SAT_ALERT_IP_HEADER), CommonUtility.getWord(error), Alert.AlertType.ERROR);
+                    return;
+                }
+            }
             deviceIp.getItems().removeIf(s -> s.contains("(" + selectedIp + ")"));
             GuiSingleton.getInstance().satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(selectedIp));
             GuiSingleton.getInstance().satellitesTableData.add(new Satellite(zone.getValue(), orientation.getValue(),

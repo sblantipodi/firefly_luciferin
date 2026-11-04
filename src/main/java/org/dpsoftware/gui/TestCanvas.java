@@ -360,7 +360,8 @@ public class TestCanvas {
                         currentFont.getSize() * 0.9);
                 gc.setFont(dimFont);
                 gc.fillText(height + "x" + width, x + taleBorder + lineWidth, ((y + ((double) taleBorder / 2)) + height - 10) + sizeOffset);
-                if (!CommonUtility.isCommonZone(coordinate.getZone())) {
+                if (!CommonUtility.isCommonZone(coordinate.getZone())
+                        || Enums.PossibleZones.SPLIT_MAIN_STRIP.getBaseI18n().equals(coordinate.getZone())) {
                     drawTruncatedText(gc, coordinate.getZone(),
                             x + taleBorder + lineWidth,
                             (y + (double) height / 2) + taleBorder,

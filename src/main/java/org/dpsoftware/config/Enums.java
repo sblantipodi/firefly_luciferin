@@ -808,7 +808,8 @@ public class Enums {
         TOP("enum.satellite.zone.top"),
         TOP_LEFT("enum.satellite.zone.top.left"),
         LEFT("enum.satellite.zone.left"),
-        ENTIRE_SCREEN("enum.satellite.zone.entire.screen");
+        ENTIRE_SCREEN("enum.satellite.zone.entire.screen"),
+        SPLIT_MAIN_STRIP("enum.satellite.zone.split.main.strip");
         private final String zone;
 
         PossibleZones(String zone) {

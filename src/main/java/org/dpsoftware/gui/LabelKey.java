@@ -261,6 +261,7 @@ public final class LabelKey {
     public static final String TOOLTIP_VAL = "tooltip.ldr.ldrlabel";
     public static final String TOOLTIP_SAT_IP = "tooltip.sat.manager.ip";
     public static final String TOOLTIP_SAT_ZONE = "tooltip.sat.manager.zone";
+    public static final String TOOLTIP_SAT_SPLIT = "tooltip.sat.manager.split";
     public static final String TOOLTIP_SAT_ORIENT = "tooltip.sat.manager.orientation";
     public static final String TOOLTIP_SAT_NUM = "tooltip.sat.manager.num.led";
     public static final String TOOLTIP_SAT_ALGO = "tooltip.sat.manager.algo";

@@ -347,6 +347,7 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put("satelliteDefaultZone", Enums.PossibleZones.TOP.getBaseI18n());
         labels.put("satelliteDeviceIp", CommonUtility.getWord("fxml.satellite.manager.sat.ip"));
         labels.put("satelliteZone", CommonUtility.getWord("fxml.satellite.manager.zone"));
+        labels.put("satelliteZoneTooltip", CommonUtility.getWord("tooltip.sat.manager.split"));
         labels.put("satelliteOrientation", CommonUtility.getWord("fxml.satellite.orientation"));
         labels.put("satelliteLedNum", CommonUtility.getWord("fxml.satellite.lednum"));
         labels.put("satelliteAlgo", CommonUtility.getWord("fxml.satellite.manager.algo"));

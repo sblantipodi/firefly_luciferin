@@ -322,6 +322,35 @@ class ConfigurationPayloadTest {
         assertTrue(ConfigurationPayload.apply(payload, saved).getSatellites().isEmpty());
     }
 
+    @Test
+    void splitMarkersFollowSatelliteCountChangesAndRemovalThroughTheSavePayload() throws IOException {
+        Configuration saved = savedConfig();
+        saved.setScreenResX(1920);
+        saved.setScreenResY(1080);
+        saved.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+        saved.regenerateLedMatrix();
+        ObjectNode payload = CommonUtility.JSON_MAPPER.createObjectNode();
+        ObjectNode satellites = payload.putObject("satellites");
+        ObjectNode satellite = satellites.putObject("192.168.1.20")
+                .put("deviceIp", "192.168.1.20").put("zone", "Split main strip")
+                .put("orientation", Enums.Direction.NORMAL.getBaseI18n()).put("ledNum", "10")
+                .put("algo", Enums.Algo.AVG_COLOR.getBaseI18n());
+        Configuration added = ConfigurationPayload.apply(payload, saved);
+        assertEquals("Split main strip", added.getLedMatrixInUse(saved.getDefaultLedMatrix()).get(10).getZone());
+        assertNotEquals("Split main strip", saved.getLedMatrixInUse(saved.getDefaultLedMatrix()).get(1).getZone());
+
+        satellite.put("ledNum", "6");
+        Configuration resized = ConfigurationPayload.apply(payload, added);
+        assertEquals("Split main strip", resized.getLedMatrixInUse(saved.getDefaultLedMatrix()).get(6).getZone());
+        assertEquals(saved.getLedMatrixInUse(saved.getDefaultLedMatrix()).get(7).getZone(),
+                resized.getLedMatrixInUse(saved.getDefaultLedMatrix()).get(7).getZone());
+
+        satellites.removeAll();
+        Configuration removed = ConfigurationPayload.apply(payload, resized);
+        assertEquals(CommonUtility.JSON_MAPPER.valueToTree(saved).path("ledMatrix"),
+                CommonUtility.JSON_MAPPER.valueToTree(removed).path("ledMatrix"));
+    }
+
     /**
      * Checks the selected eye care settings are stored in configuration units.
      */

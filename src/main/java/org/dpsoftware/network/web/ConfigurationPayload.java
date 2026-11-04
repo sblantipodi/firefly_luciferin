@@ -156,6 +156,7 @@ final class ConfigurationPayload {
         if (updatedConfig.ledMatrixParamsChanged(savedConfig)) {
             updatedConfig.regenerateLedMatrix();
         }
+        SatellitesOptions.updateSplitZones(updatedConfig);
         return updatedConfig;
     }
 

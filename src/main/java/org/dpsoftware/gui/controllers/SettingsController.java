@@ -43,10 +43,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
-import org.dpsoftware.gui.controllers.options.DevicesTabOptions;
-import org.dpsoftware.gui.controllers.options.ModeTabOptions;
-import org.dpsoftware.gui.controllers.options.NetworkTabOptions;
-import org.dpsoftware.gui.controllers.options.SmoothingOptions;
+import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
@@ -332,6 +329,7 @@ public class SettingsController {
                     }
                 });
             }
+            SatellitesOptions.updateSplitZones(config);
             config.setConfigVersion(MainSingleton.getInstance().version);
             boolean firstStartup = MainSingleton.getInstance().config == null;
             if (config.isFullFirmware() && !config.isMqttEnable() && firstStartup) {
@@ -357,6 +355,9 @@ public class SettingsController {
             if (colorCorrectionDialogController != null && colorCorrectionDialogController.testCanvas != null) {
                 colorCorrectionDialogController.testCanvas.drawTestShapes(config, 0);
             }
+        } catch (IllegalArgumentException exception) {
+            MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(LabelKey.SAT_ALERT_IP_TITLE),
+                    CommonUtility.getWord(LabelKey.SAT_ALERT_IP_HEADER), exception.getMessage(), Alert.AlertType.ERROR);
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
         }

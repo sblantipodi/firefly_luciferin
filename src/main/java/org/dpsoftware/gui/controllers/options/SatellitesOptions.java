@@ -44,7 +44,7 @@ public final class SatellitesOptions {
     }
 
     /**
-     * Returns common and LED matrix zones, sorted like the dialog selector.
+     * Returns zones with split and entire screen first, followed by the remaining labels in order.
      *
      * @param config current configuration
      * @return unique selectable zones
@@ -59,13 +59,18 @@ public final class SatellitesOptions {
             if (matrix != null) {
                 for (LEDCoordinate coordinate : matrix.values()) {
                     String zone = coordinate.getZone();
-                    if (zone != null && !zone.isBlank()) {
+                    if (zone != null && !zone.isBlank() && !CommonUtility.isCommonZone(zone)) {
                         choices.putIfAbsent(zone, new Choice(zone, zone));
                     }
                 }
             }
         }
-        return new ArrayList<>(choices.values());
+        List<Choice> ordered = new ArrayList<>(choices.values());
+        String splitZone = Enums.PossibleZones.SPLIT_MAIN_STRIP.getBaseI18n();
+        String entireScreenZone = Enums.PossibleZones.ENTIRE_SCREEN.getBaseI18n();
+        ordered.sort(Comparator.comparingInt(choice -> splitZone.equals(choice.value()) ? 0
+                : entireScreenZone.equals(choice.value()) ? 1 : 2));
+        return ordered;
     }
 
     /**
@@ -172,6 +177,59 @@ public final class SatellitesOptions {
         }
         config.getSatellites().clear();
         config.getSatellites().putAll(updated);
+    }
+
+    /**
+     * Reconciles split markers after satellites or the LED layout change. Rebuilds the default
+     * matrices when an existing split changes, then applies the remaining satellite's range.
+     */
+    public static void updateSplitZones(Configuration config) {
+        if (config.getLedMatrix() == null || config.getLedMatrix().isEmpty()) {
+            return;
+        }
+        String splitZone = Enums.PossibleZones.SPLIT_MAIN_STRIP.getBaseI18n();
+        List<Satellite> splitSatellites = config.getSatellites().values().stream()
+                .filter(satellite -> splitZone.equals(satellite.getZone())).toList();
+        if (splitSatellites.size() > 1) {
+            throw new IllegalArgumentException(CommonUtility.getWord("satellite.split.multiple"));
+        }
+        int splitCount = splitSatellites.isEmpty() ? 0 : Integer.parseInt(splitSatellites.getFirst().getLedNum());
+        if (splitCount < 0 || config.getLedMatrix().values().stream()
+                .anyMatch(matrix -> matrix != null && splitCount > matrix.size())) {
+            throw new IllegalArgumentException(CommonUtility.getWord("satellite.split.invalid.count"));
+        }
+        boolean hasMarkers = config.getLedMatrix().values().stream().filter(Objects::nonNull)
+                .flatMap(matrix -> matrix.values().stream()).anyMatch(led -> splitZone.equals(led.getZone()));
+        if (splitCount == 0 && !hasMarkers) {
+            return;
+        }
+        if (hasMarkers && config.getLedMatrix().values().stream().filter(Objects::nonNull)
+                .anyMatch(matrix -> matrix.values().stream()
+                        .filter(led -> splitZone.equals(led.getZone())).count() != splitCount)) {
+            // Fresh matrices contain no markers, so the regeneration callback only marks the
+            // new range. This also restores Top, Bottom, etc. after removing the satellite.
+            config.regenerateLedMatrix();
+            return;
+        }
+        Map<String, LinkedHashMap<Integer, LEDCoordinate>> updated = new LinkedHashMap<>();
+        for (var aspectRatio : config.getLedMatrix().entrySet()) {
+            if (aspectRatio.getValue() == null) {
+                updated.put(aspectRatio.getKey(), null);
+                continue;
+            }
+            LinkedHashMap<Integer, LEDCoordinate> matrix = new LinkedHashMap<>();
+            for (var entry : aspectRatio.getValue().entrySet()) {
+                LEDCoordinate led = entry.getValue();
+                LEDCoordinate copy = new LEDCoordinate(led.getX(), led.getY(), led.getWidth(), led.getHeight(),
+                        led.isActive(), led.isGroupedLed(), led.getZone());
+                if (entry.getKey() >= 1 && entry.getKey() <= splitCount) {
+                    copy.setZone(splitZone);
+                }
+                matrix.put(entry.getKey(), copy);
+            }
+            updated.put(aspectRatio.getKey(), matrix);
+        }
+        config.setLedMatrix(updated);
     }
 
     /**
