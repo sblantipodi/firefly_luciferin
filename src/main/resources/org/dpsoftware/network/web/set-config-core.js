@@ -78,6 +78,14 @@ function buildFieldHtml(f) {
             + '<input type="file" id="cubeLutFile" accept=".cube" hidden></div>';
     }
     if (f.type === 'combo') {
+        if (f.id === 'serialPort') {
+            return '<div class="form-group"><label for="serialPort">' + escapeHtml(lbl)
+                + '</label><div class="dropdown device-selector">'
+                + '<input type="text" class="form-control" id="serialPort" autocomplete="off">'
+                + '<button type="button" class="btn btn-outline-secondary dropdown-toggle" id="serialPortToggle"'
+                + ' data-bs-toggle="dropdown" data-bs-reference="parent" aria-expanded="false" aria-controls="serialPortList" aria-label="' + escapeHtml(lbl) + '"></button>'
+                + '<ul class="dropdown-menu w-100" id="serialPortList" aria-labelledby="serialPortToggle"></ul></div></div>';
+        }
         var choices = optionsFor(f).map(function (option) {
             return '<option value="' + escapeHtml(option.value) + '"></option>';
         }).join('');

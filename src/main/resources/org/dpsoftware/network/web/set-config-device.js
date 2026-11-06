@@ -334,8 +334,10 @@ export function refreshSerialPortSuggestions() {
         return;
     }
     var wireless = document.getElementById('wirelessStream').checked;
-    document.querySelector('label[for="serialPort"]').textContent = wireless
+    var label = wireless
         ? state.fieldLabels.serialPortWirelessLabel : state.fieldLabels.serialPort;
+    document.querySelector('label[for="serialPort"]').textContent = label;
+    document.getElementById('serialPortToggle').setAttribute('aria-label', label);
     var key = wireless ? 'serialPortWireless' : 'serialPortSerial';
     var configured = ((state.fieldOptions[key] || {}).options || []).map(function (option) {
         return String(option.value);
@@ -347,9 +349,29 @@ export function refreshSerialPortSuggestions() {
     var choices = Array.from(new Set(configured.concat(connected))).filter(function (choice) {
         return multiMonitor === 1 || choice !== 'AUTO';
     });
-    document.getElementById('serialPortList').innerHTML = choices.map(function (choice) {
-        return '<option value="' + escapeHtml(choice) + '"></option>';
-    }).join('');
+    var list = document.getElementById('serialPortList');
+    // Keep the focused menu item when discovery returns the same devices again.
+    if (list.children.length === choices.length && choices.every(function (choice, index) {
+        return list.children[index].firstElementChild.textContent === choice;
+    })) {
+        return;
+    }
+    list.replaceChildren();
+    choices.forEach(function (choice) {
+        var item = document.createElement('li');
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'dropdown-item';
+        button.textContent = choice;
+        button.addEventListener('click', function () {
+            input.value = choice;
+            input.dispatchEvent(new Event('input', {bubbles: true}));
+            input.dispatchEvent(new Event('change', {bubbles: true}));
+            input.focus();
+        });
+        item.appendChild(button);
+        list.appendChild(item);
+    });
 }
 
 // Fetches the list of connected devices from the server, renders the device table and updates the auto output device resolution.

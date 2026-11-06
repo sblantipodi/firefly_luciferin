@@ -128,6 +128,25 @@ body {
     border-color: var(--border);
 }
 
+.device-selector .dropdown-toggle,
+.device-selector .dropdown-menu {
+    background-color: var(--surface-raised);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.device-selector .dropdown-item {
+    color: var(--text);
+}
+
+.device-selector .dropdown-toggle:hover,
+.device-selector .dropdown-toggle:focus,
+.device-selector .dropdown-item:hover,
+.device-selector .dropdown-item:focus {
+    background-color: var(--surface-hover);
+    color: var(--text);
+}
+
 .form-control[readonly],
 .form-control[readonly]:focus {
     background-color: var(--surface-raised);
