@@ -1,7 +1,7 @@
 // Device controls of the settings page: color picker, output device/serial selection, LED toggle, live device table and per-device status polling.
 import {state} from './set-config-state.js';
 import {fetchJson, postResponse} from './set-config-api.js';
-import {escapeHtml, showToast} from './set-config-ui.js';
+import {buildEditableComboHtml, escapeHtml, showToast, updateEditableComboOptions} from './set-config-ui.js';
 
 var colorPicker;
 var deviceIp = null;
@@ -491,7 +491,7 @@ export function buildSatellitesHtml() {
     };
     return '<div class="form-group"><div id="satelliteTable" class="table-responsive mb-3"></div>'
         + '<div class="row g-3">'
-        + '<div class="col-12 col-md-6"><label for="satelliteDeviceIp">' + escapeHtml(labels.satelliteDeviceIp) + '</label><input class="form-control" id="satelliteDeviceIp" list="satelliteDeviceIpList"><datalist id="satelliteDeviceIpList">' + options('satelliteDeviceIp') + '</datalist></div>'
+        + '<div class="col-12 col-md-6">' + buildEditableComboHtml('satelliteDeviceIp', labels.satelliteDeviceIp) + '</div>'
         + '<div class="col-12 col-md-6"><label for="satelliteZone">' + escapeHtml(labels.satelliteZone) + '</label><select class="form-select" id="satelliteZone" title="' + escapeHtml(labels.satelliteZoneTooltip) + '">' + options('satelliteZone') + '</select></div>'
         + '<div class="col-12 col-md-6"><label for="satelliteOrientation">' + escapeHtml(labels.satelliteOrientation) + '</label><select class="form-select" id="satelliteOrientation">' + options('satelliteOrientation') + '</select></div>'
         + '<div class="col-12 col-md-6"><label for="satelliteLedNum">' + escapeHtml(labels.satelliteLedNum) + '</label><input class="form-control" id="satelliteLedNum" type="text" inputmode="numeric" pattern="[0-9]+" value="1"></div>'
@@ -550,7 +550,7 @@ export function refreshSatelliteDeviceSuggestions() {
             };
         }));
     var seen = new Set();
-    list.innerHTML = available.filter(function (choice) {
+    var choices = available.filter(function (choice) {
         var ip = String(choice.value || '');
         if (!ip || seen.has(ip) || satelliteDraft[ip] || ip === config.staticGlowWormIp
             || choice.deviceName === config.outputDevice) {
@@ -559,8 +559,9 @@ export function refreshSatelliteDeviceSuggestions() {
         seen.add(ip);
         return true;
     }).map(function (choice) {
-        return '<option value="' + escapeHtml(choice.label) + '"></option>';
-    }).join('');
+        return {value: choice.label, label: choice.label};
+    });
+    updateEditableComboOptions('satelliteDeviceIp', choices);
 }
 
 // Loads saved satellites into the editable draft and restores the dialog's default field values.
@@ -574,7 +575,7 @@ export function initializeSatellites(config) {
     document.getElementById('satelliteOrientation').selectedIndex = 0;
     document.getElementById('satelliteAlgo').selectedIndex = 0;
     document.getElementById('satelliteLedNum').value = '1';
-    ['satelliteDeviceIp', 'satelliteZone', 'satelliteOrientation', 'satelliteLedNum', 'satelliteAlgo',
+    ['satelliteDeviceIp', 'satelliteDeviceIpToggle', 'satelliteZone', 'satelliteOrientation', 'satelliteLedNum', 'satelliteAlgo',
         'satelliteAdd'].forEach(function (id) {
         document.getElementById(id).disabled = !config.fullFirmware;
     });

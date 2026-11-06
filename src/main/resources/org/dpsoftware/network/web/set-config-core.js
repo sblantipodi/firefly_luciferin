@@ -2,7 +2,7 @@
 // the current configuration, and collects the edited values into the JSON payload.
 import {sections} from './set-config-schema.js';
 import {state} from './set-config-state.js';
-import {escapeHtml} from './set-config-ui.js';
+import {buildEditableComboHtml, escapeHtml} from './set-config-ui.js';
 import {buildSatellitesHtml, collectSatellites, fillPickerControls} from './set-config-device.js';
 
 // Resolves the option list for a select field, preferring the server-provided options over the static schema defaults.
@@ -78,13 +78,9 @@ function buildFieldHtml(f) {
             + '<input type="file" id="cubeLutFile" accept=".cube" hidden></div>';
     }
     if (f.type === 'combo') {
-        if (f.id === 'serialPort') {
-            return '<div class="form-group"><label for="serialPort">' + escapeHtml(lbl)
-                + '</label><div class="dropdown device-selector">'
-                + '<input type="text" class="form-control" id="serialPort" autocomplete="off">'
-                + '<button type="button" class="btn btn-outline-secondary dropdown-toggle" id="serialPortToggle"'
-                + ' data-bs-toggle="dropdown" data-bs-reference="parent" aria-expanded="false" aria-controls="serialPortList" aria-label="' + escapeHtml(lbl) + '"></button>'
-                + '<ul class="dropdown-menu w-100" id="serialPortList" aria-labelledby="serialPortToggle"></ul></div></div>';
+        if (['serialPort', 'desiredFramerate', 'improvComPort'].includes(f.id)) {
+            return '<div class="form-group">' + buildEditableComboHtml(f.id, lbl,
+                f.id === 'serialPort' ? [] : optionsFor(f)) + '</div>';
         }
         var choices = optionsFor(f).map(function (option) {
             return '<option value="' + escapeHtml(option.value) + '"></option>';
@@ -124,6 +120,23 @@ function buildFieldHtml(f) {
         inputHtml += '<output class="d-block" id="' + f.id + 'Value" for="' + f.id + '"></output>';
     }
     return '<div class="form-group"><label for="' + f.id + '">' + lbl + '</label> ' + inputHtml + '</div>';
+}
+
+// Selects a preset without filtering the menu or changing how editable fields notify listeners.
+function wireComboOptions() {
+    document.querySelectorAll('.device-selector').forEach(function (selector) {
+        selector.addEventListener('click', function (event) {
+            var button = event.target.closest('.dropdown-item[data-value]');
+            var input = selector.querySelector('input');
+            if (!button || input.disabled) {
+                return;
+            }
+            input.value = button.dataset.value;
+            input.dispatchEvent(new Event('input', {bubbles: true}));
+            input.dispatchEvent(new Event('change', {bubbles: true}));
+            input.focus();
+        });
+    });
 }
 
 // Wraps a list of field HTML blocks into a responsive Bootstrap grid row.
@@ -198,6 +211,7 @@ export function buildForm() {
     logs.querySelector('.accordion-body').appendChild(document.getElementById('logTemplate').content.cloneNode(true));
     accordion.appendChild(logs);
     document.getElementById('settingsContainer').replaceChildren(page);
+    wireComboOptions();
     fillPickerControls();
     for (var id of [...ledCountIds, 'bottomRowLed', 'screenResX', 'screenResY', 'mqttPort',
         'improvMi', 'improvMo', 'improvSck', 'improvCs']) {

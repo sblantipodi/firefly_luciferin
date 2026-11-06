@@ -16,7 +16,7 @@ import {
 import {addProfile, renderProfiles} from './set-config-profiles.js';
 import {wireLivePreviewButton, withLivePreviewRestart} from './set-config-preview.js';
 import {pollServerStatus} from './set-config-status.js';
-import {escapeHtml, showToast} from './set-config-ui.js';
+import {escapeHtml, showToast, updateEditableComboOptions} from './set-config-ui.js';
 
 // Collects and saves the form, returning whether the request succeeded before the server restarts.
 function saveForm() {
@@ -99,13 +99,19 @@ function syncImprovEthernetFields() {
 // Replaces an editable combo box's suggestions while preserving a manually entered value.
 function updateImprovSuggestions(id, values) {
     var input = document.getElementById(id);
-    var list = document.getElementById(id + 'List');
-    list.replaceChildren();
-    (values || []).forEach(function (value) {
-        var option = document.createElement('option');
-        option.value = value;
-        list.appendChild(option);
-    });
+    if (id === 'improvComPort') {
+        updateEditableComboOptions(id, (values || []).map(function (value) {
+            return {value: value, label: value};
+        }));
+    } else {
+        var list = document.getElementById(id + 'List');
+        list.replaceChildren();
+        (values || []).forEach(function (value) {
+            var option = document.createElement('option');
+            option.value = value;
+            list.appendChild(option);
+        });
+    }
     if (!input.value && values && values.length && id === 'improvComPort') {
         input.value = values[0];
     }
