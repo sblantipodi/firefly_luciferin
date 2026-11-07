@@ -53,7 +53,7 @@ public class NumberWhiteTempDiscovery extends DeviceDiscovery implements Discove
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("White Temp");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";
         this.valueTemplate = "{{ value_json.whitetemp | default(65) * 100 }}";
         this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";

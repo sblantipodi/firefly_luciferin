@@ -66,17 +66,17 @@ public class TcpClient {
             con.setConnectTimeout(Constants.HTTP_TIMEOUT);
             con.setReadTimeout(Constants.HTTP_TIMEOUT);
             con.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.HTTP_RESPONSE);
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                int status = con.getResponseCode();
+                tcpResponse.setResponse(response.toString());
+                tcpResponse.setErrorCode(status);
             }
-            int status = con.getResponseCode();
-            in.close();
             con.disconnect();
-            tcpResponse.setResponse(response.toString());
-            tcpResponse.setErrorCode(status);
             log.trace(CommonUtility.toJsonStringPrettyPrinted(tcpResponse));
             return tcpResponse;
         } catch (IOException | URISyntaxException e) {

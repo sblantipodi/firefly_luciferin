@@ -22,7 +22,6 @@
 package org.dpsoftware.managers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -43,6 +42,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
 import org.dpsoftware.network.tcpUdp.TcpClient;
@@ -72,6 +72,9 @@ import java.util.stream.Collectors;
 public class UpgradeManager {
 
     String latestReleaseStr = "";
+    private Runnable onCheckComplete = () -> {
+    };
+    private boolean downloadStarted;
 
     /**
      * Transform release version to a comparable number with other releases
@@ -142,17 +145,22 @@ public class UpgradeManager {
     private static void showUpgradeResult(GlowWormDevice glowWormDevice, int responseCode) {
         String notificationContext = glowWormDevice.getDeviceName() + " ";
         if (HttpURLConnection.HTTP_OK == responseCode) {
-            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
+            log.info(CommonUtility.getWord(LabelKey.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
+            GuiSingleton.getInstance().completeGlowWormUpdate(glowWormDevice);
             if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
-                notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+                notificationContext += CommonUtility.getWord(LabelKey.DEVICEUPGRADE_SUCCESS_CDC);
             } else {
-                notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                notificationContext += CommonUtility.getWord(LabelKey.DEVICEUPGRADE_SUCCESS);
             }
-            MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            if (!MainSingleton.getInstance().isHeadlessMode()) {
+                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(LabelKey.UPGRADE_SUCCESS), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            }
         } else {
-            log.error(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
-            notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_ERROR);
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            log.error(CommonUtility.getWord(LabelKey.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
+            notificationContext += CommonUtility.getWord(LabelKey.DEVICEUPGRADE_ERROR);
+            if (!MainSingleton.getInstance().isHeadlessMode()) {
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(LabelKey.UPGRADE_ERROR), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            }
         }
     }
 
@@ -168,19 +176,19 @@ public class UpgradeManager {
                 long numericVerion = versionNumberToNumber(currentVersion);
                 URL url = new URI(Constants.GITHUB_POM_URL).toURL();
                 URLConnection urlConnection = url.openConnection();
-                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    if (inputLine.contains(Constants.POM_PRJ_VERSION)) {
-                        latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
-                                .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
-                        long latestRelease = versionNumberToNumber(latestReleaseStr);
-                        if (numericVerion < latestRelease) {
-                            return true;
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        if (inputLine.contains(Constants.POM_PRJ_VERSION)) {
+                            latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
+                                    .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
+                            long latestRelease = versionNumberToNumber(latestReleaseStr);
+                            if (numericVerion < latestRelease) {
+                                return true;
+                            }
                         }
                     }
                 }
-                in.close();
             } else {
                 return false;
             }
@@ -202,21 +210,20 @@ public class UpgradeManager {
         try {
             if (currentVersion != null && !currentVersion.equals(Constants.LIGHT_FIRMWARE_DUMMY_VERSION) && !currentVersion.equals(Constants.DASH)) {
                 long numericVerion = versionNumberToNumber(currentVersion);
-                BufferedReader in = getBufferedReader(useAlphaFirmware);
-                String inputLine;
                 StringBuilder jsonStr = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    jsonStr.append(inputLine);
+                try (BufferedReader in = getBufferedReader(useAlphaFirmware)) {
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        jsonStr.append(inputLine);
+                    }
                 }
-                ObjectMapper jsonMapper = new ObjectMapper();
-                JsonNode jsonObj = jsonMapper.readTree(jsonStr.toString());
+                JsonNode jsonObj = CommonUtility.JSON_MAPPER.readTree(jsonStr.toString());
                 if (jsonObj.get(Constants.PROP_VERSION) != null) {
                     long latestRelease = versionNumberToNumber(jsonObj.get(Constants.PROP_VERSION).asText());
                     if (numericVerion < latestRelease) {
                         return true;
                     }
                 }
-                in.close();
             } else {
                 return false;
             }
@@ -230,7 +237,6 @@ public class UpgradeManager {
     /**
      * Surf to the GitHub release page of the project
      */
-    @SuppressWarnings({"rawtypes"})
     public void downloadNewVersion() {
         Stage stage = new Stage();
         stage.setAlwaysOnTop(true);
@@ -239,20 +245,20 @@ public class UpgradeManager {
         Group root = new Group();
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle(CommonUtility.getWord(Constants.DOWNLOADING) + " " + Constants.FIREFLY_LUCIFERIN + " v" + latestReleaseStr);
+        stage.setTitle(CommonUtility.getWord(LabelKey.DOWNLOADING) + " " + Constants.FIREFLY_LUCIFERIN + " v" + latestReleaseStr);
         GuiManager.setStageIcon(stage);
 
         Label label = new Label("");
         final ProgressBar progressBar = new ProgressBar(0);
         progressBar.setPrefWidth(280);
 
-        Task copyWorker = createWorker();
+        Task<Boolean> copyWorker = createWorker();
+        copyWorker.setOnSucceeded(_ -> onCheckComplete.run());
+        copyWorker.setOnFailed(_ -> onCheckComplete.run());
+        copyWorker.setOnCancelled(_ -> onCheckComplete.run());
         progressBar.progressProperty().unbind();
         progressBar.progressProperty().bind(copyWorker.progressProperty());
-        copyWorker.messageProperty().addListener((_, _, newValue) -> {
-            System.out.println(newValue);
-            label.setText(newValue);
-        });
+        copyWorker.messageProperty().addListener((_, _, newValue) -> label.setText(newValue));
 
         final HBox hb = new HBox();
         hb.setSpacing(5);
@@ -261,6 +267,7 @@ public class UpgradeManager {
         scene.setRoot(hb);
         stage.show();
 
+        downloadStarted = true;
         new Thread(copyWorker).start();
     }
 
@@ -269,11 +276,10 @@ public class UpgradeManager {
      *
      * @return downloader task
      */
-    @SuppressWarnings("all")
-    private Task createWorker() {
-        return new Task() {
+    private Task<Boolean> createWorker() {
+        return new Task<>() {
             @Override
-            protected Object call() throws Exception {
+            protected Boolean call() throws Exception {
                 try {
                     String filename;
                     if (NativeExecutor.isWindows()) {
@@ -290,22 +296,22 @@ public class UpgradeManager {
                     }
                     URL website = new URI(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename).toURL();
                     URLConnection connection = website.openConnection();
-                    ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-                    String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
-                    downloadPath += filename;
-                    FileOutputStream fos = new FileOutputStream(downloadPath);
                     long expectedSize = connection.getContentLength();
-                    log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
-                    long transferedSize = 0L;
-                    long percentage;
-                    while (transferedSize < expectedSize) {
-                        transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
-                        percentage = ((transferedSize * 100) / expectedSize);
-                        updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
-                        updateProgress(percentage, 100);
+                    log.info("{}{}", CommonUtility.getWord(LabelKey.EXPECTED_SIZE), expectedSize);
+                    String downloadPath = InstanceConfigurer.getConfigPath() + File.separator + filename;
+                    try (InputStream is = connection.getInputStream();
+                         FileOutputStream fos = new FileOutputStream(downloadPath)) {
+                        ReadableByteChannel rbc = Channels.newChannel(is);
+                        long transferedSize = 0L;
+                        long percentage;
+                        while (transferedSize < expectedSize) {
+                            transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
+                            percentage = ((transferedSize * 100) / expectedSize);
+                            updateMessage(CommonUtility.getWord(LabelKey.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
+                            updateProgress(percentage, 100);
+                        }
+                        log.info("{}{}", transferedSize, CommonUtility.getWord(LabelKey.DOWNLOAD_COMPLETE));
                     }
-                    log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
-                    fos.close();
                     Thread.sleep(1000);
                     if (NativeExecutor.isWindows()) {
                         List<String> execCommand = new ArrayList<>();
@@ -342,20 +348,21 @@ public class UpgradeManager {
             log.info("Checking for Firefly Luciferin Update");
             fireflyUpdate = checkRemoteUpdateFF(MainSingleton.getInstance().version);
             if (fireflyUpdate) {
+                GuiSingleton.getInstance().setUpgrade(true);
                 MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
                 if (showChangelog) {
                     String upgradeContext;
                     if (NativeExecutor.isWindows()) {
-                        upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
+                        upgradeContext = CommonUtility.getWord(LabelKey.CLICK_OK_DOWNLOAD);
                     } else {
                         if (NativeExecutor.isRunningOnSandbox()) {
-                            upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE_SANDBOX);
+                            upgradeContext = CommonUtility.getWord(LabelKey.UPGRADE_AVAILABLE_SANDBOX);
                         } else {
-                            upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                            upgradeContext = CommonUtility.getWord(LabelKey.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(LabelKey.ONCE_DOWNLOAD_FINISHED);
                         }
                     }
                     Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
-                            CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
+                            CommonUtility.getWord(LabelKey.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
                             Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
                     ButtonType button = result.orElse(ButtonType.OK);
                     if (button == ButtonType.OK) {
@@ -364,7 +371,7 @@ public class UpgradeManager {
                         }
                     }
                 } else {
-                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE), CommonUtility.getWord(Constants.INSTALL_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(LabelKey.NEW_VERSION_AVAILABLE), CommonUtility.getWord(LabelKey.INSTALL_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
                 }
             }
         }
@@ -409,7 +416,11 @@ public class UpgradeManager {
                     postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANT_UPGRADE_TOO_OLD, Constants.MANUAL_UPGRADE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                if (MainSingleton.getInstance().isHeadlessMode()) {
+                    log.warn("Firmware on {} is too old for automatic update", glowWormDevice.getDeviceName());
+                } else {
+                    MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.CANT_UPGRADE_TOO_OLD, LabelKey.MANUAL_UPGRADE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                }
             }
         } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
@@ -479,9 +490,10 @@ public class UpgradeManager {
             }
         } catch (IOException e) {
             responseCode = http.getResponseCode();
-            InputStream errorStream = http.getErrorStream();
-            if (errorStream != null) {
-                responseBody = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
+            try (InputStream errorStream = http.getErrorStream()) {
+                if (errorStream != null) {
+                    responseBody = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
+                }
             }
             log.warn("HTTP error during OTA upload: code={}, body={}", responseCode, responseBody, e);
         }
@@ -502,38 +514,55 @@ public class UpgradeManager {
         downloadUrl += ("/" + filename);
         URL website = new URI(downloadUrl).toURL();
         URLConnection connection = website.openConnection();
-        ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-        String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
-        downloadPath += filename;
-        FileOutputStream fos = new FileOutputStream(downloadPath);
         long expectedSize = connection.getContentLength();
-        log.info("{}{}", CommonUtility.getWord(Constants.EXPECTED_SIZE), expectedSize);
-        long transferedSize = 0L;
-        while (transferedSize < expectedSize) {
-            transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
+        log.info("{}{}", CommonUtility.getWord(LabelKey.EXPECTED_SIZE), expectedSize);
+        String downloadPath = InstanceConfigurer.getConfigPath() + File.separator + filename;
+        try (InputStream is = connection.getInputStream();
+             FileOutputStream fos = new FileOutputStream(downloadPath)) {
+            ReadableByteChannel rbc = Channels.newChannel(is);
+            long transferedSize = 0L;
+            while (transferedSize < expectedSize) {
+                transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
+            }
+            log.info("{} {}", transferedSize, CommonUtility.getWord(LabelKey.DOWNLOAD_COMPLETE));
         }
-        log.info("{} {}", transferedSize, CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
-        fos.close();
     }
 
     /**
-     * Check for updates
+     * Check for Firefly and Glow Worm updates and report when the check or update finishes.
      *
-     * @param showChangelog show changelog
+     * @param showChangelog whether to show update details and confirmation dialogs
+     * @param onCheckComplete action to run after the check or update finishes
      */
-    public void checkForUpdates(boolean showChangelog) {
-        UpgradeManager vm = new UpgradeManager();
-        // Check Firefly updates
-        boolean fireflyUpdate = false;
-        if (MainSingleton.getInstance().whoAmI == 1) {
-            fireflyUpdate = vm.checkFireflyUpdates(showChangelog);
-            if (fireflyUpdate) {
-                GuiSingleton.getInstance().setUpgrade(true);
-                MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
+    public void checkForUpdates(boolean showChangelog, Runnable onCheckComplete) {
+        this.onCheckComplete = onCheckComplete;
+        try {
+            // Check Firefly updates
+            boolean fireflyUpdate = false;
+            if (MainSingleton.getInstance().whoAmI == 1) {
+                if (MainSingleton.getInstance().isHeadlessMode()) {
+                    fireflyUpdate = MainSingleton.getInstance().config.isCheckForUpdates()
+                            && checkRemoteUpdateFF(MainSingleton.getInstance().version);
+                    if (fireflyUpdate) {
+                        GuiSingleton.getInstance().setUpgrade(true);
+                        log.info("Firefly Luciferin update available");
+                    }
+                } else {
+                    fireflyUpdate = checkFireflyUpdates(showChangelog);
+                }
             }
+            // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
+            if (fireflyUpdate) {
+                if (!downloadStarted) {
+                    onCheckComplete.run();
+                }
+            } else {
+                checkGlowWormUpdates(false, showChangelog);
+            }
+        } catch (RuntimeException | Error e) {
+            onCheckComplete.run();
+            throw e;
         }
-        // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
-        vm.checkGlowWormUpdates(fireflyUpdate, showChangelog);
     }
 
     /**
@@ -547,8 +576,12 @@ public class UpgradeManager {
             if (showChangelog) {
                 checkAndExecuteGwUpdate(true);
             } else {
-                CommonUtility.delaySeconds(() -> checkAndExecuteGwUpdate(false), 20);
+                if (CommonUtility.delaySeconds(() -> checkAndExecuteGwUpdate(false), 20) == null) {
+                    onCheckComplete.run();
+                }
             }
+        } else {
+            onCheckComplete.run();
         }
     }
 
@@ -558,13 +591,44 @@ public class UpgradeManager {
      * @param showChangelog is false when the check is triggered on startup, true otherwise
      */
     private void checkAndExecuteGwUpdate(boolean showChangelog) {
-        PropertiesLoader propertiesLoader = new PropertiesLoader();
-        boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
-        log.info("Checking for Glow Worm Luciferin Update{}", useAlphaFirmware ? " using Alpha channel." : "");
-        if (!GuiSingleton.getInstance().deviceTableData.isEmpty()) {
-            ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
-            // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
-            GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
+        boolean handedOffToUi = false;
+        try {
+            PropertiesLoader propertiesLoader = new PropertiesLoader();
+            boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
+            log.info("Checking for Glow Worm Luciferin Update{}", useAlphaFirmware ? " using Alpha channel." : "");
+            if (!GuiSingleton.getInstance().deviceTableData.isEmpty()) {
+                ArrayList<GlowWormDevice> devicesToUpdate = findGlowWormDevicesToUpdate(useAlphaFirmware);
+                devicesToUpdate.forEach(GuiSingleton.getInstance()::registerGlowWormUpdate);
+                if (MainSingleton.getInstance().isHeadlessMode()) {
+                    updateGlowWormHeadless(devicesToUpdate);
+                } else if (!devicesToUpdate.isEmpty()) {
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            showGlowWormUpdateDialog(devicesToUpdate);
+                        } finally {
+                            onCheckComplete.run();
+                        }
+                    });
+                    handedOffToUi = true;
+                } else if (showChangelog) {
+                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(LabelKey.LATEST_VERSION), CommonUtility.getWord(LabelKey.NO_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+                }
+            }
+        } finally {
+            if (!handedOffToUi) {
+                onCheckComplete.run();
+            }
+        }
+    }
+
+    /**
+     * Find devices eligible for a Glow Worm firmware update.
+     */
+    private ArrayList<GlowWormDevice> findGlowWormDevicesToUpdate(boolean useAlphaFirmware) {
+        ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
+        // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
+        GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
+            try {
                 if (!MainSingleton.getInstance().config.isFullFirmware() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                     // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
                     if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
@@ -577,67 +641,141 @@ public class UpgradeManager {
                         }
                     }
                 }
-            });
-            if (!devicesToUpdate.isEmpty()) {
-                javafx.application.Platform.runLater(() -> {
-                    String deviceToUpdateStr = devicesToUpdate
-                            .stream()
-                            .map(s -> Constants.DASH + " " + "(" + s.getDeviceIP() + ") " + s.getDeviceName() + "\n")
-                            .collect(Collectors.joining());
-                    String deviceContent;
-                    if (devicesToUpdate.size() == 1) {
-                        deviceContent = MainSingleton.getInstance().config.isFullFirmware() ? CommonUtility.getWord(Constants.DEVICE_UPDATED) : CommonUtility.getWord(Constants.DEVICE_UPDATED_LIGHT);
-                    } else {
-                        deviceContent = CommonUtility.getWord(Constants.DEVICES_UPDATED);
-                    }
-                    String upgradeMessage;
-                    if (NativeExecutor.isLinux()) {
-                        upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED_LINUX);
-                    } else {
-                        upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
-                    }
-                    boolean isAutomaticUpdateCapable = isAutomaticUpdateCapable(devicesToUpdate);
-                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                            CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
-                                    + (isAutomaticUpdateCapable ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
-                                    + "\n", Alert.AlertType.CONFIRMATION);
-                    ButtonType button = result.orElse(ButtonType.OK);
-                    if (isAutomaticUpdateCapable) {
-                        if (button == ButtonType.OK) {
-                            if (MainSingleton.getInstance().RUNNING) {
-                                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-                                CommonUtility.sleepSeconds(15);
-                            }
-                            if (MainSingleton.getInstance().config.isMqttEnable()) {
-                                log.info("Starting web server");
-                                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT),
-                                        CommonUtility.toJsonString(new WebServerStarterDto(true)));
-                                devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
-                            } else {
-                                devicesToUpdate.forEach(glowWormDevice -> {
-                                    log.info("Starting web server: {}", glowWormDevice.getDeviceIP());
-                                    TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
-                                            NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), glowWormDevice.getDeviceIP());
-                                    log.info("Updating: {}", glowWormDevice.getDeviceIP());
-                                    CommonUtility.sleepSeconds(5);
-                                    executeUpdate(glowWormDevice, false);
-                                });
-                                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 60);
-                            }
-                        }
-                    } else {
-                        if (button == ButtonType.OK) {
-                            if (NativeExecutor.isLinux()) {
-                                devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
-                            } else {
-                                MainSingleton.getInstance().guiManager.surfToURL(Constants.WEB_INSTALLER_URL);
-                            }
-                        }
-                    }
-                });
-            } else if (showChangelog) {
-                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.LATEST_VERSION), CommonUtility.getWord(Constants.NO_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
+            } catch (RuntimeException e) {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    throw e;
+                }
+                log.warn("Skipping firmware check for {}: invalid device information", glowWormDevice.getDeviceName(), e);
             }
+        });
+        return devicesToUpdate;
+    }
+
+    /**
+     * Ask for confirmation and update the selected Glow Worm devices on the JavaFX thread.
+     */
+    private void showGlowWormUpdateDialog(ArrayList<GlowWormDevice> devicesToUpdate) {
+        String deviceToUpdateStr = devicesToUpdate
+                .stream()
+                .map(s -> Constants.DASH + " " + "(" + s.getDeviceIP() + ") " + s.getDeviceName() + "\n")
+                .collect(Collectors.joining());
+        String deviceContent;
+        if (devicesToUpdate.size() == 1) {
+            deviceContent = MainSingleton.getInstance().config.isFullFirmware() ? CommonUtility.getWord(LabelKey.DEVICE_UPDATED) : CommonUtility.getWord(LabelKey.DEVICE_UPDATED_LIGHT);
+        } else {
+            deviceContent = CommonUtility.getWord(LabelKey.DEVICES_UPDATED);
+        }
+        String upgradeMessage;
+        if (NativeExecutor.isLinux()) {
+            upgradeMessage = CommonUtility.getWord(LabelKey.UPDATE_NEEDED_LINUX);
+        } else {
+            upgradeMessage = CommonUtility.getWord(LabelKey.UPDATE_NEEDED);
+        }
+        boolean isAutomaticUpdateCapable = isAutomaticUpdateCapable(devicesToUpdate);
+        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                CommonUtility.getWord(LabelKey.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
+                        + (isAutomaticUpdateCapable ? CommonUtility.getWord(LabelKey.UPDATE_BACKGROUND) : upgradeMessage)
+                        + "\n", Alert.AlertType.CONFIRMATION);
+        ButtonType button = result.orElse(ButtonType.OK);
+        if (isAutomaticUpdateCapable) {
+            if (button == ButtonType.OK) {
+                GuiSingleton.getInstance().setGlowWormUpdateInProgress(true);
+                try {
+                    if (MainSingleton.getInstance().RUNNING) {
+                        MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+                        CommonUtility.sleepSeconds(15);
+                    }
+                    if (MainSingleton.getInstance().config.isMqttEnable()) {
+                        log.info("Starting web server");
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT),
+                                CommonUtility.toJsonString(new WebServerStarterDto(true)));
+                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
+                    } else {
+                        devicesToUpdate.forEach(glowWormDevice -> {
+                            log.info("Starting web server: {}", glowWormDevice.getDeviceIP());
+                            TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
+                                    NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), glowWormDevice.getDeviceIP());
+                            log.info("Updating: {}", glowWormDevice.getDeviceIP());
+                            CommonUtility.sleepSeconds(5);
+                            executeUpdate(glowWormDevice, false);
+                        });
+                        CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 60);
+                    }
+                } finally {
+                    GuiSingleton.getInstance().setGlowWormUpdateInProgress(false);
+                }
+            }
+        } else {
+            if (button == ButtonType.OK) {
+                if (NativeExecutor.isLinux()) {
+                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
+                } else {
+                    MainSingleton.getInstance().guiManager.surfToURL(Constants.WEB_INSTALLER_URL);
+                }
+            }
+        }
+    }
+
+    /**
+     * Update each compatible Glow Worm device without showing a confirmation dialog.
+     *
+     * @param devicesToUpdate devices with an available firmware update
+     */
+    private void updateGlowWormHeadless(List<GlowWormDevice> devicesToUpdate) {
+        List<GlowWormDevice> eligibleDevices = new ArrayList<>();
+        for (GlowWormDevice device : devicesToUpdate) {
+            try {
+                ArrayList<GlowWormDevice> singleDevice = new ArrayList<>(List.of(device));
+                if (versionNumberToNumber(device.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRM_FOR_AUTO_UPGRADE)
+                        && isAutomaticUpdateCapable(singleDevice)) {
+                    eligibleDevices.add(device);
+                } else {
+                    log.warn("Skipping automatic firmware update for {}: manual update required", device.getDeviceName());
+                }
+            } catch (RuntimeException e) {
+                log.warn("Skipping automatic firmware update for {}: invalid device information", device.getDeviceName(), e);
+            }
+        }
+        if (eligibleDevices.isEmpty()) {
+            return;
+        }
+        GuiSingleton.getInstance().setGlowWormUpdateInProgress(true);
+        try {
+            if (MainSingleton.getInstance().RUNNING) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+                CommonUtility.sleepSeconds(15);
+            }
+            if (MainSingleton.getInstance().config.isMqttEnable()) {
+                log.info("Starting web server");
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT),
+                        CommonUtility.toJsonString(new WebServerStarterDto(true)));
+                for (GlowWormDevice device : eligibleDevices) {
+                    try {
+                        executeUpdate(device, false);
+                    } catch (RuntimeException e) {
+                        log.error("Firmware update failed for {}", device.getDeviceName(), e);
+                    }
+                }
+            } else {
+                try {
+                    for (GlowWormDevice device : eligibleDevices) {
+                        try {
+                            log.info("Starting web server: {}", device.getDeviceIP());
+                            TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
+                                    NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), device.getDeviceIP());
+                            log.info("Updating: {}", device.getDeviceIP());
+                            CommonUtility.sleepSeconds(5);
+                            executeUpdate(device, false);
+                        } catch (RuntimeException e) {
+                            log.error("Firmware update failed for {}", device.getDeviceName(), e);
+                        }
+                    }
+                } finally {
+                    CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 60);
+                }
+            }
+        } finally {
+            GuiSingleton.getInstance().setGlowWormUpdateInProgress(false);
         }
     }
 

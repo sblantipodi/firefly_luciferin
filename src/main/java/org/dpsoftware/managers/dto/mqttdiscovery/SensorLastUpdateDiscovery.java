@@ -45,7 +45,7 @@ public class SensorLastUpdateDiscovery extends DeviceDiscovery implements Discov
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Last Update (Glow Worm)");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.valueTemplate = "{{ as_timestamp(now()) | timestamp_custom(\"%Y-%m-%d ~ %H:%M:%S\") }}";
         this.icon = "mdi:update";

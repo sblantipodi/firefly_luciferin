@@ -1,6 +1,6 @@
 name: fireflyluciferin
 title: Firefly Luciferin
-base: core24
+base: core26
 version: '2.28.4'
 summary: Ambient lighting software
 description: |
@@ -19,7 +19,15 @@ grade: stable
 confinement: strict
 platforms:
   amd64:
+  arm64:
 
+
+plugs:
+  # Auto-connection requires Snap Store approval.
+  systemd-user:
+    interface: personal-files
+    write:
+      - $HOME/.config/systemd/user/luciferin_snap.service
 
 parts:
 
@@ -78,37 +86,42 @@ parts:
       - libasound2
       - libasound2-plugins
     override-build: |
-      snapcraftctl build
-      wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.28.4/FireflyLuciferinLinux.deb
+      craftctl default
+      TARGET_ARCH="${CRAFT_ARCH_BUILD_FOR}"
+      if [ "$TARGET_ARCH" = "arm64" ]; then
+        wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.28.4/FireflyLuciferinLinux_arm64.deb -O FireflyLuciferinLinux.deb
+      else
+        wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.28.4/FireflyLuciferinLinux.deb -O FireflyLuciferinLinux.deb
+      fi
       ls -la
       ar x FireflyLuciferinLinux.deb
       tar xvf data.tar.zst
       ls -la
       ls -la opt/fireflyluciferin
-      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
-      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share/applications
-      mkdir -p $SNAPCRAFT_PART_INSTALL/meta/gui      
-      cp -R opt/fireflyluciferin/* $SNAPCRAFT_PART_INSTALL
-      cp opt/fireflyluciferin/lib/app/classes/build_assets/org.dpsoftware.FireflyLuciferin.snap.desktop $SNAPCRAFT_PART_INSTALL/usr/share/applications/fireflyluciferin.desktop
-      cp opt/fireflyluciferin/lib/app/classes/org/dpsoftware/gui/img/luciferin_logo.png $SNAPCRAFT_PART_INSTALL/meta/gui/fireflyluciferin.png
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      mkdir -p $CRAFT_PART_INSTALL/usr/share/applications
+      mkdir -p $CRAFT_PART_INSTALL/meta/gui
+      cp -R opt/fireflyluciferin/* $CRAFT_PART_INSTALL
+      cp opt/fireflyluciferin/lib/app/classes/build_assets/org.dpsoftware.FireflyLuciferin.snap.desktop $CRAFT_PART_INSTALL/usr/share/applications/fireflyluciferin.desktop
+      cp opt/fireflyluciferin/lib/app/classes/org/dpsoftware/gui/img/luciferin_logo.png $CRAFT_PART_INSTALL/meta/gui/fireflyluciferin.png
 
   cleanup:
     after: [ fireflyluciferin, alsa-pulseaudio ]
     plugin: nil
     source: .
     override-prime: |
-      rm -rf $SNAPCRAFT_PRIME/opt/fireflyluciferin
-      rm -rf $SNAPCRAFT_PRIME/lib/app/fireflyluciferin*.jar
-      rm -rf $SNAPCRAFT_PRIME/lib/app/classes/gstreamer
-      rm -rf $SNAPCRAFT_PRIME/usr/include/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/pkgconfig/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/pkgconfig/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/share/doc/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/share/gstreamer*
-      rm -rf $SNAPCRAFT_PRIME/usr/share/icons/Humanity/apps/22/gstreamer-properties.svg
-      rm -rf $SNAPCRAFT_PRIME/usr/share/icons/Humanity/apps/24/gstreamer-properties.svg
-      rm -rf $SNAPCRAFT_PRIME/usr/share/icons/Humanity/apps/48/gstreamer-properties.svg
+      rm -rf $CRAFT_PRIME/opt/fireflyluciferin
+      rm -rf $CRAFT_PRIME/lib/app/fireflyluciferin*.jar
+      rm -rf $CRAFT_PRIME/lib/app/classes/gstreamer
+      rm -rf $CRAFT_PRIME/usr/include/gstreamer*
+      # Keep capture plugins not supplied by the GNOME runtime (e.g. nvcodec and HIP).
+      # The GNOME extension removes only plugins already supplied by its content snap.
+      rm -rf $CRAFT_PRIME/usr/lib/*-linux-gnu/pkgconfig/gstreamer*
+      rm -rf $CRAFT_PRIME/usr/share/doc/gstreamer*
+      rm -rf $CRAFT_PRIME/usr/share/gstreamer*
+      rm -rf $CRAFT_PRIME/usr/share/icons/Humanity/apps/22/gstreamer-properties.svg
+      rm -rf $CRAFT_PRIME/usr/share/icons/Humanity/apps/24/gstreamer-properties.svg
+      rm -rf $CRAFT_PRIME/usr/share/icons/Humanity/apps/48/gstreamer-properties.svg
 
 apps:
   fireflyluciferin:
@@ -120,6 +133,7 @@ apps:
       - desktop
       - network
       - home
+      - systemd-user
       - pulseaudio
       - alsa
       - audio-playback
@@ -131,7 +145,7 @@ apps:
       DISABLE_WAYLAND: 1
       NOTIFY_IGNORE_PORTAL: 1
       ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
-      _JAVA_OPTIONS: "-Djavafx.cachedir=${SNAP_USER_DATA}/.openjfx -XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm --enable-native-access=org.newsclub.net.unix"
+      _JAVA_OPTIONS: "-Djna.library.path=$SNAP/gnome-platform/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR -Djavafx.cachedir=${SNAP_USER_DATA}/.openjfx -XX:+UseG1GC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm --enable-native-access=org.newsclub.net.unix"
       PATH: $PWD:$SNAP/bin:$PATH
       APPDIR: $SNAP/lib/app
       LD_LIBRARY_PATH: $APPDIR:$LD_LIBRARY_PATH
