@@ -105,6 +105,7 @@ public class FireflyLuciferin extends Application {
         try {
             StorageManager storageManager = new StorageManager();
             MainSingleton.getInstance().config = storageManager.loadConfigurationYaml();
+            storageManager.updateConfigFile(main.getConfig());
             storageManager.resolveAutomaticCapture(main.getConfig());
             ledMatrixInUse = main.getConfig().getDefaultLedMatrix();
         } catch (NullPointerException e) {
@@ -305,8 +306,6 @@ public class FireflyLuciferin extends Application {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         scheduleCheckForNightMode();
-        StorageManager storageManager = new StorageManager();
-        storageManager.updateConfigFile(main.getConfig());
         setRuntimeLogLevel();
         if (main.whoAmI == 1) {
             if (main.getConfig().isWebMcpServerEnabled()) {

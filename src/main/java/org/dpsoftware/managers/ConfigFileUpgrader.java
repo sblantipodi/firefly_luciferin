@@ -316,6 +316,21 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
     }
 
     /**
+     * Update configuration file previous than 3.0.0
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    boolean updatePrevious3000(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("3.0.0")) {
+            config.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
      * Reconfigure LED matrix
      *
      * @param config app config params

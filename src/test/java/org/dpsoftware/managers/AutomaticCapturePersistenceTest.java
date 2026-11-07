@@ -26,9 +26,11 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.InstanceConfigurer;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
@@ -38,6 +40,47 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mockStatic;
 
 class AutomaticCapturePersistenceTest {
+    @ParameterizedTest
+    @CsvSource({
+            "XIMAGESRC, false, false, XIMAGESRC",
+            "PIPEWIREXDG, true, false, PIPEWIREXDG",
+            "USB_VIDEO, false, true, USB_VIDEO",
+            "AUTO, true, false, PIPEWIREXDG"
+    })
+    void migrationResolvesRuntimeMethodAndPreservesAutoOnDisk(String savedMethod, boolean wayland,
+                                                            boolean usb, String startupMethod,
+                                                            @TempDir Path directory) throws Exception {
+        MainSingleton main = new MainSingleton();
+        main.whoAmI = 1;
+        main.version = "3.0.0";
+        try (MockedStatic<MainSingleton> singleton = mockStatic(MainSingleton.class);
+             MockedStatic<InstanceConfigurer> paths = mockStatic(InstanceConfigurer.class);
+             MockedStatic<NativeExecutor> os = mockStatic(NativeExecutor.class)) {
+            singleton.when(MainSingleton::getInstance).thenReturn(main);
+            paths.when(InstanceConfigurer::getConfigPath).thenReturn(directory.toString());
+            os.when(NativeExecutor::isWayland).thenReturn(wayland);
+            StorageManager storage = new StorageManager();
+            Configuration config = new Configuration();
+            config.setConfigVersion("2.29.5");
+            config.setCaptureMethod(savedMethod);
+            if (usb) {
+                config.setCaptureDevice(new CaptureDeviceUtilities.BestCaptureFormat());
+            }
+            storage.writeConfig(config, null);
+
+            // Migrate to AUTO before resolving the method used to initialize capture.
+            storage.updateConfigFile(config);
+            assertEquals("AUTO", config.getCaptureMethod());
+            storage.resolveAutomaticCapture(config);
+
+            assertEquals(startupMethod, config.getCaptureMethod());
+            assertTrue(config.isAutomaticCapturePending());
+            Configuration saved = storage.readConfigFile(Constants.CONFIG_FILENAME);
+            assertEquals("AUTO", saved.getCaptureMethod());
+            assertEquals("3.0.0", saved.getConfigVersion());
+        }
+    }
+
     @Test
     void preservesAutoUntilProbeCompletesAndDoesNotPersistUnverifiedCandidates(@TempDir Path directory) throws Exception {
         MainSingleton main = new MainSingleton();
