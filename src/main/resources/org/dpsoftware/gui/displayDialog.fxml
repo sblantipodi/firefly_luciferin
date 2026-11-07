@@ -31,9 +31,13 @@
         <ComboBox fx:id="cubeLutCombo" editable="true" prefHeight="26.0" prefWidth="186.0" GridPane.columnIndex="1"
                   GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
         <Label text="%fxml.display.lut.upload" wrapText="true" GridPane.rowIndex="3"/>
-        <Button minWidth="60.0" mnemonicParsing="false" onAction="#uploadLut" prefHeight="26.0" prefWidth="185.0"
-                text="%fxml.display.lut.upload.button" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
-                GridPane.rowIndex="3"/>
+        <HBox alignment="CENTER_RIGHT" spacing="6.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <Button fx:id="uploadLutButton" minWidth="60.0" mnemonicParsing="false" onAction="#uploadLut"
+                    prefHeight="26.0" prefWidth="185.0" text="%fxml.display.lut.upload.button"/>
+            <Button fx:id="removeLutButton" managed="false" visible="false" minWidth="60.0"
+                    mnemonicParsing="false" onAction="#removeLut" prefHeight="26.0" prefWidth="89.5"
+                    text="%fxml.display.lut.remove.button"/>
+        </HBox>
         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="334.0"
                style="-fx-font-weight: bold;" text="%fxml.display.tonemapping" textAlignment="CENTER" wrapText="true"
                GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.valignment="TOP">

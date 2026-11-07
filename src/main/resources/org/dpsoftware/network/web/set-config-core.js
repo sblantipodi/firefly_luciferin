@@ -73,8 +73,10 @@ function buildFieldHtml(f) {
     }
     if (f.type === 'action' && f.id === 'uploadCubeLut') {
         return '<div class="form-group"><label class="d-block" for="uploadCubeLut">' + escapeHtml(lbl)
-            + '</label><button type="button" id="uploadCubeLut" class="btn btn-outline-primary">'
+            + '</label><div class="d-flex gap-2 cube-lut-actions"><button type="button" id="uploadCubeLut" class="btn btn-outline-primary">'
             + escapeHtml(state.fieldLabels.uploadCubeLutButton) + '</button>'
+            + '<button type="button" id="removeCubeLut" class="btn btn-outline-danger" hidden>'
+            + escapeHtml(state.fieldLabels.removeCubeLutButton) + '</button></div>'
             + '<input type="file" id="cubeLutFile" accept=".cube" hidden></div>';
     }
     if (f.type === 'combo') {

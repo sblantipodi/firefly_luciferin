@@ -21,8 +21,12 @@
  */
 package org.dpsoftware.lut;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,6 +36,7 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -358,6 +363,142 @@ class CubeLutToneMapTest {
     }
 
     // --- refresh ---
+
+    @Test
+    void uploadPersistsActualFilenameAndActivatesLutWithoutSavingOtherSettings() throws Exception {
+        String original = mockedInstance.config.getCubeLut();
+        int originalBrightness = mockedInstance.config.getBrightness();
+        try (var paths = Mockito.mockStatic(InstanceConfigurer.class)) {
+            paths.when(InstanceConfigurer::getConfigPath).thenReturn(tempDir.toString());
+            Path configFile = tempDir.resolve(Constants.CONFIG_FILENAME);
+            Files.writeString(configFile, "cubeLut: Disabled\nbrightness: 37\ncustomSetting: [keep, 42]\n");
+            ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
+            var expected = (com.fasterxml.jackson.databind.node.ObjectNode) yaml.readTree(configFile.toFile());
+            mockedInstance.config.setBrightness(99);
+            String contents = "LUT_3D_SIZE 1\n0.2 0.4 0.6\n";
+            String existing = CubeLutToneMap.importLut("custom.cube", new ByteArrayInputStream(
+                    contents.getBytes(StandardCharsets.UTF_8)));
+            String uploaded = CubeLutToneMap.uploadLut("custom.cube", new ByteArrayInputStream(
+                    contents.getBytes(StandardCharsets.UTF_8)));
+
+            assertEquals("custom (1).cube", uploaded);
+            expected.put("cubeLut", uploaded);
+            assertEquals(expected, yaml.readTree(configFile.toFile()));
+            assertEquals(uploaded, mockedInstance.config.getCubeLut());
+            assertEquals(99, mockedInstance.config.getBrightness());
+            assertTrue(CubeLutToneMap.isUserLut(existing));
+            assertTrue(CubeLutToneMap.isUserLut(uploaded));
+            assertTrue(CubeLutToneMap.snapshot().isAvailable());
+            assertArrayEquals(new int[]{51, 102, 153}, CubeLutToneMap.lookup(40, 80, 120));
+        } finally {
+            mockedInstance.config.setCubeLut(original);
+            mockedInstance.config.setBrightness(originalBrightness);
+            CubeLutToneMap.refresh();
+        }
+    }
+
+    @Test
+    void failedUploadConfigurationSaveRemovesOnlyNewFileAndKeepsSelection() throws Exception {
+        try (var paths = Mockito.mockStatic(InstanceConfigurer.class)) {
+            paths.when(InstanceConfigurer::getConfigPath).thenReturn(tempDir.toString());
+            String contents = "LUT_3D_SIZE 1\n0.2 0.4 0.6\n";
+            String existing = CubeLutToneMap.importLut("custom.cube", new ByteArrayInputStream(
+                    contents.getBytes(StandardCharsets.UTF_8)));
+            String original = mockedInstance.config.getCubeLut();
+
+            assertThrows(java.io.IOException.class, () -> CubeLutToneMap.uploadLut("custom.cube",
+                    new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8))));
+
+            assertEquals(java.util.List.of(existing), CubeLutToneMap.listUserLuts());
+            assertFalse(Files.exists(tempDir.resolve("cube_lut/custom (1).cube")));
+            assertEquals(original, mockedInstance.config.getCubeLut());
+        }
+    }
+
+    @Test
+    void invalidUploadKeepsConfigurationUnchanged() throws Exception {
+        try (var paths = Mockito.mockStatic(InstanceConfigurer.class)) {
+            paths.when(InstanceConfigurer::getConfigPath).thenReturn(tempDir.toString());
+            Path configFile = tempDir.resolve(Constants.CONFIG_FILENAME);
+            String saved = "cubeLut: Disabled\nbrightness: 37\n";
+            Files.writeString(configFile, saved);
+            String original = mockedInstance.config.getCubeLut();
+
+            assertThrows(IllegalArgumentException.class, () -> CubeLutToneMap.uploadLut("invalid.cube",
+                    new ByteArrayInputStream("LUT_3D_SIZE 2\n0 0 0\n".getBytes(StandardCharsets.UTF_8))));
+
+            assertEquals(saved, Files.readString(configFile));
+            assertEquals(original, mockedInstance.config.getCubeLut());
+            assertTrue(CubeLutToneMap.listUserLuts().isEmpty());
+        }
+    }
+
+    @Test
+    void removeUserLutDeletesFileAndDisablesActiveToneMapping() throws Exception {
+        String original = mockedInstance.config.getCubeLut();
+        try (var paths = Mockito.mockStatic(InstanceConfigurer.class)) {
+            paths.when(InstanceConfigurer::getConfigPath).thenReturn(tempDir.toString());
+            Path configFile = tempDir.resolve(Constants.CONFIG_FILENAME);
+            Files.writeString(configFile, "cubeLut: custom.cube\nbrightness: 37\ncustomSetting: [keep, 42]\n");
+            ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
+            var expected = yaml.readTree(configFile.toFile());
+            ((com.fasterxml.jackson.databind.node.ObjectNode) expected).put("cubeLut", Constants.DISABLED);
+            String uploaded = CubeLutToneMap.importLut("custom.cube", new ByteArrayInputStream(
+                    "LUT_3D_SIZE 1\n0.2 0.4 0.6\n".getBytes(StandardCharsets.UTF_8)));
+            mockedInstance.config.setCubeLut(uploaded);
+            CubeLutToneMap.refresh();
+            assertTrue(CubeLutToneMap.snapshot().isAvailable());
+            assertTrue(CubeLutToneMap.isUserLut(uploaded));
+            assertEquals(java.util.List.of(uploaded), CubeLutToneMap.listUserLuts());
+
+            CubeLutToneMap.removeLut(uploaded);
+
+            assertFalse(Files.exists(tempDir.resolve("cube_lut").resolve(uploaded)));
+            assertFalse(CubeLutToneMap.listAvailableLuts().contains(uploaded));
+            assertFalse(CubeLutToneMap.isUserLut(uploaded));
+            assertEquals(Constants.DISABLED, mockedInstance.config.getCubeLut());
+            assertEquals(expected, yaml.readTree(configFile.toFile()));
+            assertFalse(CubeLutToneMap.snapshot().isAvailable());
+            assertArrayEquals(new int[]{40, 80, 120}, CubeLutToneMap.lookup(40, 80, 120));
+        } finally {
+            mockedInstance.config.setCubeLut(original);
+            CubeLutToneMap.refresh();
+        }
+    }
+
+    @Test
+    void failedConfigurationSaveDoesNotRemoveLut() throws Exception {
+        try (var paths = Mockito.mockStatic(InstanceConfigurer.class)) {
+            paths.when(InstanceConfigurer::getConfigPath).thenReturn(tempDir.toString());
+            String uploaded = CubeLutToneMap.importLut("custom.cube", new ByteArrayInputStream(
+                    "LUT_3D_SIZE 1\n0.2 0.4 0.6\n".getBytes(StandardCharsets.UTF_8)));
+            String original = mockedInstance.config.getCubeLut();
+            assertThrows(java.io.IOException.class, () -> CubeLutToneMap.removeLut(uploaded));
+            assertTrue(CubeLutToneMap.isUserLut(uploaded));
+            assertEquals(original, mockedInstance.config.getCubeLut());
+        }
+    }
+
+    @Test
+    void removeLutRejectsBundledMissingAndExternalFiles() throws Exception {
+        try (var paths = Mockito.mockStatic(InstanceConfigurer.class)) {
+            paths.when(InstanceConfigurer::getConfigPath).thenReturn(tempDir.toString());
+            Path directory = Files.createDirectories(tempDir.resolve("cube_lut"));
+            Path bundledCopy = Files.writeString(directory.resolve("HDR to SDR standard.cube"), "keep bundled copy");
+            Path outside = Files.writeString(tempDir.resolve("outside.cube"), "keep external file");
+            String original = mockedInstance.config.getCubeLut();
+            for (String name : new String[]{"HDR to SDR standard.cube", Constants.DISABLED, "missing.cube",
+                    "../outside.cube", "..\\outside.cube", outside.toString(), "not-a-lut.txt"}) {
+                assertFalse(CubeLutToneMap.isUserLut(name));
+                assertThrows(IllegalArgumentException.class, () -> CubeLutToneMap.removeLut(name));
+            }
+            assertFalse(CubeLutToneMap.isUserLut(null));
+            assertThrows(IllegalArgumentException.class, () -> CubeLutToneMap.removeLut(null));
+            assertTrue(Files.exists(bundledCopy));
+            assertTrue(Files.exists(outside));
+            assertEquals(original, mockedInstance.config.getCubeLut());
+        }
+    }
 
     @Test
     void refresh_sameNameIsNoOp() {

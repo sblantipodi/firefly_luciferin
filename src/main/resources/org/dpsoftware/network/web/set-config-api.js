@@ -36,3 +36,7 @@ export function uploadCubeLut(file) {
         method: 'POST', headers: {'Content-Type': 'application/octet-stream'}, body: file
     });
 }
+
+export function removeCubeLut(filename) {
+    return fetchJson('removeCubeLut?filename=' + encodeURIComponent(filename), {method: 'POST'});
+}

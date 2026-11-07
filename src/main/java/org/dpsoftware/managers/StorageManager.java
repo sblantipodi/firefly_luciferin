@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -169,22 +170,7 @@ public class StorageManager {
                 throw new IOException("Cannot preserve automatic capture selection", e);
             }
         }
-        String filename;
-        if (forceFilename != null) {
-            filename = forceFilename;
-        } else if (MainSingleton.getInstance().profileArg != null
-                && !MainSingleton.getInstance().profileArg.isEmpty()
-                && !LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg)
-                && !CommonUtility.getWord(LabelKey.DEFAULT).equals(MainSingleton.getInstance().profileArg)) {
-            filename = getProfileFileName(MainSingleton.getInstance().profileArg);
-        } else {
-            filename = switch (MainSingleton.getInstance().whoAmI) {
-                case 1 -> Constants.CONFIG_FILENAME;
-                case 2 -> Constants.CONFIG_FILENAME_2;
-                case 3 -> Constants.CONFIG_FILENAME_3;
-                default -> "";
-            };
-        }
+        String filename = configFilename(forceFilename);
         Configuration currentConfig = readConfigFile(filename);
         if (currentConfig != null) {
             File file = new File(path + File.separator + filename);
@@ -195,6 +181,52 @@ public class StorageManager {
             }
         }
         mapper.writeValue(new File(path + File.separator + filename), config);
+    }
+
+    /**
+     * Updates only the persisted LUT selection, preserving other saved values and unknown fields.
+     *
+     * @param cubeLut LUT filename or Disabled
+     * @throws IOException when the current configuration cannot be read or updated
+     */
+    public void writeCubeLut(String cubeLut) throws IOException {
+        Path configFile = Path.of(path, configFilename(null));
+        if (!(mapper.readTree(configFile.toFile()) instanceof ObjectNode config)) {
+            throw new IOException("Invalid configuration file");
+        }
+        config.put("cubeLut", cubeLut);
+        Path temporary = Files.createTempFile(configFile.getParent(), ".lut-config-", ".tmp");
+        try {
+            mapper.writeValue(temporary.toFile(), config);
+            try {
+                Files.move(temporary, configFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporary, configFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
+    }
+
+    /**
+     * Resolves the active profile or instance configuration used by settings writes.
+     */
+    private String configFilename(String forceFilename) {
+        if (forceFilename != null) {
+            return forceFilename;
+        } else if (MainSingleton.getInstance().profileArg != null
+                && !MainSingleton.getInstance().profileArg.isEmpty()
+                && !LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg)
+                && !CommonUtility.getWord(LabelKey.DEFAULT).equals(MainSingleton.getInstance().profileArg)) {
+            return getProfileFileName(MainSingleton.getInstance().profileArg);
+        } else {
+            return switch (MainSingleton.getInstance().whoAmI) {
+                case 1 -> Constants.CONFIG_FILENAME;
+                case 2 -> Constants.CONFIG_FILENAME_2;
+                case 3 -> Constants.CONFIG_FILENAME_3;
+                default -> "";
+            };
+        }
     }
 
     /**

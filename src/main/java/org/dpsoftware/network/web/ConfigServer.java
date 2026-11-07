@@ -487,6 +487,7 @@ public class ConfigServer {
                 server.createContext(Constants.WEBRTC_PREVIEW_JS_ENDPOINT, withGuard(webResourceServer::handleWebrtcPreviewJs, GET_METHOD));
                 server.createContext(Constants.SET_CONFIG_ENDPOINT, withGuard(this::handleSetConfig, POST_METHOD));
                 server.createContext("/uploadCubeLut", withGuard(this::handleUploadCubeLut, POST_METHOD));
+                server.createContext("/removeCubeLut", withGuard(this::handleRemoveCubeLut, POST_METHOD));
                 server.createContext("/mqttDiscovery", withGuard(this::handleMqttDiscovery, POST_METHOD));
                 server.createContext("/ldrAction", withGuard(this::handleLdrAction, POST_METHOD));
                 server.createContext("/provisioningOptions", withGuard(this::handleProvisioningOptions, GET_METHOD));
@@ -602,7 +603,7 @@ public class ConfigServer {
 
     /**
      * Imports a raw Cube file; the query supplies its original filename, encoded as UTF-8.
-     * Uploading makes a LUT available without saving or changing the selected configuration.
+     * Uploading saves and activates the new LUT without changing other stored settings.
      */
     private void handleUploadCubeLut(HttpExchange exchange) throws IOException {
         try (InputStream input = exchange.getRequestBody()) {
@@ -611,13 +612,34 @@ public class ConfigServer {
             if (query != null && query.startsWith("filename=")) {
                 filename = URLDecoder.decode(query.substring("filename=".length()), StandardCharsets.UTF_8);
             }
-            String stored = CubeLutToneMap.importLut(filename, input);
-            HttpResponses.sendJson(exchange, Map.of("filename", stored, "luts", DisplayDialogOptions.availableLuts()));
+            String stored = CubeLutToneMap.uploadLut(filename, input);
+            HttpResponses.sendJson(exchange, Map.of("filename", stored, "luts", DisplayDialogOptions.availableLuts(),
+                    "userLuts", CubeLutToneMap.listUserLuts()));
         } catch (IllegalArgumentException e) {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
         } catch (IOException e) {
             log.warn("Unable to import cube LUT: {}", e.getMessage());
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to store LUT file");
+        }
+    }
+
+    /**
+     * Removes a user-provided Cube file and disables tone mapping.
+     */
+    private void handleRemoveCubeLut(HttpExchange exchange) throws IOException {
+        try {
+            String query = exchange.getRequestURI().getRawQuery();
+            String filename = query != null && query.startsWith("filename=")
+                    ? URLDecoder.decode(query.substring("filename=".length()), StandardCharsets.UTF_8) : null;
+            CubeLutToneMap.removeLut(filename);
+            DisplayDialogController.handleCubeLutCombo(Constants.DISABLED);
+            HttpResponses.sendJson(exchange, Map.of("filename", Constants.DISABLED,
+                    "luts", DisplayDialogOptions.availableLuts(), "userLuts", CubeLutToneMap.listUserLuts()));
+        } catch (IllegalArgumentException e) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
+        } catch (IOException e) {
+            log.warn("Unable to remove cube LUT: {}", e.getMessage());
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to remove LUT file");
         }
     }
 

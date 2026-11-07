@@ -26,11 +26,13 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.InstanceConfigurer;
+import org.dpsoftware.managers.StorageManager;
 
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarEntry;
@@ -120,6 +122,81 @@ public final class CubeLutToneMap {
         Collections.sort(result);
         result.addFirst(Constants.DISABLED);
         return result;
+    }
+
+    /**
+     * Identifies removable files in the user LUT directory. Bundled LUTs take precedence.
+     *
+     * @param filename selected LUT filename
+     * @return whether the selection is a user-provided Cube file
+     */
+    public static boolean isUserLut(String filename) {
+        if (filename == null || Constants.DISABLED.equals(filename)
+                || !filename.toLowerCase(Locale.ROOT).endsWith(".cube")
+                || filename.matches("(?s).*[\\\\/:*?\"<>|\\p{Cntrl}].*")
+                || listResourceLuts().contains(filename)) {
+            return false;
+        }
+        return Files.isRegularFile(Path.of(InstanceConfigurer.getConfigPath(), CUBE_LUT_DIR, filename),
+                LinkOption.NOFOLLOW_LINKS);
+    }
+
+    /**
+     * Lists removable user LUTs for clients that cannot inspect the configuration directory.
+     *
+     * @return user-provided LUT filenames
+     */
+    public static List<String> listUserLuts() {
+        return listAvailableLuts().stream().filter(CubeLutToneMap::isUserLut).toList();
+    }
+
+    /**
+     * Persists Disabled without saving other live settings, then deletes the user LUT.
+     *
+     * @param filename user LUT filename, without a path
+     * @throws IOException when the configuration cannot be saved or the file cannot be deleted
+     * @throws IllegalArgumentException when the selection is not a removable user LUT
+     */
+    public static synchronized void removeLut(String filename) throws IOException {
+        if (!isUserLut(filename)) {
+            throw new IllegalArgumentException("Choose a user-provided .cube LUT file");
+        }
+        new StorageManager().writeCubeLut(Constants.DISABLED);
+        Configuration config = MainSingleton.getInstance().config;
+        if (config != null) {
+            config.setCubeLut(Constants.DISABLED);
+            refresh();
+        }
+        Files.delete(Path.of(InstanceConfigurer.getConfigPath(), CUBE_LUT_DIR, filename));
+    }
+
+    /**
+     * Imports, persists and activates an uploaded LUT without saving other live settings.
+     *
+     * @param filename original filename, without a path
+     * @param input uploaded Cube contents
+     * @return stored and selected filename
+     * @throws IOException when the upload or configuration cannot be saved
+     * @throws IllegalArgumentException when the upload is invalid
+     */
+    public static synchronized String uploadLut(String filename, InputStream input) throws IOException {
+        String uploaded = importLut(filename, input);
+        try {
+            new StorageManager().writeCubeLut(uploaded);
+        } catch (IOException e) {
+            try {
+                Files.deleteIfExists(Path.of(InstanceConfigurer.getConfigPath(), CUBE_LUT_DIR, uploaded));
+            } catch (IOException cleanupError) {
+                e.addSuppressed(cleanupError);
+            }
+            throw e;
+        }
+        Configuration config = MainSingleton.getInstance().config;
+        if (config != null) {
+            config.setCubeLut(uploaded);
+            refresh();
+        }
+        return uploaded;
     }
 
     /**

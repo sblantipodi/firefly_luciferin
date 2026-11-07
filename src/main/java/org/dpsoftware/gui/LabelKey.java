@@ -161,6 +161,8 @@ public final class LabelKey {
     public static final String CUBE_LUT_UPLOAD = "fxml.display.lut.upload";
     public static final String CUBE_LUT_UPLOAD_BUTTON = "fxml.display.lut.upload.button";
     public static final String CUBE_LUT_UPLOAD_ERROR = "fxml.display.lut.upload.error";
+    public static final String CUBE_LUT_REMOVE_BUTTON = "fxml.display.lut.remove.button";
+    public static final String CUBE_LUT_REMOVE_ERROR = "fxml.display.lut.remove.error";
     public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
     public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";

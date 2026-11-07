@@ -50,6 +50,10 @@ public class DisplayDialogController {
     @FXML
     public ComboBox<String> cubeLutCombo;
     @FXML
+    public Button uploadLutButton;
+    @FXML
+    public Button removeLutButton;
+    @FXML
     public Button okButton;
     @FXML
     public Button cancelButton;
@@ -85,6 +89,7 @@ public class DisplayDialogController {
     @FXML
     protected void initialize() {
         cubeLutCombo.valueProperty().addListener((_, _, value) -> {
+            updateLutButtons();
             if (previewEnabled && MainSingleton.getInstance().config != null) {
                 handleCubeLutCombo(DisplayDialogOptions.selectedLut(value));
             }
@@ -99,6 +104,7 @@ public class DisplayDialogController {
         savedLut = Constants.DISABLED;
         cubeLutCombo.getItems().setAll(DisplayDialogOptions.availableLuts());
         cubeLutCombo.setValue(Constants.DISABLED);
+        updateLutButtons();
         setTooltips();
         previewEnabled = true;
     }
@@ -120,6 +126,7 @@ public class DisplayDialogController {
             cubeLutCombo.getItems().add(current);
         }
         cubeLutCombo.setValue(DisplayDialogOptions.selectedLut(current));
+        updateLutButtons();
         setTooltips();
         previewEnabled = true;
     }
@@ -129,6 +136,37 @@ public class DisplayDialogController {
      */
     private void setTooltips() {
         GuiManager.createTooltip(LabelKey.TOOLTIP_CUBE_LUT, cubeLutCombo);
+    }
+
+    /**
+     * Shares the upload row equally only when the selected LUT can be removed.
+     */
+    private void updateLutButtons() {
+        boolean removable = CubeLutToneMap.isUserLut(DisplayDialogOptions.selectedLut(cubeLutCombo.getValue()));
+        removeLutButton.setVisible(removable);
+        removeLutButton.setManaged(removable);
+        uploadLutButton.setPrefWidth(removable ? 89.5 : 185.0);
+    }
+
+    /**
+     * Removes the selected user LUT and disables tone mapping immediately.
+     */
+    @FXML
+    public void removeLut() {
+        String selected = DisplayDialogOptions.selectedLut(cubeLutCombo.getValue());
+        try {
+            CubeLutToneMap.removeLut(selected);
+            savedLut = Constants.DISABLED;
+            previewEnabled = false;
+            cubeLutCombo.getItems().setAll(DisplayDialogOptions.availableLuts());
+            cubeLutCombo.setValue(Constants.DISABLED);
+            updateLutButtons();
+            previewEnabled = true;
+            handleCubeLutCombo(Constants.DISABLED);
+        } catch (IOException | IllegalArgumentException e) {
+            MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                    CommonUtility.getWord(LabelKey.CUBE_LUT_REMOVE_ERROR), e.getMessage(), Alert.AlertType.ERROR);
+        }
     }
 
     /**
@@ -144,7 +182,8 @@ public class DisplayDialogController {
             return;
         }
         try (InputStream input = Files.newInputStream(file.toPath())) {
-            String uploaded = CubeLutToneMap.importLut(file.getName(), input);
+            String uploaded = CubeLutToneMap.uploadLut(file.getName(), input);
+            savedLut = uploaded;
             previewEnabled = false;
             cubeLutCombo.getItems().setAll(DisplayDialogOptions.availableLuts());
             previewEnabled = true;

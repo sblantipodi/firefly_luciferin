@@ -1,7 +1,7 @@
 // Entry point of the LUCIFERIN web configuration page: wires together the form, device picker, profiles, live preview and status polling
 // modules, and handles loading/saving the configuration against the ConfigServer HTTP endpoints.
 import {state} from './set-config-state.js';
-import {fetchJson, notifyComboChange, uploadCubeLut} from './set-config-api.js';
+import {fetchJson, notifyComboChange, uploadCubeLut, removeCubeLut} from './set-config-api.js';
 import {buildForm, collectPayload, fillForm} from './set-config-core.js';
 import {
     applyAutoOutputDevice,
@@ -329,35 +329,62 @@ function sendLiveChange(name, value) {
     });
 }
 
-// Refresh only the LUT choices after import, preserving all other unsaved form values.
+// Refresh only the LUT choices after import or removal, preserving other unsaved form values.
 function wireLutUpload() {
     var button = document.getElementById('uploadCubeLut');
+    var remove = document.getElementById('removeCubeLut');
+    var select = document.getElementById('cubeLut');
     var input = document.getElementById('cubeLutFile');
+    function syncButtons() {
+        remove.hidden = !((state.fieldOptions.userCubeLuts || {}).options || []).some(function (option) {
+            return option.value === select.value;
+        });
+    }
+    function updateChoices(result) {
+        state.fieldOptions.cubeLut = {
+            type: 'string', options: result.luts.map(function (name) {
+                return {value: name, label: name};
+            })
+        };
+        state.fieldOptions.userCubeLuts = {
+            type: 'string', options: result.userLuts.map(function (name) {
+                return {value: name, label: name};
+            })
+        };
+        select.replaceChildren();
+        result.luts.forEach(function (name) {
+            select.add(new Option(name, name));
+        });
+        select.value = result.filename;
+        select.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    function setBusy(busy) {
+        button.disabled = busy;
+        remove.disabled = busy;
+        select.disabled = busy;
+    }
+    select.addEventListener('change', syncButtons);
+    syncButtons();
     button.addEventListener('click', function () {
         input.click();
     });
     input.addEventListener('change', function () {
         var file = input.files[0];
         if (!file) return;
-        button.disabled = true;
-        uploadCubeLut(file).then(function (result) {
-            var select = document.getElementById('cubeLut');
-            state.fieldOptions.cubeLut = {
-                type: 'string', options: result.luts.map(function (name) {
-                    return {value: name, label: name};
-                })
-            };
-            select.replaceChildren();
-            result.luts.forEach(function (name) {
-                select.add(new Option(name, name));
-            });
-            select.value = result.filename;
-            select.dispatchEvent(new Event('change', {bubbles: true}));
-        }).catch(function (error) {
+        setBusy(true);
+        uploadCubeLut(file).then(updateChoices).catch(function (error) {
             showToast(escapeHtml('Error: ' + error.message), 'bg-danger text-white');
         }).finally(function () {
-            button.disabled = false;
+            setBusy(false);
             input.value = '';
+        });
+    });
+    remove.addEventListener('click', function () {
+        setBusy(true);
+        removeCubeLut(select.value).then(updateChoices).catch(function (error) {
+            showToast(escapeHtml('Error: ' + error.message), 'bg-danger text-white');
+        }).finally(function () {
+            setBusy(false);
         });
     });
 }
@@ -600,12 +627,12 @@ $(function () {
         initColorPicker();
         wireLivePreviewButton();
         wireSelectChangeListeners();
-        wireLutUpload();
         revealSettingsPage();
         return fetchJson('getConfig', {cache: 'no-store'});
     }).then(function (cfg) {
         state.lastConfig = cfg || {};
         fillForm(cfg);
+        wireLutUpload();
         if (audioDevicesPending) {
             refreshAudioDevicesWhenReady(0);
         }

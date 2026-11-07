@@ -626,3 +626,12 @@ body.server-down > :not(#offlineOverlay) {
 .orange-link:hover {
     color: darkorange;
 }
+
+.cube-lut-actions > .btn {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.cube-lut-actions > [hidden] {
+    display: none;
+}

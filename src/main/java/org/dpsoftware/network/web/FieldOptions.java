@@ -31,6 +31,7 @@ import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.*;
@@ -137,6 +138,8 @@ public record FieldOptions(List<Option> options, String type) {
         // 3D LUT (color tone map) options, the available .cube LUTs (classpath + config dir) with "Disabled" pinned at the top
         options.put(WebFieldNames.CUBE_LUT, new FieldOptions(DisplayDialogOptions.availableLuts().stream()
                 .map(name -> new FieldOptions.Option(name, name)).toList(), "string"));
+        options.put("userCubeLuts", new FieldOptions(CubeLutToneMap.listUserLuts().stream()
+                .map(name -> new Option(name, name)).toList(), "string"));
         options.put("satelliteDeviceIp", new FieldOptions(SatellitesOptions.availableDevices(deviceConfig,
                         GuiSingleton.getInstance().deviceTableData).stream()
                 .map(choice -> new Option(choice.value(), choice.label())).toList(), "string"));
@@ -329,6 +332,7 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put(WebFieldNames.CUBE_LUT, CommonUtility.getWord("fxml.display.tonemapping"));
         labels.put("uploadCubeLut", CommonUtility.getWord(LabelKey.CUBE_LUT_UPLOAD));
         labels.put("uploadCubeLutButton", CommonUtility.getWord(LabelKey.CUBE_LUT_UPLOAD_BUTTON));
+        labels.put("removeCubeLutButton", CommonUtility.getWord(LabelKey.CUBE_LUT_REMOVE_BUTTON));
         labels.put(WebFieldNames.NIGHT_LIGHT, CommonUtility.getWord("fxml.eyecare.night.light"));
         labels.put(WebFieldNames.NIGHT_LIGHT_LVL, CommonUtility.getWord("fxml.eyecare.nightlight.level"));
         labels.put(WebFieldNames.LUMINOSITY_THRESHOLD, CommonUtility.getWord("fxml.eyecare.luminosity.threshold"));
