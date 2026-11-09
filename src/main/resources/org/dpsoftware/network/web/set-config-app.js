@@ -597,6 +597,7 @@ $(function () {
         state.bottomRowLayouts = (data && data.bottomRowLayouts) || {};
         state.fieldLabels = (data && data.labels) || {};
         buildForm();
+        document.getElementById('webMcpServerEnabled').disabled = !!(data && data.headlessMode);
         localizeSettingsPage();
         wireLogAccordion();
         document.getElementById('saveSettings').addEventListener('click', saveForm);

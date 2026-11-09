@@ -578,6 +578,7 @@ public class ConfigServer {
             ObjectNode response = CommonUtility.JSON_MAPPER.createObjectNode();
             response.set("options", CommonUtility.JSON_MAPPER.valueToTree(FieldOptions.getFieldOptions()));
             response.put("audioDevicesPending", MiscTabOptions.webAudioDiscoveryPending());
+            response.put("headlessMode", MainSingleton.getInstance().isHeadlessMode());
             response.set("smoothingPresets", CommonUtility.JSON_MAPPER.valueToTree(SmoothingOptions.presets()));
             response.set("bottomRowLayouts", CommonUtility.JSON_MAPPER.valueToTree(LedsConfigTabOptions.bottomRowLayouts()));
             Map<String, String> labels = FieldOptions.getFieldLabels();
