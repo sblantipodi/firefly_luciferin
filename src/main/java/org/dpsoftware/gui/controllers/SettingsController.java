@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -745,7 +746,13 @@ public class SettingsController {
     @FXML
     public void exit(InputEvent event) {
         cancel(event);
-        NativeExecutor.restartNativeInstanceWithCurrentProfile();
+        // Let the save handler finish and the UI process the hide before starting shutdown.
+        // System.exit can wait for cleanup, so it must not occupy the JavaFX thread.
+        Platform.runLater(() -> CompletableFuture.runAsync(NativeExecutor::restartNativeInstanceWithCurrentProfile)
+                .exceptionally(error -> {
+                    log.error("Could not restart after saving settings", error);
+                    return null;
+                }));
     }
 
     /**
