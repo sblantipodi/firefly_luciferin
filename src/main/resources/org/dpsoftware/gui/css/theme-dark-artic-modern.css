@@ -1,0 +1,426 @@
+/*
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+  Copyright © 2020 - 2026  Davide Perini  (https://github.com/sblantipodi)
+ */
+
+.root {
+    /* Shared ice / slate palette, also inherited by popup controls. */
+    -artic-surface: #1c2935;
+    -artic-raised: #263847;
+    -artic-hover: #30495c;
+    -artic-border: #3c5365;
+    -artic-text: #e6f0f7;
+    -artic-muted: #a9bdcd;
+    -fx-accent: #89d9f5;
+    -fx-focus-color: -fx-accent;
+    -fx-faint-focus-color: rgba(137, 217, 245, 0.16);
+    -fx-base: -artic-surface;
+    -fx-background: -artic-surface;
+    -fx-control-inner-background: -artic-raised;
+    -fx-control-inner-background-alt: #2b3e4e;
+    -fx-text-base-color: -artic-text;
+    -fx-text-background-color: -artic-text;
+    -fx-text-fill: -artic-text;
+    -fx-selection-bar: #315971;
+    -fx-selection-bar-non-focused: #31495b;
+    -fx-selection-bar-text: #ffffff;
+}
+
+.label, .check-box, .radio-button {
+    -fx-text-fill: -artic-text;
+}
+
+#rootPane {
+    -fx-background-color: -artic-surface;
+    -fx-background-radius: 10;
+    -fx-border-color: -artic-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+}
+
+.roundedBordersDialog {
+    -fx-background-color: -artic-surface;
+    -fx-border-color: -artic-border !important;
+    -fx-border-width: 1 !important;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: -artic-surface;
+    -fx-border-color: -artic-border;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5 5 0 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: -artic-raised;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #283f50;
+    -fx-border-color: -fx-accent;
+}
+
+.tab .tab-label {
+    -fx-text-fill: -artic-muted;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: -fx-accent;
+}
+
+.tab .settings-tab-icon {
+    -fx-background-color: -artic-muted;
+}
+
+.tab:selected .settings-tab-icon {
+    -fx-background-color: -fx-accent;
+}
+
+/* Keep the existing compact geometry; replace the bevels with quiet outlines. */
+.button, .toggle-button, .combo-box-base, .choice-box, .text-input, .spinner {
+    -fx-background-color: -artic-raised;
+    -fx-background-insets: 0;
+    -fx-background-radius: 6;
+    -fx-border-color: -artic-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-text-fill: -artic-text;
+}
+
+.button:hover, .toggle-button:hover, .combo-box-base:hover, .choice-box:hover {
+    -fx-background-color: -artic-hover;
+    -fx-border-color: #65889f;
+    -fx-text-fill: #ffffff;
+}
+
+.button:armed, .toggle-button:armed, .toggle-button:selected {
+    -fx-background-color: #315971;
+    -fx-border-color: -fx-accent;
+    -fx-text-fill: #ffffff;
+}
+
+.toggle-button:selected:hover {
+    -fx-background-color: #3b6982;
+}
+
+.button:focused, .toggle-button:focused, .combo-box-base:focused,
+.choice-box:focused, .text-input:focused, .spinner:focused,
+.spinner:contains-focus, .combo-box-base:contains-focus {
+    -fx-border-color: -fx-accent;
+}
+
+/* Save actions have stable FXML IDs; no layout or controller changes needed. */
+.button:default, #saveMiscButton, #saveSettingsButton, #saveMQTTButton,
+#saveLedButton, #saveDeviceButton {
+    -fx-background-color: -fx-accent;
+    -fx-border-color: -fx-accent;
+    -fx-text-fill: #142b39;
+    -fx-font-weight: bold;
+}
+
+.button:default:hover, #saveMiscButton:hover, #saveSettingsButton:hover,
+#saveMQTTButton:hover, #saveLedButton:hover, #saveDeviceButton:hover {
+    -fx-background-color: #b4ebff;
+    -fx-border-color: #b4ebff;
+}
+
+.button:default:armed, #saveMiscButton:armed, #saveSettingsButton:armed,
+#saveMQTTButton:armed, #saveLedButton:armed, #saveDeviceButton:armed {
+    -fx-background-color: #62bad9;
+    -fx-border-color: #62bad9;
+}
+
+/* Restart-required actions take precedence over the save button ID styles. */
+.redButton, #saveMiscButton.redButton, #saveSettingsButton.redButton,
+#saveMQTTButton.redButton, #saveLedButton.redButton, #saveDeviceButton.redButton {
+    -fx-background-color: #ad3f4c;
+    -fx-border-color: #da6976;
+    -fx-text-fill: #ffffff;
+}
+
+.redButton:hover, #saveMiscButton.redButton:hover, #saveSettingsButton.redButton:hover,
+#saveMQTTButton.redButton:hover, #saveLedButton.redButton:hover, #saveDeviceButton.redButton:hover {
+    -fx-background-color: #c6505e;
+    -fx-border-color: #ef8792;
+}
+
+.redButton:armed, #saveMiscButton.redButton:armed, #saveSettingsButton.redButton:armed,
+#saveMQTTButton.redButton:armed, #saveLedButton.redButton:armed, #saveDeviceButton.redButton:armed {
+    -fx-background-color: #8c303e;
+}
+
+.text-input {
+    -fx-prompt-text-fill: -artic-muted;
+    -fx-highlight-fill: #315971;
+    -fx-highlight-text-fill: #ffffff;
+}
+
+.combo-box > .list-cell, .choice-box > .label, .color-picker > .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: -artic-text;
+}
+
+.combo-box > .text-input, .spinner > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.combo-box-base > .arrow-button,
+.spinner > .increment-arrow-button, .spinner > .decrement-arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.spinner > .increment-arrow-button:hover, .spinner > .decrement-arrow-button:hover {
+    -fx-background-color: -artic-hover;
+}
+
+.combo-box-base .arrow, .choice-box .arrow,
+.spinner .increment-arrow, .spinner .decrement-arrow {
+    -fx-background-color: -artic-muted;
+}
+
+.context-menu, .combo-box-popup > .list-view, .color-palette {
+    -fx-background-color: -artic-raised;
+    -fx-background-insets: 0;
+    -fx-background-radius: 6;
+    -fx-border-color: -artic-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+}
+
+.menu-item:focused, .combo-box-popup .list-cell:filled:hover,
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: -fx-selection-bar;
+    -fx-text-fill: #ffffff;
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: #ffffff;
+}
+
+.check-box > .box, .radio-button > .radio {
+    -fx-background-color: -artic-raised;
+    -fx-background-insets: 0;
+    -fx-border-color: -artic-border;
+    -fx-border-width: 1;
+}
+
+.check-box > .box {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.radio-button > .radio {
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+}
+
+.check-box:hover > .box, .radio-button:hover > .radio,
+.check-box:focused > .box, .radio-button:focused > .radio {
+    -fx-border-color: -fx-accent;
+}
+
+.check-box:selected > .box, .check-box:indeterminate > .box {
+    -fx-background-color: -fx-accent;
+    -fx-border-color: -fx-accent;
+}
+
+.check-box:selected > .box > .mark, .check-box:indeterminate > .box > .mark {
+    -fx-background-color: #142b39;
+}
+
+.radio-button:selected > .radio > .dot {
+    -fx-background-color: -fx-accent;
+    -fx-background-insets: 0;
+}
+
+.slider .track {
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+}
+
+/* Preserve the meaningful gradients on temperature and calibration sliders. */
+#brightness .track, #audioGain .track {
+    -fx-background-color: -artic-border;
+}
+
+.slider .thumb {
+    -fx-background-color: -fx-accent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 20;
+    -fx-border-color: #d5f4ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+}
+
+.slider:hover .thumb, .slider:focused .thumb {
+    -fx-background-color: #c5f0ff;
+    -fx-effect: dropshadow(gaussian, rgba(137, 217, 245, 0.35), 6, 0, 0, 0);
+}
+
+.slider .axis {
+    -fx-tick-label-fill: -artic-muted;
+}
+
+.slider .axis .axis-tick-mark, .slider .axis .axis-minor-tick-mark {
+    -fx-stroke: -artic-border;
+}
+
+.button:disabled, .toggle-button:disabled, .combo-box-base:disabled,
+.choice-box:disabled, .text-input:disabled, .spinner:disabled,
+.slider:disabled, .check-box:disabled, .radio-button:disabled {
+    -fx-opacity: 0.5;
+}
+
+/* The parent already dims these editors; avoid multiplying their opacity. */
+.spinner:disabled > .text-field, .combo-box-base:disabled > .text-input {
+    -fx-opacity: 1;
+}
+
+.table-view, .list-view, .tree-view {
+    -fx-background-color: -artic-surface;
+    -fx-background-insets: 0;
+    -fx-border-color: -artic-border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-selection-bar-non-focused: #31495b;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: -artic-raised;
+    -fx-border-color: -artic-border;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:even, .list-cell:even {
+    -fx-control-inner-background: -artic-surface;
+}
+
+.table-row-cell:odd, .list-cell:odd {
+    -fx-control-inner-background: #223240;
+}
+
+.table-view .table-cell {
+    -fx-border-color: transparent;
+}
+
+.scroll-bar, .scroll-bar .track {
+    -fx-background-color: -artic-surface;
+    -fx-background-insets: 0;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #486174;
+    -fx-background-insets: 2;
+    -fx-background-radius: 6;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #65889f;
+}
+
+.separator .line {
+    -fx-background-color: transparent;
+    -fx-border-color: -artic-border;
+}
+
+.hyperlink, #hyper, .dialoglabel {
+    -fx-text-fill: -fx-accent !important;
+}
+
+.hyperlink:hover, #hyper:hover, .dialoglabel:hover {
+    -fx-text-fill: #c5f0ff !important;
+}
+
+.smoothing-status {
+    -fx-text-fill: -artic-muted;
+}
+
+.tooltip {
+    -fx-background-color: -artic-raised;
+    -fx-background-radius: 6;
+    -fx-border-color: -artic-border;
+    -fx-border-radius: 6;
+    -fx-text-fill: -artic-text;
+}
+
+/* Window controls must override the generic button states above. */
+.windowCloseBtn, .windowMinimizeBtn {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-text-fill: -artic-muted;
+}
+
+.windowMinimizeBtn {
+    -fx-background-radius: 0;
+}
+
+.windowCloseBtn {
+    -fx-background-radius: 0 10 0 0;
+}
+
+.windowMinimizeBtn:hover, .windowMinimizeBtn:armed {
+    -fx-background-color: -artic-hover;
+    -fx-text-fill: #ffffff;
+}
+
+.windowCloseBtn:hover, .windowCloseBtn:armed {
+    -fx-background-color: #c44250;
+    -fx-text-fill: #ffffff;
+}
+
+/* The native tray reads literal colors rather than JavaFX looked-up colors. */
+.tray_menu_item_selectionbackground {
+    color: #89d9f5;
+}
+
+.tray_menu_item_selectionforeground {
+    color: #142b39;
+}
+
+.tray_menu_item_foreground {
+    color: #e6f0f7;
+}
+
+.tray_menu_foreground {
+    color: #e6f0f7;
+}
+
+.tray_menu_selectionbackground {
+    color: #89d9f5;
+}
+
+.tray_menu_selectionforeground {
+    color: #142b39;
+}
+
+.tray_menu_item_text {
+    color: #89d9f5;
+}
+
+.tray_menu_border {
+    color: #3c5365;
+}
+
+.tray_menu_item_border {
+    color: #3c5365;
+}
+
+.tray_background {
+    color: #1c2935;
+}
+
+.tray_separator {
+    color: #3c5365;
+}
