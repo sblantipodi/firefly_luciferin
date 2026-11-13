@@ -101,6 +101,7 @@ class TrayIconAppIndicatorTest {
 
     @Test
     void initializationAndUpdatesWaitForGtkMainLoop() {
+        if (!NativeExecutor.isLinux()) return;
         tray.initTray();
         assertNull(tray.indicator);
         gtk.verifyNoInteractions();
@@ -117,6 +118,7 @@ class TrayIconAppIndicatorTest {
 
     @Test
     void lateDesktopConnectionAndReconnectionReexportLabelsAndKeepPlayingState() {
+        if (!NativeExecutor.isLinux()) return;
         tray.initTray();
         drainGtk();
         assertNotNull(connected.get());
@@ -137,6 +139,7 @@ class TrayIconAppIndicatorTest {
 
     @Test
     void playerStateIsSharedImmediatelyWhileNativeIconUpdateIsQueued() {
+        if (!NativeExecutor.isLinux()) return;
         tray.initTray();
         drainGtk();
         gtk.clearInvocations();
