@@ -118,7 +118,6 @@ Effortless setup with minimal configuration required, yet highly customizable to
 #### (click the image above to watch it on YouTube)
 
 ## Luciferin Official PCB
-
 Unlike other prebuilt boards (which are also compatible with Luciferin), **the official PCB is upgradable!***
 
 <a href="https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB"><img width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/luciferin_official_pcb/img/PCB_front.jpg?raw=true"></a>
@@ -133,7 +132,7 @@ use a smaller board, opening up more upgrade possibilities without the need to r
 cabling.
 
 <p align="center">
-  <img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/pcb_noeth.jpg?raw=true">
+  <img width="700" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/pcb_noeth.jpg?raw=true">
 </p>
 
 Explore [**other compatible hardware**](https://github.com/sblantipodi/toremove/wiki/Compatible-Hardware), including
@@ -230,8 +229,9 @@ movie on a TV.
 
 <img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/asect_ratio.jpg?raw=true">  
 
-## Credits
+## Development & AI
 
-- Davide Perini
-- **A note on AI:** Luciferin started years before the AI boom. Its development now *also* leverages locally run AI
-  models as a tool, but the architecture, design, review and a good part of the code remain entirely human.
+Luciferin was born years before the AI boom. Today, its development also benefits from locally run models and frontier
+AI models as supporting tools.
+
+Architecture, design, and code review remain human-led, alongside a substantial share of the code.
