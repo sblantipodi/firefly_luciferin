@@ -119,12 +119,24 @@ Effortless setup with minimal configuration required, yet highly customizable to
 
 ## Luciferin Official PCB
 
+Unlike other prebuilt boards (which are also compatible with Luciferin), **the official PCB is upgradable!***
+
 <a href="https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB"><img width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/luciferin_official_pcb/img/PCB_front.jpg?raw=true"></a>
 <a href="https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB"><img width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/luciferin_official_pcb/img/pre_after.jpg?raw=true"></a>
 
 Prefer a DIY build over a prebuilt board? Grab your soldering iron and use [**Luciferin’s official
-PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB), without designing your own.  
-Explore [compatible hardware](https://github.com/sblantipodi/toremove/wiki/Compatible-Hardware), including
+PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB), without designing your own.
+
+The Luciferin Official PCB requires a "D1 Mini format" board. With the new [**Luciferin Module for the Official
+PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb), you can
+use a smaller board, opening up more upgrade possibilities without the need to replace the PCB or redo any soldering or
+cabling.
+
+<p align="center">
+  <img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/pcb_noeth.jpg?raw=true">
+</p>
+
+Explore [**other compatible hardware**](https://github.com/sblantipodi/toremove/wiki/Compatible-Hardware), including
 **supported prebuilt ready-to-use controllers**.
 
 ## Performance and hardware acceleration
