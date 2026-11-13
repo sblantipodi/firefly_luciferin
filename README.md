@@ -161,8 +161,10 @@ your phone.
   or any browser.
 
 <img align="center" width="750" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface.jpg?raw=true">  
-<p></p>
+<p> </p>   
+
 <img align="center" width="750" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface_ff.jpg?raw=true">
+<p> </p>  
 
 ## Home Assistant integration
 
@@ -170,6 +172,51 @@ Luciferin can be easily integrated
 in [Home Assistant](https://github.com/sblantipodi/toremove/wiki/Home-Automation-configs).  
 <br>
 <img align="center" width="800" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ha_luciferin.jpg?raw=true">
+
+## Advanced rendering pipeline
+
+[**Luciferin’s rendering
+pipeline**](https://github.com/sblantipodi/toremove/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)) is built
+for precision and visual fidelity. Floating-point processing delivers smoother gradients, minimizes rounding artifacts,
+and maintains consistent color transformations throughout the pipeline.
+
+<img alt="Color transitions with higher-precision processing" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/adaptive_gamma_8_32bit.gif?raw=true">
+
+## HDR to SDR tonemap with LUT (Lookup Table)
+
+TV or monitor can display a wider brightness range than an LED strip. [**HDR to SDR tone
+mapping**](https://github.com/sblantipodi/toremove/wiki/HDR-to-SDR-and-LUT
+) adapts that range so the lighting keeps useful detail and colors instead of looking too dark or washed out.
+
+<img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/hdr_sdr_tonemap.gif">
+
+## Smoothing and Frame Generation
+
+[**Luciferin’s Smoothing**](https://github.com/sblantipodi/toremove/wiki/Smoothing-color-transitions) combines frame
+generation and Exponential Moving Average to create smoother LED color transitions and reduce flickering with both PC
+and HDMI capture, offering customizable settings to balance fluidity, responsiveness, and system load.
+
+<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ema_framegen.png?raw=true">
+
+<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ema.png?raw=true">
+
+## AI Agents and MCP (Model Context Protocol)
+
+[**MCP (Model Context Protocol)**](https://github.com/sblantipodi/toremove/wiki/MCP-and-AI-Agents) connects Firefly
+Luciferin to a wide range of AI tools and assistants that support this open standard.
+Use your preferred MCP-compatible AI client to control lighting, adjust settings, and check connected devices through
+natural language.
+This lets you integrate Firefly into your AI workflows and automate lighting tasks directly from your assistant.
+
+<img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/mcpserver.jpg?raw=true">
+
+## Aspect Ratio
+
+[**Automatic aspect ratio**](https://github.com/sblantipodi/toremove/wiki/Aspect-ratio) settings keep the LEDs focused
+on the picture instead of black bars. They apply to both **PC screen capture and HDMI capture**, such as a widescreen
+movie on a TV.
+
+<img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/asect_ratio.jpg?raw=true">  
 
 ## Credits
 
