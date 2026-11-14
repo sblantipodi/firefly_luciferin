@@ -45,9 +45,7 @@ import javax.swing.plaf.basic.BasicPopupMenuUI;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +76,9 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     public TrayIconAwt() {
         var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
         css = loadColors(theme.getCssPath());
+        if (css.isEmpty() && !Enums.Theme.CLASSIC.equals(theme)) {
+            css = loadColors(Enums.Theme.CLASSIC.getCssPath());
+        }
         setMenuItemStyle(null, null, null);
         GuiSingleton.getInstance().popupMenu = new JPopupMenu();
         stylePopupMenu(GuiSingleton.getInstance().popupMenu);
@@ -100,21 +101,18 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
             if (is == null) {
                 throw new RuntimeException("CSS non found: " + cssPath);
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            // Regex that captures classname and hex color
-            Pattern pattern = Pattern.compile(Constants.CSS_COLOR_REGEX);
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Matcher m = pattern.matcher(line);
-                if (m.find()) {
-                    String key = m.group(1).trim();
-                    String hex = m.group(2).trim();
-                    if (!hex.startsWith(Constants.SHARP)) {
-                        hex = Constants.SHARP + hex;
-                    }
-                    Color color = parseColor(hex);
-                    colors.put(key, color);
+            String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            // Regex that captures classname and hex color across single or multiple lines
+            Pattern pattern = Pattern.compile(Constants.CSS_COLOR_REGEX, Pattern.DOTALL);
+            Matcher m = pattern.matcher(content);
+            while (m.find()) {
+                String key = m.group(1).trim();
+                String hex = m.group(2).trim();
+                if (!hex.startsWith(Constants.SHARP)) {
+                    hex = Constants.SHARP + hex;
                 }
+                Color color = parseColor(hex);
+                colors.put(key, color);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -263,7 +261,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      * @param selectionColor highlight color from the theme
      */
     private static void paintMenuSelection(Graphics g, JMenuItem item, Color selectionColor) {
-        if (!item.getModel().isArmed() && !item.getModel().isSelected()) {
+        if (!item.getModel().isArmed() && !item.getModel().isSelected() || selectionColor == null) {
             return;
         }
         Graphics2D g2 = (Graphics2D) g.create();
@@ -508,11 +506,14 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         popupMenu.setUI(new BasicPopupMenuUI() {
             @Override
             public void paint(Graphics g, JComponent component) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(css.get("tray_background"));
-                g2.fillRoundRect(0, 0, component.getWidth(), component.getHeight(), 14, 14);
-                g2.dispose();
+                Color bg = css.get("tray_background");
+                if (bg != null) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(bg);
+                    g2.fillRoundRect(0, 0, component.getWidth(), component.getHeight(), 14, 14);
+                    g2.dispose();
+                }
             }
         });
         popupMenu.setOpaque(false);

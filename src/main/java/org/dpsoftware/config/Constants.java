@@ -520,7 +520,7 @@ public class Constants {
     public static final String CSS_TRAY_SELECTIONBACKGROUND_KEY = "Menu.selectionBackground";
     public static final String CSS_TRAY_SELECTIONFOREGROUND = "tray_menu_selectionforeground";
     public static final String CSS_TRAY_SELECTIONFOREGROUND_KEY = "Menu.selectionForeground";
-    public static final String CSS_COLOR_REGEX = "\\.([a-zA-Z0-9_-]+)\\s*\\{[^#]*#?([0-9a-fA-F]{6,8})[^}]*}";
+    public static final String CSS_COLOR_REGEX = "\\.([a-zA-Z_-][a-zA-Z0-9_-]*)[^{};]*\\{[^}]*?#([0-9a-fA-F]{6,8})[^}]*}";
     // Windows Registry and native commands
     public static final String NIGHT_LIGHT_KEY_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
     public static final String NIGHT_LIGHT_VALUE_NAME = "Data";
