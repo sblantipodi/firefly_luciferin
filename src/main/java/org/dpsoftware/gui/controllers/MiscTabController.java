@@ -984,9 +984,6 @@ public class MiscTabController {
         GuiManager.createTooltip(LabelKey.TOOLTIP_NIGHT_MODE_BRIGHT, nightModeBrightness);
         GuiManager.createTooltip(LabelKey.TOOLTIP_WHITE_TEMP, whiteTemp);
         GuiManager.createTooltip(LabelKey.TOOLTIP_COLOR_MODE, colorMode);
-        if (currentConfig == null) {
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMiscButton);
-        }
         GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES, profiles);
         GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_REMOVE, removeProfileButton);
         GuiManager.createTooltip(LabelKey.TOOLTIP_PROFILES_ADD, addProfileButton);

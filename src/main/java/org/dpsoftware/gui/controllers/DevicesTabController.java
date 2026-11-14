@@ -665,9 +665,6 @@ public class DevicesTabController {
         GuiManager.createTooltip(LabelKey.TOOLTIP_MULTIMONITOR, multiMonitor);
         GuiManager.createTooltip(LabelKey.TOOLTIP_SERIALPORT, serialPort);
         GuiManager.createTooltip(LabelKey.TOOLTIP_BAUD_RATE, baudRate);
-        if (currentConfig == null) {
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
-        }
     }
 
     /**

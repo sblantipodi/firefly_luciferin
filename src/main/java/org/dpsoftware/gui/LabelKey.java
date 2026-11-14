@@ -205,15 +205,8 @@ public final class LabelKey {
     public static final String TOOLTIP_GRABBER_AREA_SIDE = "tooltip.grabber.area.side";
     public static final String TOOLTIP_CORNER_GAP = "tooltip.corner.gap";
     public static final String TOOLTIP_GROUP_BY = "tooltip.corner.group.by";
-    public static final String TOOLTIP_SAVELEDBUTTON_NULL = "tooltip.saveledbutton.null";
-    public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "tooltip.savemqttbutton.null";
-    public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "tooltip.savesettingsbutton.null";
-    public static final String TOOLTIP_SAVEDEVICEBUTTON_NULL = "tooltip.savedevicebutton.null";
     public static final String TOOLTIP_PLAYBUTTON = "tooltip.playbutton";
-    public static final String TOOLTIP_SAVELEDBUTTON = "tooltip.saveledbutton";
-    public static final String TOOLTIP_SAVEMQTTBUTTON = "tooltip.savemqttbutton";
     public static final String TOOLTIP_SAVESETTINGSBUTTON = "tooltip.savesettingsbutton";
-    public static final String TOOLTIP_SAVEDEVICEBUTTON = "tooltip.savedevicebutton";
     public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "tooltip.showtestimagebutton";
     public static final String TOOLTIP_BAUD_RATE = "tooltip.baud.rate";
     public static final String TOOLTIP_THEME = "tooltip.theme";

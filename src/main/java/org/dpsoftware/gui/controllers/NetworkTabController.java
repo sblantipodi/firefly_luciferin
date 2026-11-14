@@ -301,9 +301,6 @@ public class NetworkTabController {
         GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTENABLE, mqttEnable);
         GuiManager.createTooltip(LabelKey.TOOLTIP_MQTTSTREAM, mqttStream);
         GuiManager.createTooltip(LabelKey.TOOLTIP_IMPROV_CONTEXT, programDeviceButton);
-        if (currentConfig == null) {
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMQTTButton);
-        }
         GuiManager.createTooltip(LabelKey.TOOLTIP_STREAMTYPE, streamType);
     }
 

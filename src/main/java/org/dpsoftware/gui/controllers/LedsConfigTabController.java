@@ -452,9 +452,7 @@ public class LedsConfigTabController {
         GuiManager.createTooltip(LabelKey.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
         GuiManager.createTooltip(LabelKey.TOOLTIP_CORNER_GAP, gapTypeSide);
         GuiManager.createTooltip(LabelKey.TOOLTIP_GROUP_BY, groupBy);
-        if (currentConfig == null) {
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
-        } else {
+        if (currentConfig != null) {
             GuiManager.createTooltip(LabelKey.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
         }
     }

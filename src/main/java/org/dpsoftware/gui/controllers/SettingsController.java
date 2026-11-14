@@ -921,13 +921,13 @@ public class SettingsController {
             if (profileToUse != null) {
                 setProfileButtonColor(true, 0);
             } else {
-                setSaveButtonColor(LabelKey.SAVE_AND_CLOSE, 0);
+                setSaveButtonColor(LabelKey.SAVE_AND_CLOSE);
             }
         } else {
             if (profileToUse != null) {
                 setProfileButtonColor(false, Constants.TOOLTIP_DELAY);
             } else {
-                setSaveButtonColor(LabelKey.SAVE, Constants.TOOLTIP_DELAY);
+                setSaveButtonColor(LabelKey.SAVE);
             }
         }
     }
@@ -989,9 +989,9 @@ public class SettingsController {
     }
 
     /**
-     * Set save button color and tooltip delay when some settings requires Luciferin restart
+     * Set save button text and color when some settings requires Luciferin restart
      */
-    private void setSaveButtonColor(String buttonText, int tooltipDelay) {
+    private void setSaveButtonColor(String buttonText) {
         ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(buttonText));
         modeTabController.saveSettingsButton.setText(CommonUtility.getWord(buttonText));
         networkTabController.saveMQTTButton.setText(CommonUtility.getWord(buttonText));
@@ -1003,22 +1003,12 @@ public class SettingsController {
             networkTabController.saveMQTTButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             miscTabController.saveMiscButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             devicesTabController.saveDeviceButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
-            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, ledsConfigTabController.saveLedButton);
-            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, modeTabController.saveSettingsButton);
-            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, networkTabController.saveMQTTButton);
-            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, miscTabController.saveMiscButton);
-            GuiManager.createTooltip(LabelKey.SAVE, tooltipDelay, devicesTabController.saveDeviceButton);
         } else {
             ledsConfigTabController.saveLedButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             modeTabController.saveSettingsButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             networkTabController.saveMQTTButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             miscTabController.saveMiscButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             devicesTabController.saveDeviceButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVELEDBUTTON, tooltipDelay, ledsConfigTabController.saveLedButton);
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, modeTabController.saveSettingsButton);
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, networkTabController.saveMQTTButton);
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, miscTabController.saveMiscButton);
-            GuiManager.createTooltip(LabelKey.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay, devicesTabController.saveDeviceButton);
         }
     }
 
