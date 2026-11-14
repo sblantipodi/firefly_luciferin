@@ -54,7 +54,7 @@ public class SelectEffectDiscovery extends DeviceDiscovery implements DiscoveryO
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Effect Selector");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.effect | default('Solid') }}";
         this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/effectToGw";

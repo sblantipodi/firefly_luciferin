@@ -24,7 +24,9 @@ package org.dpsoftware.gui.bindings;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.EnvConstants;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,12 +65,19 @@ public class CommonBinding {
     }
 
     /**
-     * Scan for ld-config paths
+     * Find library paths from the runtime environment and ld-config.
      *
      * @return ld config paths
      */
     public static List<String> getLdConfigPaths() {
         List<String> allPath = new LinkedList<>();
+        // Content runtimes such as Snap expose versioned libraries through LD_LIBRARY_PATH.
+        String runtimePaths = System.getenv(EnvConstants.LD_LIBRARY_PATH);
+        if (runtimePaths != null) {
+            Stream.of(runtimePaths.split(File.pathSeparator))
+                    .filter(path -> path.startsWith("/"))
+                    .forEach(allPath::add);
+        }
         try (Stream<Path> paths = Files.list(Path.of(LD_CONFIG))) {
             paths.forEach((file) -> {
                 try (Stream<String> lines = Files.lines(file)) {

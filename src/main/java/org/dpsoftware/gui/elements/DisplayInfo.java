@@ -36,6 +36,8 @@ public class DisplayInfo {
     public double scaleY;
     public double minX, minY;
     public double maxX, maxY;
+    // Physical screen-bounds origin, unaffected by desktop panels/docks.
+    public double boundsMinX, boundsMinY;
     public long nativePeer; // HMONITOR Handle casted to guint64
     public String monitorName;
     boolean primaryDisplay;

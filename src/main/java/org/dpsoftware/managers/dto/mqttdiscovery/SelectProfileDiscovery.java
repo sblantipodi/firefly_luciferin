@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -55,7 +55,7 @@ public class SelectProfileDiscovery extends DeviceDiscovery implements Discovery
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Profiles");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile/set";
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.profile | default('Default') }}";
@@ -64,7 +64,7 @@ public class SelectProfileDiscovery extends DeviceDiscovery implements Discovery
         this.options = new ArrayList<>();
         StorageManager sm = new StorageManager();
         this.options.addAll(sm.listProfilesForThisInstance());
-        this.options.add(CommonUtility.getWord(Constants.DEFAULT));
+        this.options.add(CommonUtility.getWord(LabelKey.DEFAULT));
         return CommonUtility.toJsonString(this);
     }
 

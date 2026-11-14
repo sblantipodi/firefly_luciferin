@@ -33,7 +33,7 @@ import com.sun.jna.platform.win32.WinDef.RECT;
 import com.sun.jna.platform.win32.WinGDI;
 import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -134,7 +134,7 @@ public class CustomGDI32Util {
                             image = new BufferedImage(SCREENSHOT_COLOR_MODEL, raster, false, null);
 
                         } catch (Win32Exception var23) {
-                            throw new IllegalStateException(CommonUtility.getWord(Constants.WIN32_EXCEPTION));
+                            throw new IllegalStateException(CommonUtility.getWord(LabelKey.WIN32_EXCEPTION));
                         }
 
                     }
@@ -142,20 +142,20 @@ public class CustomGDI32Util {
                     if (hOriginal != null) {
                         result = GDI32.INSTANCE.SelectObject(hdcTargetMem, hOriginal);
                         if (result == null || WinGDI.HGDI_ERROR.equals(result)) {
-                            throw new IllegalStateException(CommonUtility.getWord(Constants.SELECT_OBJ_EXCEPTION));
+                            throw new IllegalStateException(CommonUtility.getWord(LabelKey.SELECT_OBJ_EXCEPTION));
                         }
                     }
 
                     if (!GDI32.INSTANCE.DeleteObject(hBitmap)) {
-                        throw new IllegalStateException(CommonUtility.getWord(Constants.DELETE_OBJ_EXCEPTION));
+                        throw new IllegalStateException(CommonUtility.getWord(LabelKey.DELETE_OBJ_EXCEPTION));
                     }
 
                     if (!GDI32.INSTANCE.DeleteDC(hdcTargetMem)) {
-                        throw new IllegalStateException(CommonUtility.getWord(Constants.DELETE_DC_EXCEPTION));
+                        throw new IllegalStateException(CommonUtility.getWord(LabelKey.DELETE_DC_EXCEPTION));
                     }
 
                     if (0 == User32.INSTANCE.ReleaseDC(target, hdcTarget)) {
-                        throw new IllegalStateException(CommonUtility.getWord(Constants.DEVICE_CONTEXT_RELEASE_EXCEPTION));
+                        throw new IllegalStateException(CommonUtility.getWord(LabelKey.DEVICE_CONTEXT_RELEASE_EXCEPTION));
                     }
                 }
 
@@ -163,7 +163,7 @@ public class CustomGDI32Util {
 
             }
         } else {
-            throw new IllegalStateException(CommonUtility.getWord(Constants.WINDOWS_EXCEPTION));
+            throw new IllegalStateException(CommonUtility.getWord(LabelKey.WINDOWS_EXCEPTION));
         }
     }
 }
