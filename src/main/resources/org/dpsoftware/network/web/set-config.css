@@ -346,7 +346,13 @@ body {
     width: 20px;
     height: 20px;
     object-fit: contain;
-    pointer-events: none;
+    cursor: pointer;
+}
+
+.settings-logo:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 3px;
 }
 
 body.server-down {

@@ -261,6 +261,40 @@ function buildPayload() {
     };
 }
 
+// Toggles capture and Solid from the status logo, keeping the effect selector in sync.
+export function wireSettingsLogo() {
+    var logo = document.getElementById('settingsLogo');
+    var changing = false;
+    logo.addEventListener('click', async function () {
+        var effectSelect = document.getElementById('effectSelect');
+        var effect = effectSelect.value;
+        if (changing || (effect !== 'Bias light' && effect !== 'Solid')) {
+            return;
+        }
+        var nextEffect = effect === 'Bias light' ? 'Solid' : 'Bias light';
+        changing = true;
+        logo.setAttribute('aria-disabled', 'true');
+        try {
+            await notifyComboChange('effectSelect', nextEffect);
+            effectSelect.value = nextEffect;
+            colorPendingUntil = Date.now() + 7000;
+            setToggleUi(true);
+            syncDeviceFromPrefs();
+        } catch (err) {
+            showToast('Unable to change effect: ' + err.message, 'bg-danger text-white');
+        } finally {
+            changing = false;
+            logo.removeAttribute('aria-disabled');
+        }
+    });
+    logo.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            logo.click();
+        }
+    });
+}
+
 // Initializes the iro color picker, the LED toggle button and the output device select; color changes are pushed to the device immediately.
 export function initColorPicker() {
     var pickerEl = document.getElementById('picker');

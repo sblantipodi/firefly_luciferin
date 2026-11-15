@@ -11,7 +11,8 @@ import {
     refreshLdrLabel,
     refreshSerialPortSuggestions,
     syncDeviceFromPrefs,
-    wireSatellites
+    wireSatellites,
+    wireSettingsLogo
 } from './set-config-device.js';
 import {addProfile, renderProfiles} from './set-config-profiles.js';
 import {wireLivePreviewButton, withLivePreviewRestart} from './set-config-preview.js';
@@ -625,6 +626,7 @@ $(function () {
         wireSmoothingControls();
         wireLdrControls();
         document.getElementById('addProfile').addEventListener('click', addProfile);
+        wireSettingsLogo();
         initColorPicker();
         wireLivePreviewButton();
         wireSelectChangeListeners();

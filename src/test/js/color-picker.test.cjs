@@ -8,6 +8,13 @@ const path = require('node:path');
 function setup(effect = 'Bias light') {
     const elements = {
         picker: {},
+        settingsLogo: {
+            listeners: {}, attributes: {},
+            addEventListener(name, callback) { this.listeners[name] = callback; },
+            setAttribute(name, value) { this.attributes[name] = value; },
+            removeAttribute(name) { delete this.attributes[name]; },
+            click() { return this.listeners.click(); }
+        },
         effectSelect: {
             value: effect,
             options: [
@@ -45,6 +52,7 @@ function setup(effect = 'Bias light') {
         vm.runInContext(source, context);
     }
     context.initColorPicker();
+    context.wireSettingsLogo();
     return {elements, handlers, requests, messages, context, finishEffect};
 }
 
@@ -96,4 +104,51 @@ test('localized prefs select the base effect and stale polling cannot undo the S
     context.applyPrefs({toggle: '1', cp: '255,0,0', effect: 'Illuminazione Bias'});
     assert.equal(elements.effectSelect.value, 'Solid');
     assert.deepEqual(JSON.parse(JSON.stringify(context.lastColor)), color.rgb);
+});
+
+test('the logo toggles Bias light and Solid, ignoring duplicate clicks and stale prefs', async () => {
+    const {elements, requests, context, finishEffect} = setup();
+    const logo = elements.settingsLogo;
+    const pending = logo.click();
+    await logo.click();
+    assert.deepEqual(requests, [{url: 'comboChange', body: {comboName: 'effectSelect', value: 'Solid'}}]);
+    assert.equal(logo.attributes['aria-disabled'], 'true');
+    finishEffect({ok: true});
+    await pending;
+    assert.equal(elements.effectSelect.value, 'Solid');
+    assert.equal(logo.attributes['aria-disabled'], undefined);
+    context.applyPrefs({toggle: '1', cp: '255,0,0', effect: 'Illuminazione Bias'});
+    assert.equal(elements.effectSelect.value, 'Solid');
+
+    await logo.click();
+    assert.equal(elements.effectSelect.value, 'Bias light');
+    assert.deepEqual(requests.filter(request => request.url === 'comboChange').map(request => request.body.value),
+        ['Solid', 'Bias light']);
+    assert.equal(requests.some(request => request.url.startsWith('deviceState')), false);
+});
+
+test('logo errors preserve the selected effect and re-enable clicking; other effects stay unchanged', async () => {
+    const {elements, requests, messages, finishEffect} = setup('Solid');
+    const pending = elements.settingsLogo.click();
+    finishEffect({ok: false, text: async () => 'Effect unavailable'});
+    await pending;
+    assert.equal(elements.effectSelect.value, 'Solid');
+    assert.equal(elements.settingsLogo.attributes['aria-disabled'], undefined);
+    assert.deepEqual(messages, ['Unable to change effect: Effect unavailable']);
+    elements.effectSelect.value = 'Rainbow';
+    await elements.settingsLogo.click();
+    assert.equal(elements.effectSelect.value, 'Rainbow');
+    assert.equal(requests.length, 1);
+});
+
+test('Enter and Space activate the logo without scrolling or submitting the form', () => {
+    const {elements} = setup();
+    let clicks = 0;
+    let prevented = 0;
+    elements.settingsLogo.click = () => { clicks++; };
+    for (const key of ['Enter', ' ', 'Escape']) {
+        elements.settingsLogo.listeners.keydown({key, preventDefault() { prevented++; }});
+    }
+    assert.equal(clicks, 2);
+    assert.equal(prevented, 2);
 });
