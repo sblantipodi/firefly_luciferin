@@ -22,7 +22,7 @@ on:
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.setver.outputs.version }}
 
@@ -46,7 +46,7 @@ jobs:
 
   snap:
     if: ${{ github.event_name == 'release' || github.event.inputs.target == '' || github.event.inputs.target == 'snap' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: setup
     env:
       VERSION: ${{ needs.setup.outputs.version }}
@@ -94,7 +94,7 @@ jobs:
 
   flathub:
     if: ${{ github.event_name == 'release' || github.event.inputs.target == '' || github.event.inputs.target == 'flatpak' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: setup
     env:
       VERSION: ${{ needs.setup.outputs.version }}
@@ -186,7 +186,7 @@ jobs:
 
   winget:
     if: ${{ github.event_name == 'release' || github.event.inputs.target == '' || github.event.inputs.target == 'winget' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: setup
     env:
       VERSION: ${{ needs.setup.outputs.version }}
