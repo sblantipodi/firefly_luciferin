@@ -35,6 +35,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.InputEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -162,6 +163,20 @@ public class TestCanvas {
         lineWidth = tileDistance / 4;
         log.info("Tale distance={}", tileDistance);
         canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)), (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));
+        canvas.addEventFilter(MouseEvent.ANY, event -> {
+            if (GuiSingleton.getInstance().isShowLiveCapture()) {
+                // Keep the separate color dialog above the preview when the OS activates this stage.
+                if (event.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                    Stage colorDialog = GuiSingleton.getInstance().colorDialog;
+                    if (colorDialog != null && colorDialog.isShowing()) {
+                        colorDialog.setAlwaysOnTop(false);
+                        colorDialog.setAlwaysOnTop(true);
+                    }
+                }
+                // Covers the whole canvas, including the area outside the captured image.
+                event.consume();
+            }
+        });
         gc = canvas.getGraphicsContext2D();
         // Set bold font
         Font currentFont = gc.getFont();
@@ -865,11 +880,7 @@ public class TestCanvas {
         }
         if (GuiSingleton.getInstance().isShowLiveCapture()) {
             drawLiveCapture();
-            // Linux cannot make the unused transparent area of a full screen JavaFX stage click through.
-            if (NativeExecutor.isLinux()) {
-                return;
-            }
-            // fall through: tiles are drawn on top of the capture background below
+            return;
         }
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
         float saturationToUse;
@@ -883,24 +894,15 @@ public class TestCanvas {
         }
         ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
         int scaleRatio = conf.getOsScaling();
-        if (!GuiSingleton.getInstance().isShowLiveCapture()) {
-            // Normal mode: clear the canvas and fill with a black background.
-            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            if (interactionHandler.isCanvasClicked()) {
-                drawLogo(conf, scaleRatio);
-                gc.setFill(new Color(0, 0, 0, 0.5));
-                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            } else {
-                gc.setFill(Color.BLACK);
-                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-                drawLogo(conf, scaleRatio);
-            }
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        if (interactionHandler.isCanvasClicked()) {
+            drawLogo(conf, scaleRatio);
+            gc.setFill(new Color(0, 0, 0, 0.5));
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         } else {
-            // just apply a semi transparent dark overlay while dragging so tiles remain readable.
-            if (interactionHandler.isCanvasClicked()) {
-                gc.setFill(new Color(0, 0, 0, 0.4));
-                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            }
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawLogo(conf, scaleRatio);
         }
         drawFireflyText();
         gc.setFill(Color.GREEN);
