@@ -801,12 +801,13 @@ public class GuiManager {
     public void stopCapturingThreads(boolean publishToTopic) {
         if (GrabberSingleton.getInstance() != null) GrabberSingleton.getInstance().resetFlowRamp();
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
-            StateDto stateDto = getStateDto();
             if (NativeExecutor.isLinux()) {
                 CommonUtility.delayMilliseconds(() -> {
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
+                    // A picker command may update the color while this stop notification is waiting.
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(getStateDto()));
                 }, 300);
             } else {
+                StateDto stateDto = getStateDto();
                 CommonUtility.sleepMilliseconds(300);
                 NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
             }

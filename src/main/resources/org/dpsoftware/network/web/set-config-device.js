@@ -1,6 +1,6 @@
 // Device controls of the settings page: color picker, output device/serial selection, LED toggle, live device table and per-device status polling.
 import {state} from './set-config-state.js';
-import {fetchJson, postResponse} from './set-config-api.js';
+import {fetchJson, notifyComboChange, postResponse} from './set-config-api.js';
 import {buildEditableComboHtml, escapeHtml, showToast, updateEditableComboOptions} from './set-config-ui.js';
 
 var colorPicker;
@@ -166,8 +166,12 @@ function applyPrefs(prefs) {
                 if (picker && colorPicker) {
                     colorPicker.color.rgb = lastColor;
                 }
+                var effectSelect = document.getElementById('effectSelect');
+                var effectOption = Array.from(effectSelect.options).find(function (option) {
+                    return option.value === prefs.effect || option.label === prefs.effect;
+                });
+                effectSelect.value = effectOption ? effectOption.value : prefs.effect;
             }
-            document.getElementById('effectSelect').value = prefs.effect;
         }
     }
 }
@@ -273,11 +277,25 @@ export function initColorPicker() {
     colorPicker.on('input:change', function (color) {
         lastColor = color.rgb;
     });
-    colorPicker.on(['input:end'], function (color) {
+    colorPicker.on(['input:end'], async function (color) {
         colorInputActive = false;
         lastColor = color.rgb;
         colorPendingUntil = Date.now() + 7000;
-        sendToDevice(buildPayload(), 'Color sent to device');
+        var payload = buildPayload();
+        var effectSelect = document.getElementById('effectSelect');
+        try {
+            // Stop Bias light before sending the color, otherwise capture keeps driving the LEDs.
+            if (effectSelect.value === 'Bias light') {
+                await notifyComboChange('effectSelect', 'Solid');
+                effectSelect.value = 'Solid';
+                setToggleUi(true);
+                payload.state = 'ON';
+            }
+            colorPendingUntil = Date.now() + 7000;
+            return sendToDevice(payload, 'Color sent to device');
+        } catch (err) {
+            showToast('Unable to change effect: ' + err.message, 'bg-danger text-white');
+        }
     });
     var toggle = document.getElementById('toggleLED');
     if (toggle) {
