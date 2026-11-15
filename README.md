@@ -2,12 +2,9 @@
 
 **Bring your games, movies, and shows beyond the screen.**
 
-Luciferin fills your walls with the colors on screen, turning every scene into immersive ambient lighting. Capture your
-PC directly or connect consoles and TV sticks through HDMI capture. Add satellite lights to extend the experience around
-your room.
+Luciferin fills your walls with the colors on screen, turning every scene into immersive ambient lighting. Capture your PC directly or connect consoles and TV sticks through HDMI capture. Add satellite lights to extend the experience around your room.
 
-[**Firefly Luciferin**](https://github.com/sblantipodi/firefly_luciferin) captures the screen and calculates the
-colors. [**Glow Worm Luciferin**](https://github.com/sblantipodi/glow_worm_luciferin), the firmware on your LED
+[**Firefly Luciferin**](https://github.com/sblantipodi/firefly_luciferin) captures the screen and calculates the colors. [**Glow Worm Luciferin**](https://github.com/sblantipodi/glow_worm_luciferin), the firmware on your LED
 controller, brings them to your LEDs. Built together for **ultra-low latency over Wi-Fi, Ethernet, or USB**.
 
 **Control it from your desktop, phone, or AI assistant.**
@@ -49,39 +46,22 @@ an installation without a desktop leaves more memory available for capture and p
 ## Key features
 
 - **Hardware accelerated processing:** Best in class performance combined with **ultra low CPU/GPU usage**.
-- Advanced algorithms for [**smooth colors
-  transitions**](https://github.com/sblantipodi/toremove/wiki/Smoothing-color-transitions) and [**color
-  correction**](https://github.com/sblantipodi/toremove/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)).
-- [**Adaptive
-  gamma**](https://github.com/sblantipodi/toremove/wiki/Color-Temperature-and-White-Balance#adaptive-gamma-correction)
-  provides significantly improved color accuracy on both **SDR** and **HDR** content.
-- [**HDR to SDR tone mapping**](https://github.com/sblantipodi/toremove/wiki/HDR-to-SDR-and-LUT) adapts HDR color and
-  brightness to your LEDs.
-- [**Remote control**](https://github.com/sblantipodi/toremove/wiki/Remote-Access#luciferin-web-interface): use Firefly
-  from phone or desktop, and Glow Worm via its built in web interface.
-- [**AI control through MCP**](https://github.com/sblantipodi/toremove/wiki/MCP-and-AI-Agents): ask a compatible AI
-  assistant to control Luciferin using natural language.
-- **Home automation:** integrate with [**Home
-  Assistant**](https://github.com/sblantipodi/toremove/wiki/Home-Automation-configs) and MQTT; neither is required for a
-  basic setup.
-- [**Multi monitor**](https://github.com/sblantipodi/toremove/wiki/Multi-monitor-support) support with **single or
-  multiple instances**.
-- [**Surround lighting**](https://github.com/sblantipodi/toremove/wiki/Surround-lighting-with-satellites) with
-  satellites.
+- Advanced algorithms for [**smooth color transitions**](https://github.com/sblantipodi/toremove/wiki/Smoothing-color-transitions) and [**color correction**](https://github.com/sblantipodi/toremove/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)).
+- [**Adaptive gamma**](https://github.com/sblantipodi/toremove/wiki/Color-Temperature-and-White-Balance#adaptive-gamma-correction) provides significantly improved color accuracy on both **SDR** and **HDR** content.
+- [**HDR to SDR tone mapping**](https://github.com/sblantipodi/toremove/wiki/HDR-to-SDR-and-LUT) adapts HDR color and brightness to your LEDs.
+- [**Remote control**](https://github.com/sblantipodi/toremove/wiki/Remote-Access#luciferin-web-interface): use Firefly from phone or desktop, and Glow Worm via its built in web interface.
+- [**AI control through MCP**](https://github.com/sblantipodi/toremove/wiki/MCP-and-AI-Agents): ask a compatible AI assistant to control Luciferin using natural language.
+- **Home automation:** integrate with [**Home Assistant**](https://github.com/sblantipodi/toremove/wiki/Home-Automation-configs) and MQTT; neither is required for a basic setup.
+- [**Multi monitor**](https://github.com/sblantipodi/toremove/wiki/Multi-monitor-support) support with **single or multiple instances**.
+- [**Surround lighting**](https://github.com/sblantipodi/toremove/wiki/Surround-lighting-with-satellites) with satellites.
 - [**Web browser firmware installer**](https://sblantipodi.github.io/glow_worm_luciferin/).
-- [**Programmable firmware**](https://github.com/sblantipodi/toremove/wiki/Supported-GPIO-and-Baud-Rate), change your
-  microcontroller's settings on the fly.
-- [**One click updates**](https://github.com/sblantipodi/toremove/wiki/Luciferin-update-management) for both the PC
-  software and firmware, keeping your entire setup up to date effortlessly.
-- [**Automatic black bar detection**](https://github.com/sblantipodi/toremove/wiki/Aspect-ratio) and aspect ratio
-  adjustment for video content.
-- **Made from a gamer, for gamers**. No added lag, stutter free.
-- Multi platform, [**Windows**](https://github.com/sblantipodi/toremove/wiki/Installers-and-binaries) and [
-  **Linux**](https://github.com/sblantipodi/toremove/wiki/Linux-support) ready, supporting **x86 and ARM**
-  architectures.
-- Prefer a DIY build over a prebuilt board? Grab your soldering iron and use [**Luciferin’s official
-  PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB), without designing your own.
-- Have a question? [**Get answered on the community**](https://discord.gg/aXf9jeN).
+- [**Programmable firmware**](https://github.com/sblantipodi/toremove/wiki/Supported-GPIO-and-Baud-Rate), change your microcontroller's settings on the fly.
+- [**One click updates**](https://github.com/sblantipodi/toremove/wiki/Luciferin-update-management) for both the PC software and firmware, keeping your entire setup up to date effortlessly.
+- [**Automatic black bar detection**](https://github.com/sblantipodi/toremove/wiki/Aspect-ratio) and aspect ratio adjustment for video content.
+- Built for gamers, with **low overhead capture** designed to preserve smooth gameplay.
+- Multi platform, [**Windows**](https://github.com/sblantipodi/toremove/wiki/Installers-and-binaries) and [**Linux**](https://github.com/sblantipodi/toremove/wiki/Linux-support) ready, supporting **x86 and ARM** architectures.
+- Prefer a DIY build over a prebuilt board? Grab your soldering iron and use [**Luciferin’s official PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB), without designing your own.
+- Have a question? [**Ask the community**](https://discord.gg/aXf9jeN).
 
 ## Quick start
 
@@ -113,27 +93,22 @@ Effortless setup with minimal configuration required, yet highly customizable to
   <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/settings_3.png">
 </p>
 
-[<img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/test_image_anim_color.gif?raw=true">](https://youtu.be/j7IV9rQr7J8)
+[<img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/test_image_anim_color.gif?raw=true">](https://youtu.be/j7IV9rQr7J8)
 
 #### (click the image above to watch it on YouTube)
 
 ## Luciferin Official PCB
 Unlike other prebuilt boards (which are also compatible with Luciferin), **the official PCB is upgradable!***
 
-<a href="https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB"><img width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/luciferin_official_pcb/img/PCB_front.jpg?raw=true"></a>
-<a href="https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB"><img width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/luciferin_official_pcb/img/pre_after.jpg?raw=true"></a>
+<a href="https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB"><img src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/luciferin_official_pcb/img/PCB_front.jpg?raw=true"></a>  
+<a href="https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB"><img src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/luciferin_official_pcb/img/pre_after.jpg?raw=true"></a>
 
 Prefer a DIY build over a prebuilt board? Grab your soldering iron and use [**Luciferin’s official
 PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB), without designing your own.
 
-The Luciferin Official PCB requires a "D1 Mini format" board. With the new [**Luciferin Module for the Official
-PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb), you can
-use a smaller board, opening up more upgrade possibilities without the need to replace the PCB or redo any soldering or
-cabling.
+The Luciferin Official PCB requires a "D1 Mini format" board. With the new [**Luciferin Module for the Official PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb), you can use a smaller board, opening up more upgrade possibilities without the need to replace the PCB or redo any soldering or cabling.
 
-<p align="center">
-  <img width="700" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/pcb_noeth.jpg?raw=true">
-</p>
+<img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/pcb_noeth.jpg?raw=true">
 
 Explore [**other compatible hardware**](https://github.com/sblantipodi/toremove/wiki/Compatible-Hardware), including
 **supported prebuilt ready-to-use controllers**.
@@ -145,10 +120,10 @@ Luciferin is deeply integrated with your operating system through a series of bi
 This guarantees maximum efficiency and compatibility.
 
 Depending on your operating system and hardware, supported technologies include  
-**DirectX 12, OpenGL, Vulkan, Nvidia CUDA, Intel GPU acceleration, AMD HIP, SIMD (AVX, AVX2 and AVX512)**.
+**DirectX 12, OpenGL, Vulkan, Nvidia CUDA, Intel GPU acceleration, AMD ROCm HIP, SIMD (AVX, AVX2 and AVX512)**.
 
 <p align="center">
-  <img width="600" alt="Capture and LED controller frame rates" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/info_screen.png">
+  <img alt="Capture and LED controller frame rates" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/info_screen.png">
 </p>
 
 The FPS view shows how fast Firefly captures frames and how fast your LED controller processes them. For consistent
@@ -171,10 +146,10 @@ your phone.
 - **Firefly Luciferin**: besides the desktop app, it now offers its own web interface for full control from your phone
   or any browser.
 
-<img align="center" width="750" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface.jpg?raw=true">  
+<img align="center" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface.jpg?raw=true">  
 <p> </p>   
 
-<img align="center" width="750" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface_ff.jpg?raw=true">
+<img align="center" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface_ff.jpg?raw=true">
 <p> </p>  
 
 ## Home Assistant integration
@@ -182,30 +157,24 @@ your phone.
 Luciferin can be easily integrated
 in [Home Assistant](https://github.com/sblantipodi/toremove/wiki/Home-Automation-configs).  
 <br>
-<img align="center" width="800" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ha_luciferin.jpg?raw=true">
+<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ha_luciferin.jpg?raw=true">
 
 ## Advanced rendering pipeline
 
-[**Luciferin’s rendering
-pipeline**](https://github.com/sblantipodi/toremove/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)) is built
-for precision and visual fidelity. Floating-point processing delivers smoother gradients, minimizes rounding artifacts,
-and maintains consistent color transformations throughout the pipeline.
+[**Luciferin’s rendering pipeline**](https://github.com/sblantipodi/toremove/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)) is built for precision and visual fidelity. Floating-point processing delivers smoother gradients, minimizes rounding artifacts, and maintains consistent color transformations throughout the pipeline.
 
 <img alt="Color transitions with higher-precision processing" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/adaptive_gamma_8_32bit.gif?raw=true">
 
 ## HDR to SDR tonemap with LUT (Lookup Table)
 
-TV or monitor can display a wider brightness range than an LED strip. [**HDR to SDR tone
-mapping**](https://github.com/sblantipodi/toremove/wiki/HDR-to-SDR-and-LUT
+TV or monitor can display a wider brightness range than an LED strip. [**HDR to SDR tone mapping**](https://github.com/sblantipodi/toremove/wiki/HDR-to-SDR-and-LUT
 ) adapts that range so the lighting keeps useful detail and colors instead of looking too dark or washed out.
 
 <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/hdr_sdr_tonemap.gif">
 
 ## Smoothing and Frame Generation
 
-[**Luciferin’s Smoothing**](https://github.com/sblantipodi/toremove/wiki/Smoothing-color-transitions) combines frame
-generation and Exponential Moving Average to create smoother LED color transitions and reduce flickering with both PC
-and HDMI capture, offering customizable settings to balance fluidity, responsiveness, and system load.
+[**Luciferin’s Smoothing**](https://github.com/sblantipodi/toremove/wiki/Smoothing-color-transitions) combines frame generation and Exponential Moving Average to create smoother LED color transitions and reduce flickering with both PC and HDMI capture, offering customizable settings to balance fluidity, responsiveness, and system load.
 
 <img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ema_framegen.png?raw=true">
 
@@ -213,25 +182,21 @@ and HDMI capture, offering customizable settings to balance fluidity, responsive
 
 ## AI Agents and MCP (Model Context Protocol)
 
-[**MCP (Model Context Protocol)**](https://github.com/sblantipodi/toremove/wiki/MCP-and-AI-Agents) connects Firefly
-Luciferin to a wide range of AI tools and assistants that support this open standard.
-Use your preferred MCP-compatible AI client to control lighting, adjust settings, and check connected devices through
-natural language.
+[**MCP (Model Context Protocol)**](https://github.com/sblantipodi/toremove/wiki/MCP-and-AI-Agents) connects Firefly Luciferin to a wide range of AI tools and assistants that support this open standard.
+Use your preferred MCP-compatible AI client to control lighting, adjust settings, and check connected devices through natural language.
 This lets you integrate Firefly into your AI workflows and automate lighting tasks directly from your assistant.
 
 <img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/mcpserver.jpg?raw=true">
 
 ## Aspect Ratio
 
-[**Automatic aspect ratio**](https://github.com/sblantipodi/toremove/wiki/Aspect-ratio) settings keep the LEDs focused
-on the picture instead of black bars. They apply to both **PC screen capture and HDMI capture**, such as a widescreen
-movie on a TV.
+[**Automatic aspect ratio**](https://github.com/sblantipodi/toremove/wiki/Aspect-ratio) settings keep the LEDs focused on the picture instead of black bars. They apply to both **PC screen capture and HDMI capture**, such as a widescreen movie on a TV.
 
 <img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/asect_ratio.jpg?raw=true">  
 
+
 ## Development & AI
 
-Luciferin was born years before the AI boom. Today, its development also benefits from locally run models and frontier
-AI models as supporting tools.
+Luciferin was born years before the AI boom. Today, its development also benefits from locally run models and frontier AI models as supporting tools.
 
 Architecture, design, and code review remain human-led, alongside a substantial share of the code.
