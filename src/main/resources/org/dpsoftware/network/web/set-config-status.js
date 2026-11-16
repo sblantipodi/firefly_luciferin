@@ -1,6 +1,5 @@
 // Server status polling for the settings page: periodically fetches the FPS endpoint to show the live framerate and detect when the server is offline.
 import {fetchJson} from './set-config-api.js';
-import {showToast} from './set-config-ui.js';
 
 var serverOnline = true;
 var serverPollController = null;
@@ -116,7 +115,8 @@ export function pollServerStatus(force) {
             serverOnline = true;
             document.body.classList.remove('server-down');
             hideOfflineOverlay();
-            showToast('Firefly Luciferin is online again', 'bg-success text-white');
+            // Reload configuration and profiles after a restart or an offline period.
+            window.location.reload();
         }
     }).catch(function () {
         if (serverPollController !== controller) {
