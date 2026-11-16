@@ -64,6 +64,7 @@ public class GuiSingleton {
     public volatile boolean oldFirmwareDevice = false;
     public volatile boolean upgrade = false;
     public volatile boolean glowWormUpdateInProgress = false;
+    public volatile boolean waitingForSatellites = false;
     public boolean rleVisualMapVisible;
     public Stage colorDialog;
     // Last TestCanvas instance, reused across toggles to avoid repeatedly tearing down and re-creating JavaFX scenes

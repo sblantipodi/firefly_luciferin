@@ -465,6 +465,7 @@ public class PipelineManager {
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
      */
     public void startCapturePipeline() {
+        GuiSingleton.getInstance().waitingForSatellites = false;
         refreshCaptureLedState();
         boolean orphanSat = checkForSatelliteOrphans();
         if (orphanSat) {
@@ -560,16 +561,25 @@ public class PipelineManager {
      * Start high performance WiFi/MQTT pipeline, FULL firmware required
      */
     public void startWiFiMqttManagedPipeline() {
+        GuiSingleton.getInstance().waitingForSatellites = false;
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService startupExecutor = scheduledExecutorService;
+        SatelliteWaitNotice satelliteWaitNotice = new SatelliteWaitNotice();
         AtomicInteger retryNumber = new AtomicInteger();
         Runnable framerateTask = () -> {
+            if (startupExecutor.isShutdown()) return;
             // Waiting Device to Use
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = (MainSingleton.getInstance().whoAmI == 1 || !CommonUtility.isSingleDeviceMultiScreen()) ? upgradeManager.firmwareMatchMinimumRequirements() : null;
-            if ((MainSingleton.getInstance().config.getSatellites() != null && GuiSingleton.getInstance().deviceTableData != null)
-                    && (((MainSingleton.getInstance().config.getSatellites().isEmpty()) || isSatellitesEngaged())
-                    && (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null))) {
+            var satellites = MainSingleton.getInstance().config.getSatellites();
+            boolean satellitesReady = satellites != null && GuiSingleton.getInstance().deviceTableData != null
+                    && (satellites.isEmpty() || isSatellitesEngaged());
+            boolean waitingForSatellites = !MainSingleton.getInstance().RUNNING
+                    && satellites != null && !satellites.isEmpty() && !satellitesReady;
+            satelliteWaitNotice.update(waitingForSatellites, System.nanoTime());
+            if (satellitesReady
+                    && (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null)) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), MainSingleton.getInstance().config.getDefaultLedMatrix());
@@ -603,10 +613,29 @@ public class PipelineManager {
                     stopForFirmwareUpgrade();
                 }
             } else {
-                log.info("Waiting device for my instance...");
+                log.info(waitingForSatellites ? "Waiting for the configured satellites..." : "Waiting device for my instance...");
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Stop capturing pipeline, firmware on the running device is too old
+     */
+    private void stopForFirmwareUpgrade() {
+        GuiSingleton.getInstance().waitingForSatellites = false;
+        ManagerSingleton.getInstance().pipelineStarting = false;
+        ManagerSingleton.getInstance().pipelineStopping = false;
+        GuiSingleton.getInstance().oldFirmwareDevice = true;
+        for (GlowWormDevice gwd : CommonUtility.getDeviceToUseWithSatellites()) {
+            if (Boolean.FALSE.equals(UpgradeManager.checkFirmwareVersion(gwd))) {
+                GuiSingleton.getInstance().registerGlowWormUpdate(gwd);
+                log.warn("[{}, ver={}] {}", gwd.getDeviceName(), gwd.getDeviceVersion(), CommonUtility.getWord(LabelKey.MIN_FIRMWARE_NOT_MATCH));
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.NEW_FIRMWARE_AVAILABLE, LabelKey.MIN_FIRMWARE_NOT_MATCH, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.WARNING);
+            }
+        }
+        scheduledExecutorService.shutdown();
+        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
     }
 
     /**
@@ -644,27 +673,10 @@ public class PipelineManager {
     }
 
     /**
-     * Stop capturing pipeline, firmware on the running device is too old
-     */
-    private void stopForFirmwareUpgrade() {
-        ManagerSingleton.getInstance().pipelineStarting = false;
-        ManagerSingleton.getInstance().pipelineStopping = false;
-        GuiSingleton.getInstance().oldFirmwareDevice = true;
-        for (GlowWormDevice gwd : CommonUtility.getDeviceToUseWithSatellites()) {
-            if (Boolean.FALSE.equals(UpgradeManager.checkFirmwareVersion(gwd))) {
-                GuiSingleton.getInstance().registerGlowWormUpdate(gwd);
-                log.warn("[{}, ver={}] {}", gwd.getDeviceName(), gwd.getDeviceVersion(), CommonUtility.getWord(LabelKey.MIN_FIRMWARE_NOT_MATCH));
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.NEW_FIRMWARE_AVAILABLE, LabelKey.MIN_FIRMWARE_NOT_MATCH, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.WARNING);
-            }
-        }
-        scheduledExecutorService.shutdown();
-        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
-    }
-
-    /**
      * Stop high performance pipeline
      */
     public void stopCapturePipeline() {
+        GuiSingleton.getInstance().waitingForSatellites = false;
         ManagerSingleton.getInstance().pipelineStarting = false;
         ManagerSingleton.getInstance().pipelineStopping = true;
         if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
@@ -693,6 +705,30 @@ public class PipelineManager {
         }
         AudioSingleton.getInstance().AUDIO_BRIGHTNESS = 255;
         MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
+    }
+
+    /**
+     * Tracks a continuous satellite wait within one startup attempt.
+     */
+    static final class SatelliteWaitNotice {
+        private Long waitingSince;
+        private boolean notified;
+
+        void update(boolean waiting, long now) {
+            if (!waiting) {
+                waitingSince = null;
+                notified = false;
+                GuiSingleton.getInstance().waitingForSatellites = false;
+                return;
+            }
+            if (waitingSince == null) waitingSince = now;
+            if (!notified && now - waitingSince >= TimeUnit.SECONDS.toNanos(15)) {
+                notified = true;
+                GuiSingleton.getInstance().waitingForSatellites = true;
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.SAT_WAITING_TITLE,
+                        LabelKey.SAT_WAITING, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.WARNING);
+            }
+        }
     }
 
     // Returns GSTREAMER_CUSTOM_PIPELINE env var if set, otherwise the default.

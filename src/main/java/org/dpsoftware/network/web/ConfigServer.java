@@ -140,6 +140,7 @@ public class ConfigServer {
                 GuiSingleton.getInstance().isUpgrade(),
                 GuiSingleton.getInstance().isGlowWormUpdateAvailable(),
                 GuiSingleton.getInstance().isGlowWormUpdateInProgress(),
+                GuiSingleton.getInstance().isWaitingForSatellites(),
                 TrayIconState.currentImage(),
                 Double.isFinite(adaptiveGamma) ? adaptiveGamma : null,
                 MainSingleton.getInstance().isHdrActive(),
@@ -791,6 +792,7 @@ public class ConfigServer {
      * @param fireflyUpdateAvailable whether a newer Firefly release has been found
      * @param glowWormUpdateAvailable whether a connected Glow Worm device needs a firmware update
      * @param glowWormUpdateInProgress whether connected Glow Worm devices are being updated
+     * @param waitingForSatellites whether startup has waited at least 15 seconds for configured satellites
      * @param trayIconImage current tray image resource, used to refresh the web logo on changes
      * @param adaptiveGamma current effective gamma, also published via MQTT
      * @param hdrActive whether HDR has been detected
@@ -798,7 +800,7 @@ public class ConfigServer {
      * @param smoothing localized smoothing level, empty when smoothing is disabled
      */
     public record FpsDto(float producing, float consuming, boolean fireflyUpdateAvailable,
-                         boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, String trayIconImage,
+                         boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, boolean waitingForSatellites, String trayIconImage,
                          Double adaptiveGamma, boolean hdrActive, String aspectRatio, String smoothing) {
     }
 }

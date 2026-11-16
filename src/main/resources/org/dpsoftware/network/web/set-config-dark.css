@@ -64,7 +64,8 @@ body {
 }
 
 .firefly-update-notice,
-.glow-worm-update-available-notice {
+.glow-worm-update-available-notice,
+.satellite-waiting-notice {
     background: #5a411d;
     color: #ffe1a8;
     border-color: #966c31;

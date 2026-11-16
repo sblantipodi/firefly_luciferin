@@ -108,6 +108,10 @@ export function pollServerStatus(force) {
         if (deviceUpdateNotice) {
             deviceUpdateNotice.hidden = !fps.glowWormUpdateInProgress;
         }
+        var satelliteWaitingNotice = document.getElementById('satelliteWaitingNotice');
+        if (satelliteWaitingNotice) {
+            satelliteWaitingNotice.hidden = !fps.waitingForSatellites;
+        }
         if (!serverOnline) {
             serverOnline = true;
             document.body.classList.remove('server-down');

@@ -130,6 +130,8 @@ public final class LabelKey {
     public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
     public static final String SAT_ZONE_ERROR_TITLE = "satellite.zone.error.title";
     public static final String SAT_ZONE_ERROR = "satellite.zone.error";
+    public static final String SAT_WAITING_TITLE = "satellite.waiting.title";
+    public static final String SAT_WAITING = "satellite.waiting";
     public static final String NO_DEVICE_FOUND = "no.device.found";
     public static final String SCREEN_MAIN = "main.screen";
     public static final String SCREEN_LEFT = "left.screen";
