@@ -10,6 +10,9 @@ function setup(effect = 'Bias light') {
     const classes = new Set();
     const elements = {
         picker: {
+            querySelectorAll() {
+                return [];
+            },
             classList: {
                 add(c) {
                     classes.add(c);

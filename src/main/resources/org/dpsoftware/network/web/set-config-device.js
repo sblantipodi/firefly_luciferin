@@ -323,13 +323,40 @@ export function updatePickerGlow(color) {
     }
 }
 
+// Pick a fresh point on the glow's rim and a new trajectory between emissions.
+function initPickerEmbers(pickerEl) {
+    function randomizeEmber(ember) {
+        var angle = Math.random() * Math.PI * 2;
+        ember.style.setProperty('--ember-x', (50 + Math.cos(angle) * 50) + '%');
+        ember.style.setProperty('--ember-y', (50 + Math.sin(angle) * 50) + '%');
+        var size = Math.random() < 0.2 ? 2.5 + Math.random() * 1.5 : 1 + Math.random();
+        ember.style.setProperty('--ember-size', size + 'px');
+        ember.style.setProperty('--ember-drift',
+            (Math.cos(angle) * (10 + Math.random() * 12) + Math.random() * 10 - 5) + 'px');
+        ember.style.setProperty('--ember-rise', -(44 + Math.random() * 20) + 'px');
+    }
+
+    pickerEl.querySelectorAll('.picker-embers span').forEach(function (ember) {
+        randomizeEmber(ember);
+        // Keep each particle's clock steady; changing it mid-loop can cause jumps.
+        var duration = 4 + Math.random() * 2;
+        ember.style.setProperty('--ember-duration', duration + 's');
+        ember.style.setProperty('--ember-delay', -(Math.random() * duration) + 's');
+        ember.addEventListener('animationiteration', function (event) {
+            if (event.animationName === 'picker-ember-rise') {
+                randomizeEmber(ember);
+            }
+        });
+    });
+}
+
 // Initializes the iro color picker, the LED toggle button and the output device select; color changes are pushed to the device immediately.
 export function initColorPicker() {
     var pickerEl = document.getElementById('picker');
     if (!pickerEl || typeof iro === 'undefined') {
         return;
     }
-    colorPicker = new iro.ColorPicker('#picker', {
+    colorPicker = new iro.ColorPicker('#pickerControl', {
         width: 288,
         color: '#0091ff'
     });
@@ -337,6 +364,7 @@ export function initColorPicker() {
         pickerEl.classList.toggle('lights-off', !deviceState.on);
     }
     updatePickerGlow(colorPicker.color && colorPicker.color.rgb ? colorPicker.color : lastColor);
+    initPickerEmbers(pickerEl);
     colorPicker.on('color:change', function (color) {
         updatePickerGlow(color);
     });

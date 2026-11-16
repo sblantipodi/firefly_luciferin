@@ -467,8 +467,60 @@ body.server-down > :not(#offlineOverlay) {
 
 /* Color picker, fixed width to match the iro picker size. */
 #picker {
+    position: relative;
     max-width: 288px;
     margin: 0 auto;
+}
+
+/* A few tiny embers rise from the wheel's rim, inheriting its live glow color. */
+#picker .picker-embers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 288px;
+    height: 288px;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.4s ease-in-out;
+}
+
+#picker .picker-embers span {
+    position: absolute;
+    left: var(--ember-x);
+    top: var(--ember-y);
+    width: var(--ember-size);
+    height: var(--ember-size);
+    border-radius: 50%;
+    background: var(--picker-glow-color, #0091ff);
+    box-shadow: 0 0 4px 1px rgba(var(--picker-glow-rgb, 0, 145, 255), 0.6);
+    opacity: 0;
+    animation: picker-ember-rise var(--ember-duration) linear infinite;
+    animation-delay: var(--ember-delay);
+}
+
+#picker.lights-off .picker-embers {
+    opacity: 0;
+}
+
+#picker.lights-off .picker-embers span {
+    animation-play-state: paused;
+}
+
+@keyframes picker-ember-rise {
+    0% {
+        opacity: 0;
+        transform: translate(0, 0) scale(1);
+    }
+    6% {
+        opacity: 0.85;
+    }
+    30% {
+        opacity: 0.5;
+    }
+    60%, 100% {
+        opacity: 0;
+        transform: translate(var(--ember-drift), var(--ember-rise)) scale(0.25);
+    }
 }
 
 #picker .IroWheel {
@@ -510,6 +562,14 @@ body.server-down > :not(#offlineOverlay) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    #picker .picker-embers {
+        display: none;
+    }
+
+    #picker .picker-embers span {
+        animation: none;
+    }
+
     #picker .IroWheel::after {
         animation: none;
     }
