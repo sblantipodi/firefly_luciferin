@@ -599,6 +599,49 @@ body.server-down > :not(#offlineOverlay) {
     border-color: darkorange !important;
 }
 
+.profile-buttons {
+    display: grid;
+    grid-template-columns: repeat(var(--profile-columns, 1), minmax(0, 1fr));
+    gap: 0.25rem;
+}
+
+.profile-buttons:empty {
+    display: none;
+}
+
+.profile-buttons .profile-button {
+    min-width: 0;
+    padding: 0.2rem 0.375rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: #fff;
+    background-color: #6c757d;
+    border: 1px solid #6c757d;
+}
+
+.profile-buttons .profile-button:hover {
+    background-color: #5c636a;
+    border-color: #5c636a;
+}
+
+.profile-buttons .profile-button[aria-pressed="true"] {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.profile-buttons .profile-button[aria-pressed="true"]:hover {
+    background-color: #157347;
+    border-color: #157347;
+}
+
+.profile-buttons .profile-button:focus-visible {
+    outline: 2px solid #f59a20;
+    outline-offset: 2px;
+}
+
 /* Live preview button, base (off) state: light grey. The .active class (added by
    JS while the preview is running) turns it green, the :hover states darken a bit. */
 #showLivePreview,

@@ -3,14 +3,42 @@ import {fetchJson, postResponse} from './set-config-api.js';
 import {collectPayload} from './set-config-core.js';
 import {showToast} from './set-config-ui.js';
 
-// Renders the profile list with activate buttons and (for non-default, non-active profiles) a remove button, marking the active profile.
+// Renders compact shortcuts below the LED toggle, keeping equal widths across rows.
+function renderProfileButtons(profiles, activeProfile) {
+    var container = document.getElementById('profileButtons');
+    if (!container) {
+        return;
+    }
+    container.replaceChildren();
+    if (profiles.length === 1 && profiles[0] === 'Default') {
+        return;
+    }
+    container.style.setProperty('--profile-columns', Math.min(profiles.length, 4) || 1);
+    profiles.forEach(function (name) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm profile-button';
+        button.textContent = name;
+        button.title = name;
+        button.setAttribute('aria-pressed', String(name === activeProfile));
+        button.addEventListener('click', function () {
+            if (name !== activeProfile) {
+                activateProfile(name);
+            }
+        });
+        container.appendChild(button);
+    });
+}
+
+// Renders the shortcuts and profile management list, marking the active profile.
 export function renderProfiles(data) {
+    var profiles = data.profiles || [];
+    var activeProfile = data.activeProfile || '';
+    renderProfileButtons(profiles, activeProfile);
     var container = document.getElementById('profilesList');
     if (!container) {
         return;
     }
-    var profiles = data.profiles || [];
-    var activeProfile = data.activeProfile || '';
     if (profiles.length === 0) {
         container.innerHTML = '<div class="text-muted">No profiles available</div>';
         return;

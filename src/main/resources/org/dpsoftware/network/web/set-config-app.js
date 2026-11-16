@@ -1,7 +1,7 @@
 // Entry point of the LUCIFERIN web configuration page: wires together the form, device picker, profiles, live preview and status polling
 // modules, and handles loading/saving the configuration against the ConfigServer HTTP endpoints.
 import {state} from './set-config-state.js';
-import {fetchJson, notifyComboChange, uploadCubeLut, removeCubeLut} from './set-config-api.js';
+import {fetchJson, notifyComboChange, removeCubeLut, uploadCubeLut} from './set-config-api.js';
 import {buildForm, collectPayload, fillForm} from './set-config-core.js';
 import {
     applyAutoOutputDevice,
@@ -650,11 +650,6 @@ $(function () {
         document.getElementById('improvDeviceName').value = cfg.outputDevice || '';
         syncMqttDiscoveryButtons();
         applyAutoOutputDevice();
-        var profile = cfg && cfg.activeProfile;
-        var profileEl = document.getElementById('activeProfile');
-        if (profileEl) {
-            profileEl.textContent = profile ? ((state.fieldLabels['web.profilePrefix'] || 'Profile:') + ' ' + profile) : '';
-        }
         syncDeviceFromPrefs();
         return fetchJson('listProfiles');
     }).then(function (profilesData) {
