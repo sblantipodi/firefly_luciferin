@@ -29,6 +29,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.managers.FirmwareStateSync;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.TcpResponse;
@@ -170,14 +171,13 @@ public class UdpServer {
                                     MainSingleton.getInstance().guiManager.startCapturingThreads();
                                 }
                             }
-                            if (received.contains(Constants.STOP_STR)) {
-                                if (MainSingleton.getInstance().RUNNING) {
-                                    MainSingleton.getInstance().guiManager.stopCapturingThreads(false);
-                                    CommonUtility.turnOnLEDs();
-                                }
-                            }
                             if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received) && !received.contains(Constants.UDP_PING)) {
                                 JsonNode responseJson = CommonUtility.fromJsonToObject(received);
+                                if (responseJson != null && "STOP".equals(responseJson.path(Constants.START_STOP_INSTANCES).asText())
+                                        && isSelectedDeviceOrRelay(packet.getAddress())) {
+                                    FirmwareStateSync.request();
+                                    continue;
+                                }
                                 if (responseJson != null && responseJson.get(Constants.STATE) != null && responseJson.get(Constants.MQTT_DEVICE_NAME) != null) {
                                     turnOnLightFirstTime(responseJson);
                                     CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
@@ -222,6 +222,14 @@ public class UdpServer {
             firstConnection = false;
             CommonUtility.turnOnLEDs();
         }
+    }
+
+    // Secondary instances receive discovery notifications relayed by this machine.
+    private boolean isSelectedDeviceOrRelay(InetAddress sender) throws SocketException {
+        var device = CommonUtility.getDeviceToUse();
+        return device != null && (sender.getHostAddress().equals(device.getDeviceIP())
+                || (MainSingleton.getInstance().whoAmI != 1
+                && (sender.isLoopbackAddress() || NetworkInterface.getByInetAddress(sender) != null)));
     }
 
     private void logUpdateSuccessful(String received) {

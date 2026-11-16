@@ -32,6 +32,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.options.MiscTabOptions;
+import org.dpsoftware.managers.FirmwareStateSync;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.DeviceDto;
@@ -138,6 +139,7 @@ public class DeviceEndpointHandler {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_UNAVAILABLE, "MQTT is disconnected");
             return;
         }
+        FirmwareStateSync.invalidate();
         applyDeviceState(config, payload);
         ObjectNode command = payload.deepCopy();
         command.put(Constants.MAC, device.getMac());

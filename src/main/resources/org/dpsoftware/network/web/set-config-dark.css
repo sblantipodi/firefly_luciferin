@@ -352,6 +352,48 @@ body.server-down > :not(#offlineOverlay) {
     margin: 0 auto;
 }
 
+#picker .IroWheel {
+    position: relative;
+    border-radius: 50%;
+}
+
+#picker .IroWheel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: picker-glow-pulse-dark 3s ease-in-out infinite;
+    opacity: 1;
+    transition: opacity 0.4s ease-in-out;
+}
+
+#picker.lights-off .IroWheel::after {
+    opacity: 0;
+}
+
+@keyframes picker-glow-pulse-dark {
+    0%, 100% {
+        box-shadow: 0 0 0 1px rgba(var(--picker-glow-rgb, 0, 145, 255), 0.35),
+        0 0 10px 2px rgba(var(--picker-glow-rgb, 0, 145, 255), 0.5),
+        0 0 20px 4px rgba(var(--picker-glow-rgb, 0, 145, 255), 0.25);
+    }
+    50% {
+        box-shadow: 0 0 0 1px rgba(var(--picker-glow-rgb, 0, 145, 255), 0.55),
+        0 0 16px 3px rgba(var(--picker-glow-rgb, 0, 145, 255), 0.75),
+        0 0 28px 6px rgba(var(--picker-glow-rgb, 0, 145, 255), 0.4);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #picker .IroWheel::after {
+        animation: none;
+    }
+}
+
 #toggleLED {
     font-size: 1.8rem;
     font-weight: bold;

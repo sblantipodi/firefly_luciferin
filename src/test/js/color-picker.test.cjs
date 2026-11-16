@@ -6,8 +6,32 @@ const vm = require('node:vm');
 const path = require('node:path');
 
 function setup(effect = 'Bias light') {
+    const styleProps = {};
+    const classes = new Set();
     const elements = {
-        picker: {},
+        picker: {
+            classList: {
+                add(c) {
+                    classes.add(c);
+                },
+                remove(c) {
+                    classes.delete(c);
+                },
+                contains(c) {
+                    return classes.has(c);
+                },
+                toggle(c, force) {
+                    if (force === undefined) force = !classes.has(c);
+                    if (force) classes.add(c); else classes.delete(c);
+                    return force;
+                }
+            },
+            style: {
+                setProperty(name, value) {
+                    styleProps[name] = value;
+                }
+            }
+        },
         settingsLogo: {
             listeners: {}, attributes: {},
             addEventListener(name, callback) { this.listeners[name] = callback; },
@@ -53,7 +77,7 @@ function setup(effect = 'Bias light') {
     }
     context.initColorPicker();
     context.wireSettingsLogo();
-    return {elements, handlers, requests, messages, context, finishEffect};
+    return {elements, handlers, requests, messages, context, finishEffect, styleProps, classes};
 }
 
 const color = {rgb: {r: 10, g: 20, b: 30}};
@@ -151,4 +175,29 @@ test('Enter and Space activate the logo without scrolling or submitting the form
     }
     assert.equal(clicks, 2);
     assert.equal(prevented, 2);
+});
+
+test('color picker updates the glow custom properties on init, input change and prefs sync', () => {
+    const {handlers, context, styleProps} = setup();
+    assert.equal(styleProps['--picker-glow-rgb'], '255, 38, 0');
+    assert.equal(styleProps['--picker-glow-color'], 'rgb(255, 38, 0)');
+
+    handlers['input:change']({rgb: {r: 0, g: 145, b: 255}});
+    assert.equal(styleProps['--picker-glow-rgb'], '0, 145, 255');
+    assert.equal(styleProps['--picker-glow-color'], 'rgb(0, 145, 255)');
+
+    context.applyPrefs({toggle: '1', cp: '120,250,50', effect: 'Solid'});
+    assert.equal(styleProps['--picker-glow-rgb'], '120, 250, 50');
+    assert.equal(styleProps['--picker-glow-color'], 'rgb(120, 250, 50)');
+});
+
+test('glow fades away by adding lights-off class when LEDs are turned off and restores it when on', () => {
+    const {context, classes} = setup();
+    assert.equal(classes.has('lights-off'), false);
+
+    context.applyPrefs({toggle: '0', cp: '120,250,50', effect: 'Solid'});
+    assert.equal(classes.has('lights-off'), true);
+
+    context.applyPrefs({toggle: '1', cp: '120,250,50', effect: 'Solid'});
+    assert.equal(classes.has('lights-off'), false);
 });

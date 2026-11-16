@@ -112,6 +112,7 @@ public class NetworkManager implements MqttCallback {
      * @return TCP response if it's converted in an HTTP request
      */
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg, int qos) {
+        if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT))) FirmwareStateSync.invalidate();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             if (MainSingleton.getInstance().config.isMqttEnable() && !forceHttpRequest && ManagerSingleton.getInstance().client != null) {
                 String swappedMsg = swapMac(msg, null);
@@ -538,6 +539,7 @@ public class NetworkManager implements MqttCallback {
      * Set effect
      */
     public static void setEffect(String message) {
+        FirmwareStateSync.invalidate();
         String previousEffect = MainSingleton.getInstance().config.getEffect();
         MainSingleton.getInstance().config.setEffect(message);
         CommonUtility.sleepMilliseconds(200);
@@ -599,10 +601,8 @@ public class NetworkManager implements MqttCallback {
      */
     private void manageEffect(String message) {
         if (MainSingleton.getInstance().config != null) {
-            CommonUtility.delayMilliseconds(() -> {
-                log.info("Setting mode via MQTT - {}", message);
-                setEffect(message);
-            }, 200);
+            log.info("Synchronizing mode from firmware via MQTT - {}", message);
+            FirmwareStateSync.effectChanged(message);
         }
     }
 

@@ -144,6 +144,10 @@ export function fillPickerControls() {
     var toggle = document.getElementById('toggleLED');
     toggle.textContent = deviceState.on ? (state.fieldLabels.turnLedOff || 'Turn OFF') : (state.fieldLabels.turnLedOn || 'Turn ON');
     toggle.className = 'btn ' + (deviceState.on ? 'btn-primary' : 'btn-outline-primary') + ' w-100';
+    var picker = document.getElementById('picker');
+    if (picker && picker.classList) {
+        picker.classList.toggle('lights-off', !deviceState.on);
+    }
 }
 
 // Applies the device's live preferences (LED state, white temperature, color, effect) to the UI controls and local state.
@@ -166,6 +170,7 @@ function applyPrefs(prefs) {
                 if (picker && colorPicker) {
                     colorPicker.color.rgb = lastColor;
                 }
+                updatePickerGlow(lastColor);
                 var effectSelect = document.getElementById('effectSelect');
                 var effectOption = Array.from(effectSelect.options).find(function (option) {
                     return option.value === prefs.effect || option.label === prefs.effect;
@@ -235,6 +240,10 @@ function setToggleUi(on) {
         formButton.classList.toggle('btn-primary', on);
         formButton.classList.toggle('btn-outline-primary', !on);
     }
+    var picker = document.getElementById('picker');
+    if (picker && picker.classList) {
+        picker.classList.toggle('lights-off', !on);
+    }
 }
 
 // Sends through Firefly so its runtime color stays in sync and MQTT avoids the firmware's HTTP effect notification.
@@ -295,6 +304,25 @@ export function wireSettingsLogo() {
     });
 }
 
+// Updates the custom properties on the picker element to reflect the current glow color.
+export function updatePickerGlow(color) {
+    var picker = document.getElementById('picker');
+    if (!picker || !color) {
+        return;
+    }
+    var rgb = color.rgb || (typeof color.r === 'number' ? color : null);
+    if (!rgb || typeof rgb.r !== 'number' || typeof rgb.g !== 'number' || typeof rgb.b !== 'number') {
+        return;
+    }
+    if (picker.style && typeof picker.style.setProperty === 'function') {
+        var r = Math.round(rgb.r);
+        var g = Math.round(rgb.g);
+        var b = Math.round(rgb.b);
+        picker.style.setProperty('--picker-glow-rgb', r + ', ' + g + ', ' + b);
+        picker.style.setProperty('--picker-glow-color', 'rgb(' + r + ', ' + g + ', ' + b + ')');
+    }
+}
+
 // Initializes the iro color picker, the LED toggle button and the output device select; color changes are pushed to the device immediately.
 export function initColorPicker() {
     var pickerEl = document.getElementById('picker');
@@ -305,15 +333,24 @@ export function initColorPicker() {
         width: 288,
         color: '#0091ff'
     });
+    if (pickerEl.classList) {
+        pickerEl.classList.toggle('lights-off', !deviceState.on);
+    }
+    updatePickerGlow(colorPicker.color && colorPicker.color.rgb ? colorPicker.color : lastColor);
+    colorPicker.on('color:change', function (color) {
+        updatePickerGlow(color);
+    });
     colorPicker.on('input:start', function () {
         colorInputActive = true;
     });
     colorPicker.on('input:change', function (color) {
         lastColor = color.rgb;
+        updatePickerGlow(color);
     });
     colorPicker.on(['input:end'], async function (color) {
         colorInputActive = false;
         lastColor = color.rgb;
+        updatePickerGlow(color);
         colorPendingUntil = Date.now() + 7000;
         var payload = buildPayload();
         var effectSelect = document.getElementById('effectSelect');
