@@ -154,7 +154,7 @@ public class Constants {
     public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_right_gold.png";
     public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF = "/org/dpsoftware/gui/img/luciferin_logo_right_gold_off.png";
     public static final String UNICODE_X = "✖";
-    public static final int REMOVE_BTN_TABLE = 35;
+    public static final int REMOVE_BTN_TABLE = 37;
     public static final String FXML = ".fxml";
     public static final String FXML_SETTINGS = "settings";
     public static final String FXML_SETTINGS_CUSTOM_BAR = "settingsCustomBar";
