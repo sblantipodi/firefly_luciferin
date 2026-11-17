@@ -26,6 +26,8 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.InstanceConfigurer;
+import org.dpsoftware.grabber.CaptureMethodSelection;
+import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -37,9 +39,51 @@ import org.mockito.MockedStatic;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.*;
 
 class AutomaticCapturePersistenceTest {
+    @ParameterizedTest
+    @CsvSource({
+            "true, false, true, false, DDUPL_DX12, DDUPL_DX12",
+            "false, false, true, false, XIMAGESRC, XIMAGESRC_NVIDIA",
+            "false, true, true, false, PIPEWIREXDG, PIPEWIREXDG_NVIDIA",
+            "true, false, false, false, WIN_USB_VIDEO, WIN_USB_VIDEO",
+            "false, false, false, false, USB_VIDEO, USB_VIDEO_NVIDIA",
+            "false, true, false, false, USB_VIDEO, USB_VIDEO_NVIDIA",
+            "true, false, true, true, WIN_USB_VIDEO, WIN_USB_VIDEO",
+            "false, true, true, true, USB_VIDEO, USB_VIDEO_NVIDIA"
+    })
+    void headlessUsesAvailableDisplayUnlessUsbIsConfigured(boolean windows, boolean wayland,
+                                                           boolean displayAvailable, boolean usb,
+                                                           String startupMethod, String firstCandidate,
+                                                           @TempDir Path directory) throws Exception {
+        MainSingleton main = new MainSingleton();
+        main.setHeadlessMode(true);
+        try (var singleton = mockStatic(MainSingleton.class);
+             var paths = mockStatic(InstanceConfigurer.class);
+             var os = mockStatic(NativeExecutor.class);
+             var displays = mockConstruction(DisplayManager.class, (display, context) ->
+                     when(display.getDisplayInfo(1)).thenReturn(displayAvailable ? new DisplayInfo() : null))) {
+            singleton.when(MainSingleton::getInstance).thenReturn(main);
+            paths.when(InstanceConfigurer::getConfigPath).thenReturn(directory.toString());
+            os.when(NativeExecutor::isWindows).thenReturn(windows);
+            os.when(NativeExecutor::isWayland).thenReturn(wayland);
+            Configuration config = new Configuration();
+            config.setMonitorNumber(1);
+            if (usb) {
+                config.setCaptureDevice(new CaptureDeviceUtilities.BestCaptureFormat());
+            }
+            StorageManager storage = new StorageManager();
+            storage.resolveAutomaticCapture(config);
+
+            assertEquals(startupMethod, config.getCaptureMethod());
+            CaptureMethodSelection selection = new CaptureMethodSelection(windows, false, wayland, config.isUsbCaptureSource());
+            assertEquals(firstCandidate, selection.current().name());
+            assertEquals("AUTO", storage.readConfigFile(Constants.CONFIG_FILENAME).getCaptureMethod());
+            assertTrue(config.isAutomaticCapturePending());
+        }
+    }
+
     @ParameterizedTest
     @CsvSource({
             "XIMAGESRC, false, false, XIMAGESRC",

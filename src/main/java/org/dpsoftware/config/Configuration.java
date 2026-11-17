@@ -33,6 +33,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.options.SatellitesOptions;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
@@ -212,6 +213,15 @@ public class Configuration implements Cloneable {
         return captureDevice != null;
     }
 
+    /**
+     * Use USB for an external source, or as the headless fallback when the selected display is unavailable.
+     */
+    @JsonIgnore
+    public boolean isUsbCaptureSource() {
+        return hasCaptureDevice() || (MainSingleton.getInstance().isHeadlessMode()
+                && new DisplayManager().getDisplayInfo(monitorNumber) == null);
+    }
+
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
@@ -336,25 +346,13 @@ public class Configuration implements Cloneable {
 
         public static CaptureMethod defaultForOs() {
             if (NativeExecutor.isWindows()) {
-                if (!MainSingleton.getInstance().isHeadlessMode()) {
-                    return DDUPL_DX12;
-                } else {
-                    return WIN_USB_VIDEO;
-                }
+                return DDUPL_DX12;
             } else if (NativeExecutor.isMac()) {
                 return AVFVIDEOSRC;
             } else if (NativeExecutor.isWayland()) {
-                if (!MainSingleton.getInstance().isHeadlessMode()) {
-                    return PIPEWIREXDG;
-                } else {
-                    return USB_VIDEO;
-                }
+                return PIPEWIREXDG;
             } else {
-                if (!MainSingleton.getInstance().isHeadlessMode()) {
-                    return XIMAGESRC;
-                } else {
-                    return USB_VIDEO;
-                }
+                return XIMAGESRC;
             }
         }
     }

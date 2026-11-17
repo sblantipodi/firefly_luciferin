@@ -122,7 +122,7 @@ public class GrabberManager {
         Gst.init(Version.of(1, 14), Constants.SCREEN_GRABBER, "");
         AtomicInteger pipelineRetry = new AtomicInteger();
         if (main.getConfig().isAutomaticCapturePending()) {
-            boolean usb = main.getConfig().hasCaptureDevice() || main.isHeadlessMode();
+            boolean usb = main.getConfig().isUsbCaptureSource();
             captureSelection = new CaptureMethodSelection(NativeExecutor.isWindows(), NativeExecutor.isMac(),
                     NativeExecutor.isWayland(), usb);
         }

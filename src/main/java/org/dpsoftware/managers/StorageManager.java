@@ -148,7 +148,7 @@ public class StorageManager {
         if (config.getCaptureMethod() == null || config.getCaptureMethod().isBlank()
                 || Configuration.CaptureMethod.AUTO.name().equals(config.getCaptureMethod())) {
             config.setAutomaticCapturePending(true);
-            config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.hasCaptureDevice()).name());
+            config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.isUsbCaptureSource()).name());
             writeConfig(config, null);
             log.info("Automatic capture: using startup method {}, keeping AUTO saved until selection completes", config.getCaptureMethod());
         }
