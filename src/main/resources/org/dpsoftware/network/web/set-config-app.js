@@ -100,19 +100,9 @@ function syncImprovEthernetFields() {
 // Replaces an editable combo box's suggestions while preserving a manually entered value.
 function updateImprovSuggestions(id, values) {
     var input = document.getElementById(id);
-    if (id === 'improvComPort') {
-        updateEditableComboOptions(id, (values || []).map(function (value) {
-            return {value: value, label: value};
-        }));
-    } else {
-        var list = document.getElementById(id + 'List');
-        list.replaceChildren();
-        (values || []).forEach(function (value) {
-            var option = document.createElement('option');
-            option.value = value;
-            list.appendChild(option);
-        });
-    }
+    updateEditableComboOptions(id, (values || []).map(function (value) {
+        return {value: value, label: value};
+    }));
     if (!input.value && values && values.length && id === 'improvComPort') {
         input.value = values[0];
     }

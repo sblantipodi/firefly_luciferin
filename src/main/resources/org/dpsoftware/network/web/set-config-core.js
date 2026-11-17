@@ -80,7 +80,7 @@ function buildFieldHtml(f) {
             + '<input type="file" id="cubeLutFile" accept=".cube" hidden></div>';
     }
     if (f.type === 'combo') {
-        if (['serialPort', 'desiredFramerate', 'improvComPort'].includes(f.id)) {
+        if (['serialPort', 'desiredFramerate', 'improvSsid', 'improvComPort'].includes(f.id)) {
             return '<div class="form-group">' + buildEditableComboHtml(f.id, lbl,
                 f.id === 'serialPort' ? [] : optionsFor(f)) + '</div>';
         }
