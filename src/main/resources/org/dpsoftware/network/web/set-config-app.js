@@ -308,6 +308,8 @@ function localizeSettingsPage() {
         ['newProfileName', 'newProfileName', 'placeholder'],
         ['addProfile', 'addProfile', 'textContent'],
         ['appLog', 'openLog', 'textContent'],
+        ['pauseLogScroll', 'pauseLogScroll', 'textContent'],
+        ['copyLog', 'copyLog', 'textContent'],
         ['runtimeLogLevelLabel', 'logLevel', 'textContent']
     ];
     fields.forEach(function (entry) {
@@ -446,15 +448,64 @@ function revealSettingsPage() {
     document.getElementById('settingsContainer').classList.add('page-ready');
 }
 
-// Poll only while the log accordion is open; each response contains at most 1000 lines.
+// Copies log text even on LAN HTTP pages where the Clipboard API is unavailable.
+async function copyLogToClipboard(contents) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(contents);
+            return;
+        } catch (error) {
+            // Try the browser's legacy copy action when clipboard permissions are denied.
+        }
+    }
+    var focused = document.activeElement;
+    var textarea = document.createElement('textarea');
+    textarea.value = contents;
+    textarea.readOnly = true;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    try {
+        textarea.focus({preventScroll: true});
+        textarea.select();
+        if (!document.execCommand('copy')) {
+            throw new Error('Copy failed');
+        }
+    } finally {
+        textarea.remove();
+        if (focused) focused.focus({preventScroll: true});
+    }
+}
+
+// Color each entry by its level, including continuation lines, while keeping log messages as plain text.
+function renderLog(output, contents) {
+    var fragment = document.createDocumentFragment();
+    var level;
+    contents.split(/(?<=\n)/).forEach(function (line) {
+        var header = line.match(/^(?:\[Instance #\d+\]\s+)?\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}[,.]\d+\s+(TRACE|DEBUG|INFO|WARN|ERROR)\b/);
+        if (header) level = header[1];
+        var span = document.createElement('span');
+        if (['DEBUG', 'WARN', 'ERROR'].includes(level)) {
+            span.className = 'app-log-' + level.toLowerCase();
+        }
+        span.textContent = line;
+        fragment.appendChild(span);
+    });
+    output.replaceChildren(fragment);
+}
+
+// Freeze the displayed snapshot while paused so the rolling 1000-line tail cannot shift old entries.
 function wireLogAccordion() {
     var panel = document.getElementById('section-log');
     var output = document.getElementById('appLog');
+    var pauseButton = document.getElementById('pauseLogScroll');
+    var copyButton = document.getElementById('copyLog');
     var timer;
     var loading = false;
+    var paused = false;
 
     function refreshLog() {
-        if (loading) {
+        if (loading || paused) {
             return;
         }
         loading = true;
@@ -467,18 +518,45 @@ function wireLogAccordion() {
             }
             return response.text();
         }).then(function (contents) {
-            if (panel.classList.contains('show')) {
-                output.textContent = contents || 'Log file is empty.';
+            if (panel.classList.contains('show') && !paused) {
+                renderLog(output, contents || 'Log file is empty.');
                 output.scrollTop = output.scrollHeight;
             }
         }).catch(function (error) {
-            if (panel.classList.contains('show')) {
+            if (panel.classList.contains('show') && !paused) {
                 output.textContent = 'Unable to load log: ' + error.message;
             }
         }).finally(function () {
             loading = false;
         });
     }
+
+    pauseButton.addEventListener('click', function () {
+        paused = !paused;
+        pauseButton.setAttribute('aria-pressed', String(paused));
+        pauseButton.textContent = paused
+            ? (state.fieldLabels['web.resumeLogScroll'] || 'Resume auto-scroll')
+            : (state.fieldLabels['web.pauseLogScroll'] || 'Pause auto-scroll');
+        if (!paused) {
+            output.scrollTop = output.scrollHeight;
+            refreshLog();
+        }
+    });
+    copyButton.addEventListener('click', async function () {
+        copyButton.disabled = true;
+        try {
+            var response = await fetch('log?full=true', {cache: 'no-store'});
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            await copyLogToClipboard(await response.text());
+            showToast(state.fieldLabels['web.logCopied'] || 'Log copied to clipboard.', 'bg-success text-white');
+        } catch (error) {
+            showToast(state.fieldLabels['web.logCopyError'] || 'Unable to copy log to clipboard.', 'bg-danger text-white');
+        } finally {
+            copyButton.disabled = false;
+        }
+    });
 
     panel.addEventListener('shown.bs.collapse', function () {
         refreshLog();

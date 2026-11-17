@@ -750,12 +750,30 @@ body.server-down > :not(#offlineOverlay) {
     color: #fff;
 }
 
+.app-log-actions > .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
+}
+
 .app-log {
     max-height: 28rem;
     overflow: auto;
     white-space: pre;
     font-size: 0.8rem;
     margin-bottom: 0;
+}
+
+.app-log-debug {
+    color: #198754;
+}
+
+.app-log-warn {
+    color: #b85c00;
+}
+
+.app-log-error {
+    color: #dc3545;
 }
 
 .directional-field label {

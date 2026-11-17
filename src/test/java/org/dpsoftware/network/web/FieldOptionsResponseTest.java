@@ -57,6 +57,9 @@ class FieldOptionsResponseTest {
         assertEquals("1.0", response.get("options").get("brightnessLimiter").get("options").get(0).get("value").asText());
         assertNotNull(response.get("labels").get("ldrLabel"));
         assertNotNull(response.get("labels").get("web.logLevel"));
+        for (String key : new String[]{"pauseLogScroll", "resumeLogScroll", "copyLog", "logCopied", "logCopyError"}) {
+            assertNotNull(response.get("labels").get("web." + key));
+        }
         assertNotNull(response.get("labels").get("web.device.reachable"));
         assertNotNull(response.get("labels").get("web.device.unreachable"));
         assertNotNull(response.get("labels").get("satelliteAdd"));

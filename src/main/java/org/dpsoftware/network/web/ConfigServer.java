@@ -162,8 +162,13 @@ public class ConfigServer {
         return String.join("\n", lines);
     }
 
+    static String readLog(Path logFile, String query) throws IOException {
+        boolean full = query != null && Arrays.asList(query.split("&")).contains("full=true");
+        return full ? Files.readString(logFile, StandardCharsets.UTF_8) : tailLog(logFile);
+    }
+
     /**
-     * Return at most the last 1000 lines of the active application log.
+     * Return the last 1000 lines, or the complete active log for clipboard requests.
      */
     private void handleGetLog(HttpExchange exchange) throws IOException {
         Path logFile = Path.of(InstanceConfigurer.getConfigPath(), "logs", "FireflyLuciferin.log");
@@ -172,7 +177,8 @@ public class ConfigServer {
             return;
         }
         exchange.getResponseHeaders().set("Cache-Control", "no-store");
-        HttpResponses.sendText(exchange, HttpURLConnection.HTTP_OK, tailLog(logFile));
+        HttpResponses.sendText(exchange, HttpURLConnection.HTTP_OK,
+                readLog(logFile, exchange.getRequestURI().getRawQuery()));
     }
 
     /**

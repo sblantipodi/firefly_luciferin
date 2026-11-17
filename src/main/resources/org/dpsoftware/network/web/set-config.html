@@ -207,6 +207,14 @@
             <option value="TRACE">TRACE</option>
         </select>
     </div>
+    <div class="app-log-actions d-flex gap-2 mb-2">
+        <button aria-controls="appLog" aria-pressed="false" class="btn btn-sm btn-outline-secondary"
+                id="pauseLogScroll" type="button">Pause auto-scroll
+        </button>
+        <button aria-controls="appLog" class="btn btn-sm btn-outline-secondary" id="copyLog"
+                type="button">Copy to clipboard
+        </button>
+    </div>
     <pre aria-live="off" class="app-log" id="appLog" role="log">Open LOG to load the latest entries.</pre>
 </template>
 

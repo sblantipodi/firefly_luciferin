@@ -30,8 +30,8 @@ import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.lut.CubeLutToneMap;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.*;
@@ -243,6 +243,7 @@ public record FieldOptions(List<Option> options, String type) {
         Map<String, String> labels = new LinkedHashMap<>();
         for (String key : List.of("saveSettings", "showPreview", "hidePreview", "showLedLayout", "hideLedLayout", "newProfileName",
                 "addProfile", "profileHelp", "openLog", "logLevel", "traceWarning", "restartConfirm", "settingsSaved",
+                "pauseLogScroll", "resumeLogScroll", "copyLog", "logCopied", "logCopyError",
                 "wholeNumber", "validGroup", "profilePrefix", "collectError",
                 "device.reachable", "device.unreachable")) {
             labels.put("web." + key, CommonUtility.getWord("web." + key));

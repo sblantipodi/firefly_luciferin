@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.IntStream;
@@ -54,5 +55,20 @@ class ConfigServerLogTest {
         Files.writeString(log, "first\nsecond\n");
 
         assertEquals("first\nsecond", ConfigServer.tailLog(log));
+    }
+
+    @Test
+    void fullLogRequestIncludesAllLinesWhilePollingStillReturnsTheTail() throws IOException {
+        Path log = tempDir.resolve("logs/FireflyLuciferin.log");
+        Files.createDirectories(log.getParent());
+        String contents = String.join("\r\n", IntStream.rangeClosed(1, 1500)
+                .mapToObj(i -> "riga è " + i).toList()) + "\r\n";
+        Files.writeString(log, contents, StandardCharsets.UTF_8);
+        for (String query : new String[]{"full=true", "other=1&full=true"}) {
+            assertEquals(contents, ConfigServer.readLog(log, query));
+        }
+        for (String query : new String[]{null, "full=false", "notfull=true"}) {
+            assertEquals(ConfigServer.tailLog(log), ConfigServer.readLog(log, query));
+        }
     }
 }

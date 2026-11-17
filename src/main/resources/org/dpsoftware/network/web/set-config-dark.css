@@ -20,6 +20,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+.app-log-debug {
+    color: #75d99b;
+}
+
+.app-log-warn {
+    color: #ffb454;
+}
+
+.app-log-error {
+    color: #ff8585;
+}
+
 /* A softer dark palette for the web configuration page. */
 :root {
     color-scheme: dark;
