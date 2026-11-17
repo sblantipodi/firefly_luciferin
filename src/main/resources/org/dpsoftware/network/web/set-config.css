@@ -474,7 +474,7 @@ body.server-down > :not(#offlineOverlay) {
     margin: 0 auto;
 }
 
-/* A few tiny embers rise from the wheel's rim, inheriting its live glow color. */
+/* Mixed-size embers rise from the wheel's rim, inheriting its live glow color. */
 #picker .picker-embers {
     position: absolute;
     top: 0;

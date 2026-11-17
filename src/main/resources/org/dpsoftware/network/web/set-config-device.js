@@ -329,7 +329,7 @@ function initPickerEmbers(pickerEl) {
         var angle = Math.random() * Math.PI * 2;
         ember.style.setProperty('--ember-x', (50 + Math.cos(angle) * 50) + '%');
         ember.style.setProperty('--ember-y', (50 + Math.sin(angle) * 50) + '%');
-        var size = Math.random() < 0.2 ? 2.5 + Math.random() * 1.5 : 1 + Math.random();
+        var size = Math.random() < 0.25 ? 3.5 + Math.random() * 2.5 : 1 + Math.random();
         ember.style.setProperty('--ember-size', size + 'px');
         ember.style.setProperty('--ember-drift',
             (Math.cos(angle) * (10 + Math.random() * 12) + Math.random() * 10 - 5) + 'px');
