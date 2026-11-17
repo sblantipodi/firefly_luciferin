@@ -21,15 +21,94 @@
 */
 package org.dpsoftware.managers;
 
+import javafx.application.Platform;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.config.Configuration;
+import org.dpsoftware.gui.GuiManager;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for {@link NetworkManager#isValidIp(String)}.
+ * Unit tests for MQTT connection state and IPv4 validation.
  */
 class NetworkManagerTest {
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void mqttWarningTracksInitialFailureConnectionLossAndRecovery(boolean headless) throws Exception {
+        MainSingleton main = new MainSingleton();
+        main.headlessMode = headless;
+        main.config = new Configuration();
+        main.config.setMqttEnable(true);
+        main.config.setMqttServer("tcp://localhost:1883");
+        main.guiManager = mock(GuiManager.class);
+        ManagerSingleton state = new ManagerSingleton();
+        AtomicBoolean failConnect = new AtomicBoolean(true);
+        AtomicBoolean failSubscribe = new AtomicBoolean(false);
+        try (var singleton = mockStatic(MainSingleton.class);
+             var managers = mockStatic(ManagerSingleton.class);
+             var platform = mockStatic(Platform.class);
+             var clients = mockConstruction(MqttClient.class, (client, context) -> {
+                 doAnswer(invocation -> {
+                     if (failConnect.get()) throw new MqttException(MqttException.REASON_CODE_SERVER_CONNECT_ERROR);
+                     return null;
+                 }).when(client).connect(any(MqttConnectOptions.class));
+                 doAnswer(invocation -> {
+                     if (failSubscribe.get()) throw new MqttException(MqttException.REASON_CODE_CLIENT_NOT_CONNECTED);
+                     return null;
+                 }).when(client).subscribe(anyString());
+             })) {
+            singleton.when(MainSingleton::getInstance).thenReturn(main);
+            managers.when(ManagerSingleton::getInstance).thenReturn(state);
+            NetworkManager network = new NetworkManager(true, new AtomicInteger(3));
+            assertFalse(network.connected);
+            assertTrue(state.mqttConnectionError);
+            platform.verify(() -> Platform.runLater(any(Runnable.class)), times(headless ? 0 : 1));
+
+            failConnect.set(false);
+            network.attemptReconnect();
+            assertTrue(network.connected);
+            assertFalse(state.mqttConnectionError);
+
+            var scheduler = mock(ScheduledExecutorService.class);
+            try (var executors = mockStatic(Executors.class);
+                 var pipelines = mockStatic(PipelineManager.class)) {
+                executors.when(() -> Executors.newScheduledThreadPool(1)).thenReturn(scheduler);
+                network.connectionLost(new IllegalStateException("Broker offline"));
+                assertFalse(network.connected);
+                assertTrue(state.mqttConnectionError);
+                var retry = ArgumentCaptor.forClass(Runnable.class);
+                verify(scheduler).scheduleAtFixedRate(retry.capture(), eq(0L), eq(10L), eq(TimeUnit.SECONDS));
+
+                failSubscribe.set(true);
+                retry.getValue().run();
+                assertTrue(state.mqttConnectionError);
+                assertFalse(network.connected);
+                verify(scheduler, never()).shutdown();
+
+                failSubscribe.set(false);
+                retry.getValue().run();
+                assertFalse(state.mqttConnectionError);
+                assertTrue(network.connected);
+                verify(scheduler).shutdown();
+            }
+        }
+    }
 
     @Test
     void isValidIp_validIpv4Addresses() {

@@ -82,7 +82,9 @@ public class NetworkManager implements MqttCallback {
             attemptReconnect();
         } catch (MqttException | RuntimeException e) {
             connected = false;
-            if (showErrorIfAny && retryCounter.get() == 3) {
+            ManagerSingleton.getInstance().mqttConnectionError = true;
+            if (showErrorIfAny && retryCounter.get() == 3
+                    && !MainSingleton.getInstance().isHeadlessMode() && MainSingleton.getInstance().guiManager != null) {
                 Platform.runLater(() -> MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.MQTT_ERROR_TITLE,
                         LabelKey.MQTT_ERROR_CONTEXT, LabelKey.MQTT_ERROR_TITLE, TrayIcon.MessageType.ERROR));
             }
@@ -702,6 +704,7 @@ public class NetworkManager implements MqttCallback {
     public void connectionLost(Throwable cause) {
         log.error("Connection Lost");
         connected = false;
+        ManagerSingleton.getInstance().mqttConnectionError = true;
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         if (scheduledMqttFuture == null || scheduledMqttFuture.isDone()) {
             scheduledMqttFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -718,6 +721,7 @@ public class NetworkManager implements MqttCallback {
                         ManagerSingleton.getInstance().client.setCallback(this);
                         subscribeToTopics();
                         connected = true;
+                        ManagerSingleton.getInstance().mqttConnectionError = false;
                         log.info(Constants.MQTT_RECONNECTED);
                         PipelineManager.restartCapture(() -> log.info("Restarting upon disconnection."));
                         scheduledExecutorService.shutdown();
@@ -835,6 +839,7 @@ public class NetworkManager implements MqttCallback {
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
         connected = true;
+        ManagerSingleton.getInstance().mqttConnectionError = false;
     }
 
 }

@@ -111,6 +111,18 @@ export function pollServerStatus(force) {
         if (satelliteWaitingNotice) {
             satelliteWaitingNotice.hidden = !fps.waitingForSatellites;
         }
+        var captureSourceUnavailableNotice = document.getElementById('captureSourceUnavailableNotice');
+        if (captureSourceUnavailableNotice) {
+            var captureWarning = typeof fps.captureSourceUnavailable === 'string' ? fps.captureSourceUnavailable : '';
+            captureSourceUnavailableNotice.textContent = captureWarning;
+            captureSourceUnavailableNotice.hidden = captureWarning.length === 0;
+        }
+        var mqttConnectionErrorNotice = document.getElementById('mqttConnectionErrorNotice');
+        if (mqttConnectionErrorNotice) {
+            var mqttWarning = typeof fps.mqttConnectionError === 'string' ? fps.mqttConnectionError : '';
+            mqttConnectionErrorNotice.textContent = mqttWarning;
+            mqttConnectionErrorNotice.hidden = mqttWarning.length === 0;
+        }
         if (!serverOnline) {
             serverOnline = true;
             document.body.classList.remove('server-down');

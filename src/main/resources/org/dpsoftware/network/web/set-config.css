@@ -253,7 +253,9 @@ body {
 
 .firefly-update-notice,
 .glow-worm-update-available-notice,
-.satellite-waiting-notice {
+.satellite-waiting-notice,
+.capture-source-unavailable-notice,
+.mqtt-connection-error-notice {
     padding: 0.55rem 1rem;
     border-bottom: 1px solid #e8b956;
     background: #fff3cd;

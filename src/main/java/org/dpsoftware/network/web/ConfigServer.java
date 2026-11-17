@@ -32,6 +32,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.grabber.WebRtcStreamer;
 import org.dpsoftware.gui.GuiSingleton;
@@ -40,6 +41,7 @@ import org.dpsoftware.gui.controllers.DisplayDialogController;
 import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.gui.trayicon.TrayIconState;
 import org.dpsoftware.lut.CubeLutToneMap;
+import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
@@ -133,6 +135,7 @@ public class ConfigServer {
      */
     private void handleGetFps(HttpExchange exchange) throws IOException {
         double adaptiveGamma = Double.longBitsToDouble(ImageProcessor.currentGammaAtomic.get());
+        String unavailableSource = GrabberSingleton.getInstance().unavailableCaptureSource;
         // The pipeline may detect incompatible firmware before the update scan runs.
         HttpResponses.sendJson(exchange, new FpsDto(
                 MainSingleton.getInstance().FPS_PRODUCER,
@@ -145,7 +148,11 @@ public class ConfigServer {
                 Double.isFinite(adaptiveGamma) ? adaptiveGamma : null,
                 MainSingleton.getInstance().isHdrActive(),
                 MainSingleton.getInstance().config.getDefaultLedMatrix(),
-                SmoothingOptions.statusLabel(MainSingleton.getInstance().config)));
+                SmoothingOptions.statusLabel(MainSingleton.getInstance().config),
+                unavailableSource == null ? null : CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_UNAVAILABLE_CONTEXT)
+                        .replace("{0}", unavailableSource),
+                MainSingleton.getInstance().config.isMqttEnable() && ManagerSingleton.getInstance().mqttConnectionError
+                        ? CommonUtility.getWord(LabelKey.MQTT_ERROR_CONTEXT) : null));
     }
 
     static String tailLog(Path logFile) throws IOException {
@@ -804,9 +811,12 @@ public class ConfigServer {
      * @param hdrActive whether HDR has been detected
      * @param aspectRatio current capture aspect ratio, including automatic black bar detection
      * @param smoothing localized smoothing level, empty when smoothing is disabled
+     * @param captureSourceUnavailable localized warning for the missing capture source, null when available
+     * @param mqttConnectionError localized warning for a failed MQTT connection, null when connected or disabled
      */
     public record FpsDto(float producing, float consuming, boolean fireflyUpdateAvailable,
                          boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, boolean waitingForSatellites, String trayIconImage,
-                         Double adaptiveGamma, boolean hdrActive, String aspectRatio, String smoothing) {
+                         Double adaptiveGamma, boolean hdrActive, String aspectRatio, String smoothing,
+                         String captureSourceUnavailable, String mqttConnectionError) {
     }
 }

@@ -159,6 +159,7 @@ public class GrabberManager {
             linuxCaptureExecutor = null;
         }
         stopFrameGeneration();
+        GrabberSingleton.getInstance().unavailableCaptureSource = null;
     }
 
     /**
@@ -224,6 +225,10 @@ public class GrabberManager {
             }
         } else {
             pipelineRetry.set(0);
+            if (main.FPS_PRODUCER_COUNTER > 0) {
+                missingSource.set(null);
+                GrabberSingleton.getInstance().unavailableCaptureSource = null;
+            }
         }
         disposePipeline();
     }
@@ -471,9 +476,20 @@ public class GrabberManager {
     }
 
     /**
-     * Returns a description of the missing configured source, or null when it is available.
+     * Publish source availability for the web UI independently of desktop alerts and headless mode.
+     *
+     * @return a description of the missing configured source, or null when it is available
      */
     private String getUnavailableCaptureSource() {
+        String unavailableSource = findUnavailableCaptureSource();
+        GrabberSingleton.getInstance().unavailableCaptureSource = unavailableSource;
+        return unavailableSource;
+    }
+
+    /**
+     * Returns a description of the missing configured source, or null when it is available.
+     */
+    private String findUnavailableCaptureSource() {
         Configuration config = MainSingleton.getInstance().config;
         String method = config.getCaptureMethod();
         boolean usb = Configuration.CaptureMethod.valueOf(method).isUsb();

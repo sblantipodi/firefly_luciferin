@@ -49,6 +49,8 @@ public class ManagerSingleton {
     }
 
     public MqttClient client;
+    // Shared with the web UI until the MQTT connection is restored.
+    public volatile boolean mqttConnectionError = false;
     public Map<String, UdpClient> udpClient;
     public boolean pipelineStarting = false;
     public boolean pipelineStopping = false;

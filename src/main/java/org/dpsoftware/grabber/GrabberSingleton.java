@@ -69,6 +69,8 @@ public class GrabberSingleton {
     public Rectangle rect;
     // GStreamer Rendering pipeline
     public Pipeline pipe;
+    // Shared with the web status endpoint; null when the configured capture source is available.
+    public volatile String unavailableCaptureSource;
     float maxPeak, maxRms = 0;
     float maxPeakLeft, maxRmsLeft = 0;
     float maxPeakRight, maxRmsRight = 0;
