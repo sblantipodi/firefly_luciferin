@@ -298,24 +298,6 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
     }
 
     /**
-     * Update configuration file previous than 2.29.5
-     *
-     * @param config         configuration to update
-     * @param writeToStorage if an update is needed, write to storage
-     * @return true if update is needed
-     */
-    boolean updatePrevious2295(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.29.5")) {
-            if (config.getUdpTrafficClass() != Constants.DEFAULT_UDP_TRAFFIC_CLASS) {
-                config.setUdpTrafficClass(Constants.DEFAULT_UDP_TRAFFIC_CLASS);
-            }
-            config.setGamma(Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma()));
-            writeToStorage = true;
-        }
-        return writeToStorage;
-    }
-
-    /**
      * Update configuration file previous than 3.0.0
      *
      * @param config         configuration to update
@@ -325,6 +307,10 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
     boolean updatePrevious3000(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("3.0.0")) {
             config.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
+            if (config.getUdpTrafficClass() != Constants.DEFAULT_UDP_TRAFFIC_CLASS) {
+                config.setUdpTrafficClass(Constants.DEFAULT_UDP_TRAFFIC_CLASS);
+            }
+            config.setGamma(Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma()));
             writeToStorage = true;
         }
         return writeToStorage;

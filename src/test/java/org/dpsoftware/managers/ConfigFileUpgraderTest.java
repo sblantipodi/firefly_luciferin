@@ -233,17 +233,4 @@ class ConfigFileUpgraderTest {
         assertEquals(Constants.DEFAULT_UDP_TRAFFIC_CLASS, c.getUdpTrafficClass());
     }
 
-    // --- updatePrevious2295 ---
-
-    @Test
-    void updatePrevious2295_resetsUdpTrafficClassAndSetsGamma() {
-        Configuration c = config("2.29.4");
-        c.setUdpTrafficClass(999);
-        c.setGamma(1.0);
-
-        upgrader.updatePrevious2295(c, false);
-
-        assertEquals(Constants.DEFAULT_UDP_TRAFFIC_CLASS, c.getUdpTrafficClass());
-        assertEquals(Double.parseDouble(Enums.Gamma.GAMMA_22.getGamma()), c.getGamma(), 0.01);
-    }
 }
