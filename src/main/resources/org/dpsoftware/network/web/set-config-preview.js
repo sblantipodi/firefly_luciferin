@@ -166,6 +166,7 @@ export function wireLivePreviewButton() {
 // (image mode).
 function setLivePreview(on, useWebrtc) {
     livePreviewOn = on;
+    document.getElementById('livePreviewContainer').hidden = !on;
     updateLedLayout();
     var btn = document.getElementById('showLivePreview');
     if (btn) {

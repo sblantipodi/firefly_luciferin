@@ -301,7 +301,9 @@ body {
 
 .btn-primary:focus,
 .btn-outline-primary:focus,
-.btn-orange:focus {
+.btn-orange:focus,
+#toggleLED:focus,
+.profile-buttons .profile-button:focus {
     box-shadow: 0 0 0 0.2rem rgba(237, 164, 93, 0.3);
 }
 

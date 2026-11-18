@@ -48,9 +48,10 @@ class HtmlElement extends SvgElement {
     }
 }
 
-test('shows the button only with preview open and shows the SVG only after clicking', async () => {
+test('shows the preview container and layout button only while the preview is open', async () => {
     const elements = Object.fromEntries(['showLivePreview', 'showLedLayout', 'screenshot',
-        'livePreviewFallbackNotice'].map(id => [id, new HtmlElement()]));
+        'livePreviewContainer', 'livePreviewFallbackNotice'].map(id => [id, new HtmlElement()]));
+    elements.livePreviewContainer.hidden = true;
     elements.ledLayout = new SvgElement();
     elements.ledLayout.setAttribute('hidden', '');
     const timers = new Map();
@@ -86,10 +87,12 @@ test('shows the button only with preview open and shows the SVG only after click
         .replace(/^import .*;\r?\n/gm, '').replaceAll('export function', 'function');
     vm.runInContext(source, context);
     vm.runInContext('wireLivePreviewButton()', context);
+    assert.equal(elements.livePreviewContainer.hidden, true);
     assert.equal(elements.showLedLayout.hidden, true);
     assert.equal(elements.showLedLayout.disabled, true);
     vm.runInContext('setLivePreview(true, true)', context);
     await new Promise(setImmediate);
+    assert.equal(elements.livePreviewContainer.hidden, false);
     assert.equal(elements.showLedLayout.hidden, false);
     assert.equal(elements.showLedLayout.textContent, 'Show LED layout');
     assert.equal(elements.ledLayout.attributes.has('hidden'), true);
@@ -107,14 +110,17 @@ test('shows the button only with preview open and shows the SVG only after click
     await new Promise(setImmediate);
     assert.equal(elements.ledLayout.attributes.has('hidden'), false);
     vm.runInContext('setLivePreview(false, true)', context);
+    assert.equal(elements.livePreviewContainer.hidden, true);
     assert.equal(elements.showLedLayout.hidden, true);
     assert.equal(elements.showLedLayout.disabled, true);
     assert.equal(elements.ledLayout.attributes.has('hidden'), true);
     assert.equal(timers.size, 0);
     vm.runInContext('setLivePreview(true, false)', context);
     await new Promise(setImmediate);
+    assert.equal(elements.livePreviewContainer.hidden, false);
     assert.equal(elements.ledLayout.attributes.has('hidden'), false);
     assert.equal(timers.size, 2);
     vm.runInContext('setLivePreview(false, true)', context);
+    assert.equal(elements.livePreviewContainer.hidden, true);
     assert.equal(timers.size, 0);
 });

@@ -322,8 +322,36 @@ body {
     background: #198754;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+    #deviceReachability.is-reachable {
+        animation: device-reachability-pulse 2s infinite;
+    }
+}
+
+@keyframes device-reachability-pulse {
+    from {
+        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.8), 0 1px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    70%, to {
+        box-shadow: 0 0 0 5px rgba(25, 135, 84, 0), 0 1px 5px rgba(0, 0, 0, 0.3);
+    }
+}
+
 #deviceReachability[href] {
+    position: relative;
     cursor: pointer;
+}
+
+/* Keep the larger touch target inside the bottom edge of the viewport. */
+#deviceReachability[href]::after {
+    content: "";
+    position: absolute;
+    bottom: -0.75rem;
+    left: 50%;
+    width: 2.75rem;
+    height: 2.75rem;
+    transform: translateX(-50%);
 }
 
 #deviceReachability:focus-visible {
