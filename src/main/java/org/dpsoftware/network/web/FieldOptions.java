@@ -266,7 +266,9 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put("serialPort", CommonUtility.getWord("fxml.modetab.serialport"));
         labels.put("serialPortWirelessLabel", CommonUtility.getWord("fxml.modetab.outputdevice"));
         labels.put("softwareVersion", CommonUtility.getWord("fxml.devicestab.software.version"));
-        labels.put("softwareVersionValue", Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
+        String softwareVersionNumber = "v" + MainSingleton.getInstance().version;
+        labels.put("softwareVersionNumber", softwareVersionNumber);
+        labels.put("softwareVersionValue", Constants.FIREFLY_LUCIFERIN + " (" + softwareVersionNumber + ")");
         labels.put(WebFieldNames.BAUD_RATE, CommonUtility.getWord("fxml.modetab.baudrate"));
         labels.put(WebFieldNames.STATIC_GLOW_WORM_IP, CommonUtility.getWord("fxml.modetab.serialport"));
         labels.put(WebFieldNames.DESIRED_FRAMERATE, CommonUtility.getWord("fxml.misctab.captureframerate"));
@@ -415,6 +417,7 @@ public record FieldOptions(List<Option> options, String type) {
         titles.put(WebFieldNames.SECTION_SMOOTHING, CommonUtility.getWord("fxml.dialog.smoothing.title"));
         titles.put(WebFieldNames.SECTION_CONNECTED_DEVICES, CommonUtility.getWord("fxml.devicestab.connected.devices"));
         titles.put(WebFieldNames.SECTION_SATELLITES, CommonUtility.getWord("fxml.satellite.manage.sat"));
+        titles.put("info", CommonUtility.getWord(LabelKey.INFO));
         return titles;
     }
 

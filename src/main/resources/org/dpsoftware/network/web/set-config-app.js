@@ -486,7 +486,7 @@ function renderLog(output, contents) {
 
 // Freeze the displayed snapshot while paused so the rolling 1000-line tail cannot shift old entries.
 function wireLogAccordion() {
-    var panel = document.getElementById('section-log');
+    var panel = document.getElementById('section-info');
     var output = document.getElementById('appLog');
     var pauseButton = document.getElementById('pauseLogScroll');
     var copyButton = document.getElementById('copyLog');

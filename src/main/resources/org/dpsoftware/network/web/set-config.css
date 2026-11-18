@@ -780,6 +780,24 @@ body.server-down > :not(#offlineOverlay) {
     color: #fff;
 }
 
+.current-release-badge:not([hidden]) {
+    display: inline-flex;
+    overflow: hidden;
+    border-radius: 3px;
+    background: linear-gradient(#606060, #4e4e4e);
+    color: #fff;
+    font: 11px/20px Verdana, sans-serif;
+    text-shadow: 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.current-release-badge > span {
+    padding: 0 5px;
+}
+
+.current-release-version {
+    background: linear-gradient(#d4824e, #c2703c);
+}
+
 .app-log-actions > .btn {
     flex: 1 1 0;
     min-width: 0;

@@ -203,7 +203,32 @@
     <div class="form-text text-muted">Click a profile name to activate it. Firefly will restart with the selected profile. Add a new profile to copy the current configuration under a new name.</div>
 </template>
 
-<template id="logTemplate">
+<template id="infoTemplate">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <a href="https://sblantipodi.github.io/glow_worm_luciferin" rel="noopener noreferrer" target="_blank">
+            <img alt="Firmware Web Installer" class="d-block" height="20" loading="lazy"
+                 src="https://img.shields.io/website?url=https%3A%2F%2Fsblantipodi.github.io%2Fglow_worm_luciferin%2F&amp;label=Firmware%20Web%20Installer&amp;down_color=red&amp;down_message=offline&amp;up_color=4bc51d&amp;up_message=online&amp;logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAD1BMVEUAAAD%2F%2F%2F%2F%2F%2F%2F%2F%2FVyL%2F%2F%2F8bK2t7AAAAA3RSTlMAARYXuUDOAAAAhklEQVR42u3WyQ2AMAwEQAz9lxxCCRCuONHse2XPy3JsS98EAAAAAAAAQDpAfLywAgAADAuoJ716dw4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAwgLcCAACQH%2FB3AAAAAAAAAPoDWovrxYdjBwAAmA7QerAKAADANICnD0sBAADIDjgAPijZuQgZskEAAAAASUVORK5CYII%3D">
+        </a>
+        <a href="https://github.com/sblantipodi/firefly_luciferin/wiki" rel="noopener noreferrer" target="_blank">
+            <img alt="Wiki" class="d-block" height="20" loading="lazy"
+                 src="https://img.shields.io/website?url=https%3A%2F%2Fgithub.com%2Fsblantipodi%2Ffirefly_luciferin%2Fwiki&amp;label=Wiki&amp;down_color=red&amp;down_message=offline&amp;up_color=4bc51d&amp;up_message=online&amp;logo=read-the-docs">
+        </a>
+        <span class="current-release-badge" hidden><span>Current Release</span><span
+                class="current-release-version"></span></span>
+        <a href="https://github.com/sblantipodi/firefly_luciferin/releases" rel="noopener noreferrer" target="_blank">
+            <img alt="Latest Release" class="d-block" height="20" loading="lazy"
+                 src="https://img.shields.io/github/v/release/sblantipodi/firefly_luciferin.svg?label=Latest%20Release">
+        </a>
+        <a href="https://discord.gg/aXf9jeN" rel="noopener noreferrer" target="_blank">
+            <img alt="Discord" class="d-block" height="20" loading="lazy"
+                 src="https://img.shields.io/discord/747247942074892328.svg?logo=discord&amp;logoColor=white&amp;color=5865F2&amp;label=Discord">
+        </a>
+        <a href="https://www.paypal.com/donate?hosted_button_id=ZEJM8ZLQW5E4A" rel="noopener noreferrer"
+           target="_blank">
+            <img alt="Support PayPal" class="d-block" height="20" loading="lazy"
+                 src="https://img.shields.io/badge/Support-PayPal-blue">
+        </a>
+    </div>
     <div class="mb-3">
         <label class="form-label" for="runtimeLogLevel" id="runtimeLogLevelLabel">Log Level</label>
         <select class="form-select w-100" id="runtimeLogLevel">
@@ -222,7 +247,7 @@
                 type="button">Copy to clipboard
         </button>
     </div>
-    <pre aria-live="off" class="app-log" id="appLog" role="log">Open LOG to load the latest entries.</pre>
+    <pre aria-live="off" class="app-log" id="appLog" role="log">Open Info to load the latest entries.</pre>
 </template>
 
 <template id="profileRowTemplate">

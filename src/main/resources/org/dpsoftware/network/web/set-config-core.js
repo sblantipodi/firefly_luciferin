@@ -209,9 +209,16 @@ export function buildForm() {
         accordion.appendChild(item);
     });
     page.querySelector('#miscProfilesHost').appendChild(document.getElementById('profilesTemplate').content.cloneNode(true));
-    var logs = buildAccordion('section-log', 'LOG', accordion.id, false, 'fa-file-lines');
-    logs.querySelector('.accordion-body').appendChild(document.getElementById('logTemplate').content.cloneNode(true));
-    accordion.appendChild(logs);
+    var info = buildAccordion('section-info', state.sectionTitles.info || 'Info', accordion.id, false, 'fa-circle-info');
+    var infoContent = document.getElementById('infoTemplate').content.cloneNode(true);
+    var softwareVersion = state.fieldLabels.softwareVersionNumber;
+    if (softwareVersion) {
+        var currentRelease = infoContent.querySelector('.current-release-badge');
+        currentRelease.querySelector('.current-release-version').textContent = softwareVersion;
+        currentRelease.hidden = false;
+    }
+    info.querySelector('.accordion-body').appendChild(infoContent);
+    accordion.appendChild(info);
     document.getElementById('settingsContainer').replaceChildren(page);
     wireComboOptions();
     fillPickerControls();
