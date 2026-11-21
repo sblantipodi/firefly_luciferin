@@ -10,9 +10,14 @@ class SvgElement {
     constructor() {
         this.attributes = new Map();
         this.children = [];
+        const classes = new Set();
         this.classList = {
-            toggle() {
-            }
+            toggle(name, enabled = !classes.has(name)) {
+                if (enabled) classes.add(name);
+                else classes.delete(name);
+                return enabled;
+            },
+            contains: name => classes.has(name)
         };
     }
 
@@ -38,6 +43,15 @@ class SvgElement {
 }
 
 class HtmlElement extends SvgElement {
+    style = {
+        removeProperty(name) {
+            delete this[name];
+        },
+        setProperty(name, value) {
+            this[name] = value;
+        }
+    };
+
     get hidden() {
         return this.attributes.has('hidden');
     }
@@ -50,7 +64,7 @@ class HtmlElement extends SvgElement {
 
 test('shows the preview container and layout button only while the preview is open', async () => {
     const elements = Object.fromEntries(['showLivePreview', 'showLedLayout', 'screenshot',
-        'livePreviewContainer', 'livePreviewFallbackNotice'].map(id => [id, new HtmlElement()]));
+        'livePreviewContainer', 'livePreviewFrame', 'pinLivePreview', 'livePreviewFallbackNotice'].map(id => [id, new HtmlElement()]));
     elements.livePreviewContainer.hidden = true;
     elements.ledLayout = new SvgElement();
     elements.ledLayout.setAttribute('hidden', '');
@@ -97,6 +111,27 @@ test('shows the preview container and layout button only while the preview is op
     assert.equal(elements.showLedLayout.textContent, 'Show LED layout');
     assert.equal(elements.ledLayout.attributes.has('hidden'), true);
     assert.equal(timers.size, 0);
+    elements.pinLivePreview.click();
+    assert.equal(elements.livePreviewFrame.classList.contains('pinned'), true);
+    assert.equal(elements.pinLivePreview.attributes.get('aria-pressed'), 'true');
+    assert.equal(elements.pinLivePreview.title, 'Unpin live preview');
+    const frame = elements.livePreviewFrame;
+    elements.pinLivePreview.contains = target => target === elements.pinLivePreview;
+    frame.getBoundingClientRect = () => ({top: 150});
+    frame.setPointerCapture = id => assert.equal(id, 1);
+    const pointer = {
+        pointerId: 1, isPrimary: true, button: 0, clientY: 180, target: frame, preventDefault() {
+        }
+    };
+    frame.pointerdown({...pointer, target: elements.pinLivePreview});
+    frame.pointermove({...pointer, clientY: 200});
+    assert.equal(frame.style['--preview-top'], undefined);
+    frame.pointerdown(pointer);
+    frame.pointermove({...pointer, clientY: 260});
+    assert.equal(frame.style['--preview-top'], '230px');
+    frame.lostpointercapture(pointer);
+    frame.pointermove(pointer);
+    assert.equal(frame.style['--preview-top'], '230px');
     elements.showLedLayout.click();
     await new Promise(setImmediate);
     assert.equal(elements.ledLayout.attributes.has('hidden'), false);
@@ -120,6 +155,12 @@ test('shows the preview container and layout button only while the preview is op
     assert.equal(elements.livePreviewContainer.hidden, false);
     assert.equal(elements.ledLayout.attributes.has('hidden'), false);
     assert.equal(timers.size, 2);
+    assert.equal(elements.livePreviewFrame.classList.contains('pinned'), true);
+    elements.pinLivePreview.click();
+    assert.equal(elements.livePreviewFrame.classList.contains('pinned'), false);
+    assert.equal(elements.pinLivePreview.attributes.get('aria-pressed'), 'false');
+    assert.equal(elements.pinLivePreview.title, 'Pin live preview');
+    assert.equal(frame.style['--preview-top'], undefined);
     vm.runInContext('setLivePreview(false, true)', context);
     assert.equal(elements.livePreviewContainer.hidden, true);
     assert.equal(timers.size, 0);

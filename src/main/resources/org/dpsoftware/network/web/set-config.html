@@ -147,6 +147,10 @@
                     <img id="screenshot" alt="Captured frame">
                     <svg id="ledLayout" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-hidden="true"
                          hidden></svg>
+                    <button aria-controls="livePreviewFrame" aria-label="Pin live preview" aria-pressed="false" id="pinLivePreview"
+                            title="Pin live preview" type="button">
+                        <i aria-hidden="true" class="fa-solid fa-thumbtack"></i>
+                    </button>
                 </div>
             </div>
             <div id="livePreviewFallbackNotice" class="live-preview-fallback-notice" role="status"><strong>Image preview mode.</strong> The GStreamer NICE plugin is not installed, so this preview uses images. Install <code>gstreamer1.0-plugins-bad gstreamer1.0-nice libnice10 libnice-dev</code> to enable the faster, lower-latency WebRTC preview.</div>

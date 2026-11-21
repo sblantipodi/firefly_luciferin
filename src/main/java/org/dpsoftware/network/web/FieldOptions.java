@@ -241,7 +241,8 @@ public record FieldOptions(List<Option> options, String type) {
      */
     public static Map<String, String> getFieldLabels() {
         Map<String, String> labels = new LinkedHashMap<>();
-        for (String key : List.of("saveSettings", "showPreview", "hidePreview", "showLedLayout", "hideLedLayout", "newProfileName",
+        for (String key : List.of("saveSettings", "showPreview", "hidePreview", "pinPreview", "unpinPreview",
+                "showLedLayout", "hideLedLayout", "newProfileName",
                 "addProfile", "profileHelp", "openLog", "logLevel", "traceWarning", "restartConfirm", "settingsSaved",
                 "pauseLogScroll", "resumeLogScroll", "copyLog", "logCopied", "logCopyError",
                 "wholeNumber", "validGroup", "profilePrefix", "collectError",

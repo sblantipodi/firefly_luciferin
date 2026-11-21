@@ -715,11 +715,63 @@ body.server-down > :not(#offlineOverlay) {
     display: block;
 }
 
+#livePreviewContainer {
+    container-type: inline-size;
+}
+
 #livePreviewFrame {
     position: relative;
     display: inline-block;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
     max-width: 100%;
     vertical-align: top;
+}
+
+#livePreviewFrame.pinned {
+    --vertical-space: calc(100dvh - 100%);
+    --preview-y: clamp(min(0px, var(--vertical-space)), var(--preview-top, calc(50dvh - 50%)), max(0px, var(--vertical-space)));
+    position: fixed;
+    width: max-content;
+    max-width: 100cqw;
+    top: 0;
+    inset-inline: 0;
+    margin-inline: auto;
+    transform: translateY(var(--preview-y));
+    z-index: 1035;
+    background: #171717;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.4);
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+}
+
+#livePreviewFrame.pinned:active {
+    cursor: grabbing;
+}
+
+#pinLivePreview {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #292929;
+    color: lightgrey;
+    cursor: pointer;
+}
+
+/* Keep the button visible when a tall preview is dragged above the viewport. */
+#livePreviewFrame.pinned #pinLivePreview {
+    top: max(0.25rem, calc(0.25rem - var(--preview-y)));
+}
+
+#pinLivePreview[aria-pressed="true"] {
+    background: #292929;
+    color: #ffae42;
 }
 
 #ledLayout {

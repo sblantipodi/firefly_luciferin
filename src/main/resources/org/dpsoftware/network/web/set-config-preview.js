@@ -140,6 +140,39 @@ export function withLivePreviewRestart(change) {
     return update;
 }
 
+function wirePreviewPin() {
+    var frame = document.getElementById('livePreviewFrame');
+    var pinButton = document.getElementById('pinLivePreview');
+    var pinLabel = state.fieldLabels['web.pinPreview'] || 'Pin live preview';
+    pinButton.setAttribute('aria-label', pinLabel);
+    pinButton.title = pinLabel;
+    pinButton.addEventListener('click', function () {
+        var pinned = frame.classList.toggle('pinned');
+        frame.style.removeProperty('--preview-top');
+        pinButton.setAttribute('aria-pressed', String(pinned));
+        pinButton.title = pinned ? (state.fieldLabels['web.unpinPreview'] || 'Unpin live preview') : pinLabel;
+    });
+
+    var dragPointer = null;
+    var grabOffsetY = 0;
+    frame.addEventListener('pointerdown', function (event) {
+        if (!frame.classList.contains('pinned') || pinButton.contains(event.target)
+            || event.button !== 0 || !event.isPrimary || dragPointer !== null) return;
+        event.preventDefault();
+        frame.setPointerCapture(event.pointerId);
+        dragPointer = event.pointerId;
+        grabOffsetY = event.clientY - frame.getBoundingClientRect().top;
+    });
+    frame.addEventListener('pointermove', function (event) {
+        if (event.pointerId === dragPointer) {
+            frame.style.setProperty('--preview-top', (event.clientY - grabOffsetY) + 'px');
+        }
+    });
+    frame.addEventListener('lostpointercapture', function (event) {
+        if (event.target === frame && event.pointerId === dragPointer) dragPointer = null;
+    });
+}
+
 // Wires the "Show Live Preview" button: uses WebRTC when available, otherwise enables/disables the server-side screenshot stream via the
 // screenshot endpoint.
 export function wireLivePreviewButton() {
@@ -147,6 +180,7 @@ export function wireLivePreviewButton() {
     if (!showBtn) {
         return;
     }
+    wirePreviewPin();
     document.getElementById('showLedLayout').addEventListener('click', function () {
         ledLayoutOn = !ledLayoutOn;
         updateLedLayout();
