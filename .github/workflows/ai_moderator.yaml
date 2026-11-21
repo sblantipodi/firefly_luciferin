@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   moderation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: Detect non-English or abusive issues/PRs
 
     steps:

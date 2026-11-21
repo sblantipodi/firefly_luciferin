@@ -29,6 +29,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.managers.FirmwareStateSync;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.TcpResponse;
@@ -123,6 +124,23 @@ public class UdpServer {
         }, 1, 1, TimeUnit.SECONDS);
     }
 
+    /**
+     * Receive a single UDP datagram and return its payload as a String.
+     * Before calling receive() the packet length is reset to the full buffer capacity,
+     * because the previous call left it set to the size of the last datagram.
+     * Without this reset, a later, longer device status payload would be silently truncated.
+     *
+     * @param socket the bound UDP socket used for receiving
+     * @param packet reusable packet whose backing buffer holds the received payload
+     * @return the received datagram payload converted to a String
+     * @throws IOException if a socket read error occurs
+     */
+    static String receiveDatagram(DatagramSocket socket, DatagramPacket packet) throws IOException {
+        packet.setLength(packet.getData().length - packet.getOffset());
+        socket.receive(packet);
+        return new String(packet.getData(), packet.getOffset(), packet.getLength());
+    }
+
     private void startUdpReceiver() {
         if (udpReceiverStarted) {
             return;
@@ -140,8 +158,7 @@ public class UdpServer {
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 while (NetworkSingleton.getInstance().udpBroadcastReceiverRunning) {
                     try {
-                        socket.receive(packet);
-                        String received = new String(packet.getData(), 0, packet.getLength());
+                        String received = receiveDatagram(socket, packet);
                         if (!received.startsWith(Constants.UDP_DEVICE_NAME) && !received.startsWith(Constants.UDP_DEVICE_NAME_STATIC)) {
                             if (!received.contains(Constants.UDP_PING)) {
                                 log.trace("Received UDP broadcast={}", received);
@@ -154,14 +171,13 @@ public class UdpServer {
                                     MainSingleton.getInstance().guiManager.startCapturingThreads();
                                 }
                             }
-                            if (received.contains(Constants.STOP_STR)) {
-                                if (MainSingleton.getInstance().RUNNING) {
-                                    MainSingleton.getInstance().guiManager.stopCapturingThreads(false);
-                                    CommonUtility.turnOnLEDs();
-                                }
-                            }
                             if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received) && !received.contains(Constants.UDP_PING)) {
                                 JsonNode responseJson = CommonUtility.fromJsonToObject(received);
+                                if (responseJson != null && "STOP".equals(responseJson.path(Constants.START_STOP_INSTANCES).asText())
+                                        && isSelectedDeviceOrRelay(packet.getAddress())) {
+                                    FirmwareStateSync.request();
+                                    continue;
+                                }
                                 if (responseJson != null && responseJson.get(Constants.STATE) != null && responseJson.get(Constants.MQTT_DEVICE_NAME) != null) {
                                     turnOnLightFirstTime(responseJson);
                                     CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
@@ -206,6 +222,14 @@ public class UdpServer {
             firstConnection = false;
             CommonUtility.turnOnLEDs();
         }
+    }
+
+    // Secondary instances receive discovery notifications relayed by this machine.
+    private boolean isSelectedDeviceOrRelay(InetAddress sender) throws SocketException {
+        var device = CommonUtility.getDeviceToUse();
+        return device != null && (sender.getHostAddress().equals(device.getDeviceIP())
+                || (MainSingleton.getInstance().whoAmI != 1
+                && (sender.isLoopbackAddress() || NetworkInterface.getByInetAddress(sender) != null)));
     }
 
     private void logUpdateSuccessful(String received) {
@@ -490,7 +514,7 @@ public class UdpServer {
                             interfaceAddress.getAddress() != null ? interfaceAddress.getAddress().getHostAddress() : "unknown",
                             broadCastPing.getAddress() != null ? broadCastPing.getAddress().getHostAddress() : "unknown",
                             useBroadcast ? "broadcast" : "static-ip");
-                    sendFromInterface(interfaceAddress, broadCastPing);
+                    sendDiscoveryPing(interfaceAddress, broadCastPing);
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                         if (!isReachableViaInterface(interfaceAddress.getAddress(), sat.getValue().getDeviceIp())) {
                             log.trace("Skipping UDP ping from interfaceIp={} to satelliteIp={} because route does not use this interface",
@@ -510,6 +534,27 @@ public class UdpServer {
             }
         };
         udpBrExecutorService.scheduleAtFixedRate(pingTask, 0, 1, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Preserve per-interface discovery and additionally announce the main listening port.
+     * Glow Worm sends status to port 5001 regardless of the sender's ephemeral port.
+     * Some firewalls require outgoing broadcast traffic from that listening port.
+     * Only PING uses this compatibility path: device name messages must retain their
+     * explicitly bound source address, and secondary instances receive via the relay.
+     */
+    void sendDiscoveryPing(InterfaceAddress interfaceAddress, DatagramPacket packet) throws IOException {
+        sendFromInterface(interfaceAddress, packet);
+        if (socket.getLocalPort() == Constants.UDP_BROADCAST_PORT
+                && packet.getPort() == Constants.UDP_BROADCAST_PORT
+                && packet.getAddress().equals(interfaceAddress.getBroadcast())) {
+            try {
+                socket.send(packet);
+            } catch (IOException e) {
+                // The per nterface packet was already sent. A failed compatibility announcement must not prevent the subsequent satellite pings.
+                log.debug("Unable to send discovery PING from the listening port: {}", e.getMessage());
+            }
+        }
     }
 
     /**

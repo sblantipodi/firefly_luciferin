@@ -25,8 +25,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.network.tcpUdp.UdpClient;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +49,8 @@ public class ManagerSingleton {
     }
 
     public MqttClient client;
+    // Shared with the web UI until the MQTT connection is restored.
+    public volatile boolean mqttConnectionError = false;
     public Map<String, UdpClient> udpClient;
     public boolean pipelineStarting = false;
     public boolean pipelineStopping = false;
@@ -53,6 +58,7 @@ public class ManagerSingleton {
     public boolean updateMqttDiscovery = false;
     public boolean serialVersionOk = false;
     public String deviceNameForSerialDevice = "";
+    public List<CaptureDeviceUtilities.CaptureDevice> captureDevices = new ArrayList<>();
 
 }
 

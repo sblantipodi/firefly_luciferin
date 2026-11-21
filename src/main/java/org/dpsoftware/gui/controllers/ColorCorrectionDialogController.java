@@ -35,12 +35,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.HSLColor;
@@ -102,6 +105,10 @@ public class ColorCorrectionDialogController {
     @FXML
     public Button settingsBtn;
     @FXML
+    public Button overlayBtn;
+    @FXML
+    public Button liveCaptureBtn;
+    @FXML
     public Button tooltipBtn;
     TestCanvas testCanvas;
     boolean useHalfSaturation = false;
@@ -153,6 +160,9 @@ public class ColorCorrectionDialogController {
     @FXML
     protected void initialize() {
         Platform.runLater(() -> {
+            if (NativeExecutor.isLinux()) {
+                overlayBtn.setText(Constants.SHARP);
+            }
             initListeners(redSaturation, yellowSaturation, greenSaturation, cyanSaturation, blueSaturation, magentaSaturation, saturation);
             initListeners(redLightness, yellowLightness, greenLightness, cyanLightness, blueLightness, magentaLightness, saturationLightness);
             initListeners(redHue, yellowHue, greenHue, cyanHue, blueHue, magentaHue, null);
@@ -174,13 +184,13 @@ public class ColorCorrectionDialogController {
             GuiSingleton.getInstance().selectedChannel = Color.BLACK;
             GuiSingleton.getInstance().hueTestImageValue = 0.0F;
             whiteGreyLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
-            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (100%)");
-            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (75%)");
-            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (50%)");
-            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (25%)");
-            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (5%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(LabelKey.TC_FULL_SATURATION) + " (100%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(LabelKey.TC_FULL_SATURATION) + " (75%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(LabelKey.TC_FULL_SATURATION) + " (50%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(LabelKey.TC_FULL_SATURATION) + " (25%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(LabelKey.TC_FULL_SATURATION) + " (5%)");
             halfFullSaturation.getItems().add(Constants.RGB);
-            halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (100%)");
+            halfFullSaturation.setValue(CommonUtility.getWord(LabelKey.TC_FULL_SATURATION) + " (100%)");
             halfFullSaturation.valueProperty().addListener((_, _, _) ->
                     testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex()));
             for (int i = 1; i <= 10; i++) {
@@ -319,7 +329,7 @@ public class ColorCorrectionDialogController {
      * Set white or gray value
      */
     private void setWhiteGreyValue() {
-        if (whiteGreyLabel.getText().equals(CommonUtility.getWord(Constants.WHITE_LABEL_CORRECTION))) {
+        if (whiteGreyLabel.getText().equals(CommonUtility.getWord(LabelKey.WHITE_LABEL_CORRECTION))) {
             setWhiteTemperature();
         } else {
             setGreyLightness();
@@ -484,9 +494,9 @@ public class ColorCorrectionDialogController {
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
         } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.WHITE) || GuiSingleton.getInstance().selectedChannel.equals(Color.GRAY)) {
             if (GuiSingleton.getInstance().selectedChannel.equals(Color.WHITE)) {
-                whiteGreyLabel.setText(CommonUtility.getWord(Constants.WHITE_LABEL_CORRECTION));
+                whiteGreyLabel.setText(CommonUtility.getWord(LabelKey.WHITE_LABEL_CORRECTION));
             } else {
-                whiteGreyLabel.setText(CommonUtility.getWord(Constants.GREY_LABEL_CORRECTION));
+                whiteGreyLabel.setText(CommonUtility.getWord(LabelKey.GREY_LABEL_CORRECTION));
             }
             applyLabelClass(whiteGreyLabel, Constants.CSS_CLASS_LABEL);
             whiteGreyLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
@@ -705,6 +715,51 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Show overlay
+     */
+    @FXML
+    public void showOverlay() {
+        Stage colorDialog = GuiSingleton.getInstance().getColorDialog();
+        if (GuiSingleton.getInstance().rleVisualMapVisible) {
+            testCanvas.stopOverlayOnlyMode();
+            if (colorDialog != null) {
+                colorDialog.setAlwaysOnTop(true);
+                colorDialog.show();
+            }
+        } else {
+            GrabberSingleton.getInstance().losslessCompressionLog = true;
+            GuiSingleton.getInstance().rleVisualMapVisible = true;
+            testCanvas.injectColorDialogController();
+            if (testCanvas.getColorCorrectionDialogController() != null) {
+                testCanvas.getColorCorrectionDialogController().stopLatencyTest();
+            }
+            testCanvas.startOverlayOnlyMode();
+            testCanvas.drawTestShapes(MainSingleton.getInstance().config, 0);
+            if (colorDialog != null) {
+                colorDialog.hide();
+            }
+        }
+    }
+
+    /**
+     * Show live capture image from screen capture or USB video
+     */
+    @FXML
+    public void showLivevCapture(InputEvent e) {
+        GuiSingleton.getInstance().setShowLiveCapture(!GuiSingleton.getInstance().isShowLiveCapture());
+        stopLatencyTest();
+        // Stop the capture timeline and exit overlay only mode, then hide the canvas stage
+        // (do not close it: closing it mid render frame orphans the NGCanvas and exhausts the Prism texture pool).
+        // The new canvas reuses the same stage via show().
+        testCanvas.stopForRecreate();
+        testCanvas.stage.hide();
+        if (!MainSingleton.getInstance().RUNNING) {
+            PipelineManager.restartCapture(CommonUtility::run);
+        }
+        CommonUtility.delayMilliseconds(() -> MainSingleton.getInstance().guiManager.showColorCorrectionDialog(settingsController, e), 100);
+    }
+
+    /**
      * Show settings dialog
      */
     @FXML
@@ -763,7 +818,7 @@ public class ColorCorrectionDialogController {
     /**
      * Stop latency test executor
      */
-    void stopLatencyTest() {
+    public void stopLatencyTest() {
         if (animationTimer != null) {
             animationTimer.stop();
         }
@@ -910,6 +965,7 @@ public class ColorCorrectionDialogController {
         testCanvas.hideCanvas();
         Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
         settingsStage.setAlwaysOnTop(false);
+        GuiSingleton.getInstance().setShowLiveCapture(false);
         CommonUtility.closeCurrentStage(e);
     }
 
@@ -920,51 +976,54 @@ public class ColorCorrectionDialogController {
         setSaturationTooltips();
         setLightnessTooltips();
         setHueTooltips();
-        GuiManager.createTooltip(Constants.TOOLTIP_HALF_SATURATION, halfFullSaturation);
-        GuiManager.createTooltip(Constants.TOOLTIP_HUE_MONITOR_SLIDER, hueMonitorSlider);
-        GuiManager.createTooltip(Constants.TOOLTIP_WHITE_TEMP, whiteTemp);
-        GuiManager.createTooltip(Constants.TOOLTIP_LATENCY_TEST, latencyTestToggle);
-        GuiManager.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED, latencyTestSpeed);
-        GuiManager.createTooltip(Constants.TOOLTIP_SETTINGS, settingsBtn);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_HALF_SATURATION, halfFullSaturation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_HUE_MONITOR_SLIDER, hueMonitorSlider);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_WHITE_TEMP, whiteTemp);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LATENCY_TEST, latencyTestToggle);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LATENCY_TEST_SPEED, latencyTestSpeed);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SETTINGS, settingsBtn);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CD_INFO, tooltipBtn);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_OVERLAY, overlayBtn);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LIVE_CAPTURE, liveCaptureBtn);
     }
 
     /**
      * Set saturation tooltips
      */
     private void setSaturationTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_RED_SATURATION, redSaturation);
-        GuiManager.createTooltip(Constants.TOOLTIP_YELLOW_SATURATION, yellowSaturation);
-        GuiManager.createTooltip(Constants.TOOLTIP_GREEN_SATURATION, greenSaturation);
-        GuiManager.createTooltip(Constants.TOOLTIP_CYAN_SATURATION, cyanSaturation);
-        GuiManager.createTooltip(Constants.TOOLTIP_BLUE_SATURATION, blueSaturation);
-        GuiManager.createTooltip(Constants.TOOLTIP_MAGENTA_SATURATION, magentaSaturation);
-        GuiManager.createTooltip(Constants.TOOLTIP_SATURATION, saturation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_RED_SATURATION, redSaturation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_YELLOW_SATURATION, yellowSaturation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GREEN_SATURATION, greenSaturation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CYAN_SATURATION, cyanSaturation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BLUE_SATURATION, blueSaturation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MAGENTA_SATURATION, magentaSaturation);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_SATURATION, saturation);
     }
 
     /**
      * Set Lightness tooltips
      */
     private void setLightnessTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_RED_LIGHTNESS, redLightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_YELLOW_LIGHTNESS, yellowLightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_GREEN_LIGHTNESS, greenLightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_CYAN_LIGHTNESS, cyanLightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_BLUE_LIGHTNESS, blueLightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_MAGENTA_LIGHTNESS, magentaLightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_LIGHTNESS, saturationLightness);
-        GuiManager.createTooltip(Constants.TOOLTIP_GREY_LIGHTNESS, greyChannel);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_RED_LIGHTNESS, redLightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_YELLOW_LIGHTNESS, yellowLightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GREEN_LIGHTNESS, greenLightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CYAN_LIGHTNESS, cyanLightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BLUE_LIGHTNESS, blueLightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MAGENTA_LIGHTNESS, magentaLightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_LIGHTNESS, saturationLightness);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GREY_LIGHTNESS, greyChannel);
     }
 
     /**
      * Set hue tooltips
      */
     private void setHueTooltips() {
-        GuiManager.createTooltip(Constants.TOOLTIP_RED_HUE, redHue);
-        GuiManager.createTooltip(Constants.TOOLTIP_YELLOW_HUE, yellowHue);
-        GuiManager.createTooltip(Constants.TOOLTIP_GREEN_HUE, greenHue);
-        GuiManager.createTooltip(Constants.TOOLTIP_CYAN_HUE, cyanHue);
-        GuiManager.createTooltip(Constants.TOOLTIP_BLUE_HUE, blueHue);
-        GuiManager.createTooltip(Constants.TOOLTIP_MAGENTA_HUE, magentaHue);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_RED_HUE, redHue);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_YELLOW_HUE, yellowHue);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_GREEN_HUE, greenHue);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_CYAN_HUE, cyanHue);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_BLUE_HUE, blueHue);
+        GuiManager.createTooltip(LabelKey.TOOLTIP_MAGENTA_HUE, magentaHue);
     }
 
 }

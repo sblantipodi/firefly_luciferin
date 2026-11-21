@@ -21,15 +21,18 @@
 */
 package org.dpsoftware.gui.trayicon;
 
+import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.config.EnvConstants;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.bindings.appindicator.GCallback;
+import org.dpsoftware.gui.bindings.appindicator.GtkMainLoop;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -59,7 +62,7 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      * @param action callback
      */
     public void methodExecutor(Action action) {
-        action.execute();
+        Platform.runLater(action::execute);
     }
 
     /**
@@ -68,7 +71,7 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      * @param action callback
      */
     public void methodExecutorInput(ActionInput action, String input) {
-        action.execute(input);
+        Platform.runLater(() -> action.execute(input));
     }
 
     /**
@@ -113,11 +116,17 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     @Override
     public void initTray() {
         if (NativeExecutor.isSystemTraySupported()) {
-            try (var arenaGlobal = Arena.ofConfined()) {
-                arena = Arena.ofAuto();
-                indicator = app_indicator_new(arenaGlobal.allocateFrom(String.valueOf(UUID.randomUUID())), arenaGlobal.allocateFrom(Constants.FIREFLY_LUCIFERIN), 0);
-                populateTrayWithItems();
-            }
+            GtkMainLoop.runLater(() -> {
+                if (indicator != null) {
+                    return;
+                }
+                try (var arenaGlobal = Arena.ofConfined()) {
+                    arena = Arena.ofAuto();
+                    indicator = app_indicator_new(arenaGlobal.allocateFrom(String.valueOf(UUID.randomUUID())), arenaGlobal.allocateFrom(Constants.FIREFLY_LUCIFERIN), 0);
+                    GtkMainLoop.onIndicatorConnected(indicator, arena, this::rebuildMenu);
+                    rebuildMenu();
+                }
+            });
         }
     }
 
@@ -126,43 +135,55 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     private void populateTrayWithItems() {
         if (NativeExecutor.isSystemTraySupported()) {
+            GtkMainLoop.runLater(this::rebuildMenu);
+        }
+    }
+
+    /** Called only on the native GTK event thread, including after a late desktop connection. */
+    private void rebuildMenu() {
+        if (indicator != null) {
             gtkMenu = gtk_menu_new();
             // Start stop menu item
             if (MainSingleton.getInstance().RUNNING || ManagerSingleton.getInstance().pipelineStarting) {
-                addMenuItem(gtkMenu, CommonUtility.getWord(Constants.STOP), this::stopAction);
+                addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.STOP), this::stopAction);
             } else {
-                addMenuItem(gtkMenu, CommonUtility.getWord(Constants.START), this::startAction);
+                addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.START), this::startAction);
             }
             // Turn On/Off menu item
             if (MainSingleton.getInstance().config.isToggleLed()) {
-                addMenuItem(gtkMenu, CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase()), this::turnOffAction);
+                addMenuItem(gtkMenu, CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_OFF).toLowerCase()), this::turnOffAction);
             } else {
-                addMenuItem(gtkMenu, CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase()), this::turnOnAction);
+                addMenuItem(gtkMenu, CommonUtility.capitalize(CommonUtility.getWord(LabelKey.TURN_LED_ON).toLowerCase()), this::turnOnAction);
             }
             var separator = gtk_separator_menu_item_new();
             gtk_menu_shell_append(gtkMenu, separator);
             // Aspect Ratio menu item
             populateAspectRatio();
-            populateProfiles();
+            populateProfilesMenu();
             // Settings menu item
-            addMenuItem(gtkMenu, CommonUtility.getWord(Constants.SETTINGS), this::settingsAction);
+            addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.SETTINGS), this::settingsAction);
+            if (MainSingleton.getInstance().config.isWebMcpServerEnabled()) {
+                addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.WEB_INTERFACE), this::webInterfaceAction);
+            }
             // Info menu item
-            addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INFO), this::infoAction);
+            addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.INFO), this::infoAction);
             // Upgrade menu item
             if (MainSingleton.getInstance().whoAmI == 1) {
                 if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
-                    addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INSTALL_UPDATE), this::showCheckForUpdate);
+                    addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.INSTALL_UPDATE), this::showCheckForUpdate);
                 } else {
-                    addMenuItem(gtkMenu, CommonUtility.getWord(Constants.CHECK_UPDATE), this::showCheckForUpdate);
+                    addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.CHECK_UPDATE), this::showCheckForUpdate);
                 }
             }
             var separator2 = gtk_separator_menu_item_new();
             gtk_menu_shell_append(gtkMenu, separator2);
             // Exit menu item
-            addMenuItem(gtkMenu, CommonUtility.getWord(Constants.TRAY_EXIT), this::exitAction);
+            addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.TRAY_EXIT), this::exitAction);
             gtk_widget_show_all(gtkMenu);
             if (MainSingleton.getInstance().communicationError) {
                 setTrayIconImage(Enums.PlayerStatus.GREY);
+            } else if (MainSingleton.getInstance().RUNNING) {
+                setTrayIconImage(Enums.PlayerStatus.PLAY);
             } else if (!MainSingleton.getInstance().RUNNING && ManagerSingleton.getInstance().pipelineStarting && !ManagerSingleton.getInstance().pipelineStopping) {
                 setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
             } else if (MainSingleton.getInstance().config.isToggleLed()) {
@@ -186,11 +207,11 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
         if (NativeExecutor.isSystemTraySupported()) {
             var gtkAspectRatioSubmenu = gtk_menu_new();
             var aspectRatioSubmenuItem = gtk_menu_item_new();
-            gtk_menu_item_set_label(aspectRatioSubmenuItem, arena.allocateFrom(CommonUtility.getWord(Constants.ASPECT_RATIO)));
+            gtk_menu_item_set_label(aspectRatioSubmenuItem, arena.allocateFrom(CommonUtility.getWord(LabelKey.ASPECT_RATIO)));
             addMenuItem(gtkAspectRatioSubmenu, Enums.AspectRatio.FULLSCREEN.getI18n(), this::aspectRatioAction);
             addMenuItem(gtkAspectRatioSubmenu, Enums.AspectRatio.LETTERBOX.getI18n(), this::aspectRatioAction);
             addMenuItem(gtkAspectRatioSubmenu, Enums.AspectRatio.PILLARBOX.getI18n(), this::aspectRatioAction);
-            addMenuItem(gtkAspectRatioSubmenu, CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), this::aspectRatioAction);
+            addMenuItem(gtkAspectRatioSubmenu, CommonUtility.getWord(LabelKey.AUTO_DETECT_BLACK_BARS), this::aspectRatioAction);
             gtk_menu_item_set_submenu(aspectRatioSubmenuItem, gtkAspectRatioSubmenu);
             gtk_menu_shell_append(gtkMenu, aspectRatioSubmenuItem);
         }
@@ -201,15 +222,20 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public void populateProfiles() {
-        if (NativeExecutor.isSystemTraySupported()) {
+        // Rebuild the complete menu so the exported tree contains just one profiles submenu.
+        populateTrayWithItems();
+    }
+
+    private void populateProfilesMenu() {
+        if (indicator != null) {
             var gtkProfilesSubmenu = gtk_menu_new();
             var profilesSubmenuItem = gtk_menu_item_new();
-            gtk_menu_item_set_label(profilesSubmenuItem, arena.allocateFrom(CommonUtility.getWord(Constants.PROFILES)));
+            gtk_menu_item_set_label(profilesSubmenuItem, arena.allocateFrom(CommonUtility.getWord(LabelKey.PROFILES)));
             StorageManager sm = new StorageManager();
             for (String profile : sm.listProfilesForThisInstance()) {
                 addMenuItem(gtkProfilesSubmenu, profile, this::profileAction);
             }
-            addMenuItem(gtkProfilesSubmenu, CommonUtility.getWord(Constants.DEFAULT), this::profileAction);
+            addMenuItem(gtkProfilesSubmenu, CommonUtility.getWord(LabelKey.DEFAULT), this::profileAction);
             gtk_menu_item_set_submenu(profilesSubmenuItem, gtkProfilesSubmenu);
             gtk_menu_shell_append(gtkMenu, profilesSubmenuItem);
         }
@@ -233,8 +259,8 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
+        String logoPath = TrayIconState.update(playerStatus);
         if (NativeExecutor.isSystemTraySupported()) {
-            String logoPath = GuiManager.computeImageToUse(playerStatus);
             if (NativeExecutor.isFlatpak()) {
                 try {
                     var absolutePath = logoPath.split("/");
@@ -243,14 +269,19 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
                     if (lastDotIndex == -1) {
                         return fileName;
                     }
-                    logoPath = System.getenv(Constants.FLATPAK_ID) + "." + fileName.substring(0, lastDotIndex);
+                    logoPath = System.getenv(EnvConstants.FLATPAK_ID) + "." + fileName.substring(0, lastDotIndex);
                 } catch (Exception ignored) {
                     log.error("Can't set tray icon image");
                 }
             } else {
                 logoPath = getIconPath(logoPath);
             }
-            app_indicator_set_icon_full(indicator, arena.allocateFrom(logoPath), arena.allocateFrom(getTooltip()));
+            String iconPath = logoPath;
+            GtkMainLoop.runLater(() -> {
+                if (indicator != null) {
+                    app_indicator_set_icon_full(indicator, arena.allocateFrom(iconPath), arena.allocateFrom(getTooltip()));
+                }
+            });
             return logoPath;
         }
         return "";
@@ -344,6 +375,5 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     public interface ActionInput {
         void execute(String input);
     }
-
 
 }

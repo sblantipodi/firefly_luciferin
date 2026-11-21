@@ -45,7 +45,7 @@ public class InstanceConfigurer {
         if (com.sun.jna.Platform.isWindows()) {
             return Shell32Util.getFolderPath(ShlObj.CSIDL_PERSONAL) + File.separator + Constants.LUCIFERIN_FOLDER;
         } else {
-            String xdgConfigHome = System.getenv(Constants.XDG_HOME);
+            String xdgConfigHome = System.getenv(EnvConstants.XDG_HOME);
             if (xdgConfigHome == null) {
                 // If XDG_CONFIG_HOME is not set, use ~/.config as the default
                 xdgConfigHome = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.LINUX_CONFIG_PATH;
