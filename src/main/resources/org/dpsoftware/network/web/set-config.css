@@ -744,6 +744,7 @@ body.server-down > :not(#offlineOverlay) {
     touch-action: none;
     user-select: none;
     cursor: grab;
+    border: 2px solid darkorange;
 }
 
 #livePreviewFrame.pinned:active {
