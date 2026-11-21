@@ -600,7 +600,7 @@ public class Constants {
     public static final String WAYLAND = "wayland";
     public static final String HEADLESS_ARG = "-h";
     public static final int RESTART_TIMEOUT = -180;
-    public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
+    public static final String[] FLATPAK_RUN = {"flatpak-spawn", "/app/bin/FireflyLuciferin"};
     public static final String[] SNAP_RUN = {"FireflyLuciferin"};
     public static final String CMD_GPU_USAGE = "powershell.exe -Command \""
             + "$gpu = Get-Counter '\\GPU Engine(*)\\Utilization Percentage'; "
