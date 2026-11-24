@@ -53,6 +53,7 @@ var DEVICE_COLUMNS = [
     {key: 'deviceName', label: 'Name'},
     {key: 'deviceIP', label: 'IP/SERIAL'},
     {key: 'deviceBoard', label: 'Board'},
+    {key: 'matterSupported', label: 'Matter'},
     {key: 'deviceVersion', label: 'Ver'},
     {key: 'mac', label: 'MAC'},
     {key: 'gpio', label: 'LED GPIO'},
@@ -515,23 +516,24 @@ function renderDevices(devices) {
     if (!el) {
         return;
     }
-    if (!Array.isArray(devices) || devices.length === 0) {
-        el.innerHTML = '<span class="text-muted">No connected devices</span>';
-        return;
-    }
     var html = '<table class="table table-sm table-striped align-middle"><thead><tr>';
     DEVICE_COLUMNS.forEach(function (c) {
         html += '<th>' + c.label + '</th>';
     });
     html += '</tr></thead><tbody>';
+    if (state.devices.length === 0) {
+        html += '<tr><td class="text-muted" colspan="' + DEVICE_COLUMNS.length + '">No connected devices</td></tr>';
+    }
     var ipRe = /^(\d{1,3}\.){3}\d{1,3}$/;
-    devices.forEach(function (d) {
+    state.devices.forEach(function (d) {
         html += '<tr>';
         DEVICE_COLUMNS.forEach(function (c) {
             var v = d[c.key];
             var isBool = (typeof v === 'boolean');
             var text;
-            if (isBool) {
+            if (c.key === 'matterSupported') {
+                text = v === true ? '✔' : 'X';
+            } else if (isBool) {
                 text = v ? '✔' : '';
             } else if (v == null || v === '') {
                 text = '—';

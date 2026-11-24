@@ -23,9 +23,13 @@ package org.dpsoftware.managers;
 
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.utilities.CommonUtility;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 
 import java.util.ArrayList;
@@ -185,6 +189,37 @@ class UpgradeManagerTest {
             gui.glowWormUpdateInProgress = previousUpdateState;
             gui.completeGlowWormUpdate(device);
             gui.deviceTableData.setAll(previousDevices);
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "ESP32, true, true, GlowWormLuciferinFULL_ESP32_8MB_firmware.bin",
+            "ESP32_S3, true, true, GlowWormLuciferinFULL_ESP32_S3_8MB_firmware.bin",
+            "ESP32_S3_CDC, true, true, GlowWormLuciferinFULL_ESP32_S3_8MB_firmware.bin",
+            "ESP32_S3, true, false, GlowWormLuciferinFULL_ESP32_S3_firmware.bin",
+            "ESP32_S3, false, false, GlowWormLuciferinLIGHT_ESP32_S3_firmware.bin"
+    })
+    void downloadsFirmwareMatchingTheDevice(String board, boolean fullFirmware, boolean matterSupported, String filename) throws Exception {
+        MainSingleton main = MainSingleton.getInstance();
+        Configuration previousConfig = main.config;
+        try (MockedStatic<CommonUtility> utility = mockStatic(CommonUtility.class);
+             MockedStatic<InstanceConfigurer> instanceConfigurer = mockStatic(InstanceConfigurer.class)) {
+            main.config = mock(Configuration.class);
+            when(main.config.isFullFirmware()).thenReturn(fullFirmware);
+            instanceConfigurer.when(InstanceConfigurer::getConfigPath).thenReturn(".");
+            GlowWormDevice device = mock(GlowWormDevice.class);
+            when(device.getDeviceBoard()).thenReturn(board);
+            when(device.getDeviceVersion()).thenReturn("6.0.0");
+            when(device.isMatterSupported()).thenReturn(matterSupported);
+            UpgradeManager upgradeManager = spy(new UpgradeManager());
+            doNothing().when(upgradeManager).downloadFile(anyString());
+
+            upgradeManager.executeUpdate(device, true);
+
+            verify(upgradeManager).downloadFile(filename);
+        } finally {
+            main.config = previousConfig;
         }
     }
 

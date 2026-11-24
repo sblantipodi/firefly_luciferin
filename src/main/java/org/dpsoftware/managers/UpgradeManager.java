@@ -391,7 +391,7 @@ public class UpgradeManager {
                 CommonUtility.sleepSeconds(4);
                 String filename;
                 if (MainSingleton.getInstance().config.isFullFirmware()) {
-                    filename = Constants.UPDATE_FILENAME;
+                    filename = glowWormDevice.isMatterSupported() ? Constants.UPDATE_FILENAME_MATTER : Constants.UPDATE_FILENAME;
                 } else {
                     filename = Constants.UPDATE_FILENAME_LIGHT;
                 }

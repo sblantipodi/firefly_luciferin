@@ -41,6 +41,7 @@
                 <TableColumn fx:id="deviceVersionColumn" prefWidth="45.6666259765625" text="Ver"/>
                 <TableColumn fx:id="wifiColumn" prefWidth="35.6666259765625" text="WiFi"/>
                 <TableColumn fx:id="deviceBoardColumn" prefWidth="85.6666259765625" text="Board"/>
+                <TableColumn fx:id="matterColumn" prefWidth="58.0" text="Matter" editable="false"/>
                 <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC"/>
                 <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="%fxml.devicestab.type"/>
                 <TableColumn fx:id="mqttTopicColumn" prefWidth="80.6666259765625" text="MQTT Topic"/>

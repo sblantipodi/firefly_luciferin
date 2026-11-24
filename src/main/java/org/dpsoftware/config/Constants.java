@@ -212,6 +212,7 @@ public class Constants {
     public static final String WIFI = "wifi";
     public static final String DEVICE_VER = "ver";
     public static final String DEVICE_BOARD = "board";
+    public static final String DEVICE_MATTER = "matter";
     public static final String MQTT_TOPIC = "mqttopic";
     public static final String NUMBER_OF_LEDS = "lednum";
     public static final String BAUD_RATE = "baudrate";
@@ -306,10 +307,12 @@ public class Constants {
     public static final String DASH = "-";
     public static final String ELLIPSIS = "…";
     public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
+    public static final String UPDATE_FILENAME_MATTER = "GlowWormLuciferinFULL_board_8MB_firmware.bin";
     public static final String UPDATE_FILENAME_LIGHT = "GlowWormLuciferinLIGHT_board_firmware.bin";
     public static final String SERIAL_VERSION = "ver:";
     public static final String SERIAL_LED_NUM = "lednum:";
     public static final String SERIAL_BOARD = "board:";
+    public static final String SERIAL_MATTER = "matter:";
     public static final String SERIAL_FRAMERATE = "framerate:";
     public static final String SERIAL_FIRMWARE = "firmware:";
     public static final String SERIAL_BAUDRATE = "baudrate:";

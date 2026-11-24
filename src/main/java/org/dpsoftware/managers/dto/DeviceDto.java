@@ -40,6 +40,7 @@ public class DeviceDto {
     private String wifi;
     private String deviceVersion;
     private String deviceBoard;
+    private boolean matterSupported;
     private String mac;
     private String gpio;
     private String gpioClock;
@@ -78,6 +79,7 @@ public class DeviceDto {
                     device.getWifi(),
                     device.getDeviceVersion(),
                     device.getDeviceBoard(),
+                    device.isMatterSupported(),
                     device.getMac(),
                     device.getGpio(),
                     device.getGpioClock(),

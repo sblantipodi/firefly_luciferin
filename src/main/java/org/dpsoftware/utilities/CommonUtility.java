@@ -432,6 +432,7 @@ public class CommonUtility {
         );
         deviceToAdd.setDeviceVersion(deviceVer);
         deviceToAdd.setDeviceBoard(deviceBoard);
+        deviceToAdd.setMatterSupported(actualObj.path(Constants.DEVICE_MATTER).booleanValue());
         deviceToAdd.setMac(
                 actualObj.get(Constants.MAC) == null
                         ? Constants.DASH
@@ -575,6 +576,10 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.DEVICE_BOARD) != null) {
                         glowWormDevice.setDeviceBoard(mqttmsg.get(Constants.DEVICE_BOARD).asText());
+                    }
+                    // A status with board metadata advertises Matter only if supported.
+                    if (mqttmsg.hasNonNull(Constants.DEVICE_BOARD) || mqttmsg.has(Constants.DEVICE_MATTER)) {
+                        glowWormDevice.setMatterSupported(mqttmsg.path(Constants.DEVICE_MATTER).booleanValue());
                     }
                     if (mqttmsg.get(Constants.DEVICE_VER) != null) {
                         String deviceVer = (mqttmsg.get(Constants.DEVICE_VER).textValue());

@@ -559,11 +559,16 @@ public class SerialManager {
                             if (MainSingleton.getInstance().config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
                                 deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
                             }
+                            if (!deviceVer.equals(glowWormDevice.getDeviceVersion())) {
+                                glowWormDevice.setMatterSupported(false);
+                            }
                             glowWormDevice.setDeviceVersion(deviceVer);
                         } else if (inputLine.contains(Constants.SERIAL_LED_NUM)) {
                             glowWormDevice.setNumberOfLEDSconnected(inputLine.replace(Constants.SERIAL_LED_NUM, ""));
                         } else if (inputLine.contains(Constants.SERIAL_BOARD)) {
                             glowWormDevice.setDeviceBoard(inputLine.replace(Constants.SERIAL_BOARD, ""));
+                        } else if (inputLine.startsWith(Constants.SERIAL_MATTER)) {
+                            glowWormDevice.setMatterSupported(Boolean.parseBoolean(inputLine.substring(Constants.SERIAL_MATTER.length())));
                         } else if (inputLine.contains(Constants.SERIAL_MAC)) {
                             glowWormDevice.setMac(inputLine.replace(Constants.SERIAL_MAC, ""));
                         } else if (inputLine.contains(Constants.SERIAL_GPIO)) {

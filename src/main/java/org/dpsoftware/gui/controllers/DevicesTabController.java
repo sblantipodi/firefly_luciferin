@@ -25,6 +25,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
@@ -86,6 +87,8 @@ public class DevicesTabController {
     @FXML
     private TableColumn<GlowWormDevice, String> deviceBoardColumn;
     @FXML
+    private TableColumn<GlowWormDevice, Boolean> matterColumn;
+    @FXML
     private TableColumn<GlowWormDevice, Hyperlink> deviceIPColumn;
     @FXML
     private TableColumn<GlowWormDevice, String> deviceVersionColumn;
@@ -140,6 +143,8 @@ public class DevicesTabController {
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
         deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
+        matterColumn.setCellValueFactory(cellData -> cellData.getValue().matterSupportedProperty());
+        matterColumn.setCellFactory(CheckBoxTableCell.forTableColumn(matterColumn));
         deviceIPColumn.setCellFactory(_ -> new TableCell<>() {
             @Override
             protected void updateItem(Hyperlink item, boolean empty) {
