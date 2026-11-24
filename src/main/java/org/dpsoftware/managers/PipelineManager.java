@@ -420,12 +420,15 @@ public class PipelineManager {
      * Refresh LED-related runtime caches before the capture pipeline starts again.
      */
     public static void refreshCaptureLedState() {
-        if (MainSingleton.getInstance().config == null || NetworkSingleton.getInstance().messageServer == null) {
+        Configuration config = MainSingleton.getInstance().config;
+        if (config == null || config.getLedMatrix() == null || config.getLedMatrixInUse(config.getDefaultLedMatrix()) == null) {
             return;
         }
-        NetworkSingleton.getInstance().messageServer.initNumLed();
-        FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
+        if (NetworkSingleton.getInstance().messageServer != null) {
+            NetworkSingleton.getInstance().messageServer.initNumLed();
+        }
+        FireflyLuciferin.setLedNumber(config.getDefaultLedMatrix());
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
         GrabberSingleton.getInstance().ledMatrix = ledMatrix;
         GStreamerGrabber.ledMatrix = ledMatrix;
         if (MainSingleton.getInstance().sharedQueue != null) {

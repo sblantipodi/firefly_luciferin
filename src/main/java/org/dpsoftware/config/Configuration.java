@@ -274,18 +274,18 @@ public class Configuration implements Cloneable {
     }
 
     /**
-     * Toggle tray icon based on LEDs ON or OFF
+     * Set the LED state and update the tray icon for the active configuration.
      *
      * @param toggleLed LED switch
      */
     public void setToggleLed(boolean toggleLed) {
-        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
-                && MainSingleton.getInstance().guiManager.trayIconManager != null) {
+        MainSingleton main = MainSingleton.getInstance();
+        if (main != null && main.config == this && main.guiManager != null && main.guiManager.trayIconManager != null) {
             if (!ManagerSingleton.getInstance().pipelineStarting) {
                 if (toggleLed) {
-                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
+                    main.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
                 } else if (!GuiSingleton.getInstance().oldFirmwareDevice) {
-                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
+                    main.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
                 }
             }
         }

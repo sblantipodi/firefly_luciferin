@@ -19,38 +19,48 @@ import {wireLivePreviewButton, withLivePreviewRestart} from './set-config-previe
 import {pollServerStatus} from './set-config-status.js';
 import {escapeHtml, showToast, updateEditableComboOptions} from './set-config-ui.js';
 
-// Collects and saves the form, returning whether the request succeeded before the server restarts.
-function saveForm() {
+// Saves the form, asking for confirmation only when the server requires a restart.
+async function saveForm() {
+    var button = document.getElementById('saveSettings');
     var payload;
     try {
         payload = collectPayload();
     } catch (e) {
         showToast((state.fieldLabels['web.collectError'] || 'Invalid value:') + ' ' + e.message, 'bg-danger text-white');
         console.error('collectPayload failed', e);
-        return Promise.resolve(false);
+        return false;
     }
-    if (!confirm(state.fieldLabels['web.restartConfirm'] || 'Luciferin needs to restart to apply these settings. Proceed?')) {
-        return Promise.resolve(false);
-    }
-    var body = JSON.stringify(payload);
-    console.log('saveForm POST setConfig, body length', body.length);
-    return fetch('setConfig', {
+    var options = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: body
-    }).then(function (r) {
-        return r.text().then(function (t) {
-            if (!r.ok) {
-                throw new Error(t || r.statusText);
+        body: JSON.stringify(payload)
+    };
+    button.disabled = true;
+    try {
+        var response = await fetch('setConfig?allowRestart=false', options);
+        if (response.status === 409) {
+            if (!confirm(state.fieldLabels['web.restartConfirm'] || 'Luciferin needs to restart to apply these settings. Proceed?')) {
+                return false;
             }
-            showToast(state.fieldLabels['web.settingsSaved'] || 'Settings saved', 'bg-success text-white');
-            return true;
-        });
-    }).catch(function (err) {
+            response = await fetch('setConfig', options);
+        }
+        if (!response.ok) {
+            throw new Error(await response.text() || response.statusText);
+        }
+        var result = await response.json();
+        if (result.config) {
+            state.lastConfig = result.config;
+            syncMqttDiscoveryButtons();
+        }
+        showToast(state.fieldLabels['web.settingsSaved'] || 'Settings saved', 'bg-success text-white');
+        return true;
+    } catch (err) {
         showToast('Error: ' + err.message, 'bg-danger text-white');
         console.error('saveForm failed', err);
         return false;
-    });
+    } finally {
+        button.disabled = false;
+    }
 }
 
 // Enables the single-device checkbox when the detected displays offer multiple monitor choices.

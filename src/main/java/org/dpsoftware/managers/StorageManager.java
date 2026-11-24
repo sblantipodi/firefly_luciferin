@@ -317,6 +317,44 @@ public class StorageManager {
     }
 
     /**
+     * Compare two configurations using the restart rules shared by JavaFX and the web settings.
+     *
+     * @param before configuration used as the baseline
+     * @param after  proposed configuration
+     * @return localization keys for the changes that require a process restart
+     */
+    public static Set<String> restartReasons(Configuration before, Configuration after) {
+        Set<String> reasons = new LinkedHashSet<>();
+        if (!Objects.equals(before.getLanguage(), after.getLanguage())) reasons.add(LabelKey.TOOLTIP_LANGUAGE);
+        if (!Objects.equals(before.getTheme(), after.getTheme())) reasons.add(LabelKey.TOOLTIP_THEME);
+        if (!Objects.equals(before.getBaudRate(), after.getBaudRate())) reasons.add(LabelKey.TOOLTIP_BAUD_RATE);
+        if (!before.getCaptureDeviceFriendlyName().equals(after.getCaptureDeviceFriendlyName()))
+            reasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
+        if (!Objects.equals(before.getCaptureMethod(), after.getCaptureMethod()))
+            reasons.add(LabelKey.TOOLTIP_CAPTUREMETHOD);
+        if (after.getOutputDevice() != null && (!Objects.equals(before.getOutputDevice(), after.getOutputDevice())
+                || !Objects.equals(before.getStaticGlowWormIp(), after.getStaticGlowWormIp())))
+            reasons.add(LabelKey.TOOLTIP_SERIALPORT);
+        if (before.getNumberOfCPUThreads() != after.getNumberOfCPUThreads())
+            reasons.add(LabelKey.TOOLTIP_NUMBEROFTHREADS);
+        if (before.isFullFirmware() != after.isFullFirmware()) reasons.add(LabelKey.TOOLTIP_WIFIENABLE);
+        if (before.isWirelessStream() != after.isWirelessStream()) reasons.add(LabelKey.TOOLTIP_MQTTSTREAM);
+        if (before.isMqttEnable() != after.isMqttEnable()) reasons.add(LabelKey.TOOLTIP_MQTTENABLE);
+        if (!Objects.equals(before.getStreamType(), after.getStreamType())) reasons.add(LabelKey.TOOLTIP_STREAMTYPE);
+        if (!Objects.equals(before.getMqttServer(), after.getMqttServer())) reasons.add(LabelKey.TOOLTIP_MQTTHOST);
+        if (!Objects.equals(before.getMqttTopic(), after.getMqttTopic())) reasons.add(LabelKey.TOOLTIP_MQTTTOPIC);
+        if (!Objects.equals(before.getMqttUsername(), after.getMqttUsername())) reasons.add(LabelKey.TOOLTIP_MQTTUSER);
+        if (!Objects.equals(before.getMqttPwd(), after.getMqttPwd())) reasons.add(LabelKey.TOOLTIP_MQTTPWD);
+        if (before.isMultiScreenSingleDevice() != after.isMultiScreenSingleDevice())
+            reasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
+        if (before.isWebMcpServerEnabled() != after.isWebMcpServerEnabled())
+            reasons.add(LabelKey.TOOLTIP_WEB_MCP_SERVER);
+        if (before.getMultiMonitor() != after.getMultiMonitor()) reasons.add(LabelKey.TOOLTIP_MULTIMONITOR);
+        if (before.getSimdAvx() != after.getSimdAvx()) reasons.add(LabelKey.TOOLTIP_SIMD);
+        return reasons;
+    }
+
+    /**
      * Some params should not be updated when switching profiles.
      * Some params needs a restart to take effect. Automatic restart is triggered on profile change only.
      *
@@ -325,48 +363,9 @@ public class StorageManager {
      */
     public void checkProfileDifferences(Configuration defaultConfig, Configuration profileConfig) {
         if (profileConfig != null && defaultConfig != null) {
-            MainSingleton.getInstance().setRestartNeeded(false);
-            Set<String> restartReasons = new LinkedHashSet<>();
-            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage()))
-                restartReasons.add(LabelKey.TOOLTIP_LANGUAGE);
-            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(LabelKey.TOOLTIP_THEME);
-            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
-                restartReasons.add(LabelKey.TOOLTIP_BAUD_RATE);
-            if (!defaultConfig.getCaptureDeviceFriendlyName().equals(profileConfig.getCaptureDeviceFriendlyName()))
-                restartReasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
-            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
-                restartReasons.add(LabelKey.TOOLTIP_CAPTUREMETHOD);
-            if (profileConfig.getOutputDevice() != null && (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice())
-                    || !defaultConfig.getStaticGlowWormIp().equals(profileConfig.getStaticGlowWormIp())))
-                restartReasons.add(LabelKey.TOOLTIP_SERIALPORT);
-            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads())
-                restartReasons.add(LabelKey.TOOLTIP_NUMBEROFTHREADS);
-            if (defaultConfig.isFullFirmware() != profileConfig.isFullFirmware())
-                restartReasons.add(LabelKey.TOOLTIP_WIFIENABLE);
-            if (defaultConfig.isWirelessStream() != profileConfig.isWirelessStream())
-                restartReasons.add(LabelKey.TOOLTIP_MQTTSTREAM);
-            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable())
-                restartReasons.add(LabelKey.TOOLTIP_MQTTENABLE);
-            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType()))
-                restartReasons.add(LabelKey.TOOLTIP_STREAMTYPE);
-            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer()))
-                restartReasons.add(LabelKey.TOOLTIP_MQTTHOST);
-            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic()))
-                restartReasons.add(LabelKey.TOOLTIP_MQTTTOPIC);
-            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername()))
-                restartReasons.add(LabelKey.TOOLTIP_MQTTUSER);
-            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd()))
-                restartReasons.add(LabelKey.TOOLTIP_MQTTPWD);
-            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice())
-                restartReasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
-            if (defaultConfig.isWebMcpServerEnabled() != profileConfig.isWebMcpServerEnabled())
-                restartReasons.add(LabelKey.TOOLTIP_WEB_MCP_SERVER);
-            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
-                restartReasons.add(LabelKey.TOOLTIP_MULTIMONITOR);
-            if (defaultConfig.getSimdAvx() != profileConfig.getSimdAvx())
-                restartReasons.add(LabelKey.TOOLTIP_SIMD);
+            Set<String> restartReasons = restartReasons(defaultConfig, profileConfig);
+            MainSingleton.getInstance().setRestartNeeded(!restartReasons.isEmpty());
             if (!restartReasons.isEmpty()) {
-                MainSingleton.getInstance().setRestartNeeded(true);
                 log.info(String.join("\n", restartReasons));
             }
         }

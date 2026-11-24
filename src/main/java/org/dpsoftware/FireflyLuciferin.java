@@ -268,17 +268,25 @@ public class FireflyLuciferin extends Application {
     }
 
     /**
-     * Set log level at runtime based on user preferences
+     * Set the root log level from the configuration, honoring the environment override.
+     *
+     * @param config configuration that supplies the default log level
      */
-    private void setRuntimeLogLevel() {
-        MainSingleton main = MainSingleton.getInstance();
+    public static void applyRuntimeLogLevel(Configuration config) {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         String logLevel = System.getenv(EnvConstants.LUCIFERIN_LOG_LEVEL);
         if (logLevel == null || logLevel.isEmpty()) {
-            logLevel = main.getConfig().getRuntimeLogLevel();
+            logLevel = config.getRuntimeLogLevel();
         }
         loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(logLevel));
         log.debug("** Log level -> {} **", logLevel);
+    }
+
+    /**
+     * Apply the configured log level, record the startup context, and enable optional compression logging.
+     */
+    private void configureStartupLogging() {
+        applyRuntimeLogLevel(MainSingleton.getInstance().config);
         if (JavaFXStarter.startupArgs != null && JavaFXStarter.startupArgs.length > 0) {
             log.info("Starting instance #: {}", JavaFXStarter.startupArgs[0]);
             if (JavaFXStarter.startupArgs.length > 1) {
@@ -306,7 +314,7 @@ public class FireflyLuciferin extends Application {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         scheduleCheckForNightMode();
-        setRuntimeLogLevel();
+        configureStartupLogging();
         if (main.whoAmI == 1) {
             if (main.getConfig().isWebMcpServerEnabled()) {
                 mcpServer.start();

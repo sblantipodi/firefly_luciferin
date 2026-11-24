@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.managers;
 
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.junit.jupiter.api.AfterEach;
@@ -37,6 +39,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Uses ByteBuddy-powered mockStatic to intercept MainSingleton.getInstance() without modifying the source.
  */
 class StorageManagerTest {
+
+    /**
+     * Verify that YAML round-trips the LED state using the public access available on the module path.
+     */
+    @Test
+    void readsAndWritesLedStateUsingPublicAccessors() throws Exception {
+        // The application module exports the configuration package but keeps its private fields inaccessible.
+        YAMLMapper mapper = YAMLMapper.builder().disable(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS).build();
+        Configuration config = mapper.readValue("toggleLed: false", Configuration.class);
+        assertFalse(config.isToggleLed());
+        assertFalse(mapper.readTree(mapper.writeValueAsBytes(config)).required("toggleLed").booleanValue());
+    }
 
     private MainSingleton mockedInstance;
     private MockedStatic<MainSingleton> mockedMainSingleton;

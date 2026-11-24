@@ -68,7 +68,7 @@ public class MainSingleton {
     public boolean serialConnected = false;
     public int baudRate = 0;
     // LED strip, monitor and microcontroller config
-    public Configuration config;
+    public volatile Configuration config;
     // Start and Stop threads
     public boolean RUNNING = false;
     @Getter(AccessLevel.NONE)

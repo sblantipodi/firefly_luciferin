@@ -28,6 +28,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.*;
@@ -75,6 +76,7 @@ import java.util.function.Predicate;
 public class ConfigServer {
 
     private final StorageManager storageManager = new StorageManager();
+    private final Object configSaveLock = new Object();
     private final List<HttpServer> httpServers = new ArrayList<>();
     private ScheduledExecutorService startRetryExecutor;
     private boolean shutdownHookRegistered;
@@ -207,8 +209,20 @@ public class ConfigServer {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Payload must be a JSON object");
             return;
         }
-        log.info("setConfig payload received: {}", CommonUtility.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
-        // Read the active or main configuration.
+        synchronized (configSaveLock) {
+            saveConfiguration(exchange, payload);
+        }
+    }
+
+    /**
+     * Merge and save the settings for the active profile under the configuration save lock.
+     * If the request disallows a required restart, respond with HTTP 409 before saving.
+     *
+     * @param exchange HTTP exchange for the save request
+     * @param payload  settings to merge into the saved configuration
+     * @throws IOException if the HTTP response cannot be written
+     */
+    private void saveConfiguration(HttpExchange exchange, JsonNode payload) throws IOException {
         Configuration savedConfig = storageManager.readProfileInUseConfig();
         if (savedConfig == null) {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Configuration not found");
@@ -219,6 +233,13 @@ public class ConfigServer {
             updatedConfig = ConfigurationPayload.apply(payload, savedConfig);
         } catch (IllegalArgumentException | IOException e) {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid configuration: " + e.getMessage());
+            return;
+        }
+        Set<String> restartReasons = StorageManager.restartReasons(savedConfig, updatedConfig);
+        boolean restartRequired = !restartReasons.isEmpty();
+        String query = Objects.toString(exchange.getRequestURI().getRawQuery(), "");
+        if (restartRequired && Arrays.asList(query.split("&")).contains("allowRestart=false")) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_CONFLICT, "Luciferin requires a restart");
             return;
         }
         try {
@@ -261,9 +282,66 @@ public class ConfigServer {
                 log.warn("Unable to program LDR settings: {}", e.getMessage());
             }
         }
-        HttpResponses.sendOk(exchange);
-        // Restart with the active profile and headless mode.
-        NativeExecutor.restartNativeInstanceWithCurrentProfile();
+        if (restartRequired) {
+            log.info(String.join("\n", restartReasons));
+            try {
+                HttpResponses.sendOk(exchange);
+            } finally {
+                NativeExecutor.restartNativeInstanceWithCurrentProfile();
+            }
+        } else {
+            ObjectNode persistedConfig = ConfigurationPayload.toWebConfig(updatedConfig);
+            applySavedConfiguration(savedConfig, updatedConfig);
+            HttpResponses.sendJson(exchange, Map.of("status", "OK", "config", persistedConfig));
+        }
+    }
+
+    /**
+     * Activate saved settings in the running instance and refresh any affected capture state.
+     *
+     * @param savedConfig   persisted configuration before the save
+     * @param updatedConfig newly persisted configuration to apply at runtime
+     */
+    private void applySavedConfiguration(Configuration savedConfig, Configuration updatedConfig) {
+        MainSingleton main = MainSingleton.getInstance();
+        Configuration runningConfig = main.config != null ? main.config : savedConfig;
+        // Device discovery resolves AUTO and static IP selections in the running configuration.
+        if (Objects.equals(savedConfig.getOutputDevice(), updatedConfig.getOutputDevice())
+                && Objects.equals(savedConfig.getStaticGlowWormIp(), updatedConfig.getStaticGlowWormIp())) {
+            updatedConfig.setOutputDevice(runningConfig.getOutputDevice());
+        }
+        if (runningConfig.isAutomaticCapturePending()) {
+            updatedConfig.setCaptureMethod(runningConfig.getCaptureMethod());
+            updatedConfig.setAutomaticCapturePending(true);
+        }
+        if (runningConfig.isAutoDetectBlackBars() && updatedConfig.isAutoDetectBlackBars()) {
+            updatedConfig.setDefaultLedMatrix(runningConfig.getDefaultLedMatrix());
+        }
+        boolean matrixChanged = updatedConfig.ledMatrixParamsChanged(runningConfig);
+        boolean satellitesChanged = !Objects.equals(CommonUtility.JSON_MAPPER.valueToTree(runningConfig.getSatellites()),
+                CommonUtility.JSON_MAPPER.valueToTree(updatedConfig.getSatellites()));
+        if (!matrixChanged && !satellitesChanged) {
+            // Keep tile positions edited in JavaFX and the matrix referenced by the grabber.
+            updatedConfig.setLedMatrix(runningConfig.getLedMatrix());
+        }
+        boolean captureChanged = matrixChanged
+                || !Objects.equals(updatedConfig.getOrientation(), runningConfig.getOrientation())
+                || updatedConfig.getLedStartOffset() != runningConfig.getLedStartOffset()
+                || updatedConfig.getMonitorNumber() != runningConfig.getMonitorNumber()
+                || updatedConfig.getResamplingFactor() != runningConfig.getResamplingFactor();
+        main.config = updatedConfig;
+        if (!Objects.equals(runningConfig.getRuntimeLogLevel(), updatedConfig.getRuntimeLogLevel())) {
+            FireflyLuciferin.applyRuntimeLogLevel(updatedConfig);
+        }
+        if (!Objects.equals(runningConfig.getCubeLut(), updatedConfig.getCubeLut())) {
+            CubeLutToneMap.refresh();
+        }
+        if (captureChanged && (main.RUNNING || ManagerSingleton.getInstance().pipelineStarting)) {
+            PipelineManager.restartCapture(() -> log.info("Restarting capture after saving web settings"));
+        } else if (captureChanged || satellitesChanged
+                || !Objects.equals(runningConfig.getDefaultLedMatrix(), updatedConfig.getDefaultLedMatrix())) {
+            PipelineManager.refreshCaptureLedState();
+        }
     }
 
     /**
