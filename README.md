@@ -53,7 +53,9 @@ an installation without a desktop leaves more memory available for capture and p
 - [**HDR to SDR tone mapping**](https://github.com/sblantipodi/toremove/wiki/HDR-to-SDR-and-LUT) adapts HDR color and brightness to your LEDs.
 - [**Remote control**](https://github.com/sblantipodi/toremove/wiki/Remote-Access#luciferin-web-interface): use Firefly from phone or desktop, and Glow Worm via its built in web interface.
 - [**AI control through MCP**](https://github.com/sblantipodi/toremove/wiki/MCP-and-AI-Agents): ask a compatible AI assistant to control Luciferin using natural language.
-- **Home automation:** integrate with [**Home Assistant**](https://github.com/sblantipodi/toremove/wiki/Home-Automation-configs) and MQTT; neither is required for a basic setup.
+- **Home automation:** supports [**Home Assistant, MQTT, and
+  Matter**](https://github.com/sblantipodi/toremove/wiki/Home-Automation-configs), all optional for a basic setup. Use
+  Matter to add it as a light in **Alexa**, **Google Home**, or other compatible systems.
 - [**Multi monitor**](https://github.com/sblantipodi/toremove/wiki/Multi-monitor-support) support with **single or multiple instances**.
 - [**Surround lighting**](https://github.com/sblantipodi/toremove/wiki/Surround-lighting-with-satellites) with satellites.
 - [**Web browser firmware installer**](https://sblantipodi.github.io/glow_worm_luciferin/).
@@ -164,6 +166,19 @@ in [Home Assistant](https://github.com/sblantipodi/toremove/wiki/Home-Automation
 <br>
 <img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ha_luciferin.jpg?raw=true">
 
+Thanks to Matter over WiFi it can be easily integrated with Google Home and Alexa.
+
+## Works with virtually every smart home system
+
+Thanks to Matter over WiFi, Luciferin integrates with the major smart home ecosystems using a modern and standardized
+local protocol.
+
+<p align="center">
+  <img alt="Capture and LED controller frame rates" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/matter.jpg">
+</p>
+
+Control your lighting through Alexa, Google Home, Apple Home, Smarthings and others.
+
 ## Advanced rendering pipeline
 
 [**Luciferin’s rendering pipeline**](https://github.com/sblantipodi/toremove/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)) is built for precision and visual fidelity. Floating-point processing delivers smoother gradients, minimizes rounding artifacts, and maintains consistent color transformations throughout the pipeline.
@@ -171,6 +186,9 @@ in [Home Assistant](https://github.com/sblantipodi/toremove/wiki/Home-Automation
 <img alt="Color transitions with higher-precision processing" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/adaptive_gamma_8_32bit.gif?raw=true">
 
 ## HDR to SDR tonemap with LUT (Lookup Table)
+
+Most affordable USB HDMI capture cards don't support HDR properly. When capturing HDR content, colors can appear
+severely washed out, with reduced contrast and inaccurate brightness.
 
 TV or monitor can display a wider brightness range than an LED strip. [**HDR to SDR tone mapping**](https://github.com/sblantipodi/toremove/wiki/HDR-to-SDR-and-LUT
 ) adapts that range so the lighting keeps useful detail and colors instead of looking too dark or washed out.
