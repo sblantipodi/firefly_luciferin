@@ -217,9 +217,24 @@ This lets you integrate Firefly into your AI workflows and automate lighting tas
 
 <img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/asect_ratio.jpg?raw=true">  
 
+## Web Installer and automatic updates
+
+Flash **Glow Worm Luciferin firmware in a few clicks**, directly from a compatible browser on your desktop computer or
+Android phone.  
+Connect your ESP board with a USB data cable and open the [**Web
+Installer**](https://sblantipodi.github.io/glow_worm_luciferin/).
+
+**Automatic updates** are available for both the **Firefly Luciferin desktop app** and **Glow Worm Luciferin Full
+firmware**.  
+Firefly can update the firmware on connected controllers **over the air (OTA) via Wi-Fi**. See the [**update
+guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) for details.
+
+[![Glow Worm Luciferin Web Installer showing the Full and Light firmware options](https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/web_installer.jpg)](https://sblantipodi.github.io/glow_worm_luciferin/)
 
 ## Development & AI
 
 Luciferin was born years before the AI boom. Today, its development also benefits from locally run models and frontier AI models as supporting tools.
 
 Architecture, design, and code review remain human-led, alongside a substantial share of the code.
+
+
