@@ -104,6 +104,15 @@ public class GStreamerGrabber {
         videosink.set("sync", false);
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
+        configureCaptureCaps();
+    }
+
+    /**
+     * Apply the configured capture size, pixel format and frame rate to the video sink.
+     * Call before playback, both when creating the sink and when reusing it after a restart.
+     */
+    void configureCaptureCaps() {
+        MainSingleton main = MainSingleton.getInstance();
         String gstreamerPipeline;
         if (main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
                 || main.getConfig().getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())
@@ -154,7 +163,9 @@ public class GStreamerGrabber {
             }
         }
         log.debug("Caps: {}", caps);
-        videosink.setCaps(new Caps(caps.toString()));
+        try (Caps captureCaps = new Caps(caps.toString())) {
+            videosink.setCaps(captureCaps);
+        }
     }
 
     /**

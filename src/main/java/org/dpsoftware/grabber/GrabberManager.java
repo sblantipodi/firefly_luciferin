@@ -234,7 +234,7 @@ public class GrabberManager {
     }
 
     /**
-     * Start or restart capture, attach the video sink and play the pipeline.
+     * Start capture with a new video sink or restart the existing pipeline and its sink.
      *
      * @param main current application state and capture configuration
      * @param restartCounter number of consecutive pipeline restarts
@@ -244,18 +244,19 @@ public class GrabberManager {
         if (GrabberSingleton.getInstance().pipe != null) {
             log.info("Restarting pipeline (reason={})", reason);
             GrabberSingleton.getInstance().pipe.stop();
+            // The interpolation worker keeps emitting after the video sink stops receiving frames.
+            stopFrameGeneration();
             restartCounter.getAndIncrement();
             if (restartCounter.get() >= Constants.MAX_PIPELINE_RESTARTS) {
                 log.error("Pipeline restarted too many times, restarting...");
                 NativeExecutor.restartNativeInstanceWithCurrentProfile();
             }
+            vc.configureCaptureCaps();
         } else {
             startPipeline(restartCounter, main);
+            attachVideoSink();
         }
-        vc = new GStreamerGrabber();
-        GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
-        Pipeline.linkMany(bin, vc.getElement());
-        if (!MainSingleton.getInstance().isHeadlessMode()) {
+        if (!main.isHeadlessMode()) {
             JFrame f = new JFrame(Constants.SCREEN_GRABBER);
             JPanel panel = new JPanel();
             panel.setPreferredSize(new Dimension(main.getConfig().getScreenResX(), main.getConfig().getScreenResY()));
@@ -267,6 +268,19 @@ public class GrabberManager {
             f.setVisible(false);
         } else {
             GrabberSingleton.getInstance().pipe.play();
+        }
+    }
+
+    /**
+     * Create the video grabber and link its sink to the capture bin before starting the pipeline.
+     *
+     * @throws IllegalStateException if the capture bin cannot be linked to the video sink
+     */
+    private void attachVideoSink() {
+        vc = new GStreamerGrabber();
+        GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
+        if (!Pipeline.linkMany(bin, vc.getElement())) {
+            throw new IllegalStateException("Cannot link capture pipeline to video sink");
         }
     }
 
@@ -327,11 +341,7 @@ public class GrabberManager {
                     log.warn("Capture probe failed: {} ({})", message, code);
                     captureProbeFailed.set(true);
                 });
-                vc = new GStreamerGrabber();
-                GrabberSingleton.getInstance().pipe.addMany(bin, vc.getElement());
-                if (!Pipeline.linkMany(bin, vc.getElement())) {
-                    throw new IllegalStateException("Cannot link capture pipeline to video sink");
-                }
+                attachVideoSink();
                 if (GrabberSingleton.getInstance().pipe.play() == StateChangeReturn.FAILURE) {
                     throw new IllegalStateException("GStreamer could not start the capture pipeline");
                 }
