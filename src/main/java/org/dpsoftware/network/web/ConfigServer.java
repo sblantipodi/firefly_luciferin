@@ -36,6 +36,7 @@ import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.grabber.WebRtcStreamer;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.DisplayDialogController;
@@ -582,6 +583,7 @@ public class ConfigServer {
                 server.createContext("/removeCubeLut", withGuard(this::handleRemoveCubeLut, POST_METHOD));
                 server.createContext("/mqttDiscovery", withGuard(this::handleMqttDiscovery, POST_METHOD));
                 server.createContext("/ldrAction", withGuard(this::handleLdrAction, POST_METHOD));
+                server.createContext("/checkForUpdates", withGuard(this::handleCheckForUpdates, POST_METHOD));
                 server.createContext("/provisioningOptions", withGuard(this::handleProvisioningOptions, GET_METHOD));
                 server.createContext("/provisionDevice", withGuard(this::handleProvisionDevice, POST_METHOD));
                 server.createContext(Constants.DEVICE_PREFS_ENDPOINT, withGuard(deviceEndpointHandler::handleDevicePrefs, GET_METHOD));
@@ -692,6 +694,29 @@ public class ConfigServer {
     private void handleGetSectionTitles(HttpExchange exchange) throws IOException {
         ObjectNode response = CommonUtility.JSON_MAPPER.valueToTree(FieldOptions.getSectionTitles());
         HttpResponses.sendJson(exchange, response);
+    }
+
+    /**
+     * Handles {@code POST /checkForUpdates} and schedules the shared manual update check once Firefly is ready.
+     *
+     * @param exchange the JSON request and its response
+     * @throws IOException if the response cannot be written
+     */
+    private void handleCheckForUpdates(HttpExchange exchange) throws IOException {
+        // Require a JSON request so a cross-origin HTML form cannot trigger the update.
+        String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
+        if (!"application/json".equalsIgnoreCase(contentType)) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_UNSUPPORTED_TYPE, "Expected application/json");
+            return;
+        }
+        GuiManager guiManager = MainSingleton.getInstance().guiManager;
+        if (guiManager == null) {
+            HttpResponses.sendText(exchange, HttpURLConnection.HTTP_UNAVAILABLE, "Firefly is still starting");
+            return;
+        }
+        guiManager.requestUpdateCheck();
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_ACCEPTED, -1);
+        exchange.close();
     }
 
     /**

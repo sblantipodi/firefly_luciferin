@@ -50,6 +50,7 @@ public final class WebFieldNames {
     public static final String DEFAULT_LED_MATRIX = "defaultLedMatrix";
     // Mode and capture fields
     public static final String OUTPUT_DEVICE = "outputDevice";
+    public static final String SERIAL_PORT = "serialPort";
     public static final String BAUD_RATE = "baudRate";
     public static final String STATIC_GLOW_WORM_IP = "staticGlowWormIp";
     public static final String DESIRED_FRAMERATE = "desiredFramerate";
@@ -133,6 +134,7 @@ public final class WebFieldNames {
     public static final String EFFECT_SELECT = "effectSelect";
     public static final String TURN_LED_ON = "turnLedOn";
     public static final String TURN_LED_OFF = "turnLedOff";
+    public static final String UPDATE_BUTTON_LABEL = "web.checkForUpdates";
     // Device preferences JSON keys
     public static final String PREFS_EFFECT = "effect";
     public static final String PREFS_FF_EFFECT = "ffeffect";

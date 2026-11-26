@@ -39,6 +39,18 @@ public final class LabelKey {
     public static final String CENTER_DISPLAY = "fxml.ledsconfigtab.centerdisplay";
     public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
     public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
+    public static final String LED_TOP_ROW = "fxml.ledsconfigtab.toprow";
+    public static final String LED_LEFT_COLUMN = "fxml.ledsconfigtab.leftcol";
+    public static final String LED_RIGHT_COLUMN = "fxml.ledsconfigtab.rightcol";
+    public static final String LED_BOTTOM_LEFT = "fxml.ledsconfigtab.bottomleft";
+    public static final String LED_BOTTOM_RIGHT = "fxml.ledsconfigtab.bottomright";
+    public static final String LED_BOTTOM_ROW = "fxml.ledsconfigtab.bottomrow";
+    public static final String LED_START_OFFSET = "fxml.ledsconfigtab.firstled";
+    public static final String LED_ORIENTATION = "fxml.ledsconfigtab.orientation";
+    public static final String LED_GROUP_BY = "fxml.ledsconfigtab.group.by";
+    public static final String LED_SPLIT_BOTTOM_ROW = "fxml.ledsconfigtab.splitbottomrow";
+    public static final String LED_GRABBER_AREA = "fxml.ledsconfigtab.grabberArea";
+    public static final String LED_GAP_TYPE = "fxml.ledsconfigtab.gapType";
     public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
     public static final String CAPTURE_SOURCE_UNAVAILABLE = "capture.source.unavailable";
     public static final String CAPTURE_SOURCE_UNAVAILABLE_CONTEXT = "capture.source.unavailable.context";
@@ -77,6 +89,7 @@ public final class LabelKey {
     public static final String GPIO_OK_HEADER = "gpio.ok.header";
     public static final String GPIO_OK_CONTEXT = "gpio.ok.context";
     public static final String SERIAL_PORT = "serial.port";
+    public static final String MODE_SERIAL_PORT = "fxml.modetab.serialport";
     public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
     public static final String ASPECT_RATIO = "fxml.modetab.aspectratio";
     public static final String PROFILES = "fxml.misctab.profiles";
@@ -94,6 +107,7 @@ public final class LabelKey {
     public static final String STOP = "tray.icon.stop";
     public static final String INFO = "tray.icon.info";
     public static final String CHECK_UPDATE = "tray.icon.check.update";
+    public static final String UPDATES = "fxml.devicestab.check.updates";
     public static final String INSTALL_UPDATE = "tray.icon.check.install";
     public static final String SETTINGS = "tray.icon.settings";
     public static final String WEB_INTERFACE = "tray.icon.web.interface";

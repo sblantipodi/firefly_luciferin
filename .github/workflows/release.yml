@@ -37,11 +37,14 @@ jobs:
   disable_alpha_download:
     needs: [ create_draft_release ]
     runs-on: ubuntu-26.04
+    outputs:
+      release_sha: ${{ steps.prepare.outputs.release_sha }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: master
       - name: Disable gw.alpha.download for release
+        id: prepare
         run: |
           PROPS="src/main/resources/project.properties"
           if grep -q '^gw\.alpha\.download=true' "$PROPS"; then
@@ -55,6 +58,8 @@ jobs:
           else
             echo "gw.alpha.download is already false, no change needed."
           fi
+          grep -Fxq 'gw.alpha.download=false' "$PROPS"
+          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -64,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: master
+          ref: ${{ needs.disable_alpha_download.outputs.release_sha }}
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
         shell: bash
@@ -124,6 +129,8 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.disable_alpha_download.outputs.release_sha }}
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Release version
@@ -180,6 +187,8 @@ jobs:
     runs-on: ubuntu-26.04-arm
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.disable_alpha_download.outputs.release_sha }}
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Release version

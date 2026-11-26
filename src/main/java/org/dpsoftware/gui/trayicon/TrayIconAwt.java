@@ -158,7 +158,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
             } else if (CommonUtility.getWord(LabelKey.INFO).equals(menuItemText)) {
                 infoAction();
             } else if ((MainSingleton.getInstance().whoAmI == 1) && (CommonUtility.getWord(LabelKey.CHECK_UPDATE).equals(menuItemText) || CommonUtility.getWord(LabelKey.INSTALL_UPDATE).equals(menuItemText))) {
-                showCheckForUpdate();
+                MainSingleton.getInstance().guiManager.requestUpdateCheck();
             } else {
                 profileAction(menuItemText);
             }

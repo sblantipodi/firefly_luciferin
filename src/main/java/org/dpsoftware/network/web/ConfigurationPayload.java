@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  */
 final class ConfigurationPayload {
 
-    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix", "colorChooserHex", "serialPort");
+    private static final List<String> EXCLUDED_FIELDS = List.of("hueMap", "ledMatrix", "colorChooserHex", WebFieldNames.SERIAL_PORT);
     private static final List<String> LED_FIELDS = List.of(WebFieldNames.TOP_LED, WebFieldNames.LEFT_LED,
             WebFieldNames.RIGHT_LED, WebFieldNames.BOTTOM_LEFT_LED, WebFieldNames.BOTTOM_RIGHT_LED,
             WebFieldNames.BOTTOM_ROW_LED);
@@ -121,8 +121,8 @@ final class ConfigurationPayload {
             }
             updatedConfig.setCaptureDevice(device);
         }
-        if (payload.has("serialPort")) {
-            DevicesTabOptions.applyOutput(updatedConfig, payload.path("serialPort").asText());
+        if (payload.has(WebFieldNames.SERIAL_PORT)) {
+            DevicesTabOptions.applyOutput(updatedConfig, payload.path(WebFieldNames.SERIAL_PORT).asText());
         }
         if (payload.has(WebFieldNames.CUBE_LUT)) {
             updatedConfig.setCubeLut(DisplayDialogOptions.selectedLut(payload.path(WebFieldNames.CUBE_LUT).asText()));
@@ -195,7 +195,7 @@ final class ConfigurationPayload {
         if (cubeLut != null && !cubeLut.isTextual()) {
             throw new IllegalArgumentException("cubeLut must be a LUT name");
         }
-        JsonNode output = payload.get("serialPort");
+        JsonNode output = payload.get(WebFieldNames.SERIAL_PORT);
         if (output != null && (!output.isTextual() || output.asText().isBlank())) {
             throw new IllegalArgumentException("serialPort must be a device name, serial port, AUTO, or IP");
         }

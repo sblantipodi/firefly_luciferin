@@ -1,7 +1,7 @@
 // Entry point of the LUCIFERIN web configuration page: wires together the form, device picker, profiles, live preview and status polling
 // modules, and handles loading/saving the configuration against the ConfigServer HTTP endpoints.
 import {state} from './set-config-state.js';
-import {fetchJson, notifyComboChange, removeCubeLut, uploadCubeLut} from './set-config-api.js';
+import {fetchJson, notifyComboChange, postResponse, removeCubeLut, uploadCubeLut} from './set-config-api.js';
 import {buildForm, collectPayload, fillForm} from './set-config-core.js';
 import {
     applyAutoOutputDevice,
@@ -448,6 +448,22 @@ function revealSettingsPage() {
     document.getElementById('settingsContainer').classList.add('page-ready');
 }
 
+/** Connects the Devices update button to the manual update endpoint and reports the result of the request. */
+function wireUpdateButton() {
+    var button = document.getElementById('checkForUpdatesButton');
+    button.addEventListener('click', async function () {
+        button.disabled = true;
+        try {
+            await postResponse('checkForUpdates', '{}');
+            showToast(state.fieldLabels['web.updateRequested'], 'bg-success text-white');
+        } catch (error) {
+            showToast(state.fieldLabels['web.updateRequestError'], 'bg-danger text-white');
+        } finally {
+            button.disabled = false;
+        }
+    });
+}
+
 // Copies log text even on LAN HTTP pages where the Clipboard API is unavailable.
 async function copyLogToClipboard(contents) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -678,6 +694,7 @@ $(function () {
         buildForm();
         document.getElementById('webMcpServerEnabled').disabled = !!(data && data.headlessMode);
         localizeSettingsPage();
+        wireUpdateButton();
         wireLogAccordion();
         document.getElementById('saveSettings').addEventListener('click', saveForm);
         document.getElementById('wirelessStream').addEventListener('change', refreshSerialPortSuggestions);

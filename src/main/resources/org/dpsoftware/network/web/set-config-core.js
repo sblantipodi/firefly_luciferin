@@ -65,6 +65,12 @@ function buildFieldHtml(f) {
         return '<div class="form-group"><label class="d-block">' + escapeHtml(lbl) + '</label><a class="orange-link" href="https://github.com/sblantipodi/firefly_luciferin/releases" target="_blank" rel="noopener">'
             + escapeHtml(state.fieldLabels.softwareVersionValue || '') + '</a></div>';
     }
+    if (f.id === 'checkForUpdatesButton') {
+        return '<div class="form-group"><label class="d-block" for="' + f.id + '">'
+            + escapeHtml(state.fieldLabels.checkForUpdates || 'Updates') + '</label><button type="button" id="' + f.id
+            + '" class="btn btn-outline-primary w-100">' + escapeHtml(state.fieldLabels['web.checkForUpdates'] || 'Update')
+            + '</button></div>';
+    }
     if (f.type === 'readonly') {
         return '<div class="form-group"><label for="' + f.id + '">' + escapeHtml(lbl) + '</label><input class="form-control" id="' + f.id + '" readonly></div>';
     }

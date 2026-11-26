@@ -45,7 +45,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.SimdBenchmark;
-import org.dpsoftware.gui.controllers.*;
+import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
 import org.dpsoftware.gui.trayicon.TrayIconAwt;
 import org.dpsoftware.gui.trayicon.TrayIconHeadless;
@@ -867,7 +867,21 @@ public class GuiManager {
     }
 
     /**
-     * Show settings when needed and check for updates. In headless mode, only Glow Worm firmware is checked.
+     * Enables update checks and schedules the manual update action shared by the tray icon and web interface.
+     * Desktop mode runs the check on the JavaFX thread. Headless mode runs it on a background thread.
+     */
+    public void requestUpdateCheck() {
+        MainSingleton.getInstance().config.setCheckForUpdates(true);
+        Runnable check = () -> showSettingsAndCheckForUpgrade(true);
+        if (MainSingleton.getInstance().isHeadlessMode()) {
+            Thread.ofVirtual().name("firefly-update-check").start(check);
+        } else {
+            Platform.runLater(check);
+        }
+    }
+
+    /**
+     * Show settings when needed and check for updates. Headless mode skips desktop dialogs.
      *
      * @param showChangelog show changelog
      */

@@ -73,7 +73,7 @@ public record FieldOptions(List<Option> options, String type) {
         options.put("serialPortWireless", new FieldOptions(wirelessChoices.stream()
                 .map(choice -> new Option(choice, choice)).toList(), "string"));
         List<String> selectedChoices = deviceConfig.isWirelessStream() ? wirelessChoices : serialChoices;
-        options.put("serialPort", new FieldOptions(selectedChoices.stream()
+        options.put(WebFieldNames.SERIAL_PORT, new FieldOptions(selectedChoices.stream()
                 .filter(choice -> deviceConfig.getMultiMonitor() == 1 || !Constants.SERIAL_PORT_AUTO.equals(choice))
                 .map(choice -> new Option(choice, choice)).toList(), "string"));
         options.put(WebFieldNames.DESIRED_FRAMERATE, new FieldOptions(MiscTabOptions.captureFramerates().stream()
@@ -245,33 +245,35 @@ public record FieldOptions(List<Option> options, String type) {
                 "showLedLayout", "hideLedLayout", "newProfileName",
                 "addProfile", "profileHelp", "openLog", "logLevel", "traceWarning", "restartConfirm", "settingsSaved",
                 "pauseLogScroll", "resumeLogScroll", "copyLog", "logCopied", "logCopyError",
+                "updateRequested", "updateRequestError",
                 "wholeNumber", "validGroup", "profilePrefix", "collectError",
                 "device.reachable", "device.unreachable")) {
             labels.put("web." + key, CommonUtility.getWord("web." + key));
         }
-        labels.put(WebFieldNames.TOP_LED, CommonUtility.getWord("fxml.ledsconfigtab.toprow"));
-        labels.put(WebFieldNames.LEFT_LED, CommonUtility.getWord("fxml.ledsconfigtab.leftcol"));
-        labels.put(WebFieldNames.RIGHT_LED, CommonUtility.getWord("fxml.ledsconfigtab.rightcol"));
-        labels.put(WebFieldNames.BOTTOM_LEFT_LED, CommonUtility.getWord("fxml.ledsconfigtab.bottomleft"));
-        labels.put(WebFieldNames.BOTTOM_RIGHT_LED, CommonUtility.getWord("fxml.ledsconfigtab.bottomright"));
-        labels.put(WebFieldNames.BOTTOM_ROW_LED, CommonUtility.getWord("fxml.ledsconfigtab.bottomrow"));
-        labels.put(WebFieldNames.LED_START_OFFSET, CommonUtility.getWord("fxml.ledsconfigtab.firstled"));
-        labels.put(WebFieldNames.ORIENTATION, CommonUtility.getWord("fxml.ledsconfigtab.orientation"));
-        labels.put(WebFieldNames.GROUP_BY, CommonUtility.getWord("fxml.ledsconfigtab.group.by"));
-        labels.put(WebFieldNames.SPLIT_BOTTOM_MARGIN, CommonUtility.getWord("fxml.ledsconfigtab.splitbottomrow"));
-        labels.put(WebFieldNames.GRABBER_AREA_TOP_BOTTOM, CommonUtility.getWord("fxml.ledsconfigtab.grabberArea"));
-        labels.put(WebFieldNames.GRABBER_SIDE, CommonUtility.getWord("fxml.ledsconfigtab.grabberArea"));
-        labels.put(WebFieldNames.GAP_TYPE_TOP_BOTTOM, CommonUtility.getWord("fxml.ledsconfigtab.gapType"));
-        labels.put(WebFieldNames.GAP_TYPE_SIDE, CommonUtility.getWord("fxml.ledsconfigtab.gapType"));
-        labels.put(WebFieldNames.OUTPUT_DEVICE, CommonUtility.getWord("fxml.modetab.outputdevice"));
-        labels.put("serialPort", CommonUtility.getWord("fxml.modetab.serialport"));
-        labels.put("serialPortWirelessLabel", CommonUtility.getWord("fxml.modetab.outputdevice"));
+        labels.put(WebFieldNames.UPDATE_BUTTON_LABEL, CommonUtility.getWord(LabelKey.CHECK_UPDATE));
+        labels.put(WebFieldNames.TOP_LED, CommonUtility.getWord(LabelKey.LED_TOP_ROW));
+        labels.put(WebFieldNames.LEFT_LED, CommonUtility.getWord(LabelKey.LED_LEFT_COLUMN));
+        labels.put(WebFieldNames.RIGHT_LED, CommonUtility.getWord(LabelKey.LED_RIGHT_COLUMN));
+        labels.put(WebFieldNames.BOTTOM_LEFT_LED, CommonUtility.getWord(LabelKey.LED_BOTTOM_LEFT));
+        labels.put(WebFieldNames.BOTTOM_RIGHT_LED, CommonUtility.getWord(LabelKey.LED_BOTTOM_RIGHT));
+        labels.put(WebFieldNames.BOTTOM_ROW_LED, CommonUtility.getWord(LabelKey.LED_BOTTOM_ROW));
+        labels.put(WebFieldNames.LED_START_OFFSET, CommonUtility.getWord(LabelKey.LED_START_OFFSET));
+        labels.put(WebFieldNames.ORIENTATION, CommonUtility.getWord(LabelKey.LED_ORIENTATION));
+        labels.put(WebFieldNames.GROUP_BY, CommonUtility.getWord(LabelKey.LED_GROUP_BY));
+        labels.put(WebFieldNames.SPLIT_BOTTOM_MARGIN, CommonUtility.getWord(LabelKey.LED_SPLIT_BOTTOM_ROW));
+        labels.put(WebFieldNames.GRABBER_AREA_TOP_BOTTOM, CommonUtility.getWord(LabelKey.LED_GRABBER_AREA));
+        labels.put(WebFieldNames.GRABBER_SIDE, CommonUtility.getWord(LabelKey.LED_GRABBER_AREA));
+        labels.put(WebFieldNames.GAP_TYPE_TOP_BOTTOM, CommonUtility.getWord(LabelKey.LED_GAP_TYPE));
+        labels.put(WebFieldNames.GAP_TYPE_SIDE, CommonUtility.getWord(LabelKey.LED_GAP_TYPE));
+        labels.put(WebFieldNames.OUTPUT_DEVICE, CommonUtility.getWord(LabelKey.OUTPUT_DEVICE));
+        labels.put(WebFieldNames.SERIAL_PORT, CommonUtility.getWord(LabelKey.MODE_SERIAL_PORT));
+        labels.put("serialPortWirelessLabel", CommonUtility.getWord(LabelKey.OUTPUT_DEVICE));
         labels.put("softwareVersion", CommonUtility.getWord("fxml.devicestab.software.version"));
         String softwareVersionNumber = "v" + MainSingleton.getInstance().version;
         labels.put("softwareVersionNumber", softwareVersionNumber);
         labels.put("softwareVersionValue", Constants.FIREFLY_LUCIFERIN + " (" + softwareVersionNumber + ")");
         labels.put(WebFieldNames.BAUD_RATE, CommonUtility.getWord("fxml.modetab.baudrate"));
-        labels.put(WebFieldNames.STATIC_GLOW_WORM_IP, CommonUtility.getWord("fxml.modetab.serialport"));
+        labels.put(WebFieldNames.STATIC_GLOW_WORM_IP, CommonUtility.getWord(LabelKey.MODE_SERIAL_PORT));
         labels.put(WebFieldNames.DESIRED_FRAMERATE, CommonUtility.getWord("fxml.misctab.captureframerate"));
         labels.put(WebFieldNames.SMOOTHING_TYPE, CommonUtility.getWord("web.misc.smoothing"));
         labels.put(WebFieldNames.SMOOTHING_TARGET_FRAMERATE, CommonUtility.getWord("fxml.dialog.smoothing.target.framerate"));
@@ -367,7 +369,7 @@ public record FieldOptions(List<Option> options, String type) {
         labels.put("satelliteAddTooltip", CommonUtility.getWord("tooltip.sat.manager.add"));
         labels.put("satelliteRemove", CommonUtility.getWord("tooltip.sat.btn"));
         labels.put("satelliteIpError", CommonUtility.getWord("satellite.ip.error.content"));
-        labels.put(WebFieldNames.CHECK_FOR_UPDATES, CommonUtility.getWord("fxml.devicestab.check.updates"));
+        labels.put(WebFieldNames.CHECK_FOR_UPDATES, CommonUtility.getWord(LabelKey.UPDATES));
         labels.put(WebFieldNames.SYNC_CHECK, CommonUtility.getWord("fxml.devicestab.sync.check"));
         labels.put(WebFieldNames.ENABLE_LDR, CommonUtility.getWord("ldr.alert.enabled"));
         labels.put("ldrLabel", CommonUtility.getWord("fxml.eyecare.ldr.current.value"));

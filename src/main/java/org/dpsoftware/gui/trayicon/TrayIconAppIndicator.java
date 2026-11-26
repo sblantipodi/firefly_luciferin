@@ -169,11 +169,10 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.INFO), this::infoAction);
             // Upgrade menu item
             if (MainSingleton.getInstance().whoAmI == 1) {
-                if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
-                    addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.INSTALL_UPDATE), this::showCheckForUpdate);
-                } else {
-                    addMenuItem(gtkMenu, CommonUtility.getWord(LabelKey.CHECK_UPDATE), this::showCheckForUpdate);
-                }
+                String updateLabel = GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()
+                        ? LabelKey.INSTALL_UPDATE : LabelKey.CHECK_UPDATE;
+                addMenuItem(gtkMenu, CommonUtility.getWord(updateLabel),
+                        () -> MainSingleton.getInstance().guiManager.requestUpdateCheck());
             }
             var separator2 = gtk_separator_menu_item_new();
             gtk_menu_shell_append(gtkMenu, separator2);

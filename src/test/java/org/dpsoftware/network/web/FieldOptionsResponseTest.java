@@ -23,13 +23,46 @@ package org.dpsoftware.network.web;
 
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.options.SmoothingOptions;
 import org.dpsoftware.utilities.CommonUtility;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+
+import java.io.IOException;
+import java.util.Locale;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FieldOptionsResponseTest {
+
+    /**
+     * Checks that each supported language provides the web messages and update controls in its own bundle.
+     *
+     * @param language language offered by the settings page
+     * @throws IOException if the language bundle cannot be read
+     */
+    @ParameterizedTest
+    @EnumSource(Enums.Language.class)
+    void providesWebMessagesForEveryLanguage(Enums.Language language) throws IOException {
+        var english = ResourceBundle.getBundle(Constants.MSG_BUNDLE, Locale.ENGLISH);
+        String filename = "/" + Constants.MSG_BUNDLE + "_" + language.name().toLowerCase(Locale.ROOT) + ".properties";
+        try (var input = getClass().getResourceAsStream(filename)) {
+            assertNotNull(input, filename);
+            var translations = new PropertyResourceBundle(input);
+            for (String key : english.keySet()) {
+                if (key.startsWith("web.") || key.equals(LabelKey.CHECK_UPDATE) || key.equals(LabelKey.UPDATES)) {
+                    assertTrue(translations.containsKey(key) && !translations.getString(key).isBlank(),
+                            () -> filename + " is missing " + key);
+                }
+            }
+        }
+    }
 
     /**
      * Checks the complete options response used before the web form is built.

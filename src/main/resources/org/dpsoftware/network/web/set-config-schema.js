@@ -159,7 +159,8 @@ export const sections = [
             {id: 'multiMonitor', type: 'select'},
             {id: 'multiScreenSingleDevice', type: 'checkbox', numeric: false},
             {id: 'serialPort', type: 'combo'},
-            {id: 'baudRate', type: 'select'}
+            {id: 'baudRate', type: 'select'},
+            {id: 'checkForUpdatesButton', type: 'action'}
         ],
         subAccordions: [
             {
