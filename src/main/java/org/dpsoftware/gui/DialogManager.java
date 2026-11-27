@@ -44,6 +44,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.bindings.notify.LibNotify;
+import org.dpsoftware.gui.bindings.notify.WinNotify;
 import org.dpsoftware.gui.controllers.*;
 import org.dpsoftware.gui.tc.RleVisualMapHandler;
 import org.dpsoftware.gui.tc.TcInteractionHandler;
@@ -178,7 +179,12 @@ public class DialogManager {
             return;
         }
         boolean windows = NativeExecutor.isWindows();
-        if (windows && guiManager.trayIconManager instanceof TrayIconAwt tray && tray.trayIcon != null) {
+        if (windows && WinNotify.isSupported()) {
+            Runnable fallback = (guiManager.trayIconManager instanceof TrayIconAwt tray && tray.trayIcon != null)
+                    ? () -> tray.trayIcon.displayMessage(highlight, content, notificationType)
+                    : null;
+            WinNotify.showWindowsNotification(highlight, content, notificationType, fallback);
+        } else if (windows && guiManager.trayIconManager instanceof TrayIconAwt tray && tray.trayIcon != null) {
             tray.trayIcon.displayMessage(highlight, content, notificationType);
         } else if (!windows && LibNotify.isSupported()) {
             LibNotify.showLinuxNotification(highlight, content, notificationType);
@@ -190,7 +196,7 @@ public class DialogManager {
     }
 
     /**
-     * Show localized notification. This uses the OS notification system via AWT tray icon.
+     * Show localized notification. This uses the OS notification system via WinNotify on Windows or LibNotify on Linux.
      *
      * @param highlight        dialog title
      * @param content          dialog msg
@@ -198,19 +204,14 @@ public class DialogManager {
      * @param notificationType notification type
      */
     public void showLocalizedNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
-        if (MainSingleton.getInstance().isHeadlessMode()) {
+        if (MainSingleton.getInstance().isHeadlessMode() || NativeExecutor.isWindows()) {
             showNotification(CommonUtility.getWord(highlight), CommonUtility.getWord(content), title, notificationType);
             return;
         }
-        if (NativeExecutor.isWindows()) {
-            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon
-                    .displayMessage(CommonUtility.getWord(highlight), CommonUtility.getWord(content), notificationType);
+        if (LibNotify.isSupported()) {
+            LibNotify.showLocalizedLinuxNotification(highlight, content, notificationType);
         } else {
-            if (LibNotify.isSupported()) {
-                LibNotify.showLocalizedLinuxNotification(highlight, content, notificationType);
-            } else {
-                showLocalizedAlert(title, highlight, content, convertAlertType(notificationType));
-            }
+            showLocalizedAlert(title, highlight, content, convertAlertType(notificationType));
         }
     }
 
