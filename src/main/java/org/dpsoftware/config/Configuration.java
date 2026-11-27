@@ -63,7 +63,7 @@ public class Configuration implements Cloneable {
     private float audioLoopbackGain = 0.0f;
     private boolean autoDetectBlackBars = true;
     // Arduino/Microcontroller config
-    private String baudRate = Constants.DEFAULT_BAUD_RATE;
+    private volatile String baudRate = Constants.DEFAULT_BAUD_RATE;
     private int bottomLeftLed;
     private int bottomRightLed;
     private int bottomRowLed;

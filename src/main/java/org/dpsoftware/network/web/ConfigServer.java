@@ -43,10 +43,7 @@ import org.dpsoftware.gui.controllers.DisplayDialogController;
 import org.dpsoftware.gui.controllers.options.*;
 import org.dpsoftware.gui.trayicon.TrayIconState;
 import org.dpsoftware.lut.CubeLutToneMap;
-import org.dpsoftware.managers.ManagerSingleton;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.PipelineManager;
-import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -155,7 +152,8 @@ public class ConfigServer {
                 unavailableSource == null ? null : CommonUtility.getWord(LabelKey.CAPTURE_SOURCE_UNAVAILABLE_CONTEXT)
                         .replace("{0}", unavailableSource),
                 MainSingleton.getInstance().config.isMqttEnable() && ManagerSingleton.getInstance().mqttConnectionError
-                        ? CommonUtility.getWord(LabelKey.MQTT_ERROR_CONTEXT) : null));
+                        ? CommonUtility.getWord(LabelKey.MQTT_ERROR_CONTEXT) : null,
+                SerialManager.activeBaudRateAdjustment(), SerialManager.getBaudRateScanNotice()));
     }
 
     static String tailLog(Path logFile) throws IOException {
@@ -238,6 +236,8 @@ public class ConfigServer {
         }
         Set<String> restartReasons = StorageManager.restartReasons(savedConfig, updatedConfig);
         boolean restartRequired = !restartReasons.isEmpty();
+        boolean preserveBaudRate = !payload.has(WebFieldNames.BAUD_RATE);
+        boolean baudRateChanged = !preserveBaudRate && DevicesTabOptions.baudRateChanged(savedConfig, updatedConfig);
         String query = Objects.toString(exchange.getRequestURI().getRawQuery(), "");
         if (restartRequired && Arrays.asList(query.split("&")).contains("allowRestart=false")) {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_CONFLICT, "Luciferin requires a restart");
@@ -246,13 +246,12 @@ public class ConfigServer {
         try {
             // Persist to the active or main configuration.
             updatedConfig.setEffect(LocalizedEnum.fromTextToBase(Enums.Effect.class, updatedConfig.getEffect()));
-            storageManager.writeConfig(updatedConfig, null);
+            storageManager.writeConfig(updatedConfig, null, preserveBaudRate);
         } catch (IOException e) {
             HttpResponses.sendText(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, "Unable to save configuration: " + e.getMessage());
             return;
         }
         log.info("Configuration updated via setConfig endpoint");
-        boolean baudRateChanged = DevicesTabOptions.baudRateChanged(savedConfig, updatedConfig);
         if (NetworkTabOptions.requiresDeviceProgramming(savedConfig, updatedConfig)
                 || (baudRateChanged && updatedConfig.isFullFirmware())) {
             var device = CommonUtility.getDeviceToUse();
@@ -292,7 +291,7 @@ public class ConfigServer {
             }
         } else {
             ObjectNode persistedConfig = ConfigurationPayload.toWebConfig(updatedConfig);
-            applySavedConfiguration(savedConfig, updatedConfig);
+            applySavedConfiguration(savedConfig, updatedConfig, preserveBaudRate);
             HttpResponses.sendJson(exchange, Map.of("status", "OK", "config", persistedConfig));
         }
     }
@@ -302,8 +301,9 @@ public class ConfigServer {
      *
      * @param savedConfig   persisted configuration before the save
      * @param updatedConfig newly persisted configuration to apply at runtime
+     * @param preserveBaudRate whether the request left the baud rate untouched
      */
-    private void applySavedConfiguration(Configuration savedConfig, Configuration updatedConfig) {
+    private void applySavedConfiguration(Configuration savedConfig, Configuration updatedConfig, boolean preserveBaudRate) {
         MainSingleton main = MainSingleton.getInstance();
         Configuration runningConfig = main.config != null ? main.config : savedConfig;
         // Device discovery resolves AUTO and static IP selections in the running configuration.
@@ -330,6 +330,11 @@ public class ConfigServer {
                 || updatedConfig.getLedStartOffset() != runningConfig.getLedStartOffset()
                 || updatedConfig.getMonitorNumber() != runningConfig.getMonitorNumber()
                 || updatedConfig.getResamplingFactor() != runningConfig.getResamplingFactor();
+        var adjustment = preserveBaudRate ? SerialManager.activeBaudRateAdjustment() : null;
+        if (adjustment != null && Objects.equals(updatedConfig.getBaudRate(), adjustment.previousRate())
+                && SerialManager.matchesOutputDevice(updatedConfig.getOutputDevice(), adjustment.port())) {
+            updatedConfig.setBaudRate(adjustment.detectedRate());
+        }
         main.config = updatedConfig;
         if (!Objects.equals(runningConfig.getRuntimeLogLevel(), updatedConfig.getRuntimeLogLevel())) {
             FireflyLuciferin.applyRuntimeLogLevel(updatedConfig);
@@ -916,10 +921,13 @@ public class ConfigServer {
      * @param smoothing localized smoothing level, empty when smoothing is disabled
      * @param captureSourceUnavailable localized warning for the missing capture source, null when available
      * @param mqttConnectionError localized warning for a failed MQTT connection, null when connected or disabled
+     * @param baudRateAdjustment automatic correction to the active serial profile, null when absent
+     * @param baudRateScanNotice localized status message while testing alternative serial speeds, null when idle
      */
     public record FpsDto(float producing, float consuming, boolean fireflyUpdateAvailable,
                          boolean glowWormUpdateAvailable, boolean glowWormUpdateInProgress, boolean waitingForSatellites, String trayIconImage,
                          Double adaptiveGamma, boolean hdrActive, String aspectRatio, String smoothing,
-                         String captureSourceUnavailable, String mqttConnectionError) {
+                         String captureSourceUnavailable, String mqttConnectionError,
+                         SerialManager.BaudRateAdjustment baudRateAdjustment, String baudRateScanNotice) {
     }
 }

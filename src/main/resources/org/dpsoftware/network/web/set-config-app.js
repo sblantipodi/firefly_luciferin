@@ -25,6 +25,9 @@ async function saveForm() {
     var payload;
     try {
         payload = collectPayload();
+        if (payload.baudRate === String(state.lastConfig?.baudRate)) {
+            delete payload.baudRate;
+        }
     } catch (e) {
         showToast((state.fieldLabels['web.collectError'] || 'Invalid value:') + ' ' + e.message, 'bg-danger text-white');
         console.error('collectPayload failed', e);

@@ -49,6 +49,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,6 +61,7 @@ import java.util.stream.Stream;
 public class StorageManager {
 
     private static final Duration STALE_RESTART_LOCK_AGE = Duration.ofMinutes(5);
+    private static final Object CONFIG_WRITE_LOCK = new Object();
     private final ObjectMapper mapper;
     private final String path;
 
@@ -67,13 +69,22 @@ public class StorageManager {
      * Constructor
      */
     public StorageManager() {
+        this(InstanceConfigurer.getConfigPath());
+    }
+
+    /**
+     * Set up YAML storage for the specified configuration directory.
+     *
+     * @param configPath directory containing the profile files
+     */
+    StorageManager(String configPath) {
         // Initialize yaml file writer
         mapper = new ObjectMapper(new YAMLFactory());
         mapper.findAndRegisterModules();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         // Create FireflyLuciferin in the XDG_HOME folder
-        path = InstanceConfigurer.getConfigPath();
+        path = configPath;
     }
 
     /**
@@ -161,26 +172,43 @@ public class StorageManager {
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
-        if (config.isAutomaticCapturePending()) {
-            try {
-                config = (Configuration) config.clone();
-                // Keep AUTO across saves and restarts while waiting for a source or probing candidates.
-                config.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
-            } catch (CloneNotSupportedException e) {
-                throw new IOException("Cannot preserve automatic capture selection", e);
+        writeConfig(config, forceFilename, false);
+    }
+
+    /**
+     * Save the configuration and keep the baud rate currently on disk when the user left that field untouched.
+     *
+     * @param config           configuration to save
+     * @param forceFilename    target file name, or {@code null} to use the active profile
+     * @param preserveBaudRate whether to reuse the baud rate already saved in the target file
+     * @throws IOException if the configuration cannot be written
+     */
+    public void writeConfig(Configuration config, String forceFilename, boolean preserveBaudRate) throws IOException {
+        synchronized (CONFIG_WRITE_LOCK) {
+            String filename = configFilename(forceFilename);
+            Configuration currentConfig = readConfigFile(filename);
+            if (preserveBaudRate && currentConfig != null) {
+                config.setBaudRate(currentConfig.getBaudRate());
             }
-        }
-        String filename = configFilename(forceFilename);
-        Configuration currentConfig = readConfigFile(filename);
-        if (currentConfig != null) {
-            File file = new File(path + File.separator + filename);
-            if (file.delete()) {
-                log.info(CommonUtility.getWord(LabelKey.CLEANING_OLD_CONFIG));
-            } else {
-                log.info(CommonUtility.getWord(LabelKey.FAILED_TO_CLEAN_CONFIG));
+            if (config.isAutomaticCapturePending()) {
+                try {
+                    config = (Configuration) config.clone();
+                    // Keep AUTO across saves and restarts while waiting for a source or probing candidates.
+                    config.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
+                } catch (CloneNotSupportedException e) {
+                    throw new IOException("Cannot preserve automatic capture selection", e);
+                }
             }
+            if (currentConfig != null) {
+                File file = new File(path + File.separator + filename);
+                if (file.delete()) {
+                    log.info(CommonUtility.getWord(LabelKey.CLEANING_OLD_CONFIG));
+                } else {
+                    log.info(CommonUtility.getWord(LabelKey.FAILED_TO_CLEAN_CONFIG));
+                }
+            }
+            mapper.writeValue(new File(path + File.separator + filename), config);
         }
-        mapper.writeValue(new File(path + File.separator + filename), config);
     }
 
     /**
@@ -190,12 +218,72 @@ public class StorageManager {
      * @throws IOException when the current configuration cannot be read or updated
      */
     public void writeCubeLut(String cubeLut) throws IOException {
-        Path configFile = Path.of(path, configFilename(null));
+        synchronized (CONFIG_WRITE_LOCK) {
+            updateConfigFile(configFilename(null), config -> {
+                config.put("cubeLut", cubeLut);
+                return true;
+            });
+        }
+    }
+
+    /**
+     * Reconcile the active serial configuration when its profile, port, and saved rate still match the probe.
+     *
+     * @param profile      active profile identifier captured at the start of the probe
+     * @param serialPort   system name of the port that reported the rate
+     * @param previousRate configured baud rate captured at the start of the probe
+     * @param detectedRate baud rate reported by the device
+     * @return whether a different baud rate was saved to the profile
+     * @throws IOException if the profile cannot be read or updated
+     */
+    boolean writeDetectedBaudRate(String profile, String serialPort, String previousRate, String detectedRate) throws IOException {
+        synchronized (CONFIG_WRITE_LOCK) {
+            MainSingleton main = MainSingleton.getInstance();
+            Configuration running = main.config;
+            if (!Objects.equals(main.profileArg, profile) || running == null || running.isWirelessStream()
+                    || !SerialManager.matchesOutputDevice(running.getOutputDevice(), serialPort)
+                    || !Objects.equals(running.getBaudRate(), previousRate)
+                    || Objects.equals(previousRate, detectedRate)) {
+                return false;
+            }
+            boolean updated = updateConfigFile(configFilename(null, profile), config -> {
+                String storedRate = config.has("baudRate") ? config.path("baudRate").asText(null) : Constants.DEFAULT_BAUD_RATE;
+                if (config.path("wirelessStream").asBoolean() || !SerialManager.matchesOutputDevice(config.path("outputDevice").asText(null), serialPort)
+                        || !Objects.equals(storedRate, previousRate)) {
+                    return false;
+                }
+                config.put("baudRate", detectedRate);
+                return true;
+            });
+            if (updated) {
+                Configuration current = main.config;
+                if (current != null && Objects.equals(main.profileArg, profile) && !current.isWirelessStream()
+                        && SerialManager.matchesOutputDevice(current.getOutputDevice(), serialPort)
+                        && Objects.equals(current.getBaudRate(), previousRate)) {
+                    current.setBaudRate(detectedRate);
+                }
+            }
+            return updated;
+        }
+    }
+
+    /**
+     * Load a YAML object and replace its file only when the update reports a change.
+     *
+     * @param filename profile file name inside the configuration directory
+     * @param update   modifies the loaded object and returns whether to save it
+     * @return whether the file was replaced
+     * @throws IOException if the file cannot be read, parsed as an object, or replaced
+     */
+    private boolean updateConfigFile(String filename, Predicate<ObjectNode> update) throws IOException {
+        Path configFile = Path.of(path, filename);
         if (!(mapper.readTree(configFile.toFile()) instanceof ObjectNode config)) {
             throw new IOException("Invalid configuration file");
         }
-        config.put("cubeLut", cubeLut);
-        Path temporary = Files.createTempFile(configFile.getParent(), ".lut-config-", ".tmp");
+        if (!update.test(config)) {
+            return false;
+        }
+        Path temporary = Files.createTempFile(configFile.getParent(), ".config-", ".tmp");
         try {
             mapper.writeValue(temporary.toFile(), config);
             try {
@@ -206,19 +294,32 @@ public class StorageManager {
         } finally {
             Files.deleteIfExists(temporary);
         }
+        return true;
     }
 
     /**
      * Resolves the active profile or instance configuration used by settings writes.
+     *
+     * @param forceFilename explicit file name, or {@code null} to use the active profile
+     * @return configuration file name
      */
     private String configFilename(String forceFilename) {
+        return configFilename(forceFilename, MainSingleton.getInstance().profileArg);
+    }
+
+    /**
+     * Resolve the configuration file name for an explicit file, a named profile, or the instance default.
+     *
+     * @param forceFilename explicit file name, or {@code null} to use the supplied profile
+     * @param profile       profile identifier, or {@code null} to use the instance default
+     * @return configuration file name
+     */
+    private String configFilename(String forceFilename, String profile) {
         if (forceFilename != null) {
             return forceFilename;
-        } else if (MainSingleton.getInstance().profileArg != null
-                && !MainSingleton.getInstance().profileArg.isEmpty()
-                && !LabelKey.DEFAULT.equals(MainSingleton.getInstance().profileArg)
-                && !CommonUtility.getWord(LabelKey.DEFAULT).equals(MainSingleton.getInstance().profileArg)) {
-            return getProfileFileName(MainSingleton.getInstance().profileArg);
+        } else if (profile != null && !profile.isEmpty() && !LabelKey.DEFAULT.equals(profile)
+                && !CommonUtility.getWord(LabelKey.DEFAULT).equals(profile)) {
+            return getProfileFileName(profile);
         } else {
             return switch (MainSingleton.getInstance().whoAmI) {
                 case 1 -> Constants.CONFIG_FILENAME;

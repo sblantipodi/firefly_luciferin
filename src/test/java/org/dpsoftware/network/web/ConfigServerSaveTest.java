@@ -107,7 +107,7 @@ class ConfigServerSaveTest {
 
             verify(exchange).sendResponseHeaders(eq(status), anyLong());
             var manager = storage.constructed().getFirst();
-            verify(manager, times(status == 200 ? 1 : 0)).writeConfig(any(Configuration.class), isNull());
+            verify(manager, times(status == 200 ? 1 : 0)).writeConfig(any(Configuration.class), isNull(), eq(true));
             nativeExecutor.verify(NativeExecutor::restartNativeInstanceWithCurrentProfile, times(restart ? 1 : 0));
             boolean offsetChanged = payload.contains("ledStartOffset");
             pipeline.verify(() -> PipelineManager.restartCapture(any(Runnable.class)), times(offsetChanged && capturing ? 1 : 0));

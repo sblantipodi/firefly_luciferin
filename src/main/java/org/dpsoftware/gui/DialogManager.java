@@ -160,18 +160,32 @@ public class DialogManager {
      * @param notificationType notification type
      */
     public void showNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        showNotification(highlight, content, title, notificationType, true);
+    }
+
+    /**
+     * Send a native desktop notification with an optional dialog fallback.
+     *
+     * @param highlight           notification heading
+     * @param content             notification message
+     * @param title               window title if the dialog fallback is used
+     * @param notificationType    notification severity
+     * @param allowDialogFallback whether to show a dialog if native notifications are unavailable
+     */
+    void showNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType, boolean allowDialogFallback) {
         if (MainSingleton.getInstance().isHeadlessMode()) {
             log.info("{}: {}", highlight, content);
             return;
         }
-        if (NativeExecutor.isWindows()) {
-            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(highlight, content, notificationType);
+        boolean windows = NativeExecutor.isWindows();
+        if (windows && guiManager.trayIconManager instanceof TrayIconAwt tray && tray.trayIcon != null) {
+            tray.trayIcon.displayMessage(highlight, content, notificationType);
+        } else if (!windows && LibNotify.isSupported()) {
+            LibNotify.showLinuxNotification(highlight, content, notificationType);
+        } else if (allowDialogFallback) {
+            showAlert(title, highlight, content, convertAlertType(notificationType));
         } else {
-            if (LibNotify.isSupported()) {
-                LibNotify.showLinuxNotification(highlight, content, notificationType);
-            } else {
-                showAlert(title, highlight, content, convertAlertType(notificationType));
-            }
+            log.info("{}: {}", highlight, content);
         }
     }
 

@@ -21,7 +21,6 @@
  */
 package org.dpsoftware.gui.controllers.options;
 
-import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -164,8 +163,7 @@ public final class DevicesTabOptions {
         if (selected == null) {
             throw new IllegalArgumentException("Invalid baud rate");
         }
-        MainSingleton.getInstance().baudRate = selected.getBaudRateValue();
-        new SerialManager().sendSerialParams(red, green, blue);
+        new SerialManager().sendSerialParams(red, green, blue, selected.getBaudRateValue());
     }
 
     /**

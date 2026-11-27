@@ -255,7 +255,8 @@ body {
 .glow-worm-update-available-notice,
 .satellite-waiting-notice,
 .capture-source-unavailable-notice,
-.mqtt-connection-error-notice {
+.mqtt-connection-error-notice,
+.serial-baud-rate-notice {
     padding: 0.55rem 1rem;
     border-bottom: 1px solid #e8b956;
     background: #fff3cd;

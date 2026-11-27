@@ -50,10 +50,7 @@ import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
 import org.dpsoftware.gui.trayicon.TrayIconAwt;
 import org.dpsoftware.gui.trayicon.TrayIconHeadless;
 import org.dpsoftware.gui.trayicon.TrayIconManager;
-import org.dpsoftware.managers.ManagerSingleton;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.PipelineManager;
-import org.dpsoftware.managers.UpgradeManager;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
@@ -492,6 +489,30 @@ public class GuiManager {
                 instanceof SettingsController controller) {
             controller.refreshAutomaticCaptureMethod();
         }
+    }
+
+    /**
+     * Refresh the baud rate in a loaded settings window and send a desktop notification.
+     *
+     * @param adjustment correction saved to the active profile
+     */
+    public void showSerialBaudRateAdjustment(SerialManager.BaudRateAdjustment adjustment) {
+        if (mainScene != null && mainScene.getRoot().getProperties().get(SettingsController.class)
+                instanceof SettingsController controller) {
+            controller.refreshSerialBaudRate();
+        }
+        dialogManager().showNotification(CommonUtility.getWord(LabelKey.BAUDRATE_MISMATCH_TITLE), adjustment.message(),
+                Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.WARNING, false);
+    }
+
+    /**
+     * Send a desktop notification when automatic baud rate scanning starts.
+     *
+     * @param message localized scan message
+     */
+    public void showSerialBaudRateScanNotice(String message) {
+        dialogManager().showNotification(CommonUtility.getWord(LabelKey.BAUDRATE_SCAN_TITLE), message,
+                Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO, false);
     }
 
     /**

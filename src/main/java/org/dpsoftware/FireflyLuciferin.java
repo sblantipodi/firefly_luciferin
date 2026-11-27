@@ -126,7 +126,6 @@ public class FireflyLuciferin extends Application {
             NetworkSingleton.getInstance().messageServer.initNumLed();
         }
         setLedNumber(ledMatrixInUse);
-        main.baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + main.getConfig().getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
         initThreadPool();

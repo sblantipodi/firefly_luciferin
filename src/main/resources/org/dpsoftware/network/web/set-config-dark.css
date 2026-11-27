@@ -79,7 +79,8 @@ body {
 .glow-worm-update-available-notice,
 .satellite-waiting-notice,
 .capture-source-unavailable-notice,
-.mqtt-connection-error-notice {
+.mqtt-connection-error-notice,
+.serial-baud-rate-notice {
     background: #5a411d;
     color: #ffe1a8;
     border-color: #966c31;

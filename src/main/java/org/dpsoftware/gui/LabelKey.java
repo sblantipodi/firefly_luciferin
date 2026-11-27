@@ -82,6 +82,10 @@ public final class LabelKey {
     public static final String BAUDRATE_TITLE = "baudrate.title";
     public static final String BAUDRATE_HEADER = "baudrate.header";
     public static final String BAUDRATE_CONTEXT = "baudrate.context";
+    public static final String BAUDRATE_MISMATCH_TITLE = "baudrate.mismatch.title";
+    public static final String BAUDRATE_MISMATCH_MESSAGE = "baudrate.mismatch.message";
+    public static final String BAUDRATE_SCAN_TITLE = "baudrate.scan.title";
+    public static final String BAUDRATE_SCAN_MESSAGE = "baudrate.scan.message";
     public static final String INITIAL_TITLE = "initial.title";
     public static final String INITIAL_HEADER = "initial.header";
     public static final String INITIAL_CONTEXT = "initial.context";

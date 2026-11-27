@@ -1,5 +1,6 @@
 // Server status polling for the settings page: periodically fetches the FPS endpoint to show the live framerate and detect when the server is offline.
 import {fetchJson} from './set-config-api.js';
+import {state} from './set-config-state.js';
 
 var serverOnline = true;
 var serverPollController = null;
@@ -67,6 +68,32 @@ function updateFooterSmoothing(status) {
     value.textContent = label;
 }
 
+/**
+ * Show an active baud rate scan or the completed correction and preserve edits in the form.
+ *
+ * @param {{port: string, previousRate: (string|null), detectedRate: string, message: string}|null|undefined} adjustment correction from server status
+ * @param {string|null|undefined} scanNotice localized message while the scan is in progress
+ */
+function updateSerialBaudRate(adjustment, scanNotice) {
+    var notice = document.getElementById('serialBaudRateNotice');
+    var message = scanNotice || adjustment?.message || '';
+    if (notice && notice.textContent !== message) {
+        notice.textContent = message;
+        notice.hidden = !message;
+    }
+    var config = state.lastConfig;
+    if (!adjustment || !config || config.wirelessStream
+        || (config.outputDevice !== 'AUTO' && config.outputDevice !== adjustment.port)
+        || String(config.baudRate) !== adjustment.previousRate) {
+        return;
+    }
+    var baudRate = document.getElementById('baudRate');
+    if (baudRate?.value === adjustment.previousRate) {
+        baudRate.value = adjustment.detectedRate;
+    }
+    config.baudRate = adjustment.detectedRate;
+}
+
 // Polls the 'fps' endpoint to update the FPS counter and detect server offline/online transitions (with a 3s timeout to bound pending
 // requests); force=true aborts a previous in-flight poll (used on tab visibility change).
 export function pollServerStatus(force) {
@@ -123,6 +150,7 @@ export function pollServerStatus(force) {
             mqttConnectionErrorNotice.textContent = mqttWarning;
             mqttConnectionErrorNotice.hidden = mqttWarning.length === 0;
         }
+        updateSerialBaudRate(fps.baudRateAdjustment, fps.baudRateScanNotice);
         if (!serverOnline) {
             serverOnline = true;
             document.body.classList.remove('server-down');

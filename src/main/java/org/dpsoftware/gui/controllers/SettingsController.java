@@ -55,6 +55,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -297,6 +298,8 @@ public class SettingsController {
     @FXML
     public void save(InputEvent e, String profileName) {
         try {
+            refreshSerialBaudRate();
+            boolean preserveBaudRate = currentConfig != null && Objects.equals(devicesTabController.baudRate.getValue(), currentConfig.getBaudRate());
             boolean restartCapture = ledsConfigTabController.isCaptureRestartNeeded();
             resetLedMatrixWithConditions();
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
@@ -344,11 +347,11 @@ public class SettingsController {
                 }
             }
             if (profileName == null) {
-                writeDefaultConfig(e, config, firstStartup);
+                writeDefaultConfig(e, config, firstStartup, preserveBaudRate);
             } else {
-                sm.writeConfig(config, profileName);
+                sm.writeConfig(config, profileName, preserveBaudRate);
                 MainSingleton.getInstance().config = config;
-                saveExitRestart(e, config);
+                saveExitRestart(e, config, preserveBaudRate);
             }
             if (restartCapture && MainSingleton.getInstance().RUNNING && !MainSingleton.getInstance().isRestartNeeded()) {
                 PipelineManager.restartCapture(() -> log.info("Restarting capture due to a change in the LEDs configuration"));
@@ -370,10 +373,11 @@ public class SettingsController {
      * @param e            event that triggered the save event
      * @param config       config to save
      * @param firstStartup true if no config file is present  check if config exist
+     * @param preserveBaudRate whether the user left the baud rate field untouched
      * @throws IOException                can't write
      * @throws CloneNotSupportedException can't clone
      */
-    private void writeDefaultConfig(InputEvent e, Configuration config, boolean firstStartup) throws IOException, CloneNotSupportedException {
+    private void writeDefaultConfig(InputEvent e, Configuration config, boolean firstStartup, boolean preserveBaudRate) throws IOException, CloneNotSupportedException {
         // Manage settings from one instance to the other, for multi monitor setup
         if (MainSingleton.getInstance().whoAmI != 1) {
             Configuration mainConfig = sm.readMainConfig();
@@ -397,8 +401,11 @@ public class SettingsController {
             }
         }
         Configuration defaultConfig = sm.readProfileInUseConfig();
-        sm.writeConfig(config, null);
+        sm.writeConfig(config, null, preserveBaudRate);
         MainSingleton.getInstance().config = config;
+        if (preserveBaudRate && defaultConfig != null) {
+            defaultConfig.setBaudRate(config.getBaudRate());
+        }
         sm.checkProfileDifferences(defaultConfig, MainSingleton.getInstance().config);
         if (firstStartup || (MainSingleton.getInstance().whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
                 || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))))) {
@@ -406,7 +413,7 @@ public class SettingsController {
             cancel(e);
         }
         if (!firstStartup) {
-            saveExitRestart(e, config);
+            saveExitRestart(e, config, preserveBaudRate);
         }
         refreshValuesOnScene();
     }
@@ -416,9 +423,14 @@ public class SettingsController {
      *
      * @param e      event
      * @param config to save
+     * @param preserveBaudRate whether the user left the baud rate field untouched
      * @throws IOException can't write
      */
-    private void saveExitRestart(InputEvent e, Configuration config) throws IOException {
+    private void saveExitRestart(InputEvent e, Configuration config, boolean preserveBaudRate) throws IOException {
+        if (preserveBaudRate) {
+            currentConfig.setBaudRate(config.getBaudRate());
+            devicesTabController.baudRate.setValue(config.getBaudRate());
+        }
         String oldBaudrate = currentConfig.getBaudRate();
         boolean isBaudRateChanged = !devicesTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
         if (isBaudRateChanged || isMqttParamChanged()) {
@@ -887,6 +899,22 @@ public class SettingsController {
             currentConfig.setCaptureMethod(selected.name());
             modeTabController.captureMethod.setValue(selected);
             checkProfileDifferences();
+        }
+    }
+
+    /**
+     * Bring the saved baud rate in the settings window up to date while preserving pending user edits.
+     */
+    public void refreshSerialBaudRate() {
+        var adjustment = SerialManager.activeBaudRateAdjustment();
+        if (adjustment == null || currentConfig == null || currentConfig.isWirelessStream()
+                || !SerialManager.matchesOutputDevice(currentConfig.getOutputDevice(), adjustment.port())
+                || !Objects.equals(currentConfig.getBaudRate(), adjustment.previousRate())) {
+            return;
+        }
+        currentConfig.setBaudRate(adjustment.detectedRate());
+        if (Objects.equals(devicesTabController.baudRate.getValue(), adjustment.previousRate())) {
+            devicesTabController.baudRate.setValue(adjustment.detectedRate());
         }
     }
 

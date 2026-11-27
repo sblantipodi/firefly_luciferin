@@ -56,7 +56,7 @@ public class ManagerSingleton {
     public boolean pipelineStopping = false;
     public String lastEffectInUse = "";
     public boolean updateMqttDiscovery = false;
-    public boolean serialVersionOk = false;
+    public volatile boolean serialVersionOk = false;
     public String deviceNameForSerialDevice = "";
     public List<CaptureDeviceUtilities.CaptureDevice> captureDevices = new ArrayList<>();
 

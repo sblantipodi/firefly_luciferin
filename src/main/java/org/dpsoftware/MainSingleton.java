@@ -63,10 +63,9 @@ public class MainSingleton {
     public float FPS_PRODUCER = 0;
     public float FPS_GW_CONSUMER = 0;
     public SimpleDateFormat formatter;
-    public SerialPort serial;
-    public OutputStream output;
+    public volatile SerialPort serial;
+    public volatile OutputStream output;
     public boolean serialConnected = false;
-    public int baudRate = 0;
     // LED strip, monitor and microcontroller config
     public volatile Configuration config;
     // Start and Stop threads
@@ -81,7 +80,7 @@ public class MainSingleton {
     public int ledNumHighLowCount;
     public int ledNumHighLowCountSecondPart;
     public GuiManager guiManager;
-    public boolean communicationError = false;
+    public volatile boolean communicationError = false;
     public Color colorInUse;
     public int gpio = 255; // 255 means not set, firmware discards this value
     public int colorOrder = 0; // 1 means GRB, 2 RGB, 3 BGR
