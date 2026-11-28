@@ -27,7 +27,7 @@ If you like **Luciferin**, give it a star, or fork it and contribute!
 [![CI Build](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/build.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions)
 [![CodeQL Analysis](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml)
 
-[![Watch Luciferin ambient lighting in action](https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/luciferin_monitor.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
+[![Watch Luciferin ambient lighting in action](https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_monitor.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
 Click the image to watch Luciferin in action.
 
 ## Two capture modes, one lighting system
@@ -41,7 +41,7 @@ Firefly automatically detects whether a desktop is available. The **web interfac
 **dedicated desktop interface** is available when a desktop environment is present. On a Raspberry Pi with limited RAM,
 an installation without a desktop leaves more memory available for capture and processing.
 
-[![Luciferin connection overview: direct PC screen capture, HDMI capture through a splitter and USB card, and optional satellite lighting](https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/luciferin_schema.jpg)](https://github.com/sblantipodi/toremove/wiki/Quick-start)
+[![Luciferin connection overview: direct PC screen capture, HDMI capture through a splitter and USB card, and optional satellite lighting](https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_schema.jpg)](https://github.com/sblantipodi/toremove/wiki/Quick-start)
 
 ## Key features
 
@@ -89,18 +89,18 @@ When a desktop environment is available, the dedicated desktop interface provide
 while the web interface remains accessible.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/settings_1.png">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_1.png">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/settings_2.png">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_2.png">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/settings_3.png">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_3.png">
 </p>
 
-[<img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/test_image_anim_color.gif?raw=true">](https://youtu.be/j7IV9rQr7J8)
+[<img src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/test_image_anim_color.gif?raw=true">](https://youtu.be/j7IV9rQr7J8)
 
 #### (click the image above to watch it on YouTube)
 
@@ -115,7 +115,7 @@ PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB), without
 
 The Luciferin Official PCB requires a "D1 Mini format" board. With the new [**Luciferin Module for the Official PCB**](https://github.com/sblantipodi/toremove/wiki/Ready-to-print-PCB#luciferin-module-for-the-official-pcb), you can use a smaller board, opening up more upgrade possibilities without the need to replace the PCB or redo any soldering or cabling.
 
-<img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/pcb_noeth.jpg?raw=true">
+<img src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/pcb_noeth.jpg?raw=true">
 
 Explore [**other compatible hardware**](https://github.com/sblantipodi/toremove/wiki/Compatible-Hardware), including
 **supported prebuilt ready-to-use controllers**.
@@ -153,10 +153,10 @@ your phone.
 - **Firefly Luciferin**: besides the desktop app, it now offers its own web interface for full control from your phone
   or any browser.
 
-<img align="center" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface.jpg?raw=true">  
+<img align="center" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/web_interface.jpg?raw=true">  
 <p> </p>   
 
-<img align="center" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/web_interface_ff.jpg?raw=true">
+<img align="center" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/web_interface_ff.jpg?raw=true">
 <p> </p>  
 
 ## Home Assistant integration
@@ -164,7 +164,7 @@ your phone.
 Luciferin can be easily integrated
 in [Home Assistant](https://github.com/sblantipodi/toremove/wiki/Home-Automation-configs).  
 <br>
-<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ha_luciferin.jpg?raw=true">
+<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/ha_luciferin.jpg?raw=true">
 
 Thanks to Matter over WiFi it can be easily integrated with Google Home and Alexa.
 
@@ -174,7 +174,7 @@ Thanks to Matter over WiFi, Luciferin integrates with the major smart home ecosy
 local protocol.
 
 <p align="center">
-  <img alt="Capture and LED controller frame rates" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/matter.jpg">
+  <img alt="Capture and LED controller frame rates" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/matter.jpg">
 </p>
 
 Control your lighting through Alexa, Google Home, Apple Home, Smarthings and others.
@@ -183,7 +183,7 @@ Control your lighting through Alexa, Google Home, Apple Home, Smarthings and oth
 
 [**Luciferin’s rendering pipeline**](https://github.com/sblantipodi/toremove/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)) is built for precision and visual fidelity. Floating-point processing delivers smoother gradients, minimizes rounding artifacts, and maintains consistent color transformations throughout the pipeline.
 
-<img alt="Color transitions with higher-precision processing" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/adaptive_gamma_8_32bit.gif?raw=true">
+<img alt="Color transitions with higher-precision processing" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/adaptive_gamma_8_32bit.gif?raw=true">
 
 ## HDR to SDR tonemap with LUT (Lookup Table)
 
@@ -193,15 +193,15 @@ severely washed out, with reduced contrast and inaccurate brightness.
 TV or monitor can display a wider brightness range than an LED strip. [**HDR to SDR tone mapping**](https://github.com/sblantipodi/toremove/wiki/HDR-to-SDR-and-LUT
 ) adapts that range so the lighting keeps useful detail and colors instead of looking too dark or washed out.
 
-<img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/hdr_sdr_tonemap.gif">
+<img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/hdr_sdr_tonemap.gif">
 
 ## Smoothing and Frame Generation
 
 [**Luciferin’s Smoothing**](https://github.com/sblantipodi/toremove/wiki/Smoothing-color-transitions) combines frame generation and Exponential Moving Average to create smoother LED color transitions and reduce flickering with both PC and HDMI capture, offering customizable settings to balance fluidity, responsiveness, and system load.
 
-<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ema_framegen.png?raw=true">
+<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/ema_framegen.png?raw=true">
 
-<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/ema.png?raw=true">
+<img align="center" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/ema.png?raw=true">
 
 ## AI Agents and MCP (Model Context Protocol)
 
@@ -209,13 +209,13 @@ TV or monitor can display a wider brightness range than an LED strip. [**HDR to 
 Use your preferred MCP-compatible AI client to control lighting, adjust settings, and check connected devices through natural language.
 This lets you integrate Firefly into your AI workflows and automate lighting tasks directly from your assistant.
 
-<img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/mcpserver.jpg?raw=true">
+<img src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/mcpserver.jpg?raw=true">
 
 ## Aspect Ratio
 
 [**Automatic aspect ratio**](https://github.com/sblantipodi/toremove/wiki/Aspect-ratio) settings keep the LEDs focused on the picture instead of black bars. They apply to both **PC screen capture and HDMI capture**, such as a widescreen movie on a TV.
 
-<img src="https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/asect_ratio.jpg?raw=true">  
+<img src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/asect_ratio.jpg?raw=true">  
 
 ## Web Installer and automatic updates
 
@@ -229,7 +229,7 @@ firmware**.
 Firefly can update the firmware on connected controllers **over the air (OTA) via Wi-Fi**. See the [**update
 guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) for details.
 
-[![Glow Worm Luciferin Web Installer showing the Full and Light firmware options](https://github.com/sblantipodi/firefly_luciferin/blob/luciferin-v3/data/img/web_installer.jpg)](https://sblantipodi.github.io/glow_worm_luciferin/)
+[![Glow Worm Luciferin Web Installer showing the Full and Light firmware options](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/web_installer.jpg)](https://sblantipodi.github.io/glow_worm_luciferin/)
 
 ## Development & AI
 
