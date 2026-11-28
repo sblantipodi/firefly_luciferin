@@ -18,13 +18,13 @@ a {
   color: #E19A00FF;
 }
 </style>
-<img align="left" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_schema.jpg">
 
 # *Luciferin v3.0 is here!*
 
 ### Here’s what’s new in this major release.
 
-> [!IMPORTANT]
+<img align="left" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_schema.jpg">
+
 > This release requires **Glow Worm Luciferin firmware v6.0.0**.
 > Install it from your browser with the **[Glow Worm Luciferin Web Installer](https://sblantipodi.github.io/glow_worm_luciferin/)**.
 > If you are upgrading from a previous version, the **[automatic update feature](https://github.com/sblantipodi/toremove/wiki/Luciferin-update-management)** can update both the PC software and the firmware.
