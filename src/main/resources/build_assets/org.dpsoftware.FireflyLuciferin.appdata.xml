@@ -74,37 +74,20 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.28.4" date="2026-05-29">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.28.4</url>
+        <release version="3.0.0" date="2026-11-28">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v3.0.0</url>
             <description>
 
                 <p>Changes in this Release</p>
                 <ul>
-                    <li>Update requirement: requires <code>Glow Worm Luciferin</code> firmware (v5.25.3)
-                    </li>
-                    <li>Enabled all LED configuration options for multi‑monitor setups.</li>
-                    <li>Due to recent Windows changes, installing or updating software now requires administrator
-                        privileges. Firefly Luciferin no longer needs to be launched in admin mode; it will request
-                        elevation only when required during the auto‑update process.
-                    </li>
-                    <li>Improved device discovery when using subnets/VLANs. Device discovery across different networks
-                        no longer relies solely on UDP unicast but now uses a TCP fallback, improving discoverability on
-                        certain routers.
-                    </li>
-                    <li>Fixed DSCP/Traffic Class handling for UDP sockets. Ensured correct IPv4 TOS byte encoding to
-                        maintain compatibility with recent Windows networking stack changes.
-                    </li>
-                    <li>Fixed race conditions on UDP ports that occurred when using the multi‑monitor configuration with
-                        a single device.
-                    </li>
-                    <li>Fixed an issue preventing firmware auto‑update on ESP32‑C3 devices.</li>
-                    <li>Fixed a crash occurring when enabling EMA smoothing technique.</li>
-                    <li>Fixed a crash that occurred when changing the configured LED count on the fly during UDP
-                        streaming while using a device with a Static IP.
-                    </li>
-                    <li>The tray icon tooltip did not display the device’s IP address when using multiple monitors.
-                        Fixed.
-                    </li>
+                    <li>Control Luciferin in natural language from your preferred AI agent via MCP.</li>
+                    <li>Capture from USB HDMI devices: Xbox, PlayStation, TV sticks and virtually any HDMI source.</li>
+                    <li>New web interface for remote control and headless setups, including compact standalone ambient lighting systems based on Raspberry Pi.</li>
+                    <li>Adaptive gamma and HDR to SDR tone mapping for much better color accuracy.</li>
+                    <li>32-bit floating-point color processing and frame interpolation replace 8-bit integer processing for smoother color fades and better contrast.</li>
+                    <li>Lossless RLE compression and LED grouping compression for lower latency.</li>
+                    <li>Added Matter over WiFi support, enabling integration with Google Home, Alexa, Apple Home, and other Matter compatible platforms.</li>
+                    <li>On Linux, adds native ARM64 support and improved GPU hardware acceleration.</li>
                 </ul>
 
                 <p>
