@@ -1,13 +1,28 @@
+<style>
+.footer {
+  display: none;
+}
+.px-3 {
+  padding-right: 30px !important;
+  padding-left: 10px !important;
+}
+.my-5 {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+}
+strong {
+  font-weight: bold;
+}
+a {
+  font-weight: bold;
+  color: #E19A00FF;
+}
+</style>
+<img align="left" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_schema.jpg">
+
 # *Luciferin v3.0 is here!*
 
 ### Here’s what’s new in this major release.
-
-<a href="https://github.com/sblantipodi/toremove/wiki/Quick-start">
-  <img
-    src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/luciferin-v3/data/img/luciferin_schema.jpg"
-    alt="Luciferin connection overview: direct PC screen capture, HDMI capture through a splitter and USB card, and optional satellite lighting"
-  >
-</a>
 
 > [!IMPORTANT]
 > This release requires **Glow Worm Luciferin firmware v6.0.0**.
@@ -104,4 +119,3 @@
 * Bundled Java runtime updated to address CVE-2026-114938 (Java4Shell).
 
 [Click here for the complete changelog of previous versions.](https://github.com/sblantipodi/firefly_luciferin/releases)
-
