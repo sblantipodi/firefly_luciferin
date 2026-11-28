@@ -24,14 +24,16 @@ package org.dpsoftware.managers;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.InstanceConfigurer;
+import org.dpsoftware.config.*;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.LabelKey;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.utilities.CaptureDeviceUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -39,9 +41,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,6 +60,8 @@ import java.util.stream.Stream;
 @Slf4j
 public class StorageManager {
 
+    private static final Duration STALE_RESTART_LOCK_AGE = Duration.ofMinutes(5);
+    private static final Object CONFIG_WRITE_LOCK = new Object();
     private final ObjectMapper mapper;
     private final String path;
 
@@ -59,13 +69,22 @@ public class StorageManager {
      * Constructor
      */
     public StorageManager() {
+        this(InstanceConfigurer.getConfigPath());
+    }
+
+    /**
+     * Set up YAML storage for the specified configuration directory.
+     *
+     * @param configPath directory containing the profile files
+     */
+    StorageManager(String configPath) {
         // Initialize yaml file writer
         mapper = new ObjectMapper(new YAMLFactory());
         mapper.findAndRegisterModules();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         // Create FireflyLuciferin in the XDG_HOME folder
-        path = InstanceConfigurer.getConfigPath();
+        path = configPath;
     }
 
     /**
@@ -111,8 +130,6 @@ public class StorageManager {
         }
     }
 
-
-
     /**
      * Copy file (FileInputStream) to GZIPOutputStream
      *
@@ -134,32 +151,183 @@ public class StorageManager {
     }
 
     /**
-     * Write params inside the configuration file
+     * Prepare a runtime startup method while keeping automatic selection persisted until the probe completes.
      *
-     * @param config        file
+     * @param config file
+     */
+    public void resolveAutomaticCapture(Configuration config) throws IOException {
+        if (config.getCaptureMethod() == null || config.getCaptureMethod().isBlank()
+                || Configuration.CaptureMethod.AUTO.name().equals(config.getCaptureMethod())) {
+            config.setAutomaticCapturePending(true);
+            config.setCaptureMethod(Configuration.CaptureMethod.defaultForSource(config.isUsbCaptureSource()).name());
+            writeConfig(config, null);
+            log.info("Automatic capture: using startup method {}, keeping AUTO saved until selection completes", config.getCaptureMethod());
+        }
+    }
+
+    /**
+     * Write params inside the configuration file
+     * @param config file
      * @param forceFilename where to write the config
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
-        String filename = switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> Constants.CONFIG_FILENAME;
-            case 2 -> Constants.CONFIG_FILENAME_2;
-            case 3 -> Constants.CONFIG_FILENAME_3;
-            default -> "";
-        };
-        if (forceFilename != null) {
-            filename = forceFilename;
-        }
-        Configuration currentConfig = readConfigFile(filename);
-        if (currentConfig != null) {
-            File file = new File(path + File.separator + filename);
-            if (file.delete()) {
-                log.info(CommonUtility.getWord(Constants.CLEANING_OLD_CONFIG));
-            } else {
-                log.info(CommonUtility.getWord(Constants.FAILED_TO_CLEAN_CONFIG));
+        writeConfig(config, forceFilename, false);
+    }
+
+    /**
+     * Save the configuration and keep the baud rate currently on disk when the user left that field untouched.
+     *
+     * @param config           configuration to save
+     * @param forceFilename    target file name, or {@code null} to use the active profile
+     * @param preserveBaudRate whether to reuse the baud rate already saved in the target file
+     * @throws IOException if the configuration cannot be written
+     */
+    public void writeConfig(Configuration config, String forceFilename, boolean preserveBaudRate) throws IOException {
+        synchronized (CONFIG_WRITE_LOCK) {
+            String filename = configFilename(forceFilename);
+            Configuration currentConfig = readConfigFile(filename);
+            if (preserveBaudRate && currentConfig != null) {
+                config.setBaudRate(currentConfig.getBaudRate());
             }
+            if (config.isAutomaticCapturePending()) {
+                try {
+                    config = (Configuration) config.clone();
+                    // Keep AUTO across saves and restarts while waiting for a source or probing candidates.
+                    config.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
+                } catch (CloneNotSupportedException e) {
+                    throw new IOException("Cannot preserve automatic capture selection", e);
+                }
+            }
+            if (currentConfig != null) {
+                File file = new File(path + File.separator + filename);
+                if (file.delete()) {
+                    log.info(CommonUtility.getWord(LabelKey.CLEANING_OLD_CONFIG));
+                } else {
+                    log.info(CommonUtility.getWord(LabelKey.FAILED_TO_CLEAN_CONFIG));
+                }
+            }
+            mapper.writeValue(new File(path + File.separator + filename), config);
         }
-        mapper.writeValue(new File(path + File.separator + filename), config);
+    }
+
+    /**
+     * Updates only the persisted LUT selection, preserving other saved values and unknown fields.
+     *
+     * @param cubeLut LUT filename or Disabled
+     * @throws IOException when the current configuration cannot be read or updated
+     */
+    public void writeCubeLut(String cubeLut) throws IOException {
+        synchronized (CONFIG_WRITE_LOCK) {
+            updateConfigFile(configFilename(null), config -> {
+                config.put("cubeLut", cubeLut);
+                return true;
+            });
+        }
+    }
+
+    /**
+     * Reconcile the active serial configuration when its profile, port, and saved rate still match the probe.
+     *
+     * @param profile      active profile identifier captured at the start of the probe
+     * @param serialPort   system name of the port that reported the rate
+     * @param previousRate configured baud rate captured at the start of the probe
+     * @param detectedRate baud rate reported by the device
+     * @return whether a different baud rate was saved to the profile
+     * @throws IOException if the profile cannot be read or updated
+     */
+    boolean writeDetectedBaudRate(String profile, String serialPort, String previousRate, String detectedRate) throws IOException {
+        synchronized (CONFIG_WRITE_LOCK) {
+            MainSingleton main = MainSingleton.getInstance();
+            Configuration running = main.config;
+            if (!Objects.equals(main.profileArg, profile) || running == null || running.isWirelessStream()
+                    || !SerialManager.matchesOutputDevice(running.getOutputDevice(), serialPort)
+                    || !Objects.equals(running.getBaudRate(), previousRate)
+                    || Objects.equals(previousRate, detectedRate)) {
+                return false;
+            }
+            boolean updated = updateConfigFile(configFilename(null, profile), config -> {
+                String storedRate = config.has("baudRate") ? config.path("baudRate").asText(null) : Constants.DEFAULT_BAUD_RATE;
+                if (config.path("wirelessStream").asBoolean() || !SerialManager.matchesOutputDevice(config.path("outputDevice").asText(null), serialPort)
+                        || !Objects.equals(storedRate, previousRate)) {
+                    return false;
+                }
+                config.put("baudRate", detectedRate);
+                return true;
+            });
+            if (updated) {
+                Configuration current = main.config;
+                if (current != null && Objects.equals(main.profileArg, profile) && !current.isWirelessStream()
+                        && SerialManager.matchesOutputDevice(current.getOutputDevice(), serialPort)
+                        && Objects.equals(current.getBaudRate(), previousRate)) {
+                    current.setBaudRate(detectedRate);
+                }
+            }
+            return updated;
+        }
+    }
+
+    /**
+     * Load a YAML object and replace its file only when the update reports a change.
+     *
+     * @param filename profile file name inside the configuration directory
+     * @param update   modifies the loaded object and returns whether to save it
+     * @return whether the file was replaced
+     * @throws IOException if the file cannot be read, parsed as an object, or replaced
+     */
+    private boolean updateConfigFile(String filename, Predicate<ObjectNode> update) throws IOException {
+        Path configFile = Path.of(path, filename);
+        if (!(mapper.readTree(configFile.toFile()) instanceof ObjectNode config)) {
+            throw new IOException("Invalid configuration file");
+        }
+        if (!update.test(config)) {
+            return false;
+        }
+        Path temporary = Files.createTempFile(configFile.getParent(), ".config-", ".tmp");
+        try {
+            mapper.writeValue(temporary.toFile(), config);
+            try {
+                Files.move(temporary, configFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporary, configFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
+        return true;
+    }
+
+    /**
+     * Resolves the active profile or instance configuration used by settings writes.
+     *
+     * @param forceFilename explicit file name, or {@code null} to use the active profile
+     * @return configuration file name
+     */
+    private String configFilename(String forceFilename) {
+        return configFilename(forceFilename, MainSingleton.getInstance().profileArg);
+    }
+
+    /**
+     * Resolve the configuration file name for an explicit file, a named profile, or the instance default.
+     *
+     * @param forceFilename explicit file name, or {@code null} to use the supplied profile
+     * @param profile       profile identifier, or {@code null} to use the instance default
+     * @return configuration file name
+     */
+    private String configFilename(String forceFilename, String profile) {
+        if (forceFilename != null) {
+            return forceFilename;
+        } else if (profile != null && !profile.isEmpty() && !LabelKey.DEFAULT.equals(profile)
+                && !CommonUtility.getWord(LabelKey.DEFAULT).equals(profile)) {
+            return getProfileFileName(profile);
+        } else {
+            return switch (MainSingleton.getInstance().whoAmI) {
+                case 1 -> Constants.CONFIG_FILENAME;
+                case 2 -> Constants.CONFIG_FILENAME_2;
+                case 3 -> Constants.CONFIG_FILENAME_3;
+                default -> "";
+            };
+        }
     }
 
     /**
@@ -173,7 +341,7 @@ public class StorageManager {
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
         } catch (IOException e) {
-            log.error(CommonUtility.getWord(Constants.ERROR_READING_CONFIG));
+            log.error(CommonUtility.getWord(LabelKey.ERROR_READING_CONFIG));
         }
         return config;
     }
@@ -207,7 +375,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArg : Constants.DEFAULT);
+        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArg : LabelKey.DEFAULT);
     }
 
     /**
@@ -228,7 +396,7 @@ public class StorageManager {
     public Configuration readConfig(boolean readMainConfig, String profileName) {
         try {
             Configuration currentConfig;
-            if (!CommonUtility.getWord(Constants.DEFAULT).equals(profileName) && !Constants.DEFAULT.equals(profileName) && !readMainConfig) {
+            if (!CommonUtility.getWord(LabelKey.DEFAULT).equals(profileName) && !LabelKey.DEFAULT.equals(profileName) && !readMainConfig) {
                 currentConfig = readConfigFile(getProfileFileName(profileName));
             } else {
                 Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
@@ -250,6 +418,44 @@ public class StorageManager {
     }
 
     /**
+     * Compare two configurations using the restart rules shared by JavaFX and the web settings.
+     *
+     * @param before configuration used as the baseline
+     * @param after  proposed configuration
+     * @return localization keys for the changes that require a process restart
+     */
+    public static Set<String> restartReasons(Configuration before, Configuration after) {
+        Set<String> reasons = new LinkedHashSet<>();
+        if (!Objects.equals(before.getLanguage(), after.getLanguage())) reasons.add(LabelKey.TOOLTIP_LANGUAGE);
+        if (!Objects.equals(before.getTheme(), after.getTheme())) reasons.add(LabelKey.TOOLTIP_THEME);
+        if (!Objects.equals(before.getBaudRate(), after.getBaudRate())) reasons.add(LabelKey.TOOLTIP_BAUD_RATE);
+        if (!before.getCaptureDeviceFriendlyName().equals(after.getCaptureDeviceFriendlyName()))
+            reasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
+        if (!Objects.equals(before.getCaptureMethod(), after.getCaptureMethod()))
+            reasons.add(LabelKey.TOOLTIP_CAPTUREMETHOD);
+        if (after.getOutputDevice() != null && (!Objects.equals(before.getOutputDevice(), after.getOutputDevice())
+                || !Objects.equals(before.getStaticGlowWormIp(), after.getStaticGlowWormIp())))
+            reasons.add(LabelKey.TOOLTIP_SERIALPORT);
+        if (before.getNumberOfCPUThreads() != after.getNumberOfCPUThreads())
+            reasons.add(LabelKey.TOOLTIP_NUMBEROFTHREADS);
+        if (before.isFullFirmware() != after.isFullFirmware()) reasons.add(LabelKey.TOOLTIP_WIFIENABLE);
+        if (before.isWirelessStream() != after.isWirelessStream()) reasons.add(LabelKey.TOOLTIP_MQTTSTREAM);
+        if (before.isMqttEnable() != after.isMqttEnable()) reasons.add(LabelKey.TOOLTIP_MQTTENABLE);
+        if (!Objects.equals(before.getStreamType(), after.getStreamType())) reasons.add(LabelKey.TOOLTIP_STREAMTYPE);
+        if (!Objects.equals(before.getMqttServer(), after.getMqttServer())) reasons.add(LabelKey.TOOLTIP_MQTTHOST);
+        if (!Objects.equals(before.getMqttTopic(), after.getMqttTopic())) reasons.add(LabelKey.TOOLTIP_MQTTTOPIC);
+        if (!Objects.equals(before.getMqttUsername(), after.getMqttUsername())) reasons.add(LabelKey.TOOLTIP_MQTTUSER);
+        if (!Objects.equals(before.getMqttPwd(), after.getMqttPwd())) reasons.add(LabelKey.TOOLTIP_MQTTPWD);
+        if (before.isMultiScreenSingleDevice() != after.isMultiScreenSingleDevice())
+            reasons.add(LabelKey.TOOLTIP_MONITORNUMBER);
+        if (before.isWebMcpServerEnabled() != after.isWebMcpServerEnabled())
+            reasons.add(LabelKey.TOOLTIP_WEB_MCP_SERVER);
+        if (before.getMultiMonitor() != after.getMultiMonitor()) reasons.add(LabelKey.TOOLTIP_MULTIMONITOR);
+        if (before.getSimdAvx() != after.getSimdAvx()) reasons.add(LabelKey.TOOLTIP_SIMD);
+        return reasons;
+    }
+
+    /**
      * Some params should not be updated when switching profiles.
      * Some params needs a restart to take effect. Automatic restart is triggered on profile change only.
      *
@@ -258,44 +464,9 @@ public class StorageManager {
      */
     public void checkProfileDifferences(Configuration defaultConfig, Configuration profileConfig) {
         if (profileConfig != null && defaultConfig != null) {
-            MainSingleton.getInstance().setRestartNeeded(false);
-            Set<String> restartReasons = new LinkedHashSet<>();
-            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage()))
-                restartReasons.add(Constants.TOOLTIP_LANGUAGE);
-            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
-            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
-                restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
-            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
-                restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
-            if (profileConfig.getOutputDevice() != null && (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice())
-                    || !defaultConfig.getStaticGlowWormIp().equals(profileConfig.getStaticGlowWormIp())))
-                restartReasons.add(Constants.TOOLTIP_SERIALPORT);
-            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads())
-                restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
-            if (defaultConfig.isFullFirmware() != profileConfig.isFullFirmware())
-                restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
-            if (defaultConfig.isWirelessStream() != profileConfig.isWirelessStream())
-                restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
-            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable())
-                restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
-            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType()))
-                restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
-            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer()))
-                restartReasons.add(Constants.TOOLTIP_MQTTHOST);
-            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic()))
-                restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
-            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername()))
-                restartReasons.add(Constants.TOOLTIP_MQTTUSER);
-            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd()))
-                restartReasons.add(Constants.TOOLTIP_MQTTPWD);
-            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice())
-                restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
-            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
-                restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
-            if (defaultConfig.getSimdAvx() != profileConfig.getSimdAvx())
-                restartReasons.add(Constants.TOOLTIP_SIMD);
+            Set<String> restartReasons = restartReasons(defaultConfig, profileConfig);
+            MainSingleton.getInstance().setRestartNeeded(!restartReasons.isEmpty());
             if (!restartReasons.isEmpty()) {
-                MainSingleton.getInstance().setRestartNeeded(true);
                 log.info(String.join("\n", restartReasons));
             }
         }
@@ -326,13 +497,67 @@ public class StorageManager {
         if (config == null) {
             try {
                 MainSingleton.getInstance().guiManager = new GuiManager(false);
-                MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
-                config = readProfileInUseConfig();
-            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
-                     IllegalAccessException e) {
+                if (!MainSingleton.getInstance().isHeadlessMode()) {
+                    MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
+                    config = readProfileInUseConfig();
+                } else {
+                    config = setDefaultsForHeadlessMode();
+                }
+            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                log.error("Failed to create default configuration in headless mode", e);
                 throw new RuntimeException(e);
             }
         }
+        return config;
+    }
+
+    /**
+     * Set defaults for headless mode
+     */
+    private Configuration setDefaultsForHeadlessMode() throws IOException {
+        Configuration config;
+        log.info("No config file found in headless mode, creating default configuration");
+        Configuration defaultConfig = new Configuration();
+        defaultConfig.setLedMatrix(new LinkedHashMap<>());
+        defaultConfig.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+        defaultConfig.setTheme(Enums.Theme.CLASSIC.getBaseI18n());
+        defaultConfig.setCaptureMethod(Configuration.CaptureMethod.AUTO.name());
+        defaultConfig.setFullFirmware(true);
+        defaultConfig.setWirelessStream(true);
+        defaultConfig.setLanguage("English");
+        defaultConfig.setConfigVersion(MainSingleton.getInstance().version);
+        defaultConfig.setScreenResX(Constants.DEFAULT_RES_WIDTH);
+        defaultConfig.setScreenResY(Constants.DEFAULT_RES_HEIGHT);
+        defaultConfig.setOsScaling(100);
+        defaultConfig.setNumberOfCPUThreads(1);
+        defaultConfig.setTopLed(10);
+        defaultConfig.setLeftLed(10);
+        defaultConfig.setRightLed(10);
+        defaultConfig.setBottomLeftLed(10);
+        defaultConfig.setBottomRightLed(10);
+        defaultConfig.setBottomRowLed(20);
+        defaultConfig.setBrightness(255);
+        defaultConfig.setColorChooser("255,82,0,255");
+        defaultConfig.setOrientation(Enums.Orientation.CLOCKWISE.getBaseI18n());
+        defaultConfig.setOutputDevice(Constants.SERIAL_PORT_AUTO);
+        defaultConfig.setStaticGlowWormIp(Constants.DASH);
+        defaultConfig.setMonitorNumber(0);
+        defaultConfig.setPowerSaving("30 minutes");
+        defaultConfig.setMqttServer(Constants.DEFAULT_MQTT_PROTOCOL + Constants.DEFAULT_MQTT_HOST + ":" + Constants.DEFAULT_MQTT_PORT);
+        defaultConfig.setMqttTopic(Constants.MQTT_BASE_TOPIC);
+        if (defaultConfig.isFullFirmware()) {
+            defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_115200.getBaudRate());
+        } else {
+            defaultConfig.setBaudRate(Enums.BaudRate.BAUD_RATE_500000.getBaudRate());
+        }
+        defaultConfig.setHueMap(ColorCorrectionDialogController.initHSLMap());
+        defaultConfig.regenerateLedMatrix();
+        defaultConfig.setCaptureDevice(CaptureDeviceUtilities.findPixelFormat("", defaultConfig));
+        defaultConfig.setCubeLut(Constants.DEFAULT_CUBE_LUT);
+        writeConfig(defaultConfig, null);
+        config = readProfileInUseConfig();
         return config;
     }
 
@@ -397,6 +622,7 @@ public class StorageManager {
         writeToStorage = configFileUpgrader.updatePrevious2237(config, writeToStorage); // Version <= 2.23.7
         writeToStorage = configFileUpgrader.updatePrevious2256(config, writeToStorage); // Version <= 2.25.6
         writeToStorage = configFileUpgrader.updatePrevious2284(config, writeToStorage); // Version <= 2.28.4
+        writeToStorage = configFileUpgrader.updatePrevious3000(config, writeToStorage); // Version < 3.0.0
         return writeToStorage;
     }
 
@@ -433,6 +659,65 @@ public class StorageManager {
      */
     public String getProfileFileName(String profileName) {
         return MainSingleton.getInstance().whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+    }
+
+    /**
+     * Read the StartProfile file if it exists and return the profile name.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
+     *
+     * @return the profile name read from the file, or null if the file doesn't exist or is empty
+     */
+    public static String readStartProfileFile() {
+        try {
+            File profileInUseFile = new File(InstanceConfigurer.getConfigPath() + File.separator + MainSingleton.getInstance().whoAmI + "_" + Constants.START_PROFILE_FILENAME);
+            if (profileInUseFile.exists()) {
+                String profileName = java.nio.file.Files.readString(profileInUseFile.toPath()).trim();
+                if (!profileName.isEmpty()) {
+                    log.debug("Using profile from StartProfile file: {}", profileName);
+                    return profileName;
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Failed to read StartProfile file: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Write the profile name to a plain text file inside the configuration path.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
+     *
+     * @param profileName profile name to write
+     */
+    public void writeStartProfileFile(String profileName) {
+        if (profileName != null && !profileName.isEmpty()) profileName = profileName.replace("\"", "");
+        try {
+            Path file = Paths.get(path, MainSingleton.getInstance().whoAmI + "_" +Constants.START_PROFILE_FILENAME);
+            if (profileName != null && !profileName.isEmpty()) {
+                Files.writeString(file, profileName, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            }
+        } catch (IOException e) {
+            log.error("Failed to write StartProfile in use file: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Delete the StartProfile in use file.
+     * This is used by the web interface to set the profile to start on boot.
+     * It doesn't use the boot args for the profile because when running headless most users will use systemctl to start
+     * and sto the process and passing args is not ideal for that use case.
+     */
+    public void deleteStartProfileFile() {
+        try {
+            Path file = Paths.get(path, MainSingleton.getInstance().whoAmI + "_" + Constants.START_PROFILE_FILENAME);
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            log.error("Failed to delete StartProfile in use file: {}", e.getMessage());
+        }
     }
 
     /**
@@ -473,6 +758,34 @@ public class StorageManager {
     }
 
     /**
+     * Create the Linux user service if missing, without preventing startup on failure.
+     */
+    public void createSystemdService() {
+        if (!NativeExecutor.isLinux()) {
+            return;
+        }
+        try {
+            String serviceFilename = EnvConstants.LUCIFERIN_SERVICE_FILENAME;
+            String serviceContent = EnvConstants.LUCIFERIN_SERVICE;
+            if (NativeExecutor.isFlatpak()) {
+                serviceFilename = EnvConstants.LUCIFERIN_FLATPAK_SERVICE_FILENAME;
+                serviceContent = EnvConstants.LUCIFERIN_FLATPAK_SERVICE;
+            } else if (NativeExecutor.isSnap()) {
+                serviceFilename = EnvConstants.LUCIFERIN_SNAP_SERVICE_FILENAME;
+                serviceContent = EnvConstants.LUCIFERIN_SNAP_SERVICE;
+            }
+            Path serviceDirectory = Path.of(System.getProperty(Constants.HOME_PATH), ".config", "systemd", "user");
+            Path serviceFile = serviceDirectory.resolve(serviceFilename);
+            Files.createDirectories(serviceDirectory);
+            Files.writeString(serviceFile, serviceContent, StandardOpenOption.CREATE_NEW);
+        } catch (FileAlreadyExistsException e) {
+            // Preserve existing services, including those created by another instance.
+        } catch (IOException | SecurityException | InvalidPathException e) {
+            log.debug("Unable to create user systemd service: {}", e.getMessage());
+        }
+    }
+
+    /**
      * Delete temp files
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -492,16 +805,56 @@ public class StorageManager {
                 }
             }
             Path rootDir = Paths.get(path);
-            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
-            if (!firmwareFiles.isEmpty()) {
-                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            if (MainSingleton.getInstance().whoAmI == 1) {
+                deleteStaleRestartLocks(rootDir);
             }
-            for (String firmwareFilename : firmwareFiles) {
-                File fileToDelete = new File(path + File.separator + firmwareFilename);
+            List<String> tempFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
+            tempFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            tempFiles.addAll(searchFilesWithWc(rootDir, Constants.SCREENSHOT_IMAGE_FILENAME_PATTERN));
+            for (String tempFilename : tempFiles) {
+                File fileToDelete = new File(path + File.separator + tempFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();
             }
+            deleteStartProfileFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Remove abandoned restart locks without touching an active restart.
+     *
+     * @param rootDir configuration directory containing the restart lock files
+     */
+    private void deleteStaleRestartLocks(Path rootDir) {
+        if (!Files.isDirectory(rootDir)) {
+            return;
+        }
+        Instant cutoff = Instant.now().minus(STALE_RESTART_LOCK_AGE);
+        try (DirectoryStream<Path> locks = Files.newDirectoryStream(rootDir, ".restart-*.lock")) {
+            for (Path lockPath : locks) {
+                String name = lockPath.getFileName().toString();
+                if (!name.matches("\\.restart-[0-9a-fA-F-]{36}\\.lock")) {
+                    continue;
+                }
+                try {
+                    if (Files.getLastModifiedTime(lockPath).toInstant().isAfter(cutoff)) {
+                        continue;
+                    }
+                    boolean unlocked;
+                    try (FileChannel channel = FileChannel.open(lockPath, StandardOpenOption.WRITE);
+                         FileLock lock = channel.tryLock()) {
+                        unlocked = lock != null;
+                    }
+                    if (unlocked) {
+                        Files.deleteIfExists(lockPath);
+                    }
+                } catch (IOException | OverlappingFileLockException e) {
+                    log.debug("Restart lock is still in use or cannot be removed: {}", lockPath, e);
+                }
+            }
+        } catch (IOException e) {
+            log.debug("Could not inspect restart locks", e);
         }
     }
 

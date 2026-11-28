@@ -87,9 +87,9 @@ parts:
       craftctl default
       TARGET_ARCH="${CRAFT_ARCH_BUILD_FOR}"
       if [ "$TARGET_ARCH" = "arm64" ]; then
-        wget https://www.dpsoftware.org/host/FireflyLuciferinLinux.deb -O FireflyLuciferinLinux.deb
+        wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.25.6/FireflyLuciferinLinux_arm64.deb -O FireflyLuciferinLinux.deb
       else
-        wget https://www.dpsoftware.org/host/FireflyLuciferinLinux_arm64.deb -O FireflyLuciferinLinux.deb
+        wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.25.6/FireflyLuciferinLinux.deb -O FireflyLuciferinLinux.deb
       fi
       ls -la
       ar x FireflyLuciferinLinux.deb

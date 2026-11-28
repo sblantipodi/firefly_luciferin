@@ -55,12 +55,12 @@ public class SwitchBiasLightDiscovery extends DeviceDiscovery implements Discove
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Bias Light");
-        this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
+        this.uniqueId = this.name.replace(" ", "_");
+        this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.payloadOn = "{\"state\":\"ON\",\"startStopInstances\":\"PLAY\"}";
         this.payloadOff = "{\"state\":\"ON\",\"startStopInstances\":\"STOP\"}";
-        this.valueTemplate = "{{ value_json.producing | int > 0 }}";
+        this.valueTemplate = "{{ value_json.framerate | int > 0 }}";
         this.icon = "mdi:television-ambient-light";
         this.stateOn = true;
         this.stateOff = false;

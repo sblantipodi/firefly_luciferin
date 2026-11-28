@@ -47,7 +47,7 @@ public class SensorConsumingDiscovery extends DeviceDiscovery implements Discove
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("(Firefly Consuming)");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.uniqueId = this.name.replace(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.consuming }}";
         this.unitOfMeasurement = "FPS";

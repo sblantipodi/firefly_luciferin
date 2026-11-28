@@ -39,6 +39,7 @@ public class GlowWormDevice {
     private final SimpleStringProperty wifi = new SimpleStringProperty("");
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");
     private final SimpleStringProperty deviceBoard = new SimpleStringProperty("");
+    private final SimpleBooleanProperty matterSupported = new SimpleBooleanProperty(false);
     private final SimpleStringProperty mac = new SimpleStringProperty("");
     private final SimpleStringProperty gpio = new SimpleStringProperty("");
     private final SimpleStringProperty numberOfLEDSconnected = new SimpleStringProperty("");
@@ -153,6 +154,18 @@ public class GlowWormDevice {
 
     public StringProperty deviceBoardProperty() {
         return deviceBoard;
+    }
+
+    public boolean isMatterSupported() {
+        return matterSupported.get();
+    }
+
+    public void setMatterSupported(boolean supported) {
+        matterSupported.set(supported);
+    }
+
+    public BooleanProperty matterSupportedProperty() {
+        return matterSupported;
     }
 
     public String getMac() {

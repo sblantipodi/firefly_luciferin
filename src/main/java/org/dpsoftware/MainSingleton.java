@@ -24,10 +24,12 @@ package org.dpsoftware;
 import com.fazecast.jSerialComm.SerialPort;
 import javafx.application.HostServices;
 import jdk.incubator.vector.VectorSpecies;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GuiManager;
 
 import java.awt.*;
@@ -61,15 +63,16 @@ public class MainSingleton {
     public float FPS_PRODUCER = 0;
     public float FPS_GW_CONSUMER = 0;
     public SimpleDateFormat formatter;
-    public SerialPort serial;
-    public OutputStream output;
+    public volatile SerialPort serial;
+    public volatile OutputStream output;
     public boolean serialConnected = false;
-    public int baudRate = 0;
     // LED strip, monitor and microcontroller config
-    public Configuration config;
+    public volatile Configuration config;
     // Start and Stop threads
     public boolean RUNNING = false;
-    // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port.
+    @Getter(AccessLevel.NONE)
+    private final Object frameQueueLock = new Object();
+    // One pending frame; producers replace obsolete output via offerLatestFrame.
     public BlockingQueue<Color[]> sharedQueue;
     public Color[] lastLedColor;
     // Number of LEDs on the strip
@@ -77,7 +80,7 @@ public class MainSingleton {
     public int ledNumHighLowCount;
     public int ledNumHighLowCountSecondPart;
     public GuiManager guiManager;
-    public boolean communicationError = false;
+    public volatile boolean communicationError = false;
     public Color colorInUse;
     public int gpio = 255; // 255 means not set, firmware discards this value
     public int colorOrder = 0; // 1 means GRB, 2 RGB, 3 BGR
@@ -93,6 +96,8 @@ public class MainSingleton {
     public ResourceBundle bundle;
     public String profileArg;
     public HostServices hostServices;
+    // Updated after mDNS registration and hostname conflict negotiation.
+    public volatile String webInterfaceUrl = Constants.HTTP + "localhost:" + Constants.CONFIG_SERVER_DEFAULT_PORT + "/";
     public boolean closeOtherInstaces = false;
     public int wifiStrength = 0;
     public int ldrStrength = 0;
@@ -106,6 +111,32 @@ public class MainSingleton {
     public int cpuLatencyBench = 0;
     public boolean restartNeeded = false;
     public String improvActive = "";
+    public boolean hdrActive;
+    public boolean headlessMode = false;
+
+    /**
+     * Publish fresh LED output without waiting for the device. Serialize producers
+     * so replacing a full queue cannot discard a newer producer's publication.
+     */
+    public void offerLatestFrame(Color[] colors) {
+        synchronized (frameQueueLock) {
+            BlockingQueue<Color[]> queue = sharedQueue;
+            while (!queue.offer(colors)) {
+                queue.poll();
+            }
+        }
+    }
+
+    /**
+     * A keepalive is a replay, not a fresh capture: never replace pending output.
+     *
+     * @return true if queued; false if pending output already fills the queue
+     */
+    public boolean offerKeepaliveFrame(Color[] colors) {
+        synchronized (frameQueueLock) {
+            return sharedQueue.offer(colors);
+        }
+    }
 
 }
 

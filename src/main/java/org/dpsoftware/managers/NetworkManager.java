@@ -23,7 +23,6 @@ package org.dpsoftware.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +35,11 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.gui.LabelKey;
 import org.dpsoftware.gui.controllers.NetworkTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.lut.CubeLutToneMap;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.network.tcpUdp.UdpClient;
@@ -50,6 +51,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
@@ -80,9 +82,11 @@ public class NetworkManager implements MqttCallback {
             attemptReconnect();
         } catch (MqttException | RuntimeException e) {
             connected = false;
-            if (showErrorIfAny && retryCounter.get() == 3) {
-                Platform.runLater(() -> MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE,
-                        Constants.MQTT_ERROR_CONTEXT, Constants.MQTT_ERROR_TITLE, TrayIcon.MessageType.ERROR));
+            ManagerSingleton.getInstance().mqttConnectionError = true;
+            if (showErrorIfAny && retryCounter.get() == 3
+                    && !MainSingleton.getInstance().isHeadlessMode() && MainSingleton.getInstance().guiManager != null) {
+                Platform.runLater(() -> MainSingleton.getInstance().guiManager.showLocalizedNotification(LabelKey.MQTT_ERROR_TITLE,
+                        LabelKey.MQTT_ERROR_CONTEXT, LabelKey.MQTT_ERROR_TITLE, TrayIcon.MessageType.ERROR));
             }
             log.error("Can't connect to the MQTT Server");
         }
@@ -110,6 +114,7 @@ public class NetworkManager implements MqttCallback {
      * @return TCP response if it's converted in an HTTP request
      */
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg, int qos) {
+        if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT))) FirmwareStateSync.invalidate();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             if (MainSingleton.getInstance().config.isMqttEnable() && !forceHttpRequest && ManagerSingleton.getInstance().client != null) {
                 String swappedMsg = swapMac(msg, null);
@@ -142,9 +147,8 @@ public class NetworkManager implements MqttCallback {
         if (sat == null) {
             return msg;
         } else {
-            ObjectMapper mapper = new ObjectMapper();
             try {
-                JsonNode jsonMsg = mapper.readTree(msg.getBytes());
+                JsonNode jsonMsg = CommonUtility.JSON_MAPPER.readTree(msg.getBytes());
                 if (jsonMsg.get(Constants.MAC) != null) {
                     ObjectNode object = (ObjectNode) jsonMsg;
                     String satMac = GuiSingleton.getInstance().deviceTableData.stream()
@@ -153,7 +157,7 @@ public class NetworkManager implements MqttCallback {
                             .map(GlowWormDevice::getMac)
                             .orElse(null);
                     object.put(Constants.MAC, satMac);
-                    return mapper.writeValueAsString(object);
+                    return CommonUtility.JSON_MAPPER.writeValueAsString(object);
                 } else {
                     return msg;
                 }
@@ -333,8 +337,7 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private static void manageDefaultTopic(MqttMessage message) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode mqttmsg = mapper.readTree(message.getPayload());
+        JsonNode mqttmsg = CommonUtility.JSON_MAPPER.readTree(message.getPayload());
         if (mqttmsg.get(Constants.STATE) != null && mqttmsg.get(Constants.MQTT_TOPIC) != null) {
             if (mqttmsg.get(Constants.MQTT_TOPIC) != null) {
                 if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
@@ -378,8 +381,7 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private static void manageMqttSetTopic(MqttMessage message) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode mqttmsg = mapper.readTree(message.getPayload());
+        JsonNode mqttmsg = CommonUtility.JSON_MAPPER.readTree(message.getPayload());
         if (message.toString().contains(Constants.MQTT_START)) {
             MainSingleton.getInstance().guiManager.startCapturingThreads();
         } else if (message.toString().contains(Constants.MQTT_STOP)) {
@@ -409,8 +411,7 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private static void manageFpsTopic(MqttMessage message) throws IOException {
-        ObjectMapper mapperFps = new ObjectMapper();
-        JsonNode mqttmsg = mapperFps.readTree(message.getPayload());
+        JsonNode mqttmsg = CommonUtility.JSON_MAPPER.readTree(message.getPayload());
         CommonUtility.updateFpsWithFpsTopic(mqttmsg);
     }
 
@@ -462,6 +463,8 @@ public class NetworkManager implements MqttCallback {
             case Constants.HTTP_SET_LDR -> topic = Constants.HTTP_SET_LDR.replace(gwBaseTopic, defaultTopic);
             case Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET ->
                     topic = Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET ->
+                    topic = Constants.TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET.replace(fireflyBaseTopic, defaultFireflyTopic);
         }
         return topic;
     }
@@ -490,7 +493,14 @@ public class NetworkManager implements MqttCallback {
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
         connOpts.setConnectionTimeout(Constants.MQTT_CONN_TIMEOUT);
+        connOpts.setKeepAliveInterval(Constants.MQTT_KEEP_ALIVE_SECONDS);
         connOpts.setMaxInflight(Constants.MAX_INFLIGHT);
+        // The broker resets FPS even if the OS terminates the JVM before its shutdown hook runs.
+        // Secondary instances sharing one device must not reset the main instance's sensors.
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            connOpts.setWill(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE),
+                    Constants.MQTT_FIREFLY_0_FPS.getBytes(StandardCharsets.UTF_8), 1, false);
+        }
         if (MainSingleton.getInstance().config.getMqttUsername() != null && !MainSingleton.getInstance().config.getMqttUsername().isEmpty()) {
             connOpts.setUserName(MainSingleton.getInstance().config.getMqttUsername());
         }
@@ -530,7 +540,8 @@ public class NetworkManager implements MqttCallback {
     /**
      * Set effect
      */
-    private static void setEffect(String message) {
+    public static void setEffect(String message) {
+        FirmwareStateSync.invalidate();
         String previousEffect = MainSingleton.getInstance().config.getEffect();
         MainSingleton.getInstance().config.setEffect(message);
         CommonUtility.sleepMilliseconds(200);
@@ -545,10 +556,10 @@ public class NetworkManager implements MqttCallback {
         } else {
             if (MainSingleton.getInstance().RUNNING) {
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-                MainSingleton.getInstance().config.setEffect(message);
-                MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
-                CommonUtility.turnOnLEDs();
             }
+            MainSingleton.getInstance().config.setEffect(message);
+            MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
+            CommonUtility.turnOnLEDs();
         }
     }
 
@@ -592,10 +603,8 @@ public class NetworkManager implements MqttCallback {
      */
     private void manageEffect(String message) {
         if (MainSingleton.getInstance().config != null) {
-            CommonUtility.delayMilliseconds(() -> {
-                log.info("Setting mode via MQTT - {}", message);
-                setEffect(message);
-            }, 200);
+            log.info("Synchronizing mode from firmware via MQTT - {}", message);
+            FirmwareStateSync.effectChanged(message);
         }
     }
 
@@ -607,11 +616,37 @@ public class NetworkManager implements MqttCallback {
     private void manageProfile(String message) {
         if (MainSingleton.getInstance().config != null) {
             CommonUtility.delayMilliseconds(() -> {
-                if (message.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                    NativeExecutor.restartNativeInstance(null);
+                if (message.equals(CommonUtility.getWord(LabelKey.DEFAULT))) {
+                    NativeExecutor.restartNativeInstance(LabelKey.DEFAULT);
                 } else {
                     NativeExecutor.restartNativeInstance(message);
                 }
+            }, 200);
+        }
+    }
+
+    /**
+     * Manage cube LUT topic. The payload is the LUT filename (or JSON with a
+     * {@code cublut} field). The LUT is reloaded at runtime via
+     * {@link CubeLutToneMap#refresh()} so the change applies without a restart.
+     *
+     * @param message mqtt message
+     */
+    private void manageCubeLut(String message) {
+        if (MainSingleton.getInstance().config != null) {
+            String lutName = message;
+            try {
+                JsonNode node = CommonUtility.JSON_MAPPER.readTree(message);
+                if (node.isObject() && node.get(Constants.MQTT_CUBE_LUT) != null) {
+                    lutName = node.get(Constants.MQTT_CUBE_LUT).asText();
+                }
+            } catch (IOException ignored) {
+                // Plain-text payload (the LUT filename itself).
+            }
+            final String lut = (lutName == null || lutName.isBlank()) ? Constants.DEFAULT_CUBE_LUT : lutName;
+            CommonUtility.delayMilliseconds(() -> {
+                MainSingleton.getInstance().config.setCubeLut(lut);
+                CubeLutToneMap.refresh();
             }, 200);
         }
     }
@@ -625,8 +660,7 @@ public class NetworkManager implements MqttCallback {
     private void manageFirmwareConfig(String message) throws JsonProcessingException {
         if (MainSingleton.getInstance().config != null) {
             if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode mqttmsg = mapper.readTree(message);
+                JsonNode mqttmsg = CommonUtility.JSON_MAPPER.readTree(message);
                 if (CommonUtility.getDeviceToUse().getMac().equals(mqttmsg.get(Constants.MAC).asText())) {
                     MainSingleton.getInstance().config.setColorMode(mqttmsg.get(Constants.COLOR_MODE).asInt());
                 }
@@ -642,8 +676,7 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private void manageGamma(MqttMessage message) throws IOException {
-        ObjectMapper gammaMapper = new ObjectMapper();
-        JsonNode gammaObj = gammaMapper.readTree(message.getPayload());
+        JsonNode gammaObj = CommonUtility.JSON_MAPPER.readTree(message.getPayload());
         if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
             MainSingleton.getInstance().config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
         }
@@ -671,6 +704,7 @@ public class NetworkManager implements MqttCallback {
     public void connectionLost(Throwable cause) {
         log.error("Connection Lost");
         connected = false;
+        ManagerSingleton.getInstance().mqttConnectionError = true;
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         if (scheduledMqttFuture == null || scheduledMqttFuture.isDone()) {
             scheduledMqttFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -687,6 +721,7 @@ public class NetworkManager implements MqttCallback {
                         ManagerSingleton.getInstance().client.setCallback(this);
                         subscribeToTopics();
                         connected = true;
+                        ManagerSingleton.getInstance().mqttConnectionError = false;
                         log.info(Constants.MQTT_RECONNECTED);
                         PipelineManager.restartCapture(() -> log.info("Restarting upon disconnection."));
                         scheduledExecutorService.shutdown();
@@ -715,6 +750,7 @@ public class NetworkManager implements MqttCallback {
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_ASPECT_RATIO));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET));
         ManagerSingleton.getInstance().client.subscribe(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG);
     }
 
@@ -747,6 +783,8 @@ public class NetworkManager implements MqttCallback {
             manageEffect(message.toString());
         } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET))) {
             manageProfile(message.toString());
+        } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_CUBE_LUT_SET))) {
+            manageCubeLut(message.toString());
         } else if (topic.equals(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG)) {
             manageFirmwareConfig(message.toString());
         }
@@ -801,6 +839,7 @@ public class NetworkManager implements MqttCallback {
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
         connected = true;
+        ManagerSingleton.getInstance().mqttConnectionError = false;
     }
 
 }
